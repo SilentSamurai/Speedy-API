@@ -51,8 +51,6 @@ public class JpaMetaModel {
                     if (annotation != null) {
                         memberMetadata.customValidation = annotation.value();
                     }
-
-                    break;
                 } catch (IllegalStateException e) {
                     logger.fatal("Could not determine method: {} ", member, e);
                 }
