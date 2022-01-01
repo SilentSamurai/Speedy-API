@@ -1,6 +1,7 @@
 package com.github.silent.samurai.serializers;
 
 import com.github.silent.samurai.metamodel.JpaMetaModel;
+import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -25,7 +26,7 @@ public class ApiAutomateJsonSerializer {
     public JsonObject fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException {
         JsonObject json = new JsonObject();
         JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(clazz.getSimpleName());
-        Gson gson = new Gson();
+        Gson gson = CommonUtil.getGson();
         level++;
 
 

@@ -5,8 +5,8 @@ import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.request.PostRequestProcessor;
 import com.github.silent.samurai.request.RequestProcessor;
 import com.github.silent.samurai.response.ResponseProcessor;
+import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -50,9 +50,7 @@ public class SpeedyFactory {
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_OK);
-
-        GsonBuilder gsonBuildr = new GsonBuilder();
-        Gson gson = gsonBuildr.create();
+        Gson gson = CommonUtil.getGson();
         gson.toJson(jsonElement, response.getWriter());
 
         response.getWriter().flush();
@@ -61,7 +59,7 @@ public class SpeedyFactory {
 
     public void processPostRequests(HttpServletRequest request, HttpServletResponse response) throws IOException {
 //        String body = CharStreams.toString(request.getReader());
-        Gson gson = new Gson();
+        Gson gson = CommonUtil.getGson();
         JsonElement jsonElement = gson.fromJson(request.getReader(), JsonElement.class);
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 

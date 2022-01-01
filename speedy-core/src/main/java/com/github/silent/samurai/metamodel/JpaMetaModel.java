@@ -4,7 +4,6 @@ import com.github.silent.samurai.annotations.SpeedyCustomValidation;
 import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,7 +134,7 @@ public class JpaMetaModel {
             if (Objects.equals(jpaEntityType.getIdType().getJavaType(), String.class)) {
                 return fieldsMap.get("id").getAsString();
             }
-            return new Gson().fromJson(fieldsMap, jpaEntityType.getIdType().getJavaType());
+            return CommonUtil.getGson().fromJson(fieldsMap, jpaEntityType.getIdType().getJavaType());
         }
 
         public Object getObject(Map<String, ?> fieldsMap) {
@@ -143,7 +142,7 @@ public class JpaMetaModel {
         }
 
         public Object getObject(JsonObject fieldsMap) {
-            return new Gson().fromJson(fieldsMap, jpaEntityType.getJavaType());
+            return CommonUtil.getGson().fromJson(fieldsMap, jpaEntityType.getJavaType());
         }
 
         public void updateObject(JsonObject fieldsMap, Object entity) {

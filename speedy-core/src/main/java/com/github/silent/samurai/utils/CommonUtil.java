@@ -1,5 +1,7 @@
 package com.github.silent.samurai.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -56,5 +58,15 @@ public class CommonUtil {
             return null;
         }
         return matcher.group(group);
+    }
+
+    public static GsonBuilder gsonBuildr = new GsonBuilder();
+
+    static {
+        gsonBuildr.setDateFormat("yyyy-MM-dd hh:mm:ss.S");
+    }
+
+    public static Gson getGson() {
+        return gsonBuildr.create();
     }
 }
