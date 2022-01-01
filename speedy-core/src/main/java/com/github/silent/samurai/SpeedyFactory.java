@@ -24,9 +24,11 @@ import java.util.Set;
 
 public class SpeedyFactory {
 
+    Logger logger = LogManager.getLogger(SpeedyFactory.class);
+
     private final EntityManagerFactory entityManagerFactory;
     private final JpaMetaModel jpaMetaModel;
-    Logger logger = LogManager.getLogger(SpeedyFactory.class);
+
 
     public SpeedyFactory(EntityManagerFactory entityManagerFactory, JpaMetaModel jpaMetaModel) {
         this.entityManagerFactory = entityManagerFactory;

@@ -1,11 +1,15 @@
 package com.github.silent.samurai.metamodel;
 
+import com.github.silent.samurai.annotations.SpeedyCustomValidation;
+import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.security.util.FieldUtils;
 
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
@@ -43,8 +47,14 @@ public class JpaMetaModel {
                     if ((method.getName().startsWith("set")) && (method.getName().length() == (member.getName().length() + 3))) {
                         memberMetadata.setter = method;
                     }
-                    memberMetadata.field = member.getDeclaringClass().getDeclaredField(member.getName());
-                } catch (NoSuchFieldException e) {
+                    memberMetadata.field = FieldUtils.getField(member.getDeclaringClass(), member.getName());
+                    SpeedyCustomValidation annotation = AnnotationUtils.getAnnotation(memberMetadata.field, SpeedyCustomValidation.class);
+                    if (annotation != null) {
+                        memberMetadata.customValidation = annotation.value();
+                    }
+
+                    break;
+                } catch (IllegalStateException e) {
                     logger.fatal("Could not determine method: {} ", member, e);
                 }
             }
@@ -81,6 +91,11 @@ public class JpaMetaModel {
         public Method setter;
         public Field field;
         public boolean isId;
+        public Class<ISpeedyCustomValidation> customValidation;
+
+        public boolean isCustomValidationRequired() {
+            return customValidation != null;
+        }
 
         public Object getFieldValue(Object entityObject) throws IllegalAccessException, InvocationTargetException {
             return this.getter.invoke(entityObject);

@@ -27,7 +27,7 @@ public class SpeedyApiAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SpeedyFactory.class)
-    public SpeedyFactory resourceDeliveryFactory(JpaMetaModel jpaMetaModel) {
+    public SpeedyFactory speedyFactory(JpaMetaModel jpaMetaModel) {
         return new SpeedyFactory(entityManagerFactory, jpaMetaModel);
     }
 
