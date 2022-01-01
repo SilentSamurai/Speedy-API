@@ -30,7 +30,7 @@ public class PostRequestProcessor {
     }
 
     void processSave(Object entityInstance, JpaMetaModel.EntityMetadata entityMetadata) {
-        Set<ConstraintViolation<Object>> constraintViolations = validator.validate(entityInstance, entityMetadata.jpaEntityType.getJavaType());
+        Set<ConstraintViolation<Object>> constraintViolations = validator.validate(entityInstance);
         if (!constraintViolations.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             for (ConstraintViolation<Object> violation : constraintViolations) {
