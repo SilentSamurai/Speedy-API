@@ -1,5 +1,7 @@
 package com.github.silent.samurai;
 
+import com.github.silent.samurai.exceptions.BadRequestException;
+import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.metamodel.JpaMetaModel;
 import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.request.PostRequestProcessor;
@@ -72,13 +74,22 @@ public class SpeedyFactory {
 
     public void requestResource(HttpServletRequest request, HttpServletResponse response)
             throws IOException, InvocationTargetException, IllegalAccessException {
-        if (request.getMethod().equals(HttpMethod.GET.name())) {
-            processGetRequests(request, response);
-        } else if (request.getMethod().equals(HttpMethod.POST.name())) {
-            processPostRequests(request, response);
-        } else {
-            response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        try {
+            if (request.getMethod().equals(HttpMethod.GET.name())) {
+                processGetRequests(request, response);
+            } else if (request.getMethod().equals(HttpMethod.POST.name())) {
+                processPostRequests(request, response);
+            } else {
+                response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            }
+        } catch (BadRequestException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(e.getLocalizedMessage());
+        } catch (ResourceNotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write(e.getLocalizedMessage());
         }
+
 
     }
 

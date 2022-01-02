@@ -1,5 +1,7 @@
 package com.github.silent.samurai.request;
 
+import com.github.silent.samurai.exceptions.BadRequestException;
+import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.metamodel.JpaMetaModel;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -36,7 +38,7 @@ public class PostRequestProcessor {
             for (ConstraintViolation<Object> violation : constraintViolations) {
                 sb.append(violation.getMessage()).append(" | ");
             }
-            throw new RuntimeException(sb.toString());
+            throw new BadRequestException(sb.toString());
         }
 
         EntityTransaction transaction = entityManager.getTransaction();
@@ -59,7 +61,7 @@ public class PostRequestProcessor {
         for (Map.Entry<String, JsonElement> entities : asJsonObject.entrySet()) {
             JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
             if (entityMetadata == null) {
-                throw new RuntimeException("Entity Not Found " + entities.getKey());
+                throw new ResourceNotFoundException("Entity Not Found " + entities.getKey());
             }
 
             if (!entityMetadata.isPrimaryKeyComplete(entities.getValue().getAsJsonObject().keySet())) {
@@ -82,7 +84,7 @@ public class PostRequestProcessor {
         for (Map.Entry<String, JsonElement> entities : asJsonObject.entrySet()) {
             JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
             if (entityMetadata == null) {
-                throw new RuntimeException("Entity Not Found " + entities.getKey());
+                throw new ResourceNotFoundException("Entity Not Found " + entities.getKey());
             }
             Object entityInstance = entityMetadata.getObject(entities.getValue().getAsJsonObject());
             logger.info("update entity {}", entityInstance);
@@ -96,11 +98,11 @@ public class PostRequestProcessor {
         for (Map.Entry<String, JsonElement> entities : asJsonObject.entrySet()) {
             JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
             if (entityMetadata == null) {
-                throw new RuntimeException("Entity Not Found " + entities.getKey());
+                throw new ResourceNotFoundException("Entity Not Found " + entities.getKey());
             }
 
             if (!entityMetadata.isPrimaryKeyComplete(entities.getValue().getAsJsonObject().keySet())) {
-                throw new RuntimeException("Primary Key Incomplete ");
+                throw new BadRequestException("Primary Key Incomplete ");
             }
 
             Object pk = entityMetadata.getPrimaryKeyObject(entities.getValue().getAsJsonObject());

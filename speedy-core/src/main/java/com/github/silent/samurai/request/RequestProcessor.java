@@ -1,6 +1,7 @@
 package com.github.silent.samurai.request;
 
 import com.github.silent.samurai.controllers.SpeedyApiController;
+import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.metamodel.JpaMetaModel;
 import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.serializers.ApiAutomateJsonSerializer;
@@ -27,7 +28,7 @@ public class RequestProcessor {
         boolean isAllAttrPresent = false;
         JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(requestInfo.resourceType);
         if (entityMetadata == null) {
-            throw new RuntimeException("Entity Not Found " + requestInfo.resourceType);
+            throw new ResourceNotFoundException("Entity Not Found " + requestInfo.resourceType);
         }
         if (entityMetadata.isOnlyPrimaryKeyFields(requestInfo.filters.keySet())) {
             requestInfo.primaryKey = true;
