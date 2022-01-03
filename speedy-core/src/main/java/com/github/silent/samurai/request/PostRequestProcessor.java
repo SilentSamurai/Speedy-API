@@ -3,6 +3,7 @@ package com.github.silent.samurai.request;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.metamodel.JpaMetaModel;
+import com.github.silent.samurai.metamodel.ResourceMetadata;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +32,7 @@ public class PostRequestProcessor {
         this.validator = factory.getValidator();
     }
 
-    void processSave(Object entityInstance, JpaMetaModel.EntityMetadata entityMetadata) {
+    void processSave(Object entityInstance, ResourceMetadata entityMetadata) {
         Set<ConstraintViolation<Object>> constraintViolations = validator.validate(entityInstance);
         if (!constraintViolations.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -52,14 +53,14 @@ public class PostRequestProcessor {
             throw throwable;
         }
 
-        logger.info("{} saved {}", entityMetadata.name, entityInstance);
+        logger.info("{} saved {}", entityMetadata.getName(), entityInstance);
     }
 
 
     void processUpdate(JsonElement jsonElement) {
         JsonObject asJsonObject = jsonElement.getAsJsonObject();
         for (Map.Entry<String, JsonElement> entities : asJsonObject.entrySet()) {
-            JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
+            ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
             if (entityMetadata == null) {
                 throw new ResourceNotFoundException("Entity Not Found " + entities.getKey());
             }
@@ -69,7 +70,7 @@ public class PostRequestProcessor {
             }
 
             Object pk = entityMetadata.getPrimaryKeyObject(entities.getValue().getAsJsonObject());
-            Object entityInstance = entityManager.find(entityMetadata.jpaEntityType.getJavaType(), pk);
+            Object entityInstance = entityManager.find(entityMetadata.getJpaEntityType().getJavaType(), pk);
             entityMetadata.updateObject(entities.getValue().getAsJsonObject(), entityInstance);
 
             logger.info(" test {}", entityInstance);
@@ -82,7 +83,7 @@ public class PostRequestProcessor {
     void processCreate(JsonElement jsonElement) {
         JsonObject asJsonObject = jsonElement.getAsJsonObject();
         for (Map.Entry<String, JsonElement> entities : asJsonObject.entrySet()) {
-            JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
+            ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
             if (entityMetadata == null) {
                 throw new ResourceNotFoundException("Entity Not Found " + entities.getKey());
             }
@@ -96,7 +97,7 @@ public class PostRequestProcessor {
     void processDelete(JsonElement jsonElement) {
         JsonObject asJsonObject = jsonElement.getAsJsonObject();
         for (Map.Entry<String, JsonElement> entities : asJsonObject.entrySet()) {
-            JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
+            ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(entities.getKey());
             if (entityMetadata == null) {
                 throw new ResourceNotFoundException("Entity Not Found " + entities.getKey());
             }
@@ -106,7 +107,7 @@ public class PostRequestProcessor {
             }
 
             Object pk = entityMetadata.getPrimaryKeyObject(entities.getValue().getAsJsonObject());
-            Object entityInstance = entityManager.find(entityMetadata.jpaEntityType.getJavaType(), pk);
+            Object entityInstance = entityManager.find(entityMetadata.getJpaEntityType().getJavaType(), pk);
             entityManager.remove(entityInstance);
             logger.info("removed entity {}", entityInstance);
 

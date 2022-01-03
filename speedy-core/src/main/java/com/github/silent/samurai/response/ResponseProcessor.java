@@ -2,6 +2,7 @@ package com.github.silent.samurai.response;
 
 import com.github.silent.samurai.metamodel.JpaMetaModel;
 import com.github.silent.samurai.metamodel.RequestInfo;
+import com.github.silent.samurai.metamodel.ResourceMetadata;
 import com.github.silent.samurai.serializers.ApiAutomateJsonSerializer;
 import com.google.gson.JsonElement;
 
@@ -24,22 +25,22 @@ public class ResponseProcessor {
         this.jpaMetaModel = jpaMetaModel;
     }
 
-    public Attribute<?, ?> getJpaAttribute(JpaMetaModel.EntityMetadata entityMetadata, String fieldName) {
-        return entityMetadata.jpaEntityType.getAttribute(fieldName);
+    public Attribute<?, ?> getJpaAttribute(ResourceMetadata entityMetadata, String fieldName) {
+        return entityMetadata.getJpaEntityType().getAttribute(fieldName);
     }
 
-    public Object getPrimaryKeyObject(RequestInfo requestInfo, JpaMetaModel.EntityMetadata entityMetadata) {
+    public Object getPrimaryKeyObject(RequestInfo requestInfo, ResourceMetadata entityMetadata) {
         return entityMetadata.getPrimaryKeyObject(requestInfo.filters);
     }
 
     private Query getQuery(EntityManager entityManager, RequestInfo requestInfo) {
-        JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(requestInfo.resourceType);
+        ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(requestInfo.resourceType);
         if (entityMetadata == null) {
             throw new RuntimeException("Entity Not Found " + requestInfo.resourceType);
         }
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<?> cQuery = cb.createQuery(entityMetadata.jpaEntityType.getJavaType());
-        Root<?> rootObject = cQuery.from(entityMetadata.jpaEntityType.getJavaType());
+        CriteriaQuery<?> cQuery = cb.createQuery(entityMetadata.getJpaEntityType().getJavaType());
+        Root<?> rootObject = cQuery.from(entityMetadata.getJpaEntityType().getJavaType());
         Predicate[] predicates = null;
         if (requestInfo.filters != null && !requestInfo.filters.isEmpty()) {
             int count = 0;
@@ -63,9 +64,9 @@ public class ResponseProcessor {
             List<?> resultList = query.getResultList();
             jsonElement = apiAutomateJsonSerializer.formCollection(resultList, requestInfo.serializationType);
         } else {
-            JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(requestInfo.resourceType);
+            ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(requestInfo.resourceType);
             Object primaryKeyObject = this.getPrimaryKeyObject(requestInfo, entityMetadata);
-            Object resultEntity = entityManager.find(entityMetadata.jpaEntityType.getJavaType(), primaryKeyObject);
+            Object resultEntity = entityManager.find(entityMetadata.getJpaEntityType().getJavaType(), primaryKeyObject);
             jsonElement = apiAutomateJsonSerializer.fromObject(resultEntity, resultEntity.getClass(), requestInfo.serializationType);
         }
         return jsonElement;

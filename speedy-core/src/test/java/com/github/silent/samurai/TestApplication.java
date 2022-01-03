@@ -1,24 +1,19 @@
 package com.github.silent.samurai;
 
 import com.github.silent.samurai.metamodel.JpaMetaModel;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 
 import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
 
 @SpringBootApplication
-public class TestApplication {
+public class TestApplication extends SpringBootServletInitializer {
 
-    @Bean
-    public DataSource speedyFactory() {
-        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.url("jdbc:h2:mem:testdb");
-        dataSourceBuilder.username("sa");
-        dataSourceBuilder.password("password");
-        dataSourceBuilder.driverClassName("org.h2.Driver");
-        return dataSourceBuilder.build();
+    public static void main(String[] args) {
+        SpringApplication.run(TestApplication.class, args);
     }
 
     @Bean
@@ -29,5 +24,10 @@ public class TestApplication {
     @Bean
     public SpeedyFactory speedyFactory(EntityManagerFactory entityManagerFactory, JpaMetaModel jpaMetaModel) {
         return new SpeedyFactory(entityManagerFactory, jpaMetaModel);
+    }
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(TestApplication.class);
     }
 }

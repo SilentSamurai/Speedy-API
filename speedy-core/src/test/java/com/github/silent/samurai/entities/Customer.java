@@ -1,6 +1,8 @@
 package com.github.silent.samurai.entities;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.github.silent.samurai.annotations.SpeedyIgnore;
+import com.github.silent.samurai.enums.IgnoreType;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -42,6 +44,7 @@ public class Customer extends AbstractBaseEntity {
     @Column(name = "created_at")
     private Instant createdAt;
 
+    @SpeedyIgnore(IgnoreType.PERSIST)
     @Column(name = "created_by")
     private String createdBy;
 

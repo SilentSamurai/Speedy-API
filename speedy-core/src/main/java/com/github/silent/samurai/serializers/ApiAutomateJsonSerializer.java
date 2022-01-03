@@ -1,6 +1,8 @@
 package com.github.silent.samurai.serializers;
 
 import com.github.silent.samurai.metamodel.JpaMetaModel;
+import com.github.silent.samurai.metamodel.MemberMetadata;
+import com.github.silent.samurai.metamodel.ResourceMetadata;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -25,29 +27,29 @@ public class ApiAutomateJsonSerializer {
 
     public JsonObject fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException {
         JsonObject json = new JsonObject();
-        JpaMetaModel.EntityMetadata entityMetadata = jpaMetaModel.getEntityMetadata(clazz.getSimpleName());
+        ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(clazz.getSimpleName());
         Gson gson = CommonUtil.getGson();
         level++;
 
 
-        for (JpaMetaModel.MemberMetadata memberMetadata : entityMetadata.membersMetadata) {
+        for (MemberMetadata memberMetadata : entityMetadata.getMembersMetadata()) {
             Object value = memberMetadata.getFieldValue(entityObject);
-            if (memberMetadata.jpaAttribute.isAssociation()) {
+            if (memberMetadata.getJpaAttribute().isAssociation()) {
                 if (serializedType == SINGLE_ENTITY && level < 2) {
-                    if (memberMetadata.jpaAttribute.isCollection()) {
+                    if (memberMetadata.getJpaAttribute().isCollection()) {
                         JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                        json.add(memberMetadata.name, jsonArray);
+                        json.add(memberMetadata.getName(), jsonArray);
                     } else {
                         JsonObject jsonObject = fromObject(value, value.getClass(), serializedType);
-                        json.add(memberMetadata.name, jsonObject);
+                        json.add(memberMetadata.getName(), jsonObject);
                     }
                 }
-            } else if (memberMetadata.jpaAttribute.isCollection()) {
+            } else if (memberMetadata.getJpaAttribute().isCollection()) {
                 JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                json.add(memberMetadata.name, jsonArray);
+                json.add(memberMetadata.getName(), jsonArray);
             } else {
                 JsonElement jsonElement = gson.toJsonTree(value);
-                json.add(memberMetadata.name, jsonElement);
+                json.add(memberMetadata.getName(), jsonElement);
             }
         }
 
