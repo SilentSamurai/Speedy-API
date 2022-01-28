@@ -11,6 +11,6 @@ gpg --list-secret-keys souravbumbdas25@gmail.com
 gpg --import private.key
 
 
-mvn --no-transfer-progress --batch-mode clean deploy
+mvn --no-transfer-progress --batch-mode clean deploy -P=ossrh
 
 mvn -N versions:update-child-modules
