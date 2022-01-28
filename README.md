@@ -9,3 +9,8 @@ gpg --export -a "souravbumbdas25@gmail.com" > public.key
 gpg --export-secret-keys -a DA525CBBDB246AEEB31F973ACAB49069B091BC8F >private.key 
 gpg --list-secret-keys souravbumbdas25@gmail.com 
 gpg --import private.key
+
+
+mvn --no-transfer-progress --batch-mode clean deploy
+
+mvn -N versions:update-child-modules
