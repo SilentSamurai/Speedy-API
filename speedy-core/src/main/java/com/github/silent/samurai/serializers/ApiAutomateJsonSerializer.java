@@ -1,8 +1,11 @@
 package com.github.silent.samurai.serializers;
 
-import com.github.silent.samurai.metamodel.JpaMetaModel;
-import com.github.silent.samurai.metamodel.MemberMetadata;
-import com.github.silent.samurai.metamodel.ResourceMetadata;
+import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
+import com.github.silent.samurai.metamodel.JpaFieldMetadata;
+import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -17,39 +20,39 @@ public class ApiAutomateJsonSerializer {
     public static int SINGLE_ENTITY = 0;
     public static int MULTIPLE_ENTITY = 1;
 
-    private final JpaMetaModel jpaMetaModel;
+    private final MetaModelProcessor metaModelProcessor;
     private int level = 0;
 
-    public ApiAutomateJsonSerializer(JpaMetaModel jpaMetaModel) {
-        this.jpaMetaModel = jpaMetaModel;
+    public ApiAutomateJsonSerializer(MetaModelProcessor metaModelProcessor) {
+        this.metaModelProcessor = metaModelProcessor;
     }
 
 
     public JsonObject fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException {
         JsonObject json = new JsonObject();
-        ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(clazz.getSimpleName());
+        EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(clazz.getSimpleName());
         Gson gson = CommonUtil.getGson();
         level++;
 
 
-        for (MemberMetadata memberMetadata : entityMetadata.getMembersMetadata()) {
-            Object value = memberMetadata.getFieldValue(entityObject);
-            if (memberMetadata.getJpaAttribute().isAssociation()) {
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            Object value = fieldMetadata.extractFieldValue(entityObject);
+            if (fieldMetadata.isAssociation()) {
                 if (serializedType == SINGLE_ENTITY && level < 2) {
-                    if (memberMetadata.getJpaAttribute().isCollection()) {
+                    if (fieldMetadata.isCollection()) {
                         JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                        json.add(memberMetadata.getName(), jsonArray);
+                        json.add(fieldMetadata.getFieldName(), jsonArray);
                     } else {
                         JsonObject jsonObject = fromObject(value, value.getClass(), serializedType);
-                        json.add(memberMetadata.getName(), jsonObject);
+                        json.add(fieldMetadata.getFieldName(), jsonObject);
                     }
                 }
-            } else if (memberMetadata.getJpaAttribute().isCollection()) {
+            } else if (fieldMetadata.isCollection()) {
                 JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                json.add(memberMetadata.getName(), jsonArray);
+                json.add(fieldMetadata.getFieldName(), jsonArray);
             } else {
                 JsonElement jsonElement = gson.toJsonTree(value);
-                json.add(memberMetadata.getName(), jsonElement);
+                json.add(fieldMetadata.getFieldName(), jsonElement);
             }
         }
 

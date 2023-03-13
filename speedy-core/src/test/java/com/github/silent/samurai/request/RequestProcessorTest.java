@@ -3,7 +3,7 @@ package com.github.silent.samurai.request;
 import com.github.silent.samurai.SpeedyFactory;
 import com.github.silent.samurai.TestApplication;
 import com.github.silent.samurai.controllers.SpeedyApiController;
-import com.github.silent.samurai.metamodel.JpaMetaModel;
+import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
 import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.serializers.ApiAutomateJsonSerializer;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class RequestProcessorTest {
 
     @Autowired
-    JpaMetaModel jpaMetaModel;
+    JpaMetaModelProcessor jpaMetaModelProcessor;
 
     @Autowired
     SpeedyFactory speedyFactory;
@@ -34,7 +34,7 @@ class RequestProcessorTest {
 
     @BeforeEach
     void setUp() {
-        requestProcessor = new RequestProcessor(jpaMetaModel);
+        requestProcessor = new RequestProcessor(jpaMetaModelProcessor);
     }
 
     @Test

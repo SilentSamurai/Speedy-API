@@ -2,9 +2,10 @@ package com.github.silent.samurai.request;
 
 import com.github.silent.samurai.controllers.SpeedyApiController;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
-import com.github.silent.samurai.metamodel.JpaMetaModel;
+import com.github.silent.samurai.helpers.EntityMetadataHelper;
+import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.metamodel.RequestInfo;
-import com.github.silent.samurai.metamodel.ResourceMetadata;
 import com.github.silent.samurai.serializers.ApiAutomateJsonSerializer;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.base.Splitter;
@@ -19,19 +20,19 @@ import java.util.Map;
 
 public class RequestProcessor {
 
-    private final JpaMetaModel jpaMetaModel;
+    private final MetaModelProcessor metaModelProcessor;
 
-    public RequestProcessor(JpaMetaModel jpaMetaModel) {
-        this.jpaMetaModel = jpaMetaModel;
+    public RequestProcessor(MetaModelProcessor metaModelProcessor) {
+        this.metaModelProcessor = metaModelProcessor;
     }
 
     public boolean checkIfPrimaryKeyFilters(RequestInfo requestInfo) {
         boolean isAllAttrPresent = false;
-        ResourceMetadata entityMetadata = jpaMetaModel.getEntityMetadata(requestInfo.resourceType);
+        EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(requestInfo.resourceType);
         if (entityMetadata == null) {
             throw new ResourceNotFoundException("Entity Not Found " + requestInfo.resourceType);
         }
-        if (entityMetadata.isOnlyPrimaryKeyFields(requestInfo.filters.keySet())) {
+        if (EntityMetadataHelper.instance.isOnlyPrimaryKeyFields(entityMetadata, requestInfo.filters.keySet())) {
             requestInfo.primaryKey = true;
             requestInfo.serializationType = ApiAutomateJsonSerializer.SINGLE_ENTITY;
             return true;

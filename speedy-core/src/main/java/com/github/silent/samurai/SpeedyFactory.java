@@ -2,7 +2,7 @@ package com.github.silent.samurai;
 
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
-import com.github.silent.samurai.metamodel.JpaMetaModel;
+import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
 import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.request.PostRequestProcessor;
 import com.github.silent.samurai.request.RequestProcessor;
@@ -29,25 +29,25 @@ public class SpeedyFactory {
     Logger logger = LogManager.getLogger(SpeedyFactory.class);
 
     private final EntityManagerFactory entityManagerFactory;
-    private final JpaMetaModel jpaMetaModel;
+    private final JpaMetaModelProcessor jpaMetaModelProcessor;
 
 
-    public SpeedyFactory(EntityManagerFactory entityManagerFactory, JpaMetaModel jpaMetaModel) {
+    public SpeedyFactory(EntityManagerFactory entityManagerFactory, JpaMetaModelProcessor jpaMetaModelProcessor) {
         this.entityManagerFactory = entityManagerFactory;
-        this.jpaMetaModel = jpaMetaModel;
+        this.jpaMetaModelProcessor = jpaMetaModelProcessor;
         Set<EntityType<?>> entities = this.entityManagerFactory.getMetamodel().getEntities();
         for (EntityType<?> entityType : entities) {
-            this.jpaMetaModel.addEntity(entityType);
+            this.jpaMetaModelProcessor.addEntity(entityType);
             logger.info("registering resources {}", entityType.getName());
         }
     }
 
     public void processGetRequests(HttpServletRequest request, HttpServletResponse response)
             throws IOException, InvocationTargetException, IllegalAccessException {
-        RequestInfo requestInfo = new RequestProcessor(jpaMetaModel).process(request);
+        RequestInfo requestInfo = new RequestProcessor(jpaMetaModelProcessor).process(request);
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        JsonElement jsonElement = new ResponseProcessor(jpaMetaModel).process(requestInfo, entityManager);
+        JsonElement jsonElement = new ResponseProcessor(jpaMetaModelProcessor).process(requestInfo, entityManager);
 
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -65,7 +65,7 @@ public class SpeedyFactory {
         JsonElement jsonElement = gson.fromJson(request.getReader(), JsonElement.class);
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        new PostRequestProcessor(jpaMetaModel, entityManager).process(jsonElement);
+        new PostRequestProcessor(jpaMetaModelProcessor, entityManager).process(jsonElement);
 
 //        logger.info("test {}", jsonElement);
         entityManager.close();

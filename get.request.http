@@ -57,6 +57,13 @@ Content-Type: application/json
                 "B",
                 "C"
             ],
+            "having": [
+                {
+                    "operator": "equal",
+                    "field": "NAME",
+                    "value": "Piyush"
+                }
+            ],
             "orderBy": [
                 "A"
             ]

@@ -1,0 +1,43 @@
+{
+    "metamodels": {
+        "Category": {
+            "fields": {
+                "id": {
+                    "type": "String",
+                    "primaryKey": true
+                },
+                "name": {
+                    "type": "String",
+                    "primaryKey": false
+                }
+            }
+        },
+        "Product": {
+            "fields": {
+                "id": {
+                    "type": "String",
+                    "primaryKey": true,
+                    "optional": false,
+                    "length": 36
+                },
+                "name": {
+                    "type": "String",
+                    "primaryKey": false,
+                    "optional": false,
+                    "length": 256
+                },
+                "description": {
+                    "type": "String",
+                    "primaryKey": false,
+                    "optional": true,
+                    "length": 256
+                },
+                "category": {
+                    "type": "Category",
+                    "primaryKey": false,
+                    "optional": false
+                }
+            }
+        }
+    }
+}

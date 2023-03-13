@@ -1,6 +1,6 @@
 package com.github.silent.samurai;
 
-import com.github.silent.samurai.metamodel.JpaMetaModel;
+import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -17,13 +17,13 @@ public class TestApplication extends SpringBootServletInitializer {
     }
 
     @Bean
-    public JpaMetaModel jpaMetaModel() {
-        return new JpaMetaModel();
+    public JpaMetaModelProcessor jpaMetaModel() {
+        return new JpaMetaModelProcessor();
     }
 
     @Bean
-    public SpeedyFactory speedyFactory(EntityManagerFactory entityManagerFactory, JpaMetaModel jpaMetaModel) {
-        return new SpeedyFactory(entityManagerFactory, jpaMetaModel);
+    public SpeedyFactory speedyFactory(EntityManagerFactory entityManagerFactory, JpaMetaModelProcessor jpaMetaModelProcessor) {
+        return new SpeedyFactory(entityManagerFactory, jpaMetaModelProcessor);
     }
 
     @Override
