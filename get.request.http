@@ -1,0 +1,70 @@
+GET http://localhost:80/api/item?id=99
+Accept: application/json
+
+###
+GET http://localhost:80/api/item
+Content-Type: application/json
+
+{
+    "$batch": {
+        "Category": {
+            "aggregation": [
+                {
+                    "fn": "count",
+                    "args": "D",
+                    "alias": "CNT"
+                }
+            ],
+            "where": [
+                {
+                    "operator": "equal",
+                    "field": "NAME",
+                    "value": "Piyush"
+                },
+                {
+                    "operator": "in",
+                    "field": "ROLL",
+                    "value": [
+                        13
+                    ]
+                },
+                {
+                    "operator": "OR",
+                    "conditions": [
+                        {
+                            "operator": "equal",
+                            "field": "A",
+                            "value": 5
+                        },
+                        {
+                            "operator": "equal",
+                            "field": "A",
+                            "value": 10
+                        }
+                    ]
+                },
+                {
+                    "operator": "dateBetween",
+                    "field": "BIRTH",
+                    "value": {
+                        "start": "Date('')",
+                        "end": "Date('')"
+                    }
+                }
+            ],
+            "groupBy": [
+                "A",
+                "B",
+                "C"
+            ],
+            "orderBy": [
+                "A"
+            ]
+        }
+    }
+}
+
+
+
+
+

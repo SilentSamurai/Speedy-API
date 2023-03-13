@@ -1,6 +1,7 @@
 package com.github.silent.samurai;
 
 import com.github.silent.samurai.metamodel.JpaMetaModel;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ class SpeedyFactoryTest {
 
     @Test
     void requestResource() {
-        assertNotNull(jpaMetamodel.getEntityMetadata("Customer"));
+        Assertions.assertNotNull(jpaMetamodel.getEntityMetadata("Customer"));
 
     }
 }
