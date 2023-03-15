@@ -26,6 +26,18 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
     public static Logger logger = LogManager.getLogger(JpaMetaModelProcessor.class);
     private final Map<String, EntityMetadata> entityMap = new HashMap<>();
 
+    public static Field getField(Class<?> clazz, String fieldName) throws IllegalStateException {
+        try {
+            return clazz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException var3) {
+            if (clazz.getSuperclass() != null) {
+                return getField(clazz.getSuperclass(), fieldName);
+            } else {
+                throw new IllegalStateException("Could not locate field '" + fieldName + "' on class " + clazz);
+            }
+        }
+    }
+
     public static JpaFieldMetadata findMetadata(Attribute<?, ?> attribute, Class<?> entityClass) {
         Member member = attribute.getJavaMember();
         JpaFieldMetadata fieldMetadata = new JpaFieldMetadata();
@@ -49,12 +61,12 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                         fieldMetadata.setSetter(method);
                     }
 
-                    fieldMetadata.setField(entityClass.getField(method.getName()));
+                    fieldMetadata.setField(JpaMetaModelProcessor.getField(entityClass, member.getName()));
                     SpeedyCustomValidation annotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyCustomValidation.class);
                     if (annotation != null) {
                         fieldMetadata.setCustomValidation(annotation.value());
                     }
-                } catch (IllegalStateException | NoSuchFieldException e) {
+                } catch (IllegalStateException e) {
                     logger.fatal("Could not determine method: {} ", member, e);
                 }
             }
