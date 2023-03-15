@@ -10,11 +10,11 @@ import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.security.util.FieldUtils;
 
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -48,12 +48,13 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                     if ((method.getName().startsWith("set")) && (method.getName().length() == (member.getName().length() + 3))) {
                         fieldMetadata.setSetter(method);
                     }
-                    fieldMetadata.setField(FieldUtils.getField(member.getDeclaringClass(), member.getName()));
+
+                    fieldMetadata.setField(entityClass.getField(method.getName()));
                     SpeedyCustomValidation annotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyCustomValidation.class);
                     if (annotation != null) {
                         fieldMetadata.setCustomValidation(annotation.value());
                     }
-                } catch (IllegalStateException e) {
+                } catch (IllegalStateException | NoSuchFieldException e) {
                     logger.fatal("Could not determine method: {} ", member, e);
                 }
             }

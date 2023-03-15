@@ -1,4 +1,4 @@
-GET http://localhost:80/api/item?id=99
+GET http://localhost:8080/speedy/v1.0/Customer/
 Accept: application/json
 
 ###

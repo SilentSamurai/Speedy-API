@@ -1,7 +1,5 @@
 package com.github.silent.samurai;
 
-import com.github.silent.samurai.controllers.SpeedyApiController;
-import com.github.silent.samurai.entities.Category;
 import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,9 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.criteria.CriteriaBuilder;
 
-import static org.junit.Assert.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,6 +59,5 @@ class SpeedyFactoryTest {
                 .andExpect(status().isOk())
                 .andReturn();
         logger.info(mvcResult.getResponse().getContentAsString());
-
     }
 }
