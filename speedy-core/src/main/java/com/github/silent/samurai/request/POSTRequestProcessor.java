@@ -19,14 +19,14 @@ import javax.validation.ValidatorFactory;
 import java.util.Map;
 import java.util.Set;
 
-public class PostRequestProcessor {
+public class POSTRequestProcessor {
 
     private final MetaModelProcessor metaModelProcessor;
     private final EntityManager entityManager;
     private final Validator validator;
-    Logger logger = LogManager.getLogger(PostRequestProcessor.class);
+    Logger logger = LogManager.getLogger(POSTRequestProcessor.class);
 
-    public PostRequestProcessor(MetaModelProcessor metaModelProcessor, EntityManager entityManager) {
+    public POSTRequestProcessor(MetaModelProcessor metaModelProcessor, EntityManager entityManager) {
         this.metaModelProcessor = metaModelProcessor;
         this.entityManager = entityManager;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();

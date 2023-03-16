@@ -4,8 +4,8 @@ import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
 import com.github.silent.samurai.metamodel.RequestInfo;
-import com.github.silent.samurai.request.PostRequestProcessor;
-import com.github.silent.samurai.request.RequestProcessor;
+import com.github.silent.samurai.request.POSTRequestProcessor;
+import com.github.silent.samurai.request.GETRequestProcessor;
 import com.github.silent.samurai.response.ResponseProcessor;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
@@ -42,9 +42,9 @@ public class SpeedyFactory {
         }
     }
 
-    public void processGetRequests(HttpServletRequest request, HttpServletResponse response)
+    public void processGETRequests(HttpServletRequest request, HttpServletResponse response)
             throws IOException, InvocationTargetException, IllegalAccessException {
-        RequestInfo requestInfo = new RequestProcessor(jpaMetaModelProcessor).process(request);
+        RequestInfo requestInfo = new GETRequestProcessor(jpaMetaModelProcessor).process(request);
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         JsonElement jsonElement = new ResponseProcessor(jpaMetaModelProcessor).process(requestInfo, entityManager);
@@ -59,13 +59,13 @@ public class SpeedyFactory {
         entityManager.close();
     }
 
-    public void processPostRequests(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void processPOSTRequests(HttpServletRequest request, HttpServletResponse response) throws IOException {
 //        String body = CharStreams.toString(request.getReader());
         Gson gson = CommonUtil.getGson();
         JsonElement jsonElement = gson.fromJson(request.getReader(), JsonElement.class);
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
-        new PostRequestProcessor(jpaMetaModelProcessor, entityManager).process(jsonElement);
+        new POSTRequestProcessor(jpaMetaModelProcessor, entityManager).process(jsonElement);
 
 //        logger.info("test {}", jsonElement);
         entityManager.close();
@@ -76,9 +76,9 @@ public class SpeedyFactory {
             throws IOException, InvocationTargetException, IllegalAccessException {
         try {
             if (request.getMethod().equals(HttpMethod.GET.name())) {
-                processGetRequests(request, response);
+                processGETRequests(request, response);
             } else if (request.getMethod().equals(HttpMethod.POST.name())) {
-                processPostRequests(request, response);
+                processPOSTRequests(request, response);
             } else {
                 response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             }

@@ -9,20 +9,25 @@ import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.serializers.ApiAutomateJsonSerializer;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.base.Splitter;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RequestProcessor {
+public class GETRequestProcessor {
 
     private final MetaModelProcessor metaModelProcessor;
 
-    public RequestProcessor(MetaModelProcessor metaModelProcessor) {
+    public GETRequestProcessor(MetaModelProcessor metaModelProcessor) {
         this.metaModelProcessor = metaModelProcessor;
     }
 
@@ -86,7 +91,7 @@ public class RequestProcessor {
                 requestInfo.secondaryResourceType = resourceSplits.get(1);
             }
         }
-
+        requestInfo.queryParams = UriComponentsBuilder.fromUriString(request.getRequestURI()).build().getQueryParams();
         return requestInfo;
     }
 
