@@ -1,4 +1,4 @@
-package com.github.silent.samurai.request;
+package com.github.silent.samurai.parser;
 
 import com.github.silent.samurai.controllers.SpeedyApiController;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
@@ -9,29 +9,25 @@ import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.serializers.ApiAutomateJsonSerializer;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.base.Splitter;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GETRequestProcessor {
+public class GETRequestParser {
 
     private final MetaModelProcessor metaModelProcessor;
 
-    public GETRequestProcessor(MetaModelProcessor metaModelProcessor) {
+    public GETRequestParser(MetaModelProcessor metaModelProcessor) {
         this.metaModelProcessor = metaModelProcessor;
     }
 
-    public boolean checkIfPrimaryKeyFilters(RequestInfo requestInfo) {
+    private boolean checkIfPrimaryKeyFilters(RequestInfo requestInfo) {
         boolean isAllAttrPresent = false;
         EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(requestInfo.resourceType);
         if (entityMetadata == null) {
@@ -45,7 +41,7 @@ public class GETRequestProcessor {
         return false;
     }
 
-    public Map<String, String> parseParams(String pkString) {
+    private Map<String, String> parseParams(String pkString) {
         Map<String, String> pkMap = new HashMap<>();
         if (pkString.contains("=")) {
             Map<String, String> paramMap = Splitter.on(",")
@@ -53,16 +49,16 @@ public class GETRequestProcessor {
                     .withKeyValueSeparator("=")
                     .split(pkString);
             for (Map.Entry<String, String> param : paramMap.entrySet()) {
-                String val = param.getValue().replaceAll("/\"'/g", "");
+                String val = param.getValue().replaceAll("['\"]", "");
                 pkMap.put(param.getKey(), val);
             }
         } else {
-            pkMap.put("id", pkString.replaceAll("/\"'/g", ""));
+            pkMap.put("id", pkString.replaceAll("['\"]", ""));
         }
         return pkMap;
     }
 
-    public void processResourceAndFilters(String resource, RequestInfo requestInfo) {
+    private void processResourceAndFilters(String resource, RequestInfo requestInfo) {
         String filterParams = CommonUtil.findRegexGroup("[A-Za-z0-9_-]+\\((.*)\\)", resource, 1);
         requestInfo.resourceType = resource;
         requestInfo.serializationType = ApiAutomateJsonSerializer.MULTIPLE_ENTITY;
@@ -77,7 +73,7 @@ public class GETRequestProcessor {
         }
     }
 
-    public RequestInfo process(HttpServletRequest request) throws UnsupportedEncodingException {
+    public RequestInfo parse(HttpServletRequest request) throws UnsupportedEncodingException {
         String requestURI = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8.name());
         requestURI = requestURI.replaceAll(SpeedyApiController.URI + "/", "");
         RequestInfo requestInfo = new RequestInfo();

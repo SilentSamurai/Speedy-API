@@ -5,7 +5,7 @@ import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
 import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.request.POSTRequestProcessor;
-import com.github.silent.samurai.request.GETRequestProcessor;
+import com.github.silent.samurai.parser.GETRequestParser;
 import com.github.silent.samurai.response.ResponseProcessor;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
@@ -44,7 +44,7 @@ public class SpeedyFactory {
 
     public void processGETRequests(HttpServletRequest request, HttpServletResponse response)
             throws IOException, InvocationTargetException, IllegalAccessException {
-        RequestInfo requestInfo = new GETRequestProcessor(jpaMetaModelProcessor).process(request);
+        RequestInfo requestInfo = new GETRequestParser(jpaMetaModelProcessor).parse(request);
         EntityManager entityManager = entityManagerFactory.createEntityManager();
 
         JsonElement jsonElement = new ResponseProcessor(jpaMetaModelProcessor).process(requestInfo, entityManager);
