@@ -24,14 +24,14 @@ public class EntityMetadataHelper {
 
     public boolean isOnlyPrimaryKeyFields(EntityMetadata entityMetadata, Set<String> fields) {
         Sets.SetView<String> difference = Sets.difference(fields, entityMetadata.getKeyFields());
-        return difference.isEmpty();
+        return difference.isEmpty() && !fields.isEmpty();
     }
 
     public Object getPrimaryKey(EntityMetadata entityMetadata, RequestInfo requestInfo) {
         if (Objects.equals(entityMetadata.getKeyClass(), String.class)) {
-            return requestInfo.filters.get("id");
+            return requestInfo.getKeywords().get("id");
         }
-        return CommonUtil.mapModel(requestInfo.filters, entityMetadata.getKeyClass());
+        return CommonUtil.mapModel(requestInfo.getKeywords(), entityMetadata.getKeyClass());
     }
 
     public Object getPrimaryKey(EntityMetadata entityMetadata, JsonObject fieldsMap) {

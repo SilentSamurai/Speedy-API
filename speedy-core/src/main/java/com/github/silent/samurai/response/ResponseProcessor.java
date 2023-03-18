@@ -3,8 +3,6 @@ package com.github.silent.samurai.response;
 import com.github.silent.samurai.helpers.EntityMetadataHelper;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.metamodel.JpaEntityMetadata;
-import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
 import com.github.silent.samurai.metamodel.RequestInfo;
 import com.github.silent.samurai.serializers.ApiAutomateJsonSerializer;
 import com.google.gson.JsonElement;
@@ -32,19 +30,19 @@ public class ResponseProcessor {
     }
 
     private Query getQuery(EntityManager entityManager, RequestInfo requestInfo) {
-        EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(requestInfo.resourceType);
+        EntityMetadata entityMetadata = requestInfo.getResourceMetadata();
         if (entityMetadata == null) {
-            throw new RuntimeException("Entity Not Found " + requestInfo.resourceType);
+            throw new RuntimeException("Entity Not Found " + requestInfo.getRequest().getResource());
         }
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<?> cQuery = cb.createQuery(entityMetadata.getEntityClass());
         Root<?> rootObject = cQuery.from(entityMetadata.getEntityClass());
         Predicate[] predicates = null;
-        if (requestInfo.filters != null && !requestInfo.filters.isEmpty()) {
+        if (!requestInfo.getKeywords().isEmpty()) {
             int count = 0;
-            predicates = new Predicate[requestInfo.filters.size()];
-            for (Map.Entry<String, String> entry : requestInfo.filters.entrySet()) {
+            predicates = new Predicate[requestInfo.getKeywords().size()];
+            for (Map.Entry<String, String> entry : requestInfo.getKeywords().entrySet()) {
                 Predicate equal = cb.equal(rootObject.get(entry.getKey()), entry.getValue());
                 predicates[count++] = equal;
             }
@@ -58,15 +56,15 @@ public class ResponseProcessor {
     public JsonElement process(RequestInfo requestInfo, EntityManager entityManager) throws InvocationTargetException, IllegalAccessException {
         JsonElement jsonElement;
         ApiAutomateJsonSerializer apiAutomateJsonSerializer = new ApiAutomateJsonSerializer(metaModelProcessor);
-        if (requestInfo.serializationType == ApiAutomateJsonSerializer.MULTIPLE_ENTITY) {
+        if (requestInfo.getSerializationType() == ApiAutomateJsonSerializer.MULTIPLE_ENTITY) {
             Query query = getQuery(entityManager, requestInfo);
             List<?> resultList = query.getResultList();
-            jsonElement = apiAutomateJsonSerializer.formCollection(resultList, requestInfo.serializationType);
+            jsonElement = apiAutomateJsonSerializer.formCollection(resultList, requestInfo.getSerializationType());
         } else {
-            EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(requestInfo.resourceType);
+            EntityMetadata entityMetadata = requestInfo.getResourceMetadata();
             Object primaryKeyObject = this.getPrimaryKeyObject(requestInfo, entityMetadata);
             Object resultEntity = entityManager.find(entityMetadata.getEntityClass(), primaryKeyObject);
-            jsonElement = apiAutomateJsonSerializer.fromObject(resultEntity, resultEntity.getClass(), requestInfo.serializationType);
+            jsonElement = apiAutomateJsonSerializer.fromObject(resultEntity, resultEntity.getClass(), requestInfo.getSerializationType());
         }
         return jsonElement;
     }

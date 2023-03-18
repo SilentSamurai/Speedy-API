@@ -1,11 +1,13 @@
 package com.github.silent.samurai.utils;
 
+import antlr.Token;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -68,5 +70,20 @@ public class CommonUtil {
 
     public static Gson getGson() {
         return gsonBuildr.create();
+    }
+
+    public static List<String> inQuotesSplitter(String input, String regex) {
+        List<String> tokens = new ArrayList<String>();
+        int start = 0;
+        boolean inQuotes = false;
+        for (int current = 0; current < input.length(); current++) {
+            if (input.charAt(current) == '\"') inQuotes = !inQuotes; // toggle state
+            else if (input.charAt(current) == ',' && !inQuotes) {
+                tokens.add(input.substring(start, current));
+                start = current + 1;
+            }
+        }
+        tokens.add(input.substring(start));
+        return tokens;
     }
 }

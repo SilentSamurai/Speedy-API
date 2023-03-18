@@ -21,4 +21,6 @@ mvn --no-transfer-progress --batch-mode clean deploy -P=ossrh
 
 mvn -N versions:update-child-modules
 
+java -jar antlr-4.9.3-complete.jar speedy.g4
+
 ```

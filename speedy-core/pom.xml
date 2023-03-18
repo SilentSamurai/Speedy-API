@@ -19,5 +19,13 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>${parent.groupId}</groupId>
+			<artifactId>antlr-parser</artifactId>
+			<version>${parent.version}</version>
+		</dependency>
+	</dependencies>
+
 
 </project>

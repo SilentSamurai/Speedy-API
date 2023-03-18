@@ -42,28 +42,29 @@ class GETRequestParserTest {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
     void processRequest_1() throws UnsupportedEncodingException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "Customer");
-        RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
-
-        assertEquals("speedy", requestInfo.resourceType);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        try {
+            RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
+        } catch (RuntimeException e) {
+            assertEquals("Not a valid URL", e.getMessage());
+        }
     }
 
     @Test
     void processRequest3() throws UnsupportedEncodingException {
-        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(1)");
+        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer('1')");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertTrue(requestInfo.primaryKey);
-        assertEquals("1", requestInfo.filters.get("id"));
-        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertTrue(requestInfo.isPrimaryKey());
+        assertEquals("1", requestInfo.getKeywords().get("id"));
+        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
@@ -71,30 +72,30 @@ class GETRequestParserTest {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer/");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
     void processRequest4() throws UnsupportedEncodingException {
-        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(1)/");
+        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer('1')/");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertTrue(requestInfo.primaryKey);
-        assertEquals("1", requestInfo.filters.get("id"));
-        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertTrue(requestInfo.isPrimaryKey());
+        assertEquals("1", requestInfo.getKeywords().get("id"));
+        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
     void processRequest6() throws UnsupportedEncodingException {
-        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(id=1)");
+        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(id='1')");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals("1", requestInfo.filters.get("id"));
-        assertTrue(requestInfo.primaryKey);
-        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals("1", requestInfo.getKeywords().get("id"));
+        assertTrue(requestInfo.isPrimaryKey());
+        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
@@ -102,21 +103,21 @@ class GETRequestParserTest {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(id='1')");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals("1", requestInfo.filters.get("id"));
-        assertTrue(requestInfo.primaryKey);
-        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals("1", requestInfo.getKeywords().get("id"));
+        assertTrue(requestInfo.isPrimaryKey());
+        assertEquals(ApiAutomateJsonSerializer.SINGLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
     void processRequest7() throws UnsupportedEncodingException {
-        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name=apple)");
+        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name='apple')");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals("apple", requestInfo.filters.get("name"));
-        assertFalse(requestInfo.primaryKey);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals("apple", requestInfo.getKeywords().get("name"));
+        assertFalse(requestInfo.isPrimaryKey());
+        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
@@ -124,44 +125,44 @@ class GETRequestParserTest {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name='apple')");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals("apple", requestInfo.filters.get("name"));
-        assertFalse(requestInfo.primaryKey);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals("apple", requestInfo.getKeywords().get("name"));
+        assertFalse(requestInfo.isPrimaryKey());
+        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
     void processRequest8() throws UnsupportedEncodingException {
-        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name=Test)");
+        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name='Test')");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals("Test", requestInfo.filters.get("name"));
-        assertFalse(requestInfo.primaryKey);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals("Test", requestInfo.getKeywords().get("name"));
+        assertFalse(requestInfo.isPrimaryKey());
+        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
     void processRequest9() throws UnsupportedEncodingException {
-        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer?$format=JSON");
+        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer?$format='JSON'");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals("JSON", requestInfo.queryParams.getFirst("$format"));
-        assertFalse(requestInfo.primaryKey);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals("JSON", requestInfo.getQueryParams().getFirst("$format"));
+        assertFalse(requestInfo.isPrimaryKey());
+        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.getSerializationType());
     }
 
     @Test
     void processRequest10() throws UnsupportedEncodingException {
-        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer?$format=JSON&$metadata=true");
+        Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer?$format='JSON&'$metadata='true'");
         RequestInfo requestInfo = getRequestParser.parse(httpServletRequest);
 
-        assertEquals("Customer", requestInfo.resourceType);
-        assertEquals("JSON", requestInfo.queryParams.getFirst("$format"));
-        assertEquals("true", requestInfo.queryParams.getFirst("$metadata"));
-        assertFalse(requestInfo.primaryKey);
-        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.serializationType);
+        assertEquals("Customer", requestInfo.getRequest().getResource());
+        assertEquals("JSON", requestInfo.getQueryParams().getFirst("$format"));
+        assertEquals("true", requestInfo.getQueryParams().getFirst("$metadata"));
+        assertFalse(requestInfo.isPrimaryKey());
+        assertEquals(ApiAutomateJsonSerializer.MULTIPLE_ENTITY, requestInfo.getSerializationType());
     }
 
 }

@@ -29,6 +29,7 @@
 		<module>speedy-core</module>
 		<module>spring-boot-starter-speedy-api</module>
 		<module>speed-test-app</module>
+		<module>antlr-parser</module>
 	</modules>
 
 	<developers>
