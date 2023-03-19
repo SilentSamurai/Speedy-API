@@ -30,6 +30,8 @@
 		<module>spring-boot-starter-speedy-api</module>
 		<module>speed-test-app</module>
 		<module>antlr-parser</module>
+		<module>speedy-commons</module>
+		<module>speedy-jpa-impl</module>
 	</modules>
 
 	<developers>

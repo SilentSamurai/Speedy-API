@@ -1,6 +1,5 @@
 package com.github.silent.samurai.utils;
 
-import antlr.Token;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.modelmapper.Conditions;

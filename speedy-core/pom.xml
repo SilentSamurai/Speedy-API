@@ -25,6 +25,11 @@
 			<artifactId>antlr-parser</artifactId>
 			<version>${parent.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>${parent.groupId}</groupId>
+			<artifactId>speedy-commons</artifactId>
+			<version>${parent.version}</version>
+		</dependency>
 	</dependencies>
 
 

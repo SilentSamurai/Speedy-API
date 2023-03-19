@@ -3,7 +3,7 @@ package com.github.silent.samurai.helpers;
 import com.github.silent.samurai.enums.IgnoreType;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
-import com.github.silent.samurai.metamodel.RequestInfo;
+import com.github.silent.samurai.request.get.GETRequestContext;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
@@ -17,21 +17,19 @@ public class EntityMetadataHelper {
     public static EntityMetadataHelper instance = new EntityMetadataHelper();
 
     public boolean isPrimaryKeyComplete(EntityMetadata entityMetadata, Set<String> fields) {
-        // returns fields present in idFields and not in fields
-        Sets.SetView<String> difference = Sets.difference(entityMetadata.getKeyFields(), fields);
-        return difference.isEmpty();
+        return hasOnlyPrimaryKeyFields(entityMetadata, fields);
     }
 
-    public boolean isOnlyPrimaryKeyFields(EntityMetadata entityMetadata, Set<String> fields) {
+    public boolean hasOnlyPrimaryKeyFields(EntityMetadata entityMetadata, Set<String> fields) {
         Sets.SetView<String> difference = Sets.difference(fields, entityMetadata.getKeyFields());
         return difference.isEmpty() && !fields.isEmpty();
     }
 
-    public Object getPrimaryKey(EntityMetadata entityMetadata, RequestInfo requestInfo) {
+    public Object getPrimaryKey(EntityMetadata entityMetadata, GETRequestContext GETRequestContext) {
         if (Objects.equals(entityMetadata.getKeyClass(), String.class)) {
-            return requestInfo.getKeywords().get("id");
+            return GETRequestContext.getKeywords().get("id");
         }
-        return CommonUtil.mapModel(requestInfo.getKeywords(), entityMetadata.getKeyClass());
+        return CommonUtil.mapModel(GETRequestContext.getKeywords(), entityMetadata.getKeyClass());
     }
 
     public Object getPrimaryKey(EntityMetadata entityMetadata, JsonObject fieldsMap) {

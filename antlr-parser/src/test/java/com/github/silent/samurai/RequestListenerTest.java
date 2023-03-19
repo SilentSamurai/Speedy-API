@@ -2,7 +2,6 @@ package com.github.silent.samurai;
 
 
 import com.github.silent.samurai.utils.StringUtils;
-import com.github.silent.samurai.utils.TreeUtils;
 import com.google.gson.Gson;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -12,9 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +42,7 @@ class RequestListenerTest {
     @Disabled
     @Test
     void testSingle() {
-        String input = "/Customer(id='1'&name='jolly')?happy='holi'";
+        String input = "/Customer?happy='holi'&metadata='hpo'";
         Request request = parse(input);
         logger.info("request {}", new Gson().toJson(request));
 

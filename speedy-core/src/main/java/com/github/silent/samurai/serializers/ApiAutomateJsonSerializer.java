@@ -2,10 +2,8 @@ package com.github.silent.samurai.serializers;
 
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.metamodel.JpaMetaModelProcessor;
-import com.github.silent.samurai.metamodel.JpaFieldMetadata;
-import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -15,7 +13,7 @@ import com.google.gson.JsonObject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
-public class ApiAutomateJsonSerializer {
+public class ApiAutomateJsonSerializer implements IResponseSerializer {
 
     public static int SINGLE_ENTITY = 0;
     public static int MULTIPLE_ENTITY = 1;
