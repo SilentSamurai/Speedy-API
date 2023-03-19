@@ -17,14 +17,11 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:8080/speedy/v1.0/Category(id='1')/
-
-###
 DELETE http://localhost:8080/speedy/v1.0/Category/
 Content-Type: application/json
 
 [
     {
-        "id": "abcd"
+        "id": "1"
     }
 ]

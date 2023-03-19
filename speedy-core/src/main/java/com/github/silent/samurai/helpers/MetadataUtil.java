@@ -28,7 +28,7 @@ public class MetadataUtil {
 
     public static Object getPrimaryKey(EntityMetadata entityMetadata, Map<String, String> fieldMap) throws Exception {
         if (TypeUtils.isPrimaryType(entityMetadata.getKeyClass())) {
-            return MapUtils.findAnyValueInMap(fieldMap);
+            return MapUtils.findAnyValueInMap(fieldMap, entityMetadata.getKeyClass());
         }
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
         for (String keyField : entityMetadata.getKeyFields()) {

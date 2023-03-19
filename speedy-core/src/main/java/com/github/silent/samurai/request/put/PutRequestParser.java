@@ -29,12 +29,14 @@ public class PutRequestParser {
         Request request = antlrParser.parse();
         String resource = request.getResource();
         Map<String, String> keyFields = request.getKeywords();
+        EntityMetadata entityMetadata = context.getMetaModelProcessor().findEntityMetadata(resource);
+        context.setResource(resource);
+        context.setEntityMetadata(entityMetadata);
 
         Gson gson = CommonUtil.getGson();
         JsonElement jsonElement = gson.fromJson(context.getHttpServletRequest().getReader(), JsonElement.class);
         JsonObject resourceFields = jsonElement.getAsJsonObject();
 
-        EntityMetadata entityMetadata = context.getMetaModelProcessor().findEntityMetadata(resource);
         if (!MetadataUtil.isPrimaryKeyComplete(entityMetadata, keyFields.keySet())) {
             throw new BadRequestException("Primary Key Incomplete.");
         }

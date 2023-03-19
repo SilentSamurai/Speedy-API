@@ -8,12 +8,15 @@ import java.util.Optional;
 
 public class MapUtils {
 
-    public static <K, V> V findAnyValueInMap(Map<K, V> map) {
-        Optional<V> any = map.values().stream().findAny();
-        return any.orElse(null);
+    public static Object findAnyValueInMap(Map<String, String> map, Class<?> keyClass) {
+        Optional<String> any = map.values().stream().findAny();
+        if (any.isPresent()) {
+            return CommonUtil.stringToType(any.get(), keyClass);
+        }
+        return null;
     }
 
-    public static <V> V findAnyValueInJsonObject(JsonObject jsonObject, Class<V> type) {
+    public static Object findAnyValueInJsonObject(JsonObject jsonObject, Class<?> type) {
         Optional<Map.Entry<String, JsonElement>> any = jsonObject.entrySet().stream().findAny();
         if (any.isPresent()) {
             return CommonUtil.getGson().fromJson(any.get().getValue().getAsJsonObject(), type);
