@@ -6,16 +6,23 @@ import java.lang.reflect.InvocationTargetException;
 
 public interface FieldMetadata {
 
-    Object extractFieldValue(Object extity) throws IllegalAccessException, InvocationTargetException;
+    Object getClassFieldValue(Object entity);
 
     boolean isAssociation();
 
     boolean isCollection();
 
-    String getFieldName();
+    String getClassFieldName();
+
+    String getDbColumnName();
+
+    String getOutputPropertyName();
 
     boolean isKeyField();
 
     IgnoreType getIgnoreType();
 
+    Class<?> getFieldType();
+
+    boolean updateClassFieldWithValue(Object entity, Object value);
 }

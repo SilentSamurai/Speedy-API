@@ -7,6 +7,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 public class AntlrParser {
 
     Logger logger = LogManager.getLogger(AntlrParser.class);
@@ -17,8 +21,9 @@ public class AntlrParser {
         this.url = url;
     }
 
-    public Request parse() {
-        String input = StringUtils.removeSpaces(url);
+    public Request parse() throws UnsupportedEncodingException {
+        String input = URLDecoder.decode(url, StandardCharsets.UTF_8.name());
+        input = StringUtils.removeSpaces(input);
         logger.info("input parsed {}", input);
         SpeedyLexer java8Lexer = new SpeedyLexer(CharStreams.fromString(input));
 

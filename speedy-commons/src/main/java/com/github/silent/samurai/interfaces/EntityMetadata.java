@@ -20,4 +20,8 @@ public interface EntityMetadata {
 
     Set<String> getKeyFields();
 
+    Object createNewEntityInstance() throws Exception;
+
+    Object createNewKeyInstance() throws Exception;
+
 }

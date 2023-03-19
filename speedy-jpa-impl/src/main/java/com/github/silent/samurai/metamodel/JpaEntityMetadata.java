@@ -4,6 +4,9 @@ import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import lombok.Data;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.ReflectionUtils;
 
 import javax.persistence.metamodel.EntityType;
 import java.util.*;
@@ -35,5 +38,15 @@ public class JpaEntityMetadata implements EntityMetadata {
 
     public Set<FieldMetadata> getAllFields() {
         return allFields;
+    }
+
+    @Override
+    public Object createNewEntityInstance() throws Exception {
+        return entityClass.getConstructor().newInstance();
+    }
+
+    @Override
+    public Object createNewKeyInstance() throws Exception {
+        return keyClass.getConstructor().newInstance();
     }
 }

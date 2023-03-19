@@ -1,5 +1,6 @@
 package com.github.silent.samurai;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.annotations.SpeedyCustomValidation;
 import com.github.silent.samurai.annotations.SpeedyIgnore;
 import com.github.silent.samurai.enums.IgnoreType;
@@ -12,8 +13,8 @@ import com.github.silent.samurai.metamodel.JpaFieldMetadata;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.stereotype.Component;
 
+import javax.persistence.Column;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
@@ -51,12 +52,12 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         }
     }
 
-    public static JpaFieldMetadata findMetadata(Attribute<?, ?> attribute, Class<?> entityClass) {
+    public static JpaFieldMetadata findFieldMetadata(Attribute<?, ?> attribute, Class<?> entityClass) {
         Member member = attribute.getJavaMember();
         JpaFieldMetadata fieldMetadata = new JpaFieldMetadata();
         fieldMetadata.setJpaAttribute(attribute);
-        fieldMetadata.setFieldName(member.getName());
-        fieldMetadata.setFieldClass(attribute.getJavaType());
+        fieldMetadata.setClassFieldName(member.getName());
+        fieldMetadata.setFieldType(attribute.getJavaType());
         if (attribute instanceof SingularAttribute) {
             fieldMetadata.setId(((SingularAttribute<?, ?>) attribute).isId());
         } else {
@@ -79,6 +80,18 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                     if (annotation != null) {
                         fieldMetadata.setCustomValidation(annotation.value());
                     }
+
+                    JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JsonProperty.class);
+                    fieldMetadata.setOutputPropertyName(fieldMetadata.getClassFieldName());
+                    if (propertyAnnotation != null) {
+                        fieldMetadata.setOutputPropertyName(propertyAnnotation.value());
+                    }
+
+                    Column columnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Column.class);
+                    if (columnAnnotation != null) {
+                        fieldMetadata.setDbColumnName(columnAnnotation.name());
+                    }
+
                 } catch (IllegalStateException e) {
                     logger.fatal("Could not determine method: {} ", member, e);
                 }
@@ -94,7 +107,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         entityMetadata.setEntityClass(entityType.getJavaType());
         entityMetadata.setKeyClass(entityType.getIdType().getJavaType());
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
-            JpaFieldMetadata memberMetadata = findMetadata(attribute, entityType.getJavaType());
+            JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType());
             SpeedyIgnore annotation = AnnotationUtils.getAnnotation(memberMetadata.getField(), SpeedyIgnore.class);
             if (annotation != null) {
                 if (annotation.value() == IgnoreType.ALL) {

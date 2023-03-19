@@ -14,7 +14,9 @@ import java.lang.reflect.Method;
 @Data
 public class JpaFieldMetadata implements FieldMetadata {
 
-    private String fieldName;
+    private String dbColumnName;
+    private String outputPropertyName;
+    private String classFieldName;
     private Method getter;
     private Method setter;
     private Field field;
@@ -22,7 +24,7 @@ public class JpaFieldMetadata implements FieldMetadata {
     private boolean isId;
     private Class<ISpeedyCustomValidation> customValidation;
     private IgnoreType ignoreType = null;
-    private Class<?> fieldClass;
+    private Class<?> fieldType;
 
     public boolean isAssociation() {
         return jpaAttribute.isAssociation();
@@ -38,8 +40,22 @@ public class JpaFieldMetadata implements FieldMetadata {
     }
 
     @Override
-    public Object extractFieldValue(Object entityObject) throws IllegalAccessException, InvocationTargetException {
-        return this.getter.invoke(entityObject);
+    public boolean updateClassFieldWithValue(Object entity, Object value) {
+        try {
+            this.setter.invoke(entity, value);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public Object getClassFieldValue(Object entityObject) {
+        try {
+            return this.getter.invoke(entityObject);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 

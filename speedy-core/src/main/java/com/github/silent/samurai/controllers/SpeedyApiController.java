@@ -1,6 +1,7 @@
 package com.github.silent.samurai.controllers;
 
 
+import com.github.silent.samurai.interfaces.Constants;
 import com.github.silent.samurai.SpeedyFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,10 +15,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 @RestController
-@RequestMapping(SpeedyApiController.URI)
+@RequestMapping(Constants.URI)
 public class SpeedyApiController {
-
-    public static final String URI = "/speedy/v1.0";
 
     Logger logger = LogManager.getLogger(SpeedyApiController.class);
 

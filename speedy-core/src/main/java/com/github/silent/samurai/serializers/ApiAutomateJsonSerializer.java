@@ -13,10 +13,7 @@ import com.google.gson.JsonObject;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
-public class ApiAutomateJsonSerializer implements IResponseSerializer {
-
-    public static int SINGLE_ENTITY = 0;
-    public static int MULTIPLE_ENTITY = 1;
+public class ApiAutomateJsonSerializer {
 
     private final MetaModelProcessor metaModelProcessor;
     private int level = 0;
@@ -34,23 +31,23 @@ public class ApiAutomateJsonSerializer implements IResponseSerializer {
 
 
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            Object value = fieldMetadata.extractFieldValue(entityObject);
+            Object value = fieldMetadata.getClassFieldValue(entityObject);
             if (fieldMetadata.isAssociation()) {
-                if (serializedType == SINGLE_ENTITY && level < 2) {
+                if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {
                     if (fieldMetadata.isCollection()) {
                         JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                        json.add(fieldMetadata.getFieldName(), jsonArray);
+                        json.add(fieldMetadata.getClassFieldName(), jsonArray);
                     } else {
                         JsonObject jsonObject = fromObject(value, value.getClass(), serializedType);
-                        json.add(fieldMetadata.getFieldName(), jsonObject);
+                        json.add(fieldMetadata.getClassFieldName(), jsonObject);
                     }
                 }
             } else if (fieldMetadata.isCollection()) {
                 JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                json.add(fieldMetadata.getFieldName(), jsonArray);
+                json.add(fieldMetadata.getClassFieldName(), jsonArray);
             } else {
                 JsonElement jsonElement = gson.toJsonTree(value);
-                json.add(fieldMetadata.getFieldName(), jsonElement);
+                json.add(fieldMetadata.getClassFieldName(), jsonElement);
             }
         }
 
