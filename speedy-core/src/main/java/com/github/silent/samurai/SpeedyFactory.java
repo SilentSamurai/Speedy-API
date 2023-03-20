@@ -20,6 +20,7 @@ import com.github.silent.samurai.request.put.UpdateDataHandler;
 import com.github.silent.samurai.utils.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpMethod;
 
 import javax.persistence.EntityManager;

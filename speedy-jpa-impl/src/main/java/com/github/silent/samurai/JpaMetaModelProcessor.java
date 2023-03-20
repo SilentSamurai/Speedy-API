@@ -104,7 +104,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         JpaEntityMetadata entityMetadata = new JpaEntityMetadata();
         entityMetadata.setName(entityType.getName());
         entityMetadata.setJpaEntityType(entityType);
-        entityMetadata.setEntityClass(entityType.getJavaType());
+        entityMetadata.setEntityClass(entityType.getBindableJavaType());
         entityMetadata.setKeyClass(entityType.getIdType().getJavaType());
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
             JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType());

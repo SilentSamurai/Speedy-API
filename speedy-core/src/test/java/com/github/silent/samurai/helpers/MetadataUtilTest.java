@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -82,7 +81,7 @@ class MetadataUtilTest {
         Mockito.when(entityMetadata.getKeyClass()).thenAnswer(inv -> String.class);
 
         Map<String, String> keys = Maps.newHashMap("id", "1234");
-        Object primaryKey = MetadataUtil.getPrimaryKey(entityMetadata, keys);
+        Object primaryKey = MetadataUtil.createEntityKeyFromMap(entityMetadata, keys);
         assertEquals("1234", primaryKey);
     }
 
@@ -101,7 +100,7 @@ class MetadataUtilTest {
 
         HashMap hashMap = new Gson().fromJson("{'id':'abcd', 'name':'na'}", HashMap.class);
 
-        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.getPrimaryKey(entityMetadata, hashMap);
+        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.createEntityKeyFromMap(entityMetadata, hashMap);
         assertEquals("abcd", primaryKey.id);
         assertEquals("na", primaryKey.name);
     }

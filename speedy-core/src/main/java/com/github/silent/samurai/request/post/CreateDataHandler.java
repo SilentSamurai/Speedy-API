@@ -28,7 +28,7 @@ public class CreateDataHandler {
             }
             throw new BadRequestException(sb.toString());
         }
-        context.getEntityManager().persist(entityInstance);
+        context.getEntityManager().merge(entityInstance);
         context.getEntityManager().flush();
         logger.info("{} saved {}", entityMetadata.getName(), entityInstance);
     }

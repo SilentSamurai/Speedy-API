@@ -26,7 +26,7 @@ public class MetadataUtil {
         return false;
     }
 
-    public static Object getPrimaryKey(EntityMetadata entityMetadata, Map<String, String> fieldMap) throws Exception {
+    public static Object createEntityKeyFromMap(EntityMetadata entityMetadata, Map<String, String> fieldMap) throws Exception {
         if (TypeUtils.isPrimaryType(entityMetadata.getKeyClass())) {
             return MapUtils.findAnyValueInMap(fieldMap, entityMetadata.getKeyClass());
         }
@@ -42,7 +42,7 @@ public class MetadataUtil {
         return newKeyInstance;
     }
 
-    public static Object getPrimaryKey(EntityMetadata entityMetadata, JsonObject jsonObject) throws Exception {
+    public static Object createEntityKeyFromJSON(EntityMetadata entityMetadata, JsonObject jsonObject) throws Exception {
         if (TypeUtils.isPrimaryType(entityMetadata.getKeyClass())) {
             return MapUtils.findAnyValueInJsonObject(jsonObject, entityMetadata.getKeyClass());
         }
@@ -58,7 +58,7 @@ public class MetadataUtil {
         return newKeyInstance;
     }
 
-    public static Object getObject(EntityMetadata entityMetadata, Map<String, String> fieldsMap) throws Exception {
+    public static Object createEntityObjectFromMap(EntityMetadata entityMetadata, Map<String, String> fieldsMap) throws Exception {
         Object newInstance = entityMetadata.createNewEntityInstance();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             String propertyName = fieldMetadata.getOutputPropertyName();
@@ -70,7 +70,7 @@ public class MetadataUtil {
         return newInstance;
     }
 
-    public static Object getObject(EntityMetadata entityMetadata, JsonObject jsonObject) throws Exception {
+    public static Object createEntityObjectFromJSON(EntityMetadata entityMetadata, JsonObject jsonObject) throws Exception {
         Object newInstance = entityMetadata.createNewEntityInstance();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             String propertyName = fieldMetadata.getOutputPropertyName();

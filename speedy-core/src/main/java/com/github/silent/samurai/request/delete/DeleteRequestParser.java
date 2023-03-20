@@ -37,7 +37,7 @@ public class DeleteRequestParser {
             if (!MetadataUtil.isPrimaryKeyComplete(entityMetadata, element.getAsJsonObject().keySet())) {
                 throw new BadRequestException("Primary Key Incomplete ");
             }
-            Object pk = MetadataUtil.getPrimaryKey(entityMetadata, element.getAsJsonObject());
+            Object pk = MetadataUtil.createEntityKeyFromJSON(entityMetadata, element.getAsJsonObject());
             Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
             context.getParsedObjects().add(entityInstance);
             logger.info("parsed primary key {}", pk);

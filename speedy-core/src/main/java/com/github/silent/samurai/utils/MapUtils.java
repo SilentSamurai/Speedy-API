@@ -19,7 +19,7 @@ public class MapUtils {
     public static Object findAnyValueInJsonObject(JsonObject jsonObject, Class<?> type) {
         Optional<Map.Entry<String, JsonElement>> any = jsonObject.entrySet().stream().findAny();
         if (any.isPresent()) {
-            return CommonUtil.getGson().fromJson(any.get().getValue().getAsJsonObject(), type);
+            return CommonUtil.gsonToType(any.get().getValue(), type);
         }
         return null;
     }

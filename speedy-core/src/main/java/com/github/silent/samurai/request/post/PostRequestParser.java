@@ -33,7 +33,7 @@ public class PostRequestParser {
         JsonElement jsonElement = gson.fromJson(context.getHttpServletRequest().getReader(), JsonElement.class);
         JsonArray batchOfEntities = jsonElement.getAsJsonArray();
         for (JsonElement element : batchOfEntities) {
-            Object entityInstance = MetadataUtil.getObject(entityMetadata, element.getAsJsonObject());
+            Object entityInstance = MetadataUtil.createEntityObjectFromJSON(entityMetadata, element.getAsJsonObject());
             logger.info("parsed entity {}", entityInstance);
             context.getParsedObjects().add(entityInstance);
         }
