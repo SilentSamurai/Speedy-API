@@ -2,73 +2,69 @@ GET http://localhost:8080/speedy/v1.0/Category/
 Accept: application/json
 
 ###
-GET http://localhost:80/api/item
+GET http://localhost:80/speedy/v1.0/Category/
 Content-Type: application/json
 
 {
-    "$batch": {
-        "Category": {
-            "aggregation": [
-                {
-                    "fn": "count",
-                    "args": "D",
-                    "alias": "CNT"
-                }
-            ],
-            "where": [
-                {
-                    "operator": "equal",
-                    "field": "NAME",
-                    "value": "Piyush"
-                },
-                {
-                    "operator": "in",
-                    "field": "ROLL",
-                    "value": [
-                        13
-                    ]
-                },
-                {
-                    "operator": "OR",
-                    "conditions": [
-                        {
-                            "operator": "equal",
-                            "field": "A",
-                            "value": 5
-                        },
-                        {
-                            "operator": "equal",
-                            "field": "A",
-                            "value": 10
-                        }
-                    ]
-                },
-                {
-                    "operator": "dateBetween",
-                    "field": "BIRTH",
-                    "value": {
-                        "start": "Date('')",
-                        "end": "Date('')"
-                    }
-                }
-            ],
-            "groupBy": [
-                "A",
-                "B",
-                "C"
-            ],
-            "having": [
-                {
-                    "operator": "equal",
-                    "field": "NAME",
-                    "value": "Piyush"
-                }
-            ],
-            "orderBy": [
-                "A"
-            ]
+    "aggregation": [
+        {
+            "fn": "count",
+            "args": "D",
+            "alias": "CNT"
         }
-    }
+    ],
+    "where": [
+        {
+            "operator": "equal",
+            "field": "NAME",
+            "value": "Piyush"
+        },
+        {
+            "operator": "in",
+            "field": "ROLL",
+            "value": [
+                13
+            ]
+        },
+        {
+            "operator": "OR",
+            "conditions": [
+                {
+                    "operator": "equal",
+                    "field": "A",
+                    "value": 5
+                },
+                {
+                    "operator": "equal",
+                    "field": "A",
+                    "value": 10
+                }
+            ]
+        },
+        {
+            "operator": "dateBetween",
+            "field": "BIRTH",
+            "value": {
+                "start": "Date('')",
+                "end": "Date('')"
+            }
+        }
+    ],
+    "groupBy": [
+        "A",
+        "B",
+        "C"
+    ],
+    "having": [
+        {
+            "operator": "equal",
+            "field": "NAME",
+            "value": "Piyush"
+        }
+    ],
+    "orderBy": [
+        "A"
+    ]
 }
 
 
