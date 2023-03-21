@@ -8,24 +8,29 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Data
+
 public class Query {
 
     @SerializedName("aggregation")
     @Expose
     @Valid
     public List<Aggregation> aggregation;
+
     @SerializedName("where")
     @Expose
     @Valid
-    public List<Where> where;
+    public List<Condition> where;
+
     @SerializedName("groupBy")
     @Expose
     @Valid
     public List<String> groupBy;
+
     @SerializedName("having")
     @Expose
     @Valid
-    public List<Having> having;
+    public List<Condition> having;
+
     @SerializedName("orderBy")
     @Expose
     @Valid
