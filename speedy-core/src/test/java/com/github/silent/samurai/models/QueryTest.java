@@ -1,9 +1,8 @@
 package com.github.silent.samurai.models;
 
-import com.google.gson.Gson;
+import com.github.silent.samurai.query.QueryDeserializer;
+import com.github.silent.samurai.query.QuerySerializer;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonSerializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,28 +20,18 @@ class QueryTest {
 
     @Test
     void getAggregation() {
-
         Query query = new Query();
-        query.setWhere(Arrays.asList(new EqCondition(), new EqCondition()));
-
+        EqCondition eqCondition = new EqCondition();
+        eqCondition.setOperator("=");
+        eqCondition.setField("name");
+        eqCondition.setValue("oli");
+        query.setWhere(Arrays.asList(eqCondition, eqCondition));
         GsonBuilder gsonBuilder = new GsonBuilder();
-        JsonDeserializer<Condition> conditionJsonSerializer = (jsonElement, type, context) -> {
-            if (jsonElement.isJsonArray()) {
-                return new AndCondition();
-            } else {
-                return new EqCondition();
-            }
-        };
-        gsonBuilder.registerTypeAdapter(Condition.class, conditionJsonSerializer);
-
+        gsonBuilder.registerTypeAdapter(Condition.class, new QueryDeserializer());
+        gsonBuilder.registerTypeAdapter(Condition.class, new QuerySerializer());
         String jsonString = gsonBuilder.create().toJson(query);
-
         logger.info(jsonString);
-
         Query generatedQuery = gsonBuilder.create().fromJson(jsonString, Query.class);
-
         assert generatedQuery.getWhere().get(0) instanceof EqCondition;
-
-
     }
 }
