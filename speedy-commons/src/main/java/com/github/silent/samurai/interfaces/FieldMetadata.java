@@ -2,11 +2,9 @@ package com.github.silent.samurai.interfaces;
 
 import com.github.silent.samurai.enums.IgnoreType;
 
-import java.lang.reflect.InvocationTargetException;
-
 public interface FieldMetadata {
 
-    Object getClassFieldValue(Object entity);
+    Object getEntityFieldValue(Object entity);
 
     boolean isAssociation();
 
@@ -18,11 +16,9 @@ public interface FieldMetadata {
 
     String getOutputPropertyName();
 
-    boolean isKeyField();
-
     IgnoreType getIgnoreType();
 
     Class<?> getFieldType();
 
-    boolean updateClassFieldWithValue(Object entity, Object value);
+    boolean setEntityFieldWithValue(Object entity, Object value);
 }

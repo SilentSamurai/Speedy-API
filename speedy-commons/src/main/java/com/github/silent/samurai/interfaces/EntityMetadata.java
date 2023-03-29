@@ -14,11 +14,17 @@ public interface EntityMetadata {
 
     Set<FieldMetadata> getAllFields();
 
+    Set<String> getAllFieldNames();
+
+    boolean hasCompositeKey();
+
     Class<?> getEntityClass();
 
     Class<?> getKeyClass();
 
-    Set<String> getKeyFields();
+    Set<KeyFieldMetadata> getKeyFields();
+
+    Set<String> getKeyFieldNames();
 
     Object createNewEntityInstance() throws Exception;
 

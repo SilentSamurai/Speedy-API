@@ -46,7 +46,7 @@ class GetRequestParserTest {
         context = new GetRequestContext(httpServletRequest, metaModelProcessor, entityManager);
         getRequestParser = new GetRequestParser(context);
         Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
-        Mockito.when(entityMetadata.getKeyFields()).thenReturn(Sets.newHashSet("id"));
+//        Mockito.when(entityMetadata.getKeyFieldNames()).thenReturn(Sets.newHashSet("id"));
     }
 
     @Test
@@ -69,6 +69,7 @@ class GetRequestParserTest {
 
     @Test
     void processRequest3() throws UnsupportedEncodingException {
+        Mockito.when(entityMetadata.getKeyFieldNames()).thenReturn(Sets.newHashSet("id"));
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer('1')");
         getRequestParser.process();
 
@@ -89,6 +90,7 @@ class GetRequestParserTest {
 
     @Test
     void processRequest4() throws UnsupportedEncodingException {
+        Mockito.when(entityMetadata.getKeyFieldNames()).thenReturn(Sets.newHashSet("id"));
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer('1')/");
         getRequestParser.process();
 
@@ -100,6 +102,7 @@ class GetRequestParserTest {
 
     @Test
     void processRequest6() throws UnsupportedEncodingException {
+        Mockito.when(entityMetadata.getKeyFieldNames()).thenReturn(Sets.newHashSet("id"));
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(id='1')");
         getRequestParser.process();
 

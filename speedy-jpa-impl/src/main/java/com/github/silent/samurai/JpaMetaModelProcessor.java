@@ -106,6 +106,8 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         entityMetadata.setJpaEntityType(entityType);
         entityMetadata.setEntityClass(entityType.getBindableJavaType());
         entityMetadata.setKeyClass(entityType.getIdType().getJavaType());
+        entityMetadata.setHasCompositeKey(!entityType.hasSingleIdAttribute());
+
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
             JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType());
             SpeedyIgnore annotation = AnnotationUtils.getAnnotation(memberMetadata.getField(), SpeedyIgnore.class);
@@ -118,7 +120,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             entityMetadata.getAllFields().add(memberMetadata);
             entityMetadata.getFieldMap().put(attribute.getName(), memberMetadata);
             if (memberMetadata.isId()) {
-                entityMetadata.getKeyFields().add(attribute.getName());
+                entityMetadata.getKeyFields().add(memberMetadata);
             }
 
         }

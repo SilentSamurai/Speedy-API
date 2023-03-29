@@ -2,9 +2,9 @@ package com.github.silent.samurai.helpers;
 
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.github.silent.samurai.utils.MapUtils;
-import com.github.silent.samurai.utils.TypeUtils;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 
@@ -14,45 +14,43 @@ import java.util.Set;
 public class MetadataUtil {
 
     public static boolean isPrimaryKeyComplete(EntityMetadata entityMetadata, Set<String> fields) {
-        Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFields(), fields);
+        Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFieldNames(), fields);
         return difference.size() == entityMetadata.getKeyFields().size();
     }
 
     public static boolean hasOnlyPrimaryKeyFields(EntityMetadata entityMetadata, Set<String> fields) {
-        if (entityMetadata.getKeyFields().size() == fields.size()) {
-            Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFields(), fields);
-            return difference.size() == entityMetadata.getKeyFields().size();
+        if (!fields.isEmpty() && entityMetadata.getKeyFieldNames().size() == fields.size()) {
+            Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFieldNames(), fields);
+            return difference.size() == entityMetadata.getKeyFieldNames().size();
         }
         return false;
     }
 
     public static Object createEntityKeyFromMap(EntityMetadata entityMetadata, Map<String, String> fieldMap) throws Exception {
-        if (TypeUtils.isPrimaryType(entityMetadata.getKeyClass())) {
+        if (!entityMetadata.hasCompositeKey()) {
             return MapUtils.findAnyValueInMap(fieldMap, entityMetadata.getKeyClass());
         }
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
-        for (String keyField : entityMetadata.getKeyFields()) {
-            FieldMetadata fieldMetadata = entityMetadata.field(keyField);
-            String propertyName = fieldMetadata.getOutputPropertyName();
+        for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
+            String propertyName = keyFieldMetadata.getOutputPropertyName();
             if (fieldMap.containsKey(propertyName)) {
-                Object value = CommonUtil.stringToType(fieldMap.get(propertyName), fieldMetadata.getFieldType());
-                fieldMetadata.updateClassFieldWithValue(newKeyInstance, value);
+                Object value = CommonUtil.stringToType(fieldMap.get(propertyName), keyFieldMetadata.getFieldType());
+                keyFieldMetadata.setEntityFieldWithValue(newKeyInstance, value);
             }
         }
         return newKeyInstance;
     }
 
     public static Object createEntityKeyFromJSON(EntityMetadata entityMetadata, JsonObject jsonObject) throws Exception {
-        if (TypeUtils.isPrimaryType(entityMetadata.getKeyClass())) {
+        if (!entityMetadata.hasCompositeKey()) {
             return MapUtils.findAnyValueInJsonObject(jsonObject, entityMetadata.getKeyClass());
         }
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
-        for (String keyField : entityMetadata.getKeyFields()) {
-            FieldMetadata fieldMetadata = entityMetadata.field(keyField);
+        for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
             String propertyName = fieldMetadata.getOutputPropertyName();
             if (jsonObject.has(propertyName)) {
                 Object value = CommonUtil.gsonToType(jsonObject.get(propertyName), fieldMetadata.getFieldType());
-                fieldMetadata.updateClassFieldWithValue(newKeyInstance, value);
+                fieldMetadata.setEntityFieldWithValue(newKeyInstance, value);
             }
         }
         return newKeyInstance;
@@ -64,7 +62,7 @@ public class MetadataUtil {
             String propertyName = fieldMetadata.getOutputPropertyName();
             if (fieldsMap.containsKey(propertyName)) {
                 Object value = CommonUtil.stringToType(fieldsMap.get(propertyName), fieldMetadata.getFieldType());
-                fieldMetadata.updateClassFieldWithValue(newInstance, value);
+                fieldMetadata.setEntityFieldWithValue(newInstance, value);
             }
         }
         return newInstance;
@@ -76,7 +74,7 @@ public class MetadataUtil {
             String propertyName = fieldMetadata.getOutputPropertyName();
             if (jsonObject.has(propertyName)) {
                 Object value = CommonUtil.gsonToType(jsonObject.get(propertyName), fieldMetadata.getFieldType());
-                fieldMetadata.updateClassFieldWithValue(newInstance, value);
+                fieldMetadata.setEntityFieldWithValue(newInstance, value);
             }
         }
         return newInstance;
@@ -87,7 +85,7 @@ public class MetadataUtil {
             String propertyName = fieldMetadata.getOutputPropertyName();
             if (jsonObject.has(propertyName)) {
                 Object value = CommonUtil.gsonToType(jsonObject.get(propertyName), fieldMetadata.getFieldType());
-                fieldMetadata.updateClassFieldWithValue(entity, value);
+                fieldMetadata.setEntityFieldWithValue(entity, value);
             }
         }
     }

@@ -1,18 +1,17 @@
 package com.github.silent.samurai.metamodel;
 
 import com.github.silent.samurai.enums.IgnoreType;
-import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
+import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import lombok.Data;
 
 import javax.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 
 @Data
-public class JpaFieldMetadata implements FieldMetadata {
+public class JpaFieldMetadata implements KeyFieldMetadata {
 
     private String dbColumnName;
     private String outputPropertyName;
@@ -40,7 +39,7 @@ public class JpaFieldMetadata implements FieldMetadata {
     }
 
     @Override
-    public boolean updateClassFieldWithValue(Object entity, Object value) {
+    public boolean setEntityFieldWithValue(Object entity, Object value) {
         try {
             this.setter.invoke(entity, value);
             return true;
@@ -50,7 +49,7 @@ public class JpaFieldMetadata implements FieldMetadata {
     }
 
     @Override
-    public Object getClassFieldValue(Object entityObject) {
+    public Object getEntityFieldValue(Object entityObject) {
         try {
             return this.getter.invoke(entityObject);
         } catch (Exception e) {

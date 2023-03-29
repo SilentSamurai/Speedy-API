@@ -31,7 +31,7 @@ public class ApiAutomateJsonSerializer {
 
 
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            Object value = fieldMetadata.getClassFieldValue(entityObject);
+            Object value = fieldMetadata.getEntityFieldValue(entityObject);
             if (fieldMetadata.isAssociation()) {
                 if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {
                     if (fieldMetadata.isCollection()) {
