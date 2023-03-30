@@ -3,6 +3,7 @@ package com.github.silent.samurai.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.silent.samurai.annotations.SpeedyIgnore;
 import com.github.silent.samurai.enums.IgnoreType;
+import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  *
  */
+@Data
 @Table(name = "customers", indexes = {
         @Index(name = "customers_alt_phone_no_key", columnList = "alt_phone_no", unique = true),
         @Index(name = "customers_phone_no_key", columnList = "phone_no", unique = true)
@@ -31,12 +33,12 @@ public class Customer extends AbstractBaseEntity {
     @Column(name = "email")
     private String email;
 
-    @Size(min = 10, max = 10)
+    @Size(min = 10, max = 15)
     @Pattern(regexp = "(^$|[0-9]{10})")
     @Column(name = "phone_no", nullable = false, length = 15)
     private String phoneNo;
 
-    @Size(min = 10, max = 10)
+    @Size(min = 10, max = 15)
     @Pattern(regexp = "(^$|[0-9]{10})")
     @Column(name = "alt_phone_no", nullable = true, length = 15)
     private String altPhoneNo;
@@ -52,67 +54,5 @@ public class Customer extends AbstractBaseEntity {
     @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Invoice> invoices;
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getAltPhoneNo() {
-        return altPhoneNo;
-    }
-
-    public void setAltPhoneNo(String altPhoneNo) {
-        this.altPhoneNo = altPhoneNo;
-    }
-
-    public String getPhoneNo() {
-        return phoneNo;
-    }
-
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<Invoice> getInvoices() {
-        return invoices;
-    }
-
-    public void setInvoices(List<Invoice> invoices) {
-        this.invoices = invoices;
-    }
 }

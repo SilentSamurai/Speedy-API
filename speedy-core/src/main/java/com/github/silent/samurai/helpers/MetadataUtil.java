@@ -1,14 +1,15 @@
 package com.github.silent.samurai.helpers;
 
+import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.utils.CommonUtil;
-import com.github.silent.samurai.utils.MapUtils;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class MetadataUtil {
@@ -28,7 +29,15 @@ public class MetadataUtil {
 
     public static Object createEntityKeyFromMap(EntityMetadata entityMetadata, Map<String, String> fieldMap) throws Exception {
         if (!entityMetadata.hasCompositeKey()) {
-            return MapUtils.findAnyValueInMap(fieldMap, entityMetadata.getKeyClass());
+            Optional<KeyFieldMetadata> primaryKeyFieldMetadata = entityMetadata.getKeyFields().stream().findAny();
+            if (primaryKeyFieldMetadata.isPresent()) {
+                KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
+                String propertyName = keyFieldMetadata.getOutputPropertyName();
+                if (fieldMap.containsKey(propertyName)) {
+                    return CommonUtil.stringToType(fieldMap.get(propertyName), keyFieldMetadata.getFieldType());
+                }
+            }
+            throw new BadRequestException("primary key field not found" + fieldMap);
         }
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
@@ -36,6 +45,8 @@ public class MetadataUtil {
             if (fieldMap.containsKey(propertyName)) {
                 Object value = CommonUtil.stringToType(fieldMap.get(propertyName), keyFieldMetadata.getFieldType());
                 keyFieldMetadata.setEntityFieldWithValue(newKeyInstance, value);
+            } else {
+                throw new BadRequestException("primary key incomplete" + fieldMap);
             }
         }
         return newKeyInstance;
@@ -43,7 +54,15 @@ public class MetadataUtil {
 
     public static Object createEntityKeyFromJSON(EntityMetadata entityMetadata, JsonObject jsonObject) throws Exception {
         if (!entityMetadata.hasCompositeKey()) {
-            return MapUtils.findAnyValueInJsonObject(jsonObject, entityMetadata.getKeyClass());
+            Optional<KeyFieldMetadata> primaryKeyFieldMetadata = entityMetadata.getKeyFields().stream().findAny();
+            if (primaryKeyFieldMetadata.isPresent()) {
+                KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
+                String propertyName = keyFieldMetadata.getOutputPropertyName();
+                if (jsonObject.has(propertyName)) {
+                    return CommonUtil.gsonToType(jsonObject.get(propertyName), keyFieldMetadata.getFieldType());
+                }
+            }
+            throw new BadRequestException("primary key field not found" + jsonObject);
         }
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
         for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
@@ -51,6 +70,8 @@ public class MetadataUtil {
             if (jsonObject.has(propertyName)) {
                 Object value = CommonUtil.gsonToType(jsonObject.get(propertyName), fieldMetadata.getFieldType());
                 fieldMetadata.setEntityFieldWithValue(newKeyInstance, value);
+            } else {
+                throw new BadRequestException("primary key incomplete" + jsonObject);
             }
         }
         return newKeyInstance;

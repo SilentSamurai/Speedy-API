@@ -35,6 +35,9 @@ public class PutRequestParser {
 
         Gson gson = CommonUtil.getGson();
         JsonElement jsonElement = gson.fromJson(context.getHttpServletRequest().getReader(), JsonElement.class);
+        if (jsonElement == null) {
+            throw new BadRequestException("no content to process");
+        }
         JsonObject resourceFields = jsonElement.getAsJsonObject();
 
         if (!MetadataUtil.isPrimaryKeyComplete(entityMetadata, keyFields.keySet())) {

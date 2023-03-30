@@ -1,17 +1,17 @@
 package com.github.silent.samurai;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.factory.AbstractFactory;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.models.BaseResponsePayloadImpl;
 import com.github.silent.samurai.request.delete.DeleteDataHandler;
 import com.github.silent.samurai.request.delete.DeleteRequestContext;
 import com.github.silent.samurai.request.delete.DeleteRequestParser;
-import com.github.silent.samurai.request.get.GetRequestContext;
-import com.github.silent.samurai.request.post.CreateDataHandler;
-import com.github.silent.samurai.request.get.GetRequestParser;
 import com.github.silent.samurai.request.get.GetDataHandler;
+import com.github.silent.samurai.request.get.GetRequestContext;
+import com.github.silent.samurai.request.get.GetRequestParser;
+import com.github.silent.samurai.request.post.CreateDataHandler;
 import com.github.silent.samurai.request.post.PostRequestContext;
 import com.github.silent.samurai.request.post.PostRequestParser;
 import com.github.silent.samurai.request.put.PutRequestContext;
@@ -20,7 +20,6 @@ import com.github.silent.samurai.request.put.UpdateDataHandler;
 import com.github.silent.samurai.utils.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpMethod;
 
 import javax.persistence.EntityManager;
@@ -28,7 +27,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 
 public class SpeedyFactory {
 
@@ -50,10 +49,17 @@ public class SpeedyFactory {
             entityManager = entityManagerFactory.createEntityManager();
             GetRequestContext context = new GetRequestContext(request, metaModelProcessor, entityManager);
             new GetRequestParser(context).process();
-            Object requestData = new GetDataHandler(context).process();
+            Optional<Object> requestData = new GetDataHandler(context).process();
+            if (requestData.isEmpty()) {
+                throw new ResourceNotFoundException();
+            }
             IResponseSerializer jsonSerializer = AbstractFactory.getInstance().getSerializerFactory()
                     .createService("JSON", context);
-            jsonSerializer.writeResponse(requestData, response);
+            BaseResponsePayloadImpl baseResponsePayload = new BaseResponsePayloadImpl();
+            baseResponsePayload.setPayload(requestData.get());
+            baseResponsePayload.setPageCount(1);
+            baseResponsePayload.setPageIndex(0);
+            jsonSerializer.writeResponse(baseResponsePayload, response);
             response.setContentType(jsonSerializer.getContentType());
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
@@ -121,8 +127,7 @@ public class SpeedyFactory {
     }
 
 
-    public void requestResource(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, InvocationTargetException, IllegalAccessException {
+    public void requestResource(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             if (request.getMethod().equals(HttpMethod.GET.name())) {
                 processGETRequests(request, response);
@@ -135,11 +140,8 @@ public class SpeedyFactory {
             } else {
                 response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             }
-        } catch (BadRequestException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write(e.getLocalizedMessage());
-        } catch (ResourceNotFoundException e) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        } catch (Throwable e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write(e.getLocalizedMessage());
         }
 

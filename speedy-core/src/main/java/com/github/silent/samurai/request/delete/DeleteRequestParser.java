@@ -32,6 +32,9 @@ public class DeleteRequestParser {
 
         Gson gson = CommonUtil.getGson();
         JsonElement jsonElement = gson.fromJson(context.getHttpServletRequest().getReader(), JsonElement.class);
+        if (jsonElement == null) {
+            throw new BadRequestException("no content to process");
+        }
         JsonArray batchOfEntities = jsonElement.getAsJsonArray();
         for (JsonElement element : batchOfEntities) {
             if (!MetadataUtil.isPrimaryKeyComplete(entityMetadata, element.getAsJsonObject().keySet())) {

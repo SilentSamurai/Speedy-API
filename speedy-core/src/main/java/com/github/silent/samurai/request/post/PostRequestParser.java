@@ -3,6 +3,7 @@ package com.github.silent.samurai.request.post;
 
 import com.github.silent.samurai.AntlrParser;
 import com.github.silent.samurai.Request;
+import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.utils.CommonUtil;
@@ -31,6 +32,9 @@ public class PostRequestParser {
 
         Gson gson = CommonUtil.getGson();
         JsonElement jsonElement = gson.fromJson(context.getHttpServletRequest().getReader(), JsonElement.class);
+        if (jsonElement == null) {
+            throw new BadRequestException("no content to process");
+        }
         JsonArray batchOfEntities = jsonElement.getAsJsonArray();
         for (JsonElement element : batchOfEntities) {
             Object entityInstance = MetadataUtil.createEntityObjectFromJSON(entityMetadata, element.getAsJsonObject());

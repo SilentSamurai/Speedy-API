@@ -11,6 +11,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.Map;
+import java.util.Optional;
 
 public class GetDataHandler {
 
@@ -44,7 +45,7 @@ public class GetDataHandler {
         return entityManager.createQuery(cQuery);
     }
 
-    public Object process() throws Exception {
+    public Optional<Object> process() throws Exception {
         Object requestObject;
         if (context.getSerializationType() == IResponseSerializer.MULTIPLE_ENTITY) {
             Query query = getQuery(context.getEntityManager());
@@ -54,6 +55,6 @@ public class GetDataHandler {
             Object primaryKeyObject = MetadataUtil.createEntityKeyFromMap(entityMetadata, context.getKeywords());
             requestObject = context.getEntityManager().find(entityMetadata.getEntityClass(), primaryKeyObject);
         }
-        return requestObject;
+        return Optional.ofNullable(requestObject);
     }
 }

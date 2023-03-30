@@ -8,5 +8,5 @@ public interface IResponseSerializer {
 
     String getContentType();
 
-    void writeResponse(Object requestedObject, HttpServletResponse response) throws Exception;
+    void writeResponse(IBaseResponsePayload requestedPayload, HttpServletResponse response) throws Exception;
 }
