@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.github.SilentSamurai</groupId>
 		<artifactId>speedy-api-parent</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.1</version>
 	</parent>
 
 	<artifactId>speedy-core</artifactId>
