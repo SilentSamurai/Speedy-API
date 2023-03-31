@@ -1,6 +1,7 @@
 package com.github.silent.samurai;
 
 import com.github.silent.samurai.entity.Category;
+import com.github.silent.samurai.entity.Customer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.service.CategoryRepository;
 import com.google.gson.Gson;
@@ -71,6 +72,23 @@ class SpeedyPostTest {
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post("/speedy/v1.0/Category")
                 .content(new Gson().toJson(List.of(category)))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mvc.perform(createRequest)
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    void createBadRequestException() throws Exception {
+
+        Customer customer = new Customer();
+        customer.setPhoneNo("+91-378-433-1234");
+        customer.setEmail("thisisatestemail");
+        customer.setAddress("this is a address");
+
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post("/speedy/v1.0/Customer")
+                .content(new Gson().toJson(List.of(customer)))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(createRequest)
