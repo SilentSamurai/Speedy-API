@@ -3,6 +3,7 @@ package com.github.silent.samurai;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.factory.AbstractFactory;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
+import com.github.silent.samurai.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.models.BaseResponsePayloadImpl;
 import com.github.silent.samurai.request.delete.DeleteDataHandler;
@@ -23,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpMethod;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -33,20 +33,20 @@ public class SpeedyFactory {
 
     Logger logger = LogManager.getLogger(SpeedyFactory.class);
 
-    private final EntityManagerFactory entityManagerFactory;
+    private final ISpeedyConfiguration speedyConfiguration;
     private final MetaModelProcessor metaModelProcessor;
 
 
-    public SpeedyFactory(EntityManagerFactory entityManagerFactory, MetaModelProcessor metaModelProcessor) {
-        this.entityManagerFactory = entityManagerFactory;
-        this.metaModelProcessor = metaModelProcessor;
+    public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) {
+        this.speedyConfiguration = speedyConfiguration;
+        this.metaModelProcessor = speedyConfiguration.createMetaModelProcessor();
     }
 
     public void processGETRequests(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         EntityManager entityManager = null;
         try {
-            entityManager = entityManagerFactory.createEntityManager();
+            entityManager = speedyConfiguration.createEntityManager();
             GetRequestContext context = new GetRequestContext(request, metaModelProcessor, entityManager);
             new GetRequestParser(context).process();
             Optional<Object> requestData = new GetDataHandler(context).process();
@@ -75,7 +75,7 @@ public class SpeedyFactory {
     public void processPOSTRequests(HttpServletRequest request, HttpServletResponse response) throws IOException {
         EntityManager entityManager = null;
         try {
-            entityManager = entityManagerFactory.createEntityManager();
+            entityManager = speedyConfiguration.createEntityManager();
             PostRequestContext context = new PostRequestContext(request, metaModelProcessor, entityManager);
             new PostRequestParser(context).processBatch();
             new CreateDataHandler(context).processBatch();
@@ -93,7 +93,7 @@ public class SpeedyFactory {
     public void processPUTRequests(HttpServletRequest request, HttpServletResponse response) throws IOException {
         EntityManager entityManager = null;
         try {
-            entityManager = entityManagerFactory.createEntityManager();
+            entityManager = speedyConfiguration.createEntityManager();
             PutRequestContext context = new PutRequestContext(request, metaModelProcessor, entityManager);
             new PutRequestParser(context).process();
             new UpdateDataHandler(context).process();
@@ -111,7 +111,7 @@ public class SpeedyFactory {
     public void processDELETERequests(HttpServletRequest request, HttpServletResponse response) throws IOException {
         EntityManager entityManager = null;
         try {
-            entityManager = entityManagerFactory.createEntityManager();
+            entityManager = speedyConfiguration.createEntityManager();
             DeleteRequestContext context = new DeleteRequestContext(request, metaModelProcessor, entityManager);
             new DeleteRequestParser(context).process();
             new DeleteDataHandler(context).process();

@@ -2,7 +2,6 @@ package com.github.silent.samurai;
 
 import com.github.silent.samurai.entity.Category;
 import com.github.silent.samurai.entity.Customer;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.service.CategoryRepository;
 import com.google.gson.Gson;
 import net.bytebuddy.utility.RandomString;
@@ -39,9 +38,6 @@ class SpeedyPostTest {
 
     @Autowired
     CategoryRepository categoryRepository;
-
-    @Autowired
-    MetaModelProcessor metaModelProcessor;
 
     @Autowired
     private MockMvc mvc;

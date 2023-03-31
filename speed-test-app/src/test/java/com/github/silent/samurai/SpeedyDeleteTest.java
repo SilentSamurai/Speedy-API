@@ -1,7 +1,6 @@
 package com.github.silent.samurai;
 
 import com.github.silent.samurai.entity.Category;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.service.CategoryRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,9 +29,6 @@ public class SpeedyDeleteTest {
 
     @Autowired
     SpeedyFactory speedyFactory;
-
-    @Autowired
-    MetaModelProcessor metaModelProcessor;
 
     @Autowired
     CategoryRepository categoryRepository;

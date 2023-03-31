@@ -1,10 +1,8 @@
 package com.github.silent.samurai;
 
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,9 +33,6 @@ class SpeedyGetTest {
     SpeedyFactory speedyFactory;
 
     @Autowired
-    MetaModelProcessor metaModelProcessor;
-
-    @Autowired
     private MockMvc mvc;
 
 //    @BeforeEach
@@ -59,7 +54,6 @@ class SpeedyGetTest {
 
     @Test
     void getViaPrimaryKey() throws Exception {
-        Assertions.assertNotNull(metaModelProcessor.findEntityMetadata("Category"));
 
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get("/speedy/v1.0/Category(id='1')")
                 .contentType(MediaType.APPLICATION_JSON);
@@ -75,7 +69,6 @@ class SpeedyGetTest {
 
     @Test
     void getVia() throws Exception {
-        Assertions.assertNotNull(metaModelProcessor.findEntityMetadata("Category"));
 
         MvcResult mvcResult = mvc.perform(get("/speedy/v1.0/Category(id='not-there')")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -85,7 +78,6 @@ class SpeedyGetTest {
 
     @Test
     void getAll() throws Exception {
-        Assertions.assertNotNull(metaModelProcessor.findEntityMetadata("Category"));
 
         mvc.perform(get("/speedy/v1.0/Category/")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -105,7 +97,6 @@ class SpeedyGetTest {
 
     @Test
     void getViaFilter() throws Exception {
-        Assertions.assertNotNull(metaModelProcessor.findEntityMetadata("Category"));
 
         mvc.perform(get("/speedy/v1.0/Category(name='cat-1-1')")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -126,7 +117,6 @@ class SpeedyGetTest {
 
     @Test
     void getViaFilterArg() throws Exception {
-        Assertions.assertNotNull(metaModelProcessor.findEntityMetadata("Category"));
 
         mvc.perform(get("/speedy/v1.0/Category('1')")
                         .contentType(MediaType.APPLICATION_JSON))
