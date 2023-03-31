@@ -9,14 +9,14 @@ import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class PutRequestParser {
 
-    Logger logger = LogManager.getLogger(PutRequestParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PutRequestParser.class);
 
     private final PutRequestContext context;
 
@@ -48,7 +48,7 @@ public class PutRequestParser {
         Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
         MetadataUtil.updateEntityFromJson(entityMetadata, resourceFields, entityInstance);
         context.setEntityInstance(entityInstance);
-        logger.info(" test {}", entityInstance);
+        LOGGER.info(" test {}", entityInstance);
     }
 
 }

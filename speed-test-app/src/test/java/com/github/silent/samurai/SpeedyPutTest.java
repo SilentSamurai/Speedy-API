@@ -2,10 +2,10 @@ package com.github.silent.samurai;
 
 import com.github.silent.samurai.entity.Category;
 import com.github.silent.samurai.service.CategoryRepository;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 public class SpeedyPutTest {
 
-    Logger logger = LogManager.getLogger(SpeedyPutTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyPutTest.class);
 
     @Autowired
     EntityManagerFactory entityManagerFactory;

@@ -4,8 +4,8 @@ import com.github.silent.samurai.utils.StringUtils;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 public class AntlrParser {
 
-    Logger logger = LogManager.getLogger(AntlrParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AntlrParser.class);
 
     final String url;
 
@@ -24,7 +24,7 @@ public class AntlrParser {
     public Request parse() throws UnsupportedEncodingException {
         String input = URLDecoder.decode(url, StandardCharsets.UTF_8.name());
         input = StringUtils.removeSpaces(input);
-        logger.info("input parsed {}", input);
+        LOGGER.info("input parsed {}", input);
         SpeedyLexer java8Lexer = new SpeedyLexer(CharStreams.fromString(input));
 
         CommonTokenStream tokens = new CommonTokenStream(java8Lexer);

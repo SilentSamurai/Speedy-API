@@ -1,10 +1,14 @@
 package com.github.silent.samurai.controllers;
 
 
-import com.github.silent.samurai.interfaces.Constants;
 import com.github.silent.samurai.SpeedyFactory;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import com.github.silent.samurai.interfaces.Constants;
+import com.github.silent.samurai.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.serializers.MetaModelSerializer;
+import com.github.silent.samurai.utils.CommonUtil;
+import com.google.gson.JsonElement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,10 +22,17 @@ import java.lang.reflect.InvocationTargetException;
 @RequestMapping(Constants.URI)
 public class SpeedyApiController {
 
-    Logger logger = LogManager.getLogger(SpeedyApiController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyApiController.class);
 
     @Autowired
     SpeedyFactory speedyFactory;
+
+    @RequestMapping(value = "/$metadata")
+    public String metadata() {
+        MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
+        JsonElement jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);
+        return CommonUtil.getGson().toJson(jsonElement);
+    }
 
     @RequestMapping(value = "*")
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, InvocationTargetException, IllegalAccessException {

@@ -66,8 +66,12 @@ Content-Type: application/json
         "A"
     ]
 }
+###
 
+GET http://localhost:8080/speedy/v1.0/$metadata/
+Accept: application/json
 
+###
 
 
 

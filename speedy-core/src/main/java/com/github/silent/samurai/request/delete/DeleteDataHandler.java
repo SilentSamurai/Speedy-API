@@ -1,13 +1,13 @@
 package com.github.silent.samurai.request.delete;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityTransaction;
 
 public class DeleteDataHandler {
 
-    Logger logger = LogManager.getLogger(DeleteDataHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteDataHandler.class);
 
     private final DeleteRequestContext context;
 

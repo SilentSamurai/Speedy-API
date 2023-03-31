@@ -2,17 +2,16 @@ package com.github.silent.samurai.request.put;
 
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityTransaction;
 import javax.validation.ConstraintViolation;
-import java.io.IOException;
 import java.util.Set;
 
 public class UpdateDataHandler {
 
-    Logger logger = LogManager.getLogger(UpdateDataHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateDataHandler.class);
 
     private final PutRequestContext context;
 
@@ -31,7 +30,7 @@ public class UpdateDataHandler {
         }
         context.getEntityManager().persist(entityInstance);
         context.getEntityManager().flush();
-        logger.info("{} saved {}", entityMetadata.getName(), entityInstance);
+        LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
     }
 
     public void process() {

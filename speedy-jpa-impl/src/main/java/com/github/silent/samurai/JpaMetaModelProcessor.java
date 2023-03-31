@@ -10,8 +10,8 @@ import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.metamodel.JpaFieldMetadata;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.persistence.Column;
@@ -22,6 +22,7 @@ import javax.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -29,14 +30,15 @@ import java.util.Set;
 
 public class JpaMetaModelProcessor implements MetaModelProcessor {
 
-    public static Logger logger = LogManager.getLogger(JpaMetaModelProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModelProcessor.class);
+
     private final Map<String, EntityMetadata> entityMap = new HashMap<>();
 
     public JpaMetaModelProcessor(EntityManagerFactory entityManagerFactory) {
         Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
         for (EntityType<?> entityType : entities) {
             this.addEntity(entityType);
-            logger.info("registering resources {}", entityType.getName());
+            LOGGER.info("registering resources {}", entityType.getName());
         }
     }
 
@@ -93,7 +95,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                     }
 
                 } catch (IllegalStateException e) {
-                    logger.fatal("Could not determine method: {} ", member, e);
+                    LOGGER.error("Could not determine method: {} ", member, e);
                 }
             }
         }
@@ -125,6 +127,11 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
 
         }
         entityMap.put(entityType.getName(), entityMetadata);
+    }
+
+    @Override
+    public Collection<EntityMetadata> getAllEntityMetadata() {
+        return entityMap.values();
     }
 
     @Override

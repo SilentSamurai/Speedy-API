@@ -2,8 +2,8 @@ package com.github.silent.samurai.request.post;
 
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityTransaction;
 import javax.validation.ConstraintViolation;
@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class CreateDataHandler {
 
-    Logger logger = LogManager.getLogger(CreateDataHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CreateDataHandler.class);
 
     private final PostRequestContext context;
 
@@ -30,7 +30,7 @@ public class CreateDataHandler {
         }
         context.getEntityManager().merge(entityInstance);
         context.getEntityManager().flush();
-        logger.info("{} saved {}", entityMetadata.getName(), entityInstance);
+        LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
     }
 
     public void processBatch() {

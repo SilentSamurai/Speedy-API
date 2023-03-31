@@ -19,8 +19,9 @@ import com.github.silent.samurai.request.put.PutRequestContext;
 import com.github.silent.samurai.request.put.PutRequestParser;
 import com.github.silent.samurai.request.put.UpdateDataHandler;
 import com.github.silent.samurai.utils.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 
 import javax.persistence.EntityManager;
@@ -29,9 +30,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+@Getter
 public class SpeedyFactory {
 
-    Logger logger = LogManager.getLogger(SpeedyFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyFactory.class);
 
     private final ISpeedyConfiguration speedyConfiguration;
     private final MetaModelProcessor metaModelProcessor;
@@ -64,7 +66,7 @@ public class SpeedyFactory {
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setStatus(ExceptionUtils.getStatusFromException(e));
-            logger.error("Exception at get {} ", request.getRequestURI(), e);
+            LOGGER.error("Exception at get {} ", request.getRequestURI(), e);
         } finally {
             if (entityManager != null)
                 entityManager.close();
@@ -82,7 +84,7 @@ public class SpeedyFactory {
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setStatus(ExceptionUtils.getStatusFromException(e));
-            logger.error("Exception at get {} ", request.getRequestURI(), e);
+            LOGGER.error("Exception at get {} ", request.getRequestURI(), e);
         } finally {
             if (entityManager != null)
                 entityManager.close();
@@ -100,7 +102,7 @@ public class SpeedyFactory {
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setStatus(ExceptionUtils.getStatusFromException(e));
-            logger.error("Exception at get {} ", request.getRequestURI(), e);
+            LOGGER.error("Exception at get {} ", request.getRequestURI(), e);
         } finally {
             if (entityManager != null)
                 entityManager.close();
@@ -118,7 +120,7 @@ public class SpeedyFactory {
             response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             response.setStatus(ExceptionUtils.getStatusFromException(e));
-            logger.error("Exception at get {} ", request.getRequestURI(), e);
+            LOGGER.error("Exception at get {} ", request.getRequestURI(), e);
         } finally {
             if (entityManager != null)
                 entityManager.close();

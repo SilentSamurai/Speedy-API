@@ -10,14 +10,14 @@ import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.assertj.core.util.Maps;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class MetadataUtilTest {
 
-    Logger logger = LogManager.getLogger(MetadataUtilTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MetadataUtilTest.class);
 
     @BeforeEach
     void setUp() {

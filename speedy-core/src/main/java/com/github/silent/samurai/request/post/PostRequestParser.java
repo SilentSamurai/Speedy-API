@@ -10,11 +10,12 @@ import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PostRequestParser {
-    Logger logger = LogManager.getLogger(PostRequestParser.class);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostRequestParser.class);
 
     private final PostRequestContext context;
 
@@ -38,7 +39,7 @@ public class PostRequestParser {
         JsonArray batchOfEntities = jsonElement.getAsJsonArray();
         for (JsonElement element : batchOfEntities) {
             Object entityInstance = MetadataUtil.createEntityObjectFromJSON(entityMetadata, element.getAsJsonObject());
-            logger.info("parsed entity {}", entityInstance);
+            LOGGER.info("parsed entity {}", entityInstance);
             context.getParsedObjects().add(entityInstance);
         }
     }

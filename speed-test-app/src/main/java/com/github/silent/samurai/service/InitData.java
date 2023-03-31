@@ -20,13 +20,13 @@ import java.sql.PreparedStatement;
 @Service
 public class InitData {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(InitData.class);
+
     @Autowired
     DataSource dataSource;
 
     @Autowired
     CategoryRepository categoryRepository;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(InitData.class);
 
     public static String[] fetchSql() throws IOException {
         File file = ResourceUtils.getFile("classpath:x-data.sql");

@@ -6,17 +6,17 @@ import com.google.gson.Gson;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RequestListenerTest {
 
-    Logger logger = LogManager.getLogger(RequestListenerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RequestListenerTest.class);
 
     @BeforeEach
     void setUp() {
@@ -24,7 +24,7 @@ class RequestListenerTest {
 
     Request parse(String input) {
         input = StringUtils.removeSpaces(input);
-        logger.info("input {}", input);
+        LOGGER.info("input {}", input);
         SpeedyLexer java8Lexer = new SpeedyLexer(CharStreams.fromString(input));
 
         CommonTokenStream tokens = new CommonTokenStream(java8Lexer);
@@ -44,7 +44,7 @@ class RequestListenerTest {
     void testSingle() {
         String input = "/Customer?happy='holi'&metadata='hpo'";
         Request request = parse(input);
-        logger.info("request {}", new Gson().toJson(request));
+        LOGGER.info("request {}", new Gson().toJson(request));
 
     }
 
@@ -66,9 +66,9 @@ class RequestListenerTest {
 
         for (String input : inputEntries) {
             Request request = parse(input);
-            logger.info("request {}", new Gson().toJson(request));
+            LOGGER.info("request {}", new Gson().toJson(request));
             assertEquals("Customer", request.getResource());
-            logger.info("");
+            LOGGER.info("");
         }
 
     }

@@ -9,12 +9,12 @@ import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DeleteRequestParser {
 
-    Logger logger = LogManager.getLogger(DeleteRequestParser.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeleteRequestParser.class);
 
     private final DeleteRequestContext context;
 
@@ -43,7 +43,7 @@ public class DeleteRequestParser {
             Object pk = MetadataUtil.createEntityKeyFromJSON(entityMetadata, element.getAsJsonObject());
             Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
             context.getParsedObjects().add(entityInstance);
-            logger.info("parsed primary key {}", pk);
+            LOGGER.info("parsed primary key {}", pk);
         }
     }
 
