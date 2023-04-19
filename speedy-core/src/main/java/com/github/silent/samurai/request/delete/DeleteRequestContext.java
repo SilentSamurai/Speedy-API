@@ -3,6 +3,7 @@ package com.github.silent.samurai.request.delete;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.RequestContext;
+import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Data;
 
 import javax.persistence.EntityManager;
@@ -15,15 +16,20 @@ public class DeleteRequestContext implements RequestContext {
 
     private final HttpServletRequest httpServletRequest;
     private final MetaModelProcessor metaModelProcessor;
+    private final ValidationProcessor validationProcessor;
     private EntityManager entityManager;
 
     private EntityMetadata entityMetadata;
     private String resource;
-    private List<Object> parsedObjects = new LinkedList<>();
+    private List<Object> objectsToBeRemoved = new LinkedList<>();
 
-    public DeleteRequestContext(HttpServletRequest httpServletRequest, MetaModelProcessor metaModelProcessor, EntityManager entityManager) {
+    public DeleteRequestContext(HttpServletRequest httpServletRequest,
+                                MetaModelProcessor metaModelProcessor,
+                                ValidationProcessor validationProcessor,
+                                EntityManager entityManager) {
         this.httpServletRequest = httpServletRequest;
         this.metaModelProcessor = metaModelProcessor;
+        this.validationProcessor = validationProcessor;
         this.entityManager = entityManager;
     }
 }

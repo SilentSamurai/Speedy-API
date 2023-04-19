@@ -76,6 +76,21 @@ class SpeedyPostTest {
     }
 
     @Test
+    void createBadException2() throws Exception {
+
+        Category category = new Category();
+        category.setName("");
+
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post("/speedy/v1.0/Category")
+                .content(new Gson().toJson(List.of(category)))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mvc.perform(createRequest)
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
     void createBadRequestException() throws Exception {
 
         Customer customer = new Customer();

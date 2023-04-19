@@ -15,12 +15,13 @@ public class DeleteDataHandler {
         this.context = context;
     }
 
-    public void process() {
+    public void process() throws Exception {
         EntityTransaction transaction = context.getEntityManager().getTransaction();
         try {
-            if (!context.getParsedObjects().isEmpty()) {
+            if (!context.getObjectsToBeRemoved().isEmpty()) {
                 transaction.begin();
-                for (Object parsedObject : context.getParsedObjects()) {
+                for (Object parsedObject : context.getObjectsToBeRemoved()) {
+                    context.getValidationProcessor().validateDeleteRequestEntity(context.getEntityMetadata(), parsedObject);
                     context.getEntityManager().remove(parsedObject);
                 }
                 transaction.commit();

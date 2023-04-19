@@ -1,7 +1,6 @@
 package com.github.silent.samurai.metamodel;
 
 import com.github.silent.samurai.enums.IgnoreType;
-import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import lombok.Data;
 
@@ -21,7 +20,6 @@ public class JpaFieldMetadata implements KeyFieldMetadata {
     private Field field;
     private Attribute<?, ?> jpaAttribute;
     private boolean isId;
-    private Class<ISpeedyCustomValidation> customValidation;
     private IgnoreType ignoreType = null;
     private Class<?> fieldType;
 

@@ -19,6 +19,7 @@ import com.github.silent.samurai.request.put.PutRequestContext;
 import com.github.silent.samurai.request.put.PutRequestParser;
 import com.github.silent.samurai.request.put.UpdateDataHandler;
 import com.github.silent.samurai.utils.ExceptionUtils;
+import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +38,14 @@ public class SpeedyFactory {
 
     private final ISpeedyConfiguration speedyConfiguration;
     private final MetaModelProcessor metaModelProcessor;
+    private final ValidationProcessor validationProcessor;
 
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) {
         this.speedyConfiguration = speedyConfiguration;
         this.metaModelProcessor = speedyConfiguration.createMetaModelProcessor();
+        this.validationProcessor = new ValidationProcessor(speedyConfiguration.getCustomValidator(), metaModelProcessor);
+        this.validationProcessor.process();
     }
 
     public void processGETRequests(HttpServletRequest request, HttpServletResponse response)
@@ -78,7 +82,7 @@ public class SpeedyFactory {
         EntityManager entityManager = null;
         try {
             entityManager = speedyConfiguration.createEntityManager();
-            PostRequestContext context = new PostRequestContext(request, metaModelProcessor, entityManager);
+            PostRequestContext context = new PostRequestContext(request, metaModelProcessor, entityManager, validationProcessor);
             new PostRequestParser(context).processBatch();
             new CreateDataHandler(context).processBatch();
             response.setStatus(HttpServletResponse.SC_OK);
@@ -96,7 +100,11 @@ public class SpeedyFactory {
         EntityManager entityManager = null;
         try {
             entityManager = speedyConfiguration.createEntityManager();
-            PutRequestContext context = new PutRequestContext(request, metaModelProcessor, entityManager);
+            PutRequestContext context = new PutRequestContext(
+                    request,
+                    metaModelProcessor,
+                    entityManager,
+                    validationProcessor);
             new PutRequestParser(context).process();
             new UpdateDataHandler(context).process();
             response.setStatus(HttpServletResponse.SC_OK);
@@ -114,7 +122,7 @@ public class SpeedyFactory {
         EntityManager entityManager = null;
         try {
             entityManager = speedyConfiguration.createEntityManager();
-            DeleteRequestContext context = new DeleteRequestContext(request, metaModelProcessor, entityManager);
+            DeleteRequestContext context = new DeleteRequestContext(request, metaModelProcessor, validationProcessor, entityManager);
             new DeleteRequestParser(context).process();
             new DeleteDataHandler(context).process();
             response.setStatus(HttpServletResponse.SC_OK);

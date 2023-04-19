@@ -1,7 +1,6 @@
 package com.github.silent.samurai;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.silent.samurai.annotations.SpeedyCustomValidation;
 import com.github.silent.samurai.annotations.SpeedyIgnore;
 import com.github.silent.samurai.enums.IgnoreType;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
@@ -78,10 +77,6 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                     }
 
                     fieldMetadata.setField(JpaMetaModelProcessor.getField(entityClass, member.getName()));
-                    SpeedyCustomValidation annotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyCustomValidation.class);
-                    if (annotation != null) {
-                        fieldMetadata.setCustomValidation(annotation.value());
-                    }
 
                     JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JsonProperty.class);
                     fieldMetadata.setOutputPropertyName(fieldMetadata.getClassFieldName());

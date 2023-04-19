@@ -42,7 +42,7 @@ public class DeleteRequestParser {
             }
             Object pk = MetadataUtil.createEntityKeyFromJSON(entityMetadata, element.getAsJsonObject());
             Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
-            context.getParsedObjects().add(entityInstance);
+            context.getObjectsToBeRemoved().add(entityInstance);
             LOGGER.info("parsed primary key {}", pk);
         }
     }

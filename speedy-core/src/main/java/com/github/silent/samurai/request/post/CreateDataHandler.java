@@ -1,13 +1,10 @@
 package com.github.silent.samurai.request.post;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityTransaction;
-import javax.validation.ConstraintViolation;
-import java.util.Set;
 
 public class CreateDataHandler {
 
@@ -20,26 +17,19 @@ public class CreateDataHandler {
     }
 
     private void saveEntity(Object entityInstance, EntityMetadata entityMetadata) {
-        Set<ConstraintViolation<Object>> constraintViolations = context.getValidator().validate(entityInstance);
-        if (!constraintViolations.isEmpty()) {
-            StringBuilder sb = new StringBuilder();
-            for (ConstraintViolation<Object> violation : constraintViolations) {
-                sb.append(violation.getMessage()).append(" | ");
-            }
-            throw new BadRequestException(sb.toString());
-        }
         context.getEntityManager().merge(entityInstance);
         context.getEntityManager().flush();
         LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
     }
 
-    public void processBatch() {
+    public void processBatch() throws Exception {
         EntityTransaction transaction = context.getEntityManager().getTransaction();
         try {
             if (!context.getParsedObjects().isEmpty()) {
                 transaction.begin();
                 EntityMetadata entityMetadata = context.getEntityMetadata();
                 for (Object parsedObject : context.getParsedObjects()) {
+                    context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
                     saveEntity(parsedObject, entityMetadata);
                 }
                 transaction.commit();
