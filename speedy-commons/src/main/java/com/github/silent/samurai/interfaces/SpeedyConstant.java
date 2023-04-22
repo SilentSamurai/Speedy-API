@@ -1,5 +1,5 @@
 package com.github.silent.samurai.interfaces;
 
-public interface Constants {
+public interface SpeedyConstant {
     String URI = "/speedy/v1.0";
 }

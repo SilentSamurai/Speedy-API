@@ -1,4 +1,4 @@
-package com.github.silent.samurai.serializers;
+package com.github.silent.samurai.docs;
 
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;

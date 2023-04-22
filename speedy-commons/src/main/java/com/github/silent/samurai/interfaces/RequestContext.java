@@ -15,6 +15,6 @@ public interface RequestContext {
 
     default String getRequestURI() throws UnsupportedEncodingException {
         String requestURI = URLDecoder.decode(getHttpServletRequest().getRequestURI(), StandardCharsets.UTF_8.name());
-        return requestURI.replaceAll(Constants.URI, "");
+        return requestURI.replaceAll(SpeedyConstant.URI, "");
     }
 }

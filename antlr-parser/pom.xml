@@ -23,9 +23,9 @@
 			<version>4.7.1</version>
 		</dependency>
 		<dependency>
-			<groupId>${parent.groupId}</groupId>
+			<groupId>${project.parent.groupId}</groupId>
 			<artifactId>speedy-commons</artifactId>
-			<version>${parent.version}</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
 

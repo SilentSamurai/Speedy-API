@@ -6,9 +6,11 @@ import com.github.silent.samurai.enums.IgnoreType;
 import com.github.silent.samurai.exceptions.ResourceNotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.metamodel.JpaFieldMetadata;
+import com.github.silent.samurai.metamodel.JpaKeyFieldMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -55,15 +57,19 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
 
     public static JpaFieldMetadata findFieldMetadata(Attribute<?, ?> attribute, Class<?> entityClass) {
         Member member = attribute.getJavaMember();
-        JpaFieldMetadata fieldMetadata = new JpaFieldMetadata();
+        JpaFieldMetadata fieldMetadata;
+
+        if (attribute instanceof SingularAttribute && ((SingularAttribute<?, ?>) attribute).isId()) {
+            JpaKeyFieldMetadata jpaKeyFieldMetadata = new JpaKeyFieldMetadata();
+            jpaKeyFieldMetadata.setId(true);
+            fieldMetadata = jpaKeyFieldMetadata;
+        } else {
+            fieldMetadata = new JpaFieldMetadata();
+        }
+
         fieldMetadata.setJpaAttribute(attribute);
         fieldMetadata.setClassFieldName(member.getName());
         fieldMetadata.setFieldType(attribute.getJavaType());
-        if (attribute instanceof SingularAttribute) {
-            fieldMetadata.setId(((SingularAttribute<?, ?>) attribute).isId());
-        } else {
-            fieldMetadata.setId(false);
-        }
 
         // MZ: Find the correct method
         for (Method method : entityClass.getMethods()) {
@@ -116,8 +122,8 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             }
             entityMetadata.getAllFields().add(memberMetadata);
             entityMetadata.getFieldMap().put(attribute.getName(), memberMetadata);
-            if (memberMetadata.isId()) {
-                entityMetadata.getKeyFields().add(memberMetadata);
+            if (memberMetadata instanceof KeyFieldMetadata) {
+                entityMetadata.getKeyFields().add((KeyFieldMetadata) memberMetadata);
             }
 
         }

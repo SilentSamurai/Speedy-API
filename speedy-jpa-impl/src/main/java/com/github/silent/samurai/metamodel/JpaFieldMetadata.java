@@ -1,7 +1,7 @@
 package com.github.silent.samurai.metamodel;
 
 import com.github.silent.samurai.enums.IgnoreType;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.interfaces.FieldMetadata;
 import lombok.Data;
 
 import javax.persistence.metamodel.Attribute;
@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
 
 
 @Data
-public class JpaFieldMetadata implements KeyFieldMetadata {
+public class JpaFieldMetadata implements FieldMetadata {
 
     private String dbColumnName;
     private String outputPropertyName;
@@ -19,7 +19,6 @@ public class JpaFieldMetadata implements KeyFieldMetadata {
     private Method setter;
     private Field field;
     private Attribute<?, ?> jpaAttribute;
-    private boolean isId;
     private IgnoreType ignoreType = null;
     private Class<?> fieldType;
 
@@ -29,11 +28,6 @@ public class JpaFieldMetadata implements KeyFieldMetadata {
 
     public boolean isCollection() {
         return jpaAttribute.isCollection();
-    }
-
-    @Override
-    public boolean isKeyField() {
-        return isId;
     }
 
     @Override

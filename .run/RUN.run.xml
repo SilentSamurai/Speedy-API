@@ -10,8 +10,6 @@
           </option>
           <option name="goals">
             <list>
-              <option value="clean" />
-              <option value="install" />
               <option value="spring-boot:run" />
             </list>
           </option>

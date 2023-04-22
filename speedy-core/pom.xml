@@ -20,17 +20,29 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>${parent.groupId}</groupId>
-			<artifactId>antlr-parser</artifactId>
-			<version>${parent.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>${parent.groupId}</groupId>
-			<artifactId>speedy-commons</artifactId>
-			<version>${parent.version}</version>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>antlr-parser</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-commons</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-models</artifactId>
+            <version>2.2.8</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.0.10</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
 
 
 </project>

@@ -1,9 +1,9 @@
 package com.github.silent.samurai.request.get;
 
-import com.github.silent.samurai.interfaces.Constants;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class GetRequestParserTest {
     @Mock
     HttpServletRequest httpServletRequest;
 
-    String UriRoot = Constants.URI;
+    String UriRoot = SpeedyConstant.URI;
 
     @BeforeEach
     void setUp() throws UnsupportedEncodingException {
