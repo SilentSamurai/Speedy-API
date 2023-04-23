@@ -1,6 +1,6 @@
 package com.github.silent.samurai.metamodel;
 
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
@@ -25,6 +25,7 @@ public class JpaEntityMetadata implements EntityMetadata {
     private Class<?> entityClass;
     private Class<?> keyClass;
     private Set<KeyFieldMetadata> keyFields = new HashSet<>();
+    private Set<FieldMetadata> associatedFields = new HashSet<>();
 
     @Override
     public boolean has(String fieldName) {
@@ -32,11 +33,11 @@ public class JpaEntityMetadata implements EntityMetadata {
     }
 
     @Override
-    public FieldMetadata field(String fieldName) throws ResourceNotFoundException {
+    public FieldMetadata field(String fieldName) throws NotFoundException {
         if (has(fieldName)) {
             return fieldMap.get(fieldName);
         }
-        throw new ResourceNotFoundException(name + "." + fieldName);
+        throw new NotFoundException(name + "." + fieldName);
     }
 
     public Set<FieldMetadata> getAllFields() {

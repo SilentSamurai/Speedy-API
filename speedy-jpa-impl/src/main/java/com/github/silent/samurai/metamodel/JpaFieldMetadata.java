@@ -1,6 +1,7 @@
 package com.github.silent.samurai.metamodel;
 
 import com.github.silent.samurai.enums.IgnoreType;
+import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import lombok.Data;
 
@@ -21,6 +22,13 @@ public class JpaFieldMetadata implements FieldMetadata {
     private Attribute<?, ?> jpaAttribute;
     private IgnoreType ignoreType = null;
     private Class<?> fieldType;
+    private boolean isInsertable;
+    private boolean isUpdatable;
+    private boolean isUnique;
+    private boolean isNullable;
+    private boolean isSerializable;
+    private boolean isDeserializable;
+    private EntityMetadata associationMetadata;
 
     public boolean isAssociation() {
         return jpaAttribute.isAssociation();

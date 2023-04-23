@@ -1,6 +1,6 @@
 package com.github.silent.samurai.interfaces;
 
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 
 import java.util.Set;
 
@@ -10,7 +10,7 @@ public interface EntityMetadata {
 
     boolean has(String fieldName);
 
-    FieldMetadata field(String fieldName) throws ResourceNotFoundException;
+    FieldMetadata field(String fieldName) throws NotFoundException;
 
     Set<FieldMetadata> getAllFields();
 
@@ -30,4 +30,5 @@ public interface EntityMetadata {
 
     Object createNewKeyInstance() throws Exception;
 
+    Set<FieldMetadata> getAssociatedFields();
 }

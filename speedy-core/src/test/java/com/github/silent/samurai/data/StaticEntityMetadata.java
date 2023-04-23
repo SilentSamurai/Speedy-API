@@ -1,6 +1,6 @@
 package com.github.silent.samurai.data;
 
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
@@ -53,7 +53,7 @@ public class StaticEntityMetadata implements EntityMetadata {
 
     @SneakyThrows
     @Override
-    public FieldMetadata field(String fieldName) throws ResourceNotFoundException {
+    public FieldMetadata field(String fieldName) throws NotFoundException {
         Field declaredField = entityClass.getDeclaredField(fieldName);
         return StaticFieldMetadata.createFieldMetadata(declaredField);
     }
@@ -115,5 +115,10 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public Object createNewKeyInstance() throws Exception {
         return keyClass.getConstructor().newInstance();
+    }
+
+    @Override
+    public Set<FieldMetadata> getAssociatedFields() {
+        return null;
     }
 }

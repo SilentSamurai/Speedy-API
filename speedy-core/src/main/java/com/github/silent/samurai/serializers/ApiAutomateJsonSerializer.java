@@ -1,5 +1,6 @@
 package com.github.silent.samurai.serializers;
 
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
@@ -22,15 +23,14 @@ public class ApiAutomateJsonSerializer {
         this.metaModelProcessor = metaModelProcessor;
     }
 
-
-    public JsonObject fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException {
+    public JsonObject fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         JsonObject json = new JsonObject();
         EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(clazz.getSimpleName());
         Gson gson = CommonUtil.getGson();
         level++;
 
-
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            if (!fieldMetadata.isSerializable()) continue;
             Object value = fieldMetadata.getEntityFieldValue(entityObject);
             if (fieldMetadata.isAssociation()) {
                 if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {
@@ -54,7 +54,7 @@ public class ApiAutomateJsonSerializer {
         return json;
     }
 
-    public JsonArray formCollection(Collection<?> collection, int serializedType) throws InvocationTargetException, IllegalAccessException {
+    public JsonArray formCollection(Collection<?> collection, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         JsonArray jsonArray = new JsonArray();
         for (Object object : collection) {
             JsonObject jsonObject = fromObject(object, object.getClass(), serializedType);

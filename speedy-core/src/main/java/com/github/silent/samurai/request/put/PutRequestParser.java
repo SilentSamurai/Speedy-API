@@ -44,9 +44,9 @@ public class PutRequestParser {
             throw new BadRequestException("Primary Key Incomplete.");
         }
 
-        Object pk = MetadataUtil.createEntityKeyFromMap(entityMetadata, keyFields);
+        Object pk = MetadataUtil.createEntityKeyFromMap(keyFields, entityMetadata);
         Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
-        MetadataUtil.updateEntityFromJson(entityMetadata, resourceFields, entityInstance);
+        MetadataUtil.updateEntityFromJson(entityMetadata, context.getEntityManager(), resourceFields, entityInstance);
         context.setEntityInstance(entityInstance);
         LOGGER.info(" test {}", entityInstance);
     }

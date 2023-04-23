@@ -3,9 +3,12 @@ package com.github.silent.samurai.validation;
 import com.github.silent.samurai.annotations.SpeedyValidator;
 import com.github.silent.samurai.enums.SpeedyRequestType;
 import com.github.silent.samurai.exceptions.BadRequestException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -17,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class ValidationProcessor {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ValidationProcessor.class);
 
     private final ISpeedyCustomValidation validationInstance;
     private final MetaModelProcessor metaModelProcessor;
@@ -34,23 +39,23 @@ public class ValidationProcessor {
     private void captureValidators() {
         Class<? extends ISpeedyCustomValidation> instance = this.validationInstance.getClass();
         for (Method declaredMethod : instance.getDeclaredMethods()) {
-            if (declaredMethod.isAnnotationPresent(SpeedyValidator.class)) {
-                SpeedyValidator annotation = declaredMethod.getAnnotation(SpeedyValidator.class);
-                if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.CREATE)) {
+            try {
+                if (declaredMethod.isAnnotationPresent(SpeedyValidator.class)) {
+                    SpeedyValidator annotation = declaredMethod.getAnnotation(SpeedyValidator.class);
                     Class<?> entityClass = annotation.value();
                     EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entityClass.getSimpleName());
-                    createValidationMethods.put(entityMetadata.getName(), declaredMethod);
+                    if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.CREATE)) {
+                        createValidationMethods.put(entityMetadata.getName(), declaredMethod);
+                    }
+                    if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.UPDATE)) {
+                        updateValidationMethods.put(entityMetadata.getName(), declaredMethod);
+                    }
+                    if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.DELETE)) {
+                        deleteValidationMethods.put(entityMetadata.getName(), declaredMethod);
+                    }
                 }
-                if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.UPDATE)) {
-                    Class<?> entityClass = annotation.value();
-                    EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entityClass.getSimpleName());
-                    updateValidationMethods.put(entityMetadata.getName(), declaredMethod);
-                }
-                if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.DELETE)) {
-                    Class<?> entityClass = annotation.value();
-                    EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entityClass.getSimpleName());
-                    deleteValidationMethods.put(entityMetadata.getName(), declaredMethod);
-                }
+            } catch (NotFoundException e) {
+                LOGGER.warn("Exception during validation capture ", e);
             }
         }
     }
@@ -61,7 +66,7 @@ public class ValidationProcessor {
         }
     }
 
-    private void defaultValidator(Object entity) {
+    private void defaultValidator(Object entity) throws BadRequestException {
         Set<ConstraintViolation<Object>> constraintViolations = validator.validate(entity);
         if (!constraintViolations.isEmpty()) {
             StringBuilder sb = new StringBuilder();

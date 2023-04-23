@@ -1,6 +1,6 @@
 package com.github.silent.samurai;
 
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.factory.AbstractFactory;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.ISpeedyConfiguration;
@@ -57,7 +57,7 @@ public class SpeedyFactory {
             new GetRequestParser(context).process();
             Optional<Object> requestData = new GetDataHandler(context).process();
             if (requestData.isEmpty()) {
-                throw new ResourceNotFoundException();
+                throw new NotFoundException();
             }
             IResponseSerializer jsonSerializer = AbstractFactory.getInstance().getSerializerFactory()
                     .createService("JSON", context);

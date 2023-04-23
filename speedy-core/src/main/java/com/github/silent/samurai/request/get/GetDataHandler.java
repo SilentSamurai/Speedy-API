@@ -52,7 +52,7 @@ public class GetDataHandler {
             requestObject = query.getResultList();
         } else {
             EntityMetadata entityMetadata = context.getResourceMetadata();
-            Object primaryKeyObject = MetadataUtil.createEntityKeyFromMap(entityMetadata, context.getKeywords());
+            Object primaryKeyObject = MetadataUtil.createEntityKeyFromMap(context.getKeywords(), entityMetadata);
             requestObject = context.getEntityManager().find(entityMetadata.getEntityClass(), primaryKeyObject);
         }
         return Optional.ofNullable(requestObject);

@@ -2,7 +2,7 @@ package com.github.silent.samurai.request.get;
 
 import com.github.silent.samurai.AntlrParser;
 import com.github.silent.samurai.Request;
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
@@ -27,10 +27,10 @@ public class GetRequestParser {
         context.setRequest(request);
     }
 
-    private boolean updateSerializationType() {
+    private boolean updateSerializationType() throws NotFoundException {
         context.setSerializationType(IResponseSerializer.MULTIPLE_ENTITY);
         if (context.getResourceMetadata() == null) {
-            throw new ResourceNotFoundException("Entity Not Found " + context.getRequest().getResource());
+            throw new NotFoundException("Entity Not Found " + context.getRequest().getResource());
         }
         EntityMetadata resource = context.getResourceMetadata();
         if (MetadataUtil.hasOnlyPrimaryKeyFields(resource, context.getKeywords().keySet())) {
@@ -41,7 +41,7 @@ public class GetRequestParser {
         return false;
     }
 
-    private void processFilters() {
+    private void processFilters() throws NotFoundException {
         List<String> arguments = context.getRequest().getArguments();
         Map<String, String> keywords = context.getRequest().getKeywords();
         if (!arguments.isEmpty()) {
@@ -71,13 +71,13 @@ public class GetRequestParser {
         }
     }
 
-    private void processResource() {
+    private void processResource() throws NotFoundException {
         String resource = context.getRequest().getResource();
         EntityMetadata entityMetadata = context.getMetaModelProcessor().findEntityMetadata(resource);
         context.setResourceMetadata(entityMetadata);
     }
 
-    public void process() throws UnsupportedEncodingException {
+    public void process() throws UnsupportedEncodingException, NotFoundException {
         parseURI(context.getRequestURI());
         processResource();
         processFilters();

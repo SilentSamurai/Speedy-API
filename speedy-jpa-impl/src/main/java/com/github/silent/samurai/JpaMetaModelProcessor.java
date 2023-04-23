@@ -3,7 +3,7 @@ package com.github.silent.samurai;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.annotations.SpeedyIgnore;
 import com.github.silent.samurai.enums.IgnoreType;
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
@@ -11,29 +11,31 @@ import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.metamodel.JpaKeyFieldMetadata;
+import com.google.gson.annotations.Expose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.persistence.Column;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.GeneratedValue;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
-import java.lang.reflect.Field;
-import java.lang.reflect.Member;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class JpaMetaModelProcessor implements MetaModelProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModelProcessor.class);
 
-    private final Map<String, EntityMetadata> entityMap = new HashMap<>();
+    private final Map<String, JpaEntityMetadata> entityMap = new HashMap<>();
+    private final Map<Class<?>, JpaEntityMetadata> typeMap = new HashMap<>();
 
     public JpaMetaModelProcessor(EntityManagerFactory entityManagerFactory) {
         Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
@@ -41,18 +43,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             this.addEntity(entityType);
             LOGGER.info("registering resources {}", entityType.getName());
         }
-    }
-
-    public static Field getField(Class<?> clazz, String fieldName) throws IllegalStateException {
-        try {
-            return clazz.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException var3) {
-            if (clazz.getSuperclass() != null) {
-                return getField(clazz.getSuperclass(), fieldName);
-            } else {
-                throw new IllegalStateException("Could not locate field '" + fieldName + "' on class " + clazz);
-            }
-        }
+        processAssociations();
     }
 
     public static JpaFieldMetadata findFieldMetadata(Attribute<?, ?> attribute, Class<?> entityClass) {
@@ -90,9 +81,34 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                         fieldMetadata.setOutputPropertyName(propertyAnnotation.value());
                     }
 
+                    fieldMetadata.setInsertable(true);
+                    fieldMetadata.setUnique(false);
+                    fieldMetadata.setUpdatable(true);
+                    fieldMetadata.setNullable(false);
+
                     Column columnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Column.class);
                     if (columnAnnotation != null) {
                         fieldMetadata.setDbColumnName(columnAnnotation.name());
+                        fieldMetadata.setInsertable(columnAnnotation.insertable());
+                        fieldMetadata.setUnique(columnAnnotation.unique());
+                        fieldMetadata.setUpdatable(columnAnnotation.updatable());
+                        fieldMetadata.setNullable(columnAnnotation.nullable());
+                    }
+
+                    GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), GeneratedValue.class);
+                    if (generatedValueAnnotation != null) {
+                        fieldMetadata.setInsertable(false);
+                        fieldMetadata.setUpdatable(false);
+                        fieldMetadata.setNullable(false);
+                    }
+
+                    fieldMetadata.setSerializable(true);
+                    fieldMetadata.setDeserializable(true);
+
+                    Expose gsonExposeAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Expose.class);
+                    if (gsonExposeAnnotation != null) {
+                        fieldMetadata.setSerializable(gsonExposeAnnotation.serialize());
+                        fieldMetadata.setDeserializable(gsonExposeAnnotation.deserialize());
                     }
 
                 } catch (IllegalStateException e) {
@@ -101,6 +117,43 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             }
         }
         return fieldMetadata;
+    }
+
+    public static Field getField(Class<?> clazz, String fieldName) throws IllegalStateException {
+        try {
+            return clazz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException var3) {
+            if (clazz.getSuperclass() != null) {
+                return getField(clazz.getSuperclass(), fieldName);
+            } else {
+                throw new IllegalStateException("Could not locate field '" + fieldName + "' on class " + clazz);
+            }
+        }
+    }
+
+    private void processAssociations() {
+        for (JpaEntityMetadata entityMetadata : entityMap.values()) {
+            for (JpaFieldMetadata fieldMetadata : entityMetadata.getFieldMap().values()) {
+                if (fieldMetadata.isAssociation()) {
+                    Class<?> fieldType = fieldMetadata.getFieldType();
+                    if (fieldMetadata.isCollection()) {
+                        Type genericType = fieldMetadata.getField().getGenericType();
+                        if (genericType instanceof ParameterizedType) {
+                            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+                            Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+                            if (actualTypeArguments.length > 0) {
+                                fieldType = (Class<?>) actualTypeArguments[0];
+                            }
+                        }
+                    }
+                    if (typeMap.containsKey(fieldType)) {
+                        fieldMetadata.setAssociationMetadata(typeMap.get(fieldType));
+                    } else {
+                        throw new RuntimeException("Entity not found " + fieldType);
+                    }
+                }
+            }
+        }
     }
 
     public void addEntity(EntityType<?> entityType) {
@@ -126,25 +179,45 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                 entityMetadata.getKeyFields().add((KeyFieldMetadata) memberMetadata);
             }
 
+            if (memberMetadata.isAssociation()) {
+                entityMetadata.getAssociatedFields().add(memberMetadata);
+            }
+
         }
         entityMap.put(entityType.getName(), entityMetadata);
+        typeMap.put(entityMetadata.getEntityClass(), entityMetadata);
     }
 
     @Override
     public Collection<EntityMetadata> getAllEntityMetadata() {
-        return entityMap.values();
+        return entityMap.values().stream().map(em -> (EntityMetadata) em).collect(Collectors.toUnmodifiableList());
     }
 
     @Override
-    public EntityMetadata findEntityMetadata(String entityName) throws ResourceNotFoundException {
+    public boolean hasEntityMetadata(Class<?> entityType) {
+        return typeMap.containsKey(entityType);
+    }
+
+    @Override
+    public EntityMetadata findEntityMetadata(Class<?> entityType) throws NotFoundException {
+        return typeMap.get(entityType);
+    }
+
+    @Override
+    public boolean hasEntityMetadata(String entityName) {
+        return entityMap.containsKey(entityName);
+    }
+
+    @Override
+    public EntityMetadata findEntityMetadata(String entityName) throws NotFoundException {
         if (entityMap.containsKey(entityName)) {
             return entityMap.get(entityName);
         }
-        throw new ResourceNotFoundException(entityName);
+        throw new NotFoundException(entityName);
     }
 
     @Override
-    public FieldMetadata findFieldMetadata(String entityName, String fieldName) throws ResourceNotFoundException {
+    public FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException {
         EntityMetadata entityMetadata = findEntityMetadata(entityName);
         return entityMetadata.field(entityName);
     }

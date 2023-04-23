@@ -1,5 +1,6 @@
 package com.github.silent.samurai.request.get;
 
+import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
@@ -42,7 +43,7 @@ class GetRequestParserTest {
     String UriRoot = SpeedyConstant.URI;
 
     @BeforeEach
-    void setUp() throws UnsupportedEncodingException {
+    void setUp() throws UnsupportedEncodingException, NotFoundException {
         context = new GetRequestContext(httpServletRequest, metaModelProcessor, entityManager);
         getRequestParser = new GetRequestParser(context);
         Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
@@ -50,7 +51,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest() throws UnsupportedEncodingException {
+    void processRequest() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer");
         getRequestParser.process();
         assertEquals("Customer", context.getRequest().getResource());
@@ -62,13 +63,13 @@ class GetRequestParserTest {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "Customer");
         try {
             getRequestParser.process();
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | NotFoundException e) {
             assertEquals("Not a valid URL", e.getMessage());
         }
     }
 
     @Test
-    void processRequest3() throws UnsupportedEncodingException {
+    void processRequest3() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(entityMetadata.getKeyFieldNames()).thenReturn(Sets.newHashSet("id"));
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer('1')");
         getRequestParser.process();
@@ -80,7 +81,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest2() throws UnsupportedEncodingException {
+    void processRequest2() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer/");
         getRequestParser.process();
 
@@ -89,7 +90,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest4() throws UnsupportedEncodingException {
+    void processRequest4() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(entityMetadata.getKeyFieldNames()).thenReturn(Sets.newHashSet("id"));
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer('1')/");
         getRequestParser.process();
@@ -101,7 +102,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest6() throws UnsupportedEncodingException {
+    void processRequest6() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(entityMetadata.getKeyFieldNames()).thenReturn(Sets.newHashSet("id"));
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(id='1')");
         getRequestParser.process();
@@ -113,7 +114,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest6_1() throws UnsupportedEncodingException {
+    void processRequest6_1() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(id='1', name='apple')");
         getRequestParser.process();
 
@@ -125,7 +126,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest7() throws UnsupportedEncodingException {
+    void processRequest7() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name='apple')");
         getRequestParser.process();
 
@@ -136,7 +137,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest7_1() throws UnsupportedEncodingException {
+    void processRequest7_1() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name='apple?&*')");
         getRequestParser.process();
 
@@ -147,7 +148,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest8() throws UnsupportedEncodingException {
+    void processRequest8() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer(name='Test-01%42')");
         getRequestParser.process();
 
@@ -158,7 +159,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest9() throws UnsupportedEncodingException {
+    void processRequest9() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer?$format='JSON'");
         getRequestParser.process();
 
@@ -169,7 +170,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest10() throws UnsupportedEncodingException {
+    void processRequest10() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer?$format='JSON'&$metadata='true'");
         getRequestParser.process();
 
@@ -181,7 +182,7 @@ class GetRequestParserTest {
     }
 
     @Test
-    void processRequest10_1() throws UnsupportedEncodingException {
+    void processRequest10_1() throws UnsupportedEncodingException, NotFoundException {
         Mockito.when(httpServletRequest.getRequestURI()).thenReturn(UriRoot + "/Customer?$format='JSON&'&$metadata='true'");
         getRequestParser.process();
 

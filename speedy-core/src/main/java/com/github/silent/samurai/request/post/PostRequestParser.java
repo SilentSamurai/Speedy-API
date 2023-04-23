@@ -38,7 +38,7 @@ public class PostRequestParser {
         }
         JsonArray batchOfEntities = jsonElement.getAsJsonArray();
         for (JsonElement element : batchOfEntities) {
-            Object entityInstance = MetadataUtil.createEntityObjectFromJSON(entityMetadata, element.getAsJsonObject());
+            Object entityInstance = MetadataUtil.createEntityFromJSON(entityMetadata, element.getAsJsonObject(), context.getEntityManager());
             LOGGER.info("parsed entity {}", entityInstance);
             context.getParsedObjects().add(entityInstance);
         }

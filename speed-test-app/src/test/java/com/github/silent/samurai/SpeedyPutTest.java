@@ -1,6 +1,7 @@
 package com.github.silent.samurai;
 
 import com.github.silent.samurai.entity.Category;
+import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.service.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ public class SpeedyPutTest {
 
         Assertions.assertNotNull(category.getId());
 
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put("/speedy/v1.0/Category(id='" + category.getId() + "')")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstant.URI + "/Category(id='" + category.getId() + "')")
                 .content("{'name':'generated-category-update-modified'}")
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -60,7 +61,7 @@ public class SpeedyPutTest {
 
     @Test
     void incompleteKey() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put("/speedy/v1.0/Category(name='not-there')")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstant.URI + "/Category(name='not-there')")
                 .content("{'name':'generated-cat'}")
                 .contentType(MediaType.APPLICATION_JSON);
 

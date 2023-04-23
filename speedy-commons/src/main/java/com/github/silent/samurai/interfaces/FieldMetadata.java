@@ -10,6 +10,18 @@ public interface FieldMetadata {
 
     boolean isCollection();
 
+    boolean isInsertable();
+
+    boolean isUpdatable();
+
+    boolean isUnique();
+
+    boolean isNullable();
+
+    boolean isSerializable();
+
+    boolean isDeserializable();
+
     String getClassFieldName();
 
     String getDbColumnName();
@@ -19,6 +31,8 @@ public interface FieldMetadata {
     IgnoreType getIgnoreType();
 
     Class<?> getFieldType();
+
+    EntityMetadata getAssociationMetadata();
 
     boolean setEntityFieldWithValue(Object entity, Object value);
 }

@@ -1,6 +1,7 @@
 package com.github.silent.samurai.data;
 
 import com.github.silent.samurai.enums.IgnoreType;
+import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -28,12 +29,42 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 
     @Override
     public boolean isAssociation() {
-        return false;
+        return field.getType().isAssignableFrom(AssociationEntity.class);
     }
 
     @Override
     public boolean isCollection() {
         return false;
+    }
+
+    @Override
+    public boolean isInsertable() {
+        return true;
+    }
+
+    @Override
+    public boolean isUpdatable() {
+        return true;
+    }
+
+    @Override
+    public boolean isUnique() {
+        return false;
+    }
+
+    @Override
+    public boolean isNullable() {
+        return false;
+    }
+
+    @Override
+    public boolean isSerializable() {
+        return true;
+    }
+
+    @Override
+    public boolean isDeserializable() {
+        return true;
     }
 
     @Override
@@ -64,6 +95,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     @Override
     public Class<?> getFieldType() {
         return field.getType();
+    }
+
+    @Override
+    public EntityMetadata getAssociationMetadata() {
+        return StaticEntityMetadata.createEntityMetadata(AssociationEntity.class);
     }
 
     @SneakyThrows

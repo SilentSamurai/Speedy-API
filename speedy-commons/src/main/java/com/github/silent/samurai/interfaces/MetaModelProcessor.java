@@ -1,6 +1,6 @@
 package com.github.silent.samurai.interfaces;
 
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 
 import java.util.Collection;
 
@@ -8,7 +8,13 @@ public interface MetaModelProcessor {
 
     Collection<EntityMetadata> getAllEntityMetadata();
 
-    EntityMetadata findEntityMetadata(String entityName) throws ResourceNotFoundException;
+    boolean hasEntityMetadata(Class<?> entityType);
 
-    FieldMetadata findFieldMetadata(String entityName, String fieldName) throws ResourceNotFoundException;
+    EntityMetadata findEntityMetadata(Class<?> entityType) throws NotFoundException;
+
+    boolean hasEntityMetadata(String entityName);
+
+    EntityMetadata findEntityMetadata(String entityName) throws NotFoundException;
+
+    FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException;
 }

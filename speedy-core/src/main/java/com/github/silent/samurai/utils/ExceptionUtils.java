@@ -1,7 +1,7 @@
 package com.github.silent.samurai.utils;
 
 import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.exceptions.ResourceNotFoundException;
+import com.github.silent.samurai.exceptions.NotFoundException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
 
@@ -15,7 +15,7 @@ public class ExceptionUtils {
     public static Map<String, Integer> exceptionToStatusMap = new HashMap<>();
 
     static {
-        exceptionToStatusMap.put(ResourceNotFoundException.class.getName(), HttpServletResponse.SC_NOT_FOUND);
+        exceptionToStatusMap.put(NotFoundException.class.getName(), HttpServletResponse.SC_NOT_FOUND);
         exceptionToStatusMap.put(BadRequestException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
         exceptionToStatusMap.put(ConstraintViolationException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
         exceptionToStatusMap.put(DataException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);

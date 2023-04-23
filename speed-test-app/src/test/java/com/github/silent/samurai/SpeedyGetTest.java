@@ -1,5 +1,6 @@
 package com.github.silent.samurai;
 
+import com.github.silent.samurai.interfaces.SpeedyConstant;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ class SpeedyGetTest {
     @Test
     void getViaPrimaryKey() throws Exception {
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get("/speedy/v1.0/Category(id='1')")
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + "/Category(id='1')")
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(getRequest)
@@ -70,7 +71,7 @@ class SpeedyGetTest {
     @Test
     void getVia() throws Exception {
 
-        MvcResult mvcResult = mvc.perform(get("/speedy/v1.0/Category(id='not-there')")
+        MvcResult mvcResult = mvc.perform(get(SpeedyConstant.URI + "/Category(id='not-there')")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andReturn();
@@ -79,7 +80,7 @@ class SpeedyGetTest {
     @Test
     void getAll() throws Exception {
 
-        mvc.perform(get("/speedy/v1.0/Category/")
+        mvc.perform(get(SpeedyConstant.URI + "/Category/")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -98,7 +99,7 @@ class SpeedyGetTest {
     @Test
     void getViaFilter() throws Exception {
 
-        mvc.perform(get("/speedy/v1.0/Category(name='cat-1-1')")
+        mvc.perform(get(SpeedyConstant.URI + "/Category(name='cat-1-1')")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
@@ -118,7 +119,7 @@ class SpeedyGetTest {
     @Test
     void getViaFilterArg() throws Exception {
 
-        mvc.perform(get("/speedy/v1.0/Category('1')")
+        mvc.perform(get(SpeedyConstant.URI + "/Category('1')")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())

@@ -1,6 +1,7 @@
 package com.github.silent.samurai;
 
 import com.github.silent.samurai.entity.Category;
+import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.service.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -48,11 +49,11 @@ public class SpeedyDeleteTest {
         long count = categoryRepository.count();
 
 
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete("/speedy/v1.0/Category/")
+        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
                 .content("[{'id':'" + category.getId() + "'}]")
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mvc.perform(updateRequest)
+        mvc.perform(deleteRequest)
                 .andExpect(status().isOk());
 
         Assertions.assertEquals(count - 1, categoryRepository.count());
@@ -61,7 +62,7 @@ public class SpeedyDeleteTest {
 
     @Test
     void incompleteKey() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete("/speedy/v1.0/Category/")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
                 .content("[{'name':'1'}]")
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -71,13 +72,13 @@ public class SpeedyDeleteTest {
 
     @Test
     void emptyContent() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete("/speedy/v1.0/Category/")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isBadRequest());
 
-        updateRequest = MockMvcRequestBuilders.delete("/speedy/v1.0/Category/")
+        updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
                 .content("")
                 .contentType(MediaType.APPLICATION_JSON);
 

@@ -56,6 +56,28 @@ public class OpenApiGenerator {
         this.metaModelProcessor = metaModelProcessor;
     }
 
+    public void generate(OpenAPI openApi) {
+        Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
+        for (EntityMetadata entityMetadata : allEntityMetadata) {
+
+            PathItem basePathItem = new PathItem();
+            PathItem identifierPathItem = new PathItem();
+            PathItem queryPathItem = new PathItem();
+
+            postOperation(entityMetadata, openApi, basePathItem);
+            putOperation(entityMetadata, openApi, identifierPathItem);
+            deleteOperation(entityMetadata, openApi, basePathItem);
+            getOperation(entityMetadata, openApi, basePathItem);
+            getWithFieldQuery(entityMetadata, openApi, queryPathItem);
+            getWithPrimaryFields(entityMetadata, openApi, identifierPathItem);
+
+
+            openApi.path(getBasePath(entityMetadata), basePathItem);
+            openApi.path(getParameterPath(entityMetadata, "identifiers"), identifierPathItem);
+            openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
+        }
+    }
+
     private void postOperation(EntityMetadata entityMetadata, OpenAPI openAPI, PathItem pathItem) {
         Operation operation = new Operation();
         operation.operationId("CreateMultiple" + entityMetadata.getName());
@@ -83,9 +105,11 @@ public class OpenApiGenerator {
         createSchema.type("object");
         List<String> required = new LinkedList<>();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            createSchema.addProperty(fieldMetadata.getClassFieldName(), resolveFieldSchema(fieldMetadata));
-            if (fieldMetadata instanceof KeyFieldMetadata) {
-                required.add(fieldMetadata.getClassFieldName());
+            if (fieldMetadata.isInsertable()) {
+                createSchema.addProperty(fieldMetadata.getOutputPropertyName(), requestFieldSchema(fieldMetadata));
+                if (fieldMetadata instanceof KeyFieldMetadata) {
+                    required.add(fieldMetadata.getOutputPropertyName());
+                }
             }
         }
         createSchema.required(required);
@@ -133,8 +157,8 @@ public class OpenApiGenerator {
         updateSchema.type("object");
         Set<FieldMetadata> allFields = entityMetadata.getAllFields();
         for (FieldMetadata fieldMetadata : allFields) {
-            if (!(fieldMetadata instanceof KeyFieldMetadata)) {
-                updateSchema.addProperty(fieldMetadata.getClassFieldName(), resolveFieldSchema(fieldMetadata));
+            if (!(fieldMetadata instanceof KeyFieldMetadata) && fieldMetadata.isUpdatable()) {
+                updateSchema.addProperty(fieldMetadata.getOutputPropertyName(), requestFieldSchema(fieldMetadata));
             }
         }
         openAPI.getComponents().addSchemas(getSchemaName("put", entityMetadata, false, false), updateSchema);
@@ -150,7 +174,7 @@ public class OpenApiGenerator {
                 .description("Fields needed for deletion")
                 .content(new Content()
                         .addMediaType(APPLICATION_JSON_VALUE, new MediaType()
-                                .schema(new Schema().$ref(
+                                .schema(new Schema<>().$ref(
                                                 getSchemaName("delete", entityMetadata, true, false)
                                         )
                                 )
@@ -166,11 +190,11 @@ public class OpenApiGenerator {
         pathItem.delete(operation);
 
         List<String> required = new LinkedList<>();
-        Schema deleteSchema = new Schema();
+        Schema<String> deleteSchema = new Schema<>();
         deleteSchema.type("object");
         for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
-            deleteSchema.addProperty(fieldMetadata.getClassFieldName(), resolveFieldSchema(fieldMetadata));
-            required.add(fieldMetadata.getClassFieldName());
+            deleteSchema.addProperty(fieldMetadata.getOutputPropertyName(), requestFieldSchema(fieldMetadata));
+            required.add(fieldMetadata.getOutputPropertyName());
         }
         deleteSchema.required(required);
         openAPI.getComponents()
@@ -227,7 +251,7 @@ public class OpenApiGenerator {
                         .addMediaType(APPLICATION_JSON_VALUE, new MediaType()
                                 .schema(
                                         wrapInPayload(
-                                                getSchemaName("get", entityMetadata, true, false)
+                                                getSchemaName("getSingle", entityMetadata, true, false)
                                         )
                                 )
                         )
@@ -235,6 +259,15 @@ public class OpenApiGenerator {
         );
         operation.responses(apiResponses);
         identifierPathItem.get(operation);
+
+        Schema<String> getSchema = new Schema<>();
+        getSchema.type("object");
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            if (!fieldMetadata.isSerializable()) continue;
+            getSchema.addProperty(fieldMetadata.getOutputPropertyName(), responseFieldSchema(fieldMetadata));
+        }
+        Components components = openAPI.getComponents();
+        components.addSchemas(getSchemaName("getSingle", entityMetadata, false, false), getSchema);
     }
 
     private void getOperation(EntityMetadata entityMetadata, OpenAPI openAPI, PathItem pathItem) {
@@ -258,11 +291,11 @@ public class OpenApiGenerator {
         operation.responses(apiResponses);
         pathItem.get(operation);
 
-        Schema getSchema = new Schema();
+        Schema<String> getSchema = new Schema<>();
         getSchema.type("object");
-        Set<FieldMetadata> allFields = entityMetadata.getAllFields();
-        for (FieldMetadata fieldMetadata : allFields) {
-            getSchema.addProperty(fieldMetadata.getClassFieldName(), resolveFieldSchema(fieldMetadata));
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            if (!fieldMetadata.isSerializable() || fieldMetadata.isAssociation()) continue;
+            getSchema.addProperty(fieldMetadata.getOutputPropertyName(), basicFieldSchema(fieldMetadata));
         }
         Components components = openAPI.getComponents();
         components.addSchemas(getSchemaName("get", entityMetadata, false, false), getSchema);
@@ -273,27 +306,6 @@ public class OpenApiGenerator {
         );
     }
 
-    public void generate(OpenAPI openApi) {
-        Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
-        for (EntityMetadata entityMetadata : allEntityMetadata) {
-
-            PathItem basePathItem = new PathItem();
-            PathItem identifierPathItem = new PathItem();
-            PathItem queryPathItem = new PathItem();
-
-            postOperation(entityMetadata, openApi, basePathItem);
-            putOperation(entityMetadata, openApi, identifierPathItem);
-            deleteOperation(entityMetadata, openApi, basePathItem);
-            getOperation(entityMetadata, openApi, basePathItem);
-            getWithFieldQuery(entityMetadata, openApi, queryPathItem);
-            getWithPrimaryFields(entityMetadata, openApi, identifierPathItem);
-
-
-            openApi.path(getBasePath(entityMetadata), basePathItem);
-            openApi.path(getParameterPath(entityMetadata, "identifiers"), identifierPathItem);
-            openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
-        }
-    }
 
     private String getSchemaName(String operation, EntityMetadata entityMetadata, boolean returnRef, boolean isMultiple) {
         StringBuilder sb = new StringBuilder();
@@ -307,7 +319,47 @@ public class OpenApiGenerator {
         return sb.toString();
     }
 
-    private Schema resolveFieldSchema(FieldMetadata fieldMetadata) {
+    private Schema responseFieldSchema(FieldMetadata fieldMetadata) {
+        if (fieldMetadata.isAssociation()) {
+            EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+            Schema<String> schema = new Schema<>();
+            schema.type("object");
+            for (FieldMetadata childKeyField : associationMetadata.getAllFields()) {
+                if (!fieldMetadata.isSerializable()) continue;
+                schema.addProperty(childKeyField.getOutputPropertyName(), basicFieldSchema(childKeyField));
+            }
+            if (fieldMetadata.isCollection()) {
+                return new Schema<>().type("array").items(schema);
+            } else {
+                return schema;
+            }
+        } else {
+            return basicFieldSchema(fieldMetadata);
+        }
+    }
+
+    private Schema requestFieldSchema(FieldMetadata fieldMetadata) {
+        if (fieldMetadata.isAssociation()) {
+            Schema<String> schema = new Schema<>();
+            schema.type("object");
+            List<String> required = new LinkedList<>();
+            for (FieldMetadata childKeyField : fieldMetadata.getAssociationMetadata().getKeyFields()) {
+                if (!fieldMetadata.isSerializable()) continue;
+                schema.addProperty(childKeyField.getOutputPropertyName(), basicFieldSchema(childKeyField));
+                required.add(childKeyField.getOutputPropertyName());
+            }
+            schema.required(required);
+            if (fieldMetadata.isCollection()) {
+                return new Schema<>().type("array").items(schema);
+            } else {
+                return schema;
+            }
+        } else {
+            return basicFieldSchema(fieldMetadata);
+        }
+    }
+
+    private Schema basicFieldSchema(FieldMetadata fieldMetadata) {
         if (PRIMITIVE_TYPE_TO_SCHEMA_MAP.containsKey(fieldMetadata.getFieldType())) {
             return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(fieldMetadata.getFieldType());
         } else {
@@ -351,10 +403,10 @@ public class OpenApiGenerator {
             Iterator<KeyFieldMetadata> iterator = entityMetadata.getKeyFields().iterator();
             while (iterator.hasNext()) {
                 KeyFieldMetadata fieldMetadata = iterator.next();
-                sb.append(fieldMetadata.getClassFieldName())
+                sb.append(fieldMetadata.getOutputPropertyName())
                         .append("=")
                         .append("'")
-                        .append(resolveFieldSchema(fieldMetadata).getFormat())
+                        .append(basicFieldSchema(fieldMetadata).getFormat())
                         .append("'");
                 if (iterator.hasNext()) {
                     sb.append(", ");
@@ -364,10 +416,10 @@ public class OpenApiGenerator {
             Iterator<FieldMetadata> iterator = entityMetadata.getAllFields().iterator();
             while (iterator.hasNext()) {
                 FieldMetadata fieldMetadata = iterator.next();
-                sb.append(fieldMetadata.getClassFieldName())
+                sb.append(fieldMetadata.getOutputPropertyName())
                         .append("=")
                         .append("'")
-                        .append(resolveFieldSchema(fieldMetadata).getFormat())
+                        .append(basicFieldSchema(fieldMetadata).getFormat())
                         .append("'");
                 if (iterator.hasNext()) {
                     sb.append(", ");
