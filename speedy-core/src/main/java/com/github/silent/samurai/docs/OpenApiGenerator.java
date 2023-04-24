@@ -14,41 +14,11 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 public class OpenApiGenerator {
-
-    private static final Map<Class<?>, Schema<?>> PRIMITIVE_TYPE_TO_SCHEMA_MAP = new HashMap<>();
-
-    static {
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(boolean.class, new Schema<>().type("boolean"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(byte.class, new Schema<>().type("integer").format("int8"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(short.class, new Schema<>().type("integer").format("int16"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(int.class, new Schema<>().type("integer").format("int32"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(long.class, new Schema<>().type("integer").format("int64"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(float.class, new Schema<>().type("number").format("float"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(double.class, new Schema<>().type("number").format("double"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(char.class, new Schema<>().type("string").format("char"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(String.class, new Schema<>().type("string"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Boolean.class, new Schema<>().type("boolean"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Byte.class, new Schema<>().type("integer").format("int8"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Short.class, new Schema<>().type("integer").format("int16"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Integer.class, new Schema<>().type("integer").format("int32"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Long.class, new Schema<>().type("integer").format("int64"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Float.class, new Schema<>().type("number").format("float"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Double.class, new Schema<>().type("number").format("double"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Character.class, new Schema<>().type("string").format("char"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Instant.class, new Schema<>().type("string").format("timestamp"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Date.class, new Schema<>().type("string").format("date"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(java.util.Date.class, new Schema<>().type("string").format("date"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(Timestamp.class, new Schema<>().type("string").format("timestamp"));
-        PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(UUID.class, new Schema<>().type("string").format("uuid"));
-    }
 
     private final MetaModelProcessor metaModelProcessor;
 
@@ -96,7 +66,7 @@ public class OpenApiGenerator {
         );
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", new ApiResponse()
-                .description("successful save.")
+                .description("successful creation.")
         );
         operation.responses(apiResponses);
         pathItem.post(operation);
@@ -106,7 +76,7 @@ public class OpenApiGenerator {
         List<String> required = new LinkedList<>();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (fieldMetadata.isInsertable()) {
-                createSchema.addProperty(fieldMetadata.getOutputPropertyName(), requestFieldSchema(fieldMetadata));
+                createSchema.addProperty(fieldMetadata.getOutputPropertyName(), OASGenerator.generateRequestSchema(fieldMetadata));
                 if (fieldMetadata instanceof KeyFieldMetadata) {
                     required.add(fieldMetadata.getOutputPropertyName());
                 }
@@ -132,7 +102,7 @@ public class OpenApiGenerator {
                         .name("identifiers")
                         .in("path")
                         .allowEmptyValue(true)
-                        .schema(PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(String.class))
+                        .schema(OASGenerator.basicShema(String.class))
                         .example(getQueryExample(entityMetadata, true))
         );
         operation.requestBody(new RequestBody()
@@ -158,7 +128,7 @@ public class OpenApiGenerator {
         Set<FieldMetadata> allFields = entityMetadata.getAllFields();
         for (FieldMetadata fieldMetadata : allFields) {
             if (!(fieldMetadata instanceof KeyFieldMetadata) && fieldMetadata.isUpdatable()) {
-                updateSchema.addProperty(fieldMetadata.getOutputPropertyName(), requestFieldSchema(fieldMetadata));
+                updateSchema.addProperty(fieldMetadata.getOutputPropertyName(), OASGenerator.generateRequestSchema(fieldMetadata));
             }
         }
         openAPI.getComponents().addSchemas(getSchemaName("put", entityMetadata, false, false), updateSchema);
@@ -184,7 +154,7 @@ public class OpenApiGenerator {
 
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", new ApiResponse()
-                .description("successful delete.")
+                .description("successful deletion.")
         );
         operation.responses(apiResponses);
         pathItem.delete(operation);
@@ -193,7 +163,7 @@ public class OpenApiGenerator {
         Schema<String> deleteSchema = new Schema<>();
         deleteSchema.type("object");
         for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
-            deleteSchema.addProperty(fieldMetadata.getOutputPropertyName(), requestFieldSchema(fieldMetadata));
+            deleteSchema.addProperty(fieldMetadata.getOutputPropertyName(), OASGenerator.generateRequestSchema(fieldMetadata));
             required.add(fieldMetadata.getOutputPropertyName());
         }
         deleteSchema.required(required);
@@ -211,7 +181,7 @@ public class OpenApiGenerator {
                         .name("query")
                         .in("path")
                         .allowEmptyValue(true)
-                        .schema(PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(String.class))
+                        .schema(OASGenerator.basicShema(String.class))
                         .example(getQueryExample(entityMetadata, false))
         );
         ApiResponses apiResponses = new ApiResponses();
@@ -241,7 +211,7 @@ public class OpenApiGenerator {
                         .name("identifiers")
                         .in("path")
                         .allowEmptyValue(true)
-                        .schema(PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(String.class))
+                        .schema(OASGenerator.basicShema(String.class))
                         .example(getQueryExample(entityMetadata, true))
         );
         ApiResponses apiResponses = new ApiResponses();
@@ -264,7 +234,7 @@ public class OpenApiGenerator {
         getSchema.type("object");
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable()) continue;
-            getSchema.addProperty(fieldMetadata.getOutputPropertyName(), responseFieldSchema(fieldMetadata));
+            getSchema.addProperty(fieldMetadata.getOutputPropertyName(), OASGenerator.singleItemResponse(fieldMetadata));
         }
         Components components = openAPI.getComponents();
         components.addSchemas(getSchemaName("getSingle", entityMetadata, false, false), getSchema);
@@ -295,7 +265,7 @@ public class OpenApiGenerator {
         getSchema.type("object");
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || fieldMetadata.isAssociation()) continue;
-            getSchema.addProperty(fieldMetadata.getOutputPropertyName(), basicFieldSchema(fieldMetadata));
+            getSchema.addProperty(fieldMetadata.getOutputPropertyName(), OASGenerator.generateBasicSchema(fieldMetadata));
         }
         Components components = openAPI.getComponents();
         components.addSchemas(getSchemaName("get", entityMetadata, false, false), getSchema);
@@ -319,60 +289,13 @@ public class OpenApiGenerator {
         return sb.toString();
     }
 
-    private Schema responseFieldSchema(FieldMetadata fieldMetadata) {
-        if (fieldMetadata.isAssociation()) {
-            EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-            Schema<String> schema = new Schema<>();
-            schema.type("object");
-            for (FieldMetadata childKeyField : associationMetadata.getAllFields()) {
-                if (!fieldMetadata.isSerializable()) continue;
-                schema.addProperty(childKeyField.getOutputPropertyName(), basicFieldSchema(childKeyField));
-            }
-            if (fieldMetadata.isCollection()) {
-                return new Schema<>().type("array").items(schema);
-            } else {
-                return schema;
-            }
-        } else {
-            return basicFieldSchema(fieldMetadata);
-        }
-    }
-
-    private Schema requestFieldSchema(FieldMetadata fieldMetadata) {
-        if (fieldMetadata.isAssociation()) {
-            Schema<String> schema = new Schema<>();
-            schema.type("object");
-            List<String> required = new LinkedList<>();
-            for (FieldMetadata childKeyField : fieldMetadata.getAssociationMetadata().getKeyFields()) {
-                if (!fieldMetadata.isSerializable()) continue;
-                schema.addProperty(childKeyField.getOutputPropertyName(), basicFieldSchema(childKeyField));
-                required.add(childKeyField.getOutputPropertyName());
-            }
-            schema.required(required);
-            if (fieldMetadata.isCollection()) {
-                return new Schema<>().type("array").items(schema);
-            } else {
-                return schema;
-            }
-        } else {
-            return basicFieldSchema(fieldMetadata);
-        }
-    }
-
-    private Schema basicFieldSchema(FieldMetadata fieldMetadata) {
-        if (PRIMITIVE_TYPE_TO_SCHEMA_MAP.containsKey(fieldMetadata.getFieldType())) {
-            return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(fieldMetadata.getFieldType());
-        } else {
-            return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(UUID.class);
-        }
-    }
 
     private Schema wrapInPayload(String ref) {
         return new Schema<>()
                 .type("object")
                 .addProperty("payload", new Schema().$ref(ref))
-                .addProperty("pageCount", PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(long.class))
-                .addProperty("pageIndex", PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(long.class));
+                .addProperty("pageCount", OASGenerator.basicShema(long.class))
+                .addProperty("pageIndex", OASGenerator.basicShema(long.class));
     }
 
     private Schema wrapInArray(String ref) {
@@ -406,7 +329,7 @@ public class OpenApiGenerator {
                 sb.append(fieldMetadata.getOutputPropertyName())
                         .append("=")
                         .append("'")
-                        .append(basicFieldSchema(fieldMetadata).getFormat())
+                        .append(OASGenerator.generateBasicSchema(fieldMetadata).getFormat())
                         .append("'");
                 if (iterator.hasNext()) {
                     sb.append(", ");
@@ -419,7 +342,7 @@ public class OpenApiGenerator {
                 sb.append(fieldMetadata.getOutputPropertyName())
                         .append("=")
                         .append("'")
-                        .append(basicFieldSchema(fieldMetadata).getFormat())
+                        .append(OASGenerator.generateBasicSchema(fieldMetadata).getFormat())
                         .append("'");
                 if (iterator.hasNext()) {
                     sb.append(", ");

@@ -1,8 +1,6 @@
 package com.github.silent.samurai;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.annotations.SpeedyIgnore;
-import com.github.silent.samurai.enums.IgnoreType;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
@@ -12,6 +10,7 @@ import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.metamodel.JpaKeyFieldMetadata;
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -61,6 +60,52 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         fieldMetadata.setJpaAttribute(attribute);
         fieldMetadata.setClassFieldName(member.getName());
         fieldMetadata.setFieldType(attribute.getJavaType());
+        if (attribute.getJavaMember() instanceof Field) {
+            fieldMetadata.setField((Field) attribute.getJavaMember());
+        } else {
+            fieldMetadata.setField(JpaMetaModelProcessor.getField(entityClass, member.getName()));
+        }
+
+        fieldMetadata.setInsertable(true);
+        fieldMetadata.setUnique(false);
+        fieldMetadata.setUpdatable(true);
+        fieldMetadata.setNullable(false);
+
+        Column columnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Column.class);
+        if (columnAnnotation != null) {
+            fieldMetadata.setDbColumnName(columnAnnotation.name());
+            fieldMetadata.setInsertable(columnAnnotation.insertable());
+            fieldMetadata.setUnique(columnAnnotation.unique());
+            fieldMetadata.setUpdatable(columnAnnotation.updatable());
+            fieldMetadata.setNullable(columnAnnotation.nullable());
+        }
+
+        GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), GeneratedValue.class);
+        if (generatedValueAnnotation != null) {
+            fieldMetadata.setInsertable(false);
+            fieldMetadata.setUpdatable(false);
+            fieldMetadata.setNullable(false);
+        }
+
+        fieldMetadata.setSerializable(true);
+        fieldMetadata.setDeserializable(true);
+
+        Expose gsonExposeAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Expose.class);
+        if (gsonExposeAnnotation != null) {
+            fieldMetadata.setSerializable(gsonExposeAnnotation.serialize());
+            fieldMetadata.setDeserializable(gsonExposeAnnotation.deserialize());
+        }
+
+        SerializedName propertyAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SerializedName.class);
+        fieldMetadata.setOutputPropertyName(fieldMetadata.getClassFieldName());
+        if (propertyAnnotation != null) {
+            fieldMetadata.setOutputPropertyName(propertyAnnotation.value());
+        }
+
+        SpeedyIgnore annotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyIgnore.class);
+        if (annotation != null) {
+            fieldMetadata.setIgnoreType(annotation.value());
+        }
 
         // MZ: Find the correct method
         for (Method method : entityClass.getMethods()) {
@@ -72,45 +117,6 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                     if ((method.getName().startsWith("set")) && (method.getName().length() == (member.getName().length() + 3))) {
                         fieldMetadata.setSetter(method);
                     }
-
-                    fieldMetadata.setField(JpaMetaModelProcessor.getField(entityClass, member.getName()));
-
-                    JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JsonProperty.class);
-                    fieldMetadata.setOutputPropertyName(fieldMetadata.getClassFieldName());
-                    if (propertyAnnotation != null) {
-                        fieldMetadata.setOutputPropertyName(propertyAnnotation.value());
-                    }
-
-                    fieldMetadata.setInsertable(true);
-                    fieldMetadata.setUnique(false);
-                    fieldMetadata.setUpdatable(true);
-                    fieldMetadata.setNullable(false);
-
-                    Column columnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Column.class);
-                    if (columnAnnotation != null) {
-                        fieldMetadata.setDbColumnName(columnAnnotation.name());
-                        fieldMetadata.setInsertable(columnAnnotation.insertable());
-                        fieldMetadata.setUnique(columnAnnotation.unique());
-                        fieldMetadata.setUpdatable(columnAnnotation.updatable());
-                        fieldMetadata.setNullable(columnAnnotation.nullable());
-                    }
-
-                    GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), GeneratedValue.class);
-                    if (generatedValueAnnotation != null) {
-                        fieldMetadata.setInsertable(false);
-                        fieldMetadata.setUpdatable(false);
-                        fieldMetadata.setNullable(false);
-                    }
-
-                    fieldMetadata.setSerializable(true);
-                    fieldMetadata.setDeserializable(true);
-
-                    Expose gsonExposeAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Expose.class);
-                    if (gsonExposeAnnotation != null) {
-                        fieldMetadata.setSerializable(gsonExposeAnnotation.serialize());
-                        fieldMetadata.setDeserializable(gsonExposeAnnotation.deserialize());
-                    }
-
                 } catch (IllegalStateException e) {
                     LOGGER.error("Could not determine method: {} ", member, e);
                 }
@@ -166,23 +172,14 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
 
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
             JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType());
-            SpeedyIgnore annotation = AnnotationUtils.getAnnotation(memberMetadata.getField(), SpeedyIgnore.class);
-            if (annotation != null) {
-                if (annotation.value() == IgnoreType.ALL) {
-                    continue;
-                }
-                memberMetadata.setIgnoreType(annotation.value());
-            }
             entityMetadata.getAllFields().add(memberMetadata);
             entityMetadata.getFieldMap().put(attribute.getName(), memberMetadata);
             if (memberMetadata instanceof KeyFieldMetadata) {
                 entityMetadata.getKeyFields().add((KeyFieldMetadata) memberMetadata);
             }
-
             if (memberMetadata.isAssociation()) {
                 entityMetadata.getAssociatedFields().add(memberMetadata);
             }
-
         }
         entityMap.put(entityType.getName(), entityMetadata);
         typeMap.put(entityMetadata.getEntityClass(), entityMetadata);

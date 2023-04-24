@@ -1,28 +1,31 @@
 package com.github.silent.samurai.exceptions;
 
-import org.springframework.http.HttpStatus;
-
 public class SpeedyHttpException extends Exception {
 
-    private final HttpStatus status;
+    private final Integer status;
 
-    public SpeedyHttpException(HttpStatus status, String message) {
+    public SpeedyHttpException(Integer status, String message) {
         super(message);
         this.status = status;
     }
 
-    public SpeedyHttpException(HttpStatus status, String message, Throwable cause) {
+    public SpeedyHttpException(Integer status, String message, Throwable cause) {
         super(message, cause);
         this.status = status;
     }
 
-    public SpeedyHttpException(HttpStatus status, Throwable cause) {
+    public SpeedyHttpException(Integer status, Throwable cause) {
         super(cause);
         this.status = status;
     }
 
-    public SpeedyHttpException(HttpStatus status, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public SpeedyHttpException(Integer status, String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
         this.status = status;
     }
+
+    public Integer getStatus() {
+        return status;
+    }
+
 }

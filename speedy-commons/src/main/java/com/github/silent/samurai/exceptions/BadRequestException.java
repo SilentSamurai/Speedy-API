@@ -1,26 +1,26 @@
 package com.github.silent.samurai.exceptions;
 
-import org.springframework.http.HttpStatus;
+import javax.servlet.http.HttpServletResponse;
 
 public class BadRequestException extends SpeedyHttpException {
 
     public BadRequestException() {
-        super(HttpStatus.BAD_REQUEST, "");
+        super(HttpServletResponse.SC_BAD_REQUEST, "");
     }
 
     public BadRequestException(String message) {
-        super(HttpStatus.BAD_REQUEST, message);
+        super(HttpServletResponse.SC_BAD_REQUEST, message);
     }
 
     public BadRequestException(String message, Throwable cause) {
-        super(HttpStatus.BAD_REQUEST, message, cause);
+        super(HttpServletResponse.SC_BAD_REQUEST, message, cause);
     }
 
     public BadRequestException(Throwable cause) {
-        super(HttpStatus.BAD_REQUEST, cause);
+        super(HttpServletResponse.SC_BAD_REQUEST, cause);
     }
 
     public BadRequestException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(HttpStatus.BAD_REQUEST, message, cause, enableSuppression, writableStackTrace);
+        super(HttpServletResponse.SC_BAD_REQUEST, message, cause, enableSuppression, writableStackTrace);
     }
 }

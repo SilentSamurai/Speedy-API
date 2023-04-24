@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-public class Request {
+public class AntlrRequest {
 
     private String resource;
     private Map<String, String> keywords = new HashMap<>();

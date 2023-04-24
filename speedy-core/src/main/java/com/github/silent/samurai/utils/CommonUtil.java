@@ -9,12 +9,10 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class CommonUtil {
 
@@ -80,12 +78,50 @@ public class CommonUtil {
         return gsonBuildr.create();
     }
 
-    public static Object gsonToType(JsonElement jsonElement, Class<?> type) {
+    public static <T> T gsonToType(JsonElement jsonElement, Class<T> type) {
         return gsonBuildr.create().fromJson(jsonElement, type);
     }
 
-    public static Object stringToType(String value, Class<?> type) {
-        return gsonBuildr.create().fromJson(value, type);
+    public static <T> T quotedStringToPrimitive(String value, Class<T> type) {
+        value = value.replaceAll("['|\"]", "");
+        Object obj = stringToBasic(value, type);
+        if (obj != null && isAssignableClass(obj.getClass(), type)) {
+            return (T) obj;
+        }
+        return null;
+    }
+
+    public static <T> T stringToPrimitive(String value, Class<T> type) {
+        Object obj = stringToBasic(value, type);
+        if (obj != null && isAssignableClass(obj.getClass(), type)) {
+            return (T) obj;
+        }
+        return null;
+    }
+
+    public static Object stringToBasic(String value, Class<?> targetType) {
+        if (targetType == int.class || targetType == Integer.class) {
+            return Integer.parseInt(value);
+        } else if (targetType == long.class || targetType == Long.class) {
+            return Long.parseLong(value);
+        } else if (targetType == float.class || targetType == Float.class) {
+            return Float.parseFloat(value);
+        } else if (targetType == double.class || targetType == Double.class) {
+            return Double.parseDouble(value);
+        } else if (targetType == boolean.class || targetType == Boolean.class) {
+            return Boolean.parseBoolean(value);
+        } else if (targetType == byte.class || targetType == Byte.class) {
+            return Byte.parseByte(value);
+        } else if (targetType == short.class || targetType == Short.class) {
+            return Short.parseShort(value);
+        } else if (targetType == char.class || targetType == Character.class) {
+            if (value.length() > 0) {
+                return value.charAt(0);
+            }
+        } else if (targetType == String.class) {
+            return value;
+        }
+        return null;
     }
 
     public static List<String> inQuotesSplitter(String input, String regex) {
@@ -101,5 +137,46 @@ public class CommonUtil {
         }
         tokens.add(input.substring(start));
         return tokens;
+    }
+
+    public static boolean isAssignableClass(Class<?> fromClass, Class<?> toClass) {
+        if (fromClass == null || toClass == null) {
+            return false;
+        }
+        // Check for primitive types and wrappers
+        if (fromClass.isPrimitive()) {
+            if (toClass.isPrimitive()) {
+                return fromClass == toClass;
+            }
+            if (toClass.isAssignableFrom(wrapperType(fromClass))) {
+                return true;
+            }
+        } else if (toClass.isPrimitive()) {
+            if (fromClass.isAssignableFrom(wrapperType(toClass))) {
+                return true;
+            }
+        }
+        return toClass.isAssignableFrom(fromClass);
+    }
+
+    private static Class<?> wrapperType(Class<?> primitiveType) {
+        if (primitiveType == boolean.class) {
+            return Boolean.class;
+        } else if (primitiveType == byte.class) {
+            return Byte.class;
+        } else if (primitiveType == char.class) {
+            return Character.class;
+        } else if (primitiveType == short.class) {
+            return Short.class;
+        } else if (primitiveType == int.class) {
+            return Integer.class;
+        } else if (primitiveType == long.class) {
+            return Long.class;
+        } else if (primitiveType == float.class) {
+            return Float.class;
+        } else if (primitiveType == double.class) {
+            return Double.class;
+        }
+        return null;
     }
 }

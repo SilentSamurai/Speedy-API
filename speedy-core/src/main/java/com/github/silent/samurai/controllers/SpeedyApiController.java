@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-
+@Hidden
 @RestController
 @RequestMapping(SpeedyConstant.URI)
 public class SpeedyApiController {
@@ -32,7 +31,8 @@ public class SpeedyApiController {
     SpeedyFactory speedyFactory;
 
 
-    @GetMapping(value = "/$metadata", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Hidden
+    @GetMapping(value = "/$metadata")
     public String metadata() {
         MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
         JsonElement jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);

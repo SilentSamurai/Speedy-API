@@ -8,17 +8,17 @@ import java.util.List;
 
 public class RequestListener extends SpeedyBaseListener {
 
-    private List<Request> requests = new ArrayList<>();
-    private Request current;
+    private List<AntlrRequest> antlrRequests = new ArrayList<>();
+    private AntlrRequest current;
 
     @Override
     public void enterRequest(SpeedyParser.RequestContext ctx) {
-        current = new Request();
+        current = new AntlrRequest();
     }
 
     @Override
     public void exitRequest(SpeedyParser.RequestContext ctx) {
-        requests.add(current);
+        antlrRequests.add(current);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class RequestListener extends SpeedyBaseListener {
         current.getQuery().add(ctx.identifier().getText(), ctx.valString().getText());
     }
 
-    public List<Request> getEntries() {
-        return requests;
+    public List<AntlrRequest> getEntries() {
+        return antlrRequests;
     }
 }

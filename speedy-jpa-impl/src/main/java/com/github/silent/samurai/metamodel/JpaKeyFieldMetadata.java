@@ -7,14 +7,11 @@ import lombok.Data;
 @Data
 public class JpaKeyFieldMetadata extends JpaFieldMetadata implements KeyFieldMetadata {
 
-
     private boolean isId;
-
 
     @Override
     public boolean isKeyField() {
         return isId;
     }
-
 
 }

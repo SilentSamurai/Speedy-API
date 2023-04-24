@@ -13,14 +13,17 @@ import com.google.gson.JsonObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.function.Predicate;
 
-public class ApiAutomateJsonSerializer {
+public class SelectiveFieldJsonSerializer {
 
     private final MetaModelProcessor metaModelProcessor;
+    private final Predicate<FieldMetadata> fieldPredicate;
     private int level = 0;
 
-    public ApiAutomateJsonSerializer(MetaModelProcessor metaModelProcessor) {
+    public SelectiveFieldJsonSerializer(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
         this.metaModelProcessor = metaModelProcessor;
+        this.fieldPredicate = fieldPredicate;
     }
 
     public JsonObject fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
@@ -30,7 +33,7 @@ public class ApiAutomateJsonSerializer {
         level++;
 
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (!fieldMetadata.isSerializable()) continue;
+            if (!fieldMetadata.isSerializable() && !this.fieldPredicate.test(fieldMetadata)) continue;
             Object value = fieldMetadata.getEntityFieldValue(entityObject);
             if (fieldMetadata.isAssociation()) {
                 if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {

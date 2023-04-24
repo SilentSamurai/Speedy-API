@@ -11,7 +11,7 @@ public class MapUtils {
     public static Object findAnyValueInMap(Map<String, String> map, Class<?> keyClass) {
         Optional<String> any = map.values().stream().findAny();
         if (any.isPresent()) {
-            return CommonUtil.stringToType(any.get(), keyClass);
+            return CommonUtil.stringToPrimitive(any.get(), keyClass);
         }
         return null;
     }

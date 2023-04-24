@@ -21,7 +21,7 @@ public class AntlrParser {
         this.url = url;
     }
 
-    public Request parse() throws UnsupportedEncodingException {
+    public AntlrRequest parse() throws UnsupportedEncodingException {
         String input = URLDecoder.decode(url, StandardCharsets.UTF_8.name());
         input = StringUtils.removeSpaces(input);
         LOGGER.info("input parsed {}", input);

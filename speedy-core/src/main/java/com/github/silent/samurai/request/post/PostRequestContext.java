@@ -1,20 +1,23 @@
 package com.github.silent.samurai.request.post;
 
 import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.interfaces.RequestContext;
+import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Data;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedList;
 import java.util.List;
 
 @Data
-public class PostRequestContext implements RequestContext {
+public class PostRequestContext implements ResponseReturningRequestContext {
 
-    private final HttpServletRequest httpServletRequest;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
     private final MetaModelProcessor metaModelProcessor;
     private EntityManager entityManager;
 
@@ -23,13 +26,20 @@ public class PostRequestContext implements RequestContext {
     private String resource;
     private List<Object> parsedObjects = new LinkedList<>();
 
-    public PostRequestContext(HttpServletRequest httpServletRequest,
+    public PostRequestContext(HttpServletRequest request,
+                              HttpServletResponse response,
                               MetaModelProcessor metaModelProcessor,
                               EntityManager entityManager,
                               ValidationProcessor validationProcessor) {
-        this.httpServletRequest = httpServletRequest;
+        this.request = request;
+        this.response = response;
         this.metaModelProcessor = metaModelProcessor;
         this.validationProcessor = validationProcessor;
         this.entityManager = entityManager;
+    }
+
+    @Override
+    public int getSerializationType() {
+        return IResponseSerializer.MULTIPLE_ENTITY;
     }
 }

@@ -2,7 +2,7 @@ package com.github.silent.samurai.request.post;
 
 
 import com.github.silent.samurai.AntlrParser;
-import com.github.silent.samurai.Request;
+import com.github.silent.samurai.AntlrRequest;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
@@ -25,14 +25,14 @@ public class PostRequestParser {
 
     public void processBatch() throws Exception {
         AntlrParser antlrParser = new AntlrParser(context.getRequestURI());
-        Request request = antlrParser.parse();
-        String resource = request.getResource();
+        AntlrRequest antlrRequest = antlrParser.parse();
+        String resource = antlrRequest.getResource();
         EntityMetadata entityMetadata = context.getMetaModelProcessor().findEntityMetadata(resource);
         context.setResource(resource);
         context.setEntityMetadata(entityMetadata);
 
         Gson gson = CommonUtil.getGson();
-        JsonElement jsonElement = gson.fromJson(context.getHttpServletRequest().getReader(), JsonElement.class);
+        JsonElement jsonElement = gson.fromJson(context.getRequest().getReader(), JsonElement.class);
         if (jsonElement == null) {
             throw new BadRequestException("no content to process");
         }

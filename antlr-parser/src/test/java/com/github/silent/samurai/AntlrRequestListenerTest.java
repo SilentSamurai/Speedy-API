@@ -14,15 +14,15 @@ import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class RequestListenerTest {
+class AntlrRequestListenerTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RequestListenerTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AntlrRequestListenerTest.class);
 
     @BeforeEach
     void setUp() {
     }
 
-    Request parse(String input) {
+    AntlrRequest parse(String input) {
         input = StringUtils.removeSpaces(input);
         LOGGER.info("input {}", input);
         SpeedyLexer java8Lexer = new SpeedyLexer(CharStreams.fromString(input));
@@ -43,8 +43,8 @@ class RequestListenerTest {
     @Test
     void testSingle() {
         String input = "/Customer?happy='holi'&metadata='hpo'";
-        Request request = parse(input);
-        LOGGER.info("request {}", new Gson().toJson(request));
+        AntlrRequest antlrRequest = parse(input);
+        LOGGER.info("request {}", new Gson().toJson(antlrRequest));
 
     }
 
@@ -65,9 +65,9 @@ class RequestListenerTest {
         };
 
         for (String input : inputEntries) {
-            Request request = parse(input);
-            LOGGER.info("request {}", new Gson().toJson(request));
-            assertEquals("Customer", request.getResource());
+            AntlrRequest antlrRequest = parse(input);
+            LOGGER.info("request {}", new Gson().toJson(antlrRequest));
+            assertEquals("Customer", antlrRequest.getResource());
             LOGGER.info("");
         }
 

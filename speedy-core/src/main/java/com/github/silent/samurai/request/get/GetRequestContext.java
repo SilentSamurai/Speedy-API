@@ -1,40 +1,46 @@
 package com.github.silent.samurai.request.get;
 
-import com.github.silent.samurai.Request;
 import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
+import com.github.silent.samurai.parser.SpeedyUriParser;
 import lombok.Data;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 @Data
 public class GetRequestContext implements ResponseReturningRequestContext {
 
-    private HttpServletRequest httpServletRequest;
-    private MetaModelProcessor metaModelProcessor;
-    private int serializationType;
-    private EntityManager entityManager;
+    private final HttpServletRequest request;
+    private final HttpServletResponse response;
+    private final MetaModelProcessor metaModelProcessor;
+    private final EntityManager entityManager;
 
-    private Request request;
-    private EntityMetadata resourceMetadata;
-    private boolean primaryKey = false;
-    private Map<String, String> keywords = new HashMap<>();
-    private List<String> arguments = new LinkedList<>();
-    private String secondaryResource;
+    private SpeedyUriParser parser;
 
-    private MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-
-    public GetRequestContext(HttpServletRequest httpServletRequest, MetaModelProcessor metaModelProcessor, EntityManager entityManager) {
-        this.httpServletRequest = httpServletRequest;
+    public GetRequestContext(HttpServletRequest request, HttpServletResponse response, MetaModelProcessor metaModelProcessor, EntityManager entityManager) {
+        this.request = request;
+        this.response = response;
         this.metaModelProcessor = metaModelProcessor;
         this.entityManager = entityManager;
+    }
+
+    public EntityMetadata getResourceMetadata() {
+        return parser.getResourceMetadata();
+    }
+
+    public String getResource() {
+        return parser.getResource();
+    }
+
+    @Override
+    public int getSerializationType() {
+        if (parser.isOnlyIdentifiersPresent()) {
+            return IResponseSerializer.SINGLE_ENTITY;
+        }
+        return IResponseSerializer.MULTIPLE_ENTITY;
     }
 }

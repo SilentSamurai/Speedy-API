@@ -53,16 +53,16 @@ public class MapEntityDeserializer {
             if (fieldMetadata.isAssociation()) {
                 // TODO: array of association & association
             } else {
-                value = CommonUtil.stringToType(fieldsMap.get(propertyName), fieldMetadata.getFieldType());
+                value = CommonUtil.stringToPrimitive(fieldsMap.get(propertyName), fieldMetadata.getFieldType());
             }
         }
         return value;
     }
 
-    private Object createEntityKey(EntityMetadata association, Map<String, String> keyMap) throws Exception {
-        MapEntityKeyDeserializer deserializer = new MapEntityKeyDeserializer(keyMap, association);
-        return deserializer.deserialize();
-    }
+//    private Object createEntityKey(EntityMetadata association, Map<String, String> keyMap) throws Exception {
+//        MapEntityKeyDeserializer deserializer = new MapEntityKeyDeserializer(keyMap, association);
+//        return deserializer.deserialize();
+//    }
 
 
 }

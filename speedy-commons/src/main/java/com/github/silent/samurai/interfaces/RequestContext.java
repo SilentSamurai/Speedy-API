@@ -9,12 +9,12 @@ import java.nio.charset.StandardCharsets;
 public interface RequestContext {
     MetaModelProcessor getMetaModelProcessor();
 
-    HttpServletRequest getHttpServletRequest();
+    HttpServletRequest getRequest();
 
     EntityManager getEntityManager();
 
     default String getRequestURI() throws UnsupportedEncodingException {
-        String requestURI = URLDecoder.decode(getHttpServletRequest().getRequestURI(), StandardCharsets.UTF_8.name());
+        String requestURI = URLDecoder.decode(getRequest().getRequestURI(), StandardCharsets.UTF_8.name());
         return requestURI.replaceAll(SpeedyConstant.URI, "");
     }
 }

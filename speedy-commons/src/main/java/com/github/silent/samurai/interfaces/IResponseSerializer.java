@@ -1,6 +1,5 @@
 package com.github.silent.samurai.interfaces;
 
-import javax.servlet.http.HttpServletResponse;
 
 public interface IResponseSerializer {
     int SINGLE_ENTITY = 0;
@@ -8,5 +7,7 @@ public interface IResponseSerializer {
 
     String getContentType();
 
-    void writeResponse(IBaseResponsePayload requestedPayload, HttpServletResponse response) throws Exception;
+    ResponseReturningRequestContext getContext();
+
+    void writeResponse(IBaseResponsePayload requestedPayload) throws Exception;
 }

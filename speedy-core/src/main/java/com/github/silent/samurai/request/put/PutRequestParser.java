@@ -1,18 +1,15 @@
 package com.github.silent.samurai.request.put;
 
-import com.github.silent.samurai.AntlrParser;
-import com.github.silent.samurai.Request;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.parser.SpeedyUriParser;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 public class PutRequestParser {
 
@@ -25,28 +22,24 @@ public class PutRequestParser {
     }
 
     public void process() throws Exception {
-        AntlrParser antlrParser = new AntlrParser(context.getRequestURI());
-        Request request = antlrParser.parse();
-        String resource = request.getResource();
-        Map<String, String> keyFields = request.getKeywords();
-        EntityMetadata entityMetadata = context.getMetaModelProcessor().findEntityMetadata(resource);
-        context.setResource(resource);
-        context.setEntityMetadata(entityMetadata);
+        SpeedyUriParser parser = new SpeedyUriParser(context.getMetaModelProcessor(), context.getRequestURI());
+        parser.parse();
+        context.setParser(parser);
 
         Gson gson = CommonUtil.getGson();
-        JsonElement jsonElement = gson.fromJson(context.getHttpServletRequest().getReader(), JsonElement.class);
+        JsonElement jsonElement = gson.fromJson(context.getRequest().getReader(), JsonElement.class);
         if (jsonElement == null) {
             throw new BadRequestException("no content to process");
         }
         JsonObject resourceFields = jsonElement.getAsJsonObject();
-
-        if (!MetadataUtil.isPrimaryKeyComplete(entityMetadata, keyFields.keySet())) {
+        if (!parser.isOnlyIdentifiersPresent()) {
             throw new BadRequestException("Primary Key Incomplete.");
         }
+        EntityMetadata entityMetadata = parser.getResourceMetadata();
 
-        Object pk = MetadataUtil.createEntityKeyFromMap(keyFields, entityMetadata);
+        Object pk = MetadataUtil.createIdentifierFromParser(parser);
         Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
-        MetadataUtil.updateEntityFromJson(entityMetadata, context.getEntityManager(), resourceFields, entityInstance);
+        MetadataUtil.updateEntityFromJSON(entityMetadata, context.getEntityManager(), resourceFields, entityInstance);
         context.setEntityInstance(entityInstance);
         LOGGER.info(" test {}", entityInstance);
     }

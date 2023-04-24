@@ -5,6 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityTransaction;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 
 public class CreateDataHandler {
 
@@ -16,21 +19,24 @@ public class CreateDataHandler {
         this.context = context;
     }
 
-    private void saveEntity(Object entityInstance, EntityMetadata entityMetadata) {
-        context.getEntityManager().merge(entityInstance);
+    private Object saveEntity(Object entityInstance, EntityMetadata entityMetadata) {
+        entityInstance = context.getEntityManager().merge(entityInstance);
         context.getEntityManager().flush();
         LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
+        return entityInstance;
     }
 
-    public void processBatch() throws Exception {
+    public Optional<List<Object>> processBatch() throws Exception {
         EntityTransaction transaction = context.getEntityManager().getTransaction();
+        List<Object> savedObjects = new LinkedList<>();
         try {
             if (!context.getParsedObjects().isEmpty()) {
                 transaction.begin();
                 EntityMetadata entityMetadata = context.getEntityMetadata();
                 for (Object parsedObject : context.getParsedObjects()) {
                     context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
-                    saveEntity(parsedObject, entityMetadata);
+                    Object savedEntity = saveEntity(parsedObject, entityMetadata);
+                    savedObjects.add(savedEntity);
                 }
                 transaction.commit();
             }
@@ -38,6 +44,7 @@ public class CreateDataHandler {
             transaction.rollback();
             throw throwable;
         }
+        return Optional.of(savedObjects);
     }
 
 }

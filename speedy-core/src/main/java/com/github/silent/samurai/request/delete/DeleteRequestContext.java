@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 public class DeleteRequestContext implements RequestContext {
 
-    private final HttpServletRequest httpServletRequest;
+    private final HttpServletRequest request;
     private final MetaModelProcessor metaModelProcessor;
     private final ValidationProcessor validationProcessor;
     private EntityManager entityManager;
@@ -23,11 +23,11 @@ public class DeleteRequestContext implements RequestContext {
     private String resource;
     private List<Object> objectsToBeRemoved = new LinkedList<>();
 
-    public DeleteRequestContext(HttpServletRequest httpServletRequest,
+    public DeleteRequestContext(HttpServletRequest request,
                                 MetaModelProcessor metaModelProcessor,
                                 ValidationProcessor validationProcessor,
                                 EntityManager entityManager) {
-        this.httpServletRequest = httpServletRequest;
+        this.request = request;
         this.metaModelProcessor = metaModelProcessor;
         this.validationProcessor = validationProcessor;
         this.entityManager = entityManager;
