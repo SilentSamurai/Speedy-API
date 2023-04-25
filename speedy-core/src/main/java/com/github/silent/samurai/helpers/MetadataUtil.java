@@ -1,7 +1,7 @@
 package com.github.silent.samurai.helpers;
 
 import com.github.silent.samurai.deserializer.JsonEntityDeserializer;
-import com.github.silent.samurai.deserializer.JsonEntityKeyDeserializer;
+import com.github.silent.samurai.deserializer.JsonIdentityDeserializer;
 import com.github.silent.samurai.deserializer.ParserIdentityDeserializer;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.parser.SpeedyUriParser;
@@ -50,7 +50,7 @@ public class MetadataUtil {
     }
 
     public static Object createIdentifierFromJSON(EntityMetadata entityMetadata, JsonObject keyJson) throws Exception {
-        JsonEntityKeyDeserializer deserializer = new JsonEntityKeyDeserializer(entityMetadata, keyJson);
+        JsonIdentityDeserializer deserializer = new JsonIdentityDeserializer(entityMetadata, keyJson);
         return deserializer.deserialize();
     }
 

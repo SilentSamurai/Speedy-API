@@ -66,7 +66,7 @@ public class JsonEntityDeserializer {
     }
 
     private Object createEntityKey(EntityMetadata association, JsonObject jsonObject) throws Exception {
-        JsonEntityKeyDeserializer deserializer = new JsonEntityKeyDeserializer(association, jsonObject);
+        JsonIdentityDeserializer deserializer = new JsonIdentityDeserializer(association, jsonObject);
         return deserializer.deserialize();
     }
 

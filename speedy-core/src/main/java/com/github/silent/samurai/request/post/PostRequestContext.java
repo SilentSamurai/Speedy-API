@@ -1,9 +1,9 @@
 package com.github.silent.samurai.request.post;
 
-import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
+import com.github.silent.samurai.parser.SpeedyUriParser;
 import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Data;
 
@@ -19,12 +19,11 @@ public class PostRequestContext implements ResponseReturningRequestContext {
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final MetaModelProcessor metaModelProcessor;
-    private EntityManager entityManager;
-
-    private EntityMetadata entityMetadata;
+    private final EntityManager entityManager;
     private final ValidationProcessor validationProcessor;
-    private String resource;
-    private List<Object> parsedObjects = new LinkedList<>();
+    private final List<Object> parsedObjects = new LinkedList<>();
+
+    private SpeedyUriParser parser;
 
     public PostRequestContext(HttpServletRequest request,
                               HttpServletResponse response,

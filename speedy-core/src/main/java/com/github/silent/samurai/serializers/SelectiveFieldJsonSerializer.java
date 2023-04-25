@@ -33,7 +33,7 @@ public class SelectiveFieldJsonSerializer {
         level++;
 
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (!fieldMetadata.isSerializable() && !this.fieldPredicate.test(fieldMetadata)) continue;
+            if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
             Object value = fieldMetadata.getEntityFieldValue(entityObject);
             if (fieldMetadata.isAssociation()) {
                 if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {

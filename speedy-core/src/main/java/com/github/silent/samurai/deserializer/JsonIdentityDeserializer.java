@@ -8,12 +8,12 @@ import com.google.gson.JsonObject;
 
 import java.util.Optional;
 
-public class JsonEntityKeyDeserializer {
+public class JsonIdentityDeserializer {
 
     private final EntityMetadata entityMetadata;
     private final JsonObject keyJson;
 
-    public JsonEntityKeyDeserializer(EntityMetadata entityMetadata, JsonObject keyJson) {
+    public JsonIdentityDeserializer(EntityMetadata entityMetadata, JsonObject keyJson) {
         this.entityMetadata = entityMetadata;
         this.keyJson = keyJson;
     }

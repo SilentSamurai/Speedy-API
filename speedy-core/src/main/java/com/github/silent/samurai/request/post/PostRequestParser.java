@@ -1,11 +1,9 @@
 package com.github.silent.samurai.request.post;
 
 
-import com.github.silent.samurai.AntlrParser;
-import com.github.silent.samurai.AntlrRequest;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.helpers.MetadataUtil;
-import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.parser.SpeedyUriParser;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -24,12 +22,9 @@ public class PostRequestParser {
     }
 
     public void processBatch() throws Exception {
-        AntlrParser antlrParser = new AntlrParser(context.getRequestURI());
-        AntlrRequest antlrRequest = antlrParser.parse();
-        String resource = antlrRequest.getResource();
-        EntityMetadata entityMetadata = context.getMetaModelProcessor().findEntityMetadata(resource);
-        context.setResource(resource);
-        context.setEntityMetadata(entityMetadata);
+        SpeedyUriParser parser = new SpeedyUriParser(context.getMetaModelProcessor(), context.getRequestURI());
+        parser.parse();
+        context.setParser(parser);
 
         Gson gson = CommonUtil.getGson();
         JsonElement jsonElement = gson.fromJson(context.getRequest().getReader(), JsonElement.class);
@@ -38,7 +33,11 @@ public class PostRequestParser {
         }
         JsonArray batchOfEntities = jsonElement.getAsJsonArray();
         for (JsonElement element : batchOfEntities) {
-            Object entityInstance = MetadataUtil.createEntityFromJSON(entityMetadata, element.getAsJsonObject(), context.getEntityManager());
+            Object entityInstance = MetadataUtil.createEntityFromJSON(
+                    parser.getResourceMetadata(),
+                    element.getAsJsonObject(),
+                    context.getEntityManager()
+            );
             LOGGER.info("parsed entity {}", entityInstance);
             context.getParsedObjects().add(entityInstance);
         }

@@ -13,7 +13,7 @@ import com.github.silent.samurai.request.delete.DeleteRequestParser;
 import com.github.silent.samurai.request.get.GetDataHandler;
 import com.github.silent.samurai.request.get.GetRequestContext;
 import com.github.silent.samurai.request.get.GetRequestParser;
-import com.github.silent.samurai.request.post.CreateDataHandler;
+import com.github.silent.samurai.request.post.PostDataHandler;
 import com.github.silent.samurai.request.post.PostRequestContext;
 import com.github.silent.samurai.request.post.PostRequestParser;
 import com.github.silent.samurai.request.put.PutRequestContext;
@@ -76,7 +76,7 @@ public class SpeedyFactory {
                 validationProcessor
         );
         new PostRequestParser(context).processBatch();
-        Optional<List<Object>> savedEntities = new CreateDataHandler(context).processBatch();
+        Optional<List<Object>> savedEntities = new PostDataHandler(context).processBatch();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
         PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(savedEntities.orElse(Collections.emptyList()));
         jsonSerializer.writeResponse(responseWrapper);
@@ -93,17 +93,27 @@ public class SpeedyFactory {
                 validationProcessor
         );
         new PutRequestParser(context).process();
-        new UpdateDataHandler(context).process();
+        Optional<Object> savedEntity = new UpdateDataHandler(context).process();
+        if (savedEntity.isEmpty()) {
+            throw new NotFoundException();
+        }
+        IResponseSerializer jsonSerializer = new JSONSerializer(context);
+        PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(savedEntity.get());
+        jsonSerializer.writeResponse(responseWrapper);
+        response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
     public void processDELETERequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
-        DeleteRequestContext context = new DeleteRequestContext(request, metaModelProcessor, validationProcessor, entityManager);
+        DeleteRequestContext context = new DeleteRequestContext(request, response, metaModelProcessor, validationProcessor, entityManager);
         new DeleteRequestParser(context).process();
-        new DeleteDataHandler(context).process();
+        Optional<List<Object>> removedEntities = new DeleteDataHandler(context).process();
+        IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
+        PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(removedEntities.orElse(Collections.emptyList()));
+        jsonSerializer.writeResponse(responseWrapper);
+        response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
     }
-
 
     public void requestResource(HttpServletRequest request, HttpServletResponse response) throws IOException {
         EntityManager entityManager = null;

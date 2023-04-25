@@ -49,56 +49,52 @@ class SpeedyAssociationTest {
 
     @Test
     void createCategory() throws Exception {
-
         CategoryApi apiInstance = new CategoryApi(defaultClient);
-        Function<String, PostCategory> createPostCategory = (String name) -> new PostCategory().name(name);
-        List<PostCategory> postCategories = Arrays.asList(
+        Function<String, CreateCategoryRequest> createPostCategory = (String name) -> new CreateCategoryRequest().name(name);
+        List<CreateCategoryRequest> postCategories = Arrays.asList(
                 createPostCategory.apply("new-cat-1"),
                 createPostCategory.apply("new-cat-2")
         ); // List<PostCategory> | Fields needed for creation
-
-        apiInstance.createMultipleCategory(postCategories);
-
+        apiInstance.bulkCreateCategory(postCategories);
     }
 
     @Test
     void createProduct() throws Exception {
         CategoryApi categoryApi = new CategoryApi(defaultClient);
-        List<PostCategory> postCategories = Arrays.asList(
-                new PostCategory().name("New Category")
+        List<CreateCategoryRequest> postCategories = Arrays.asList(
+                new CreateCategoryRequest().name("New Category")
         ); // List<PostCategory> | Fields needed for creation
-        categoryApi.createMultipleCategory(postCategories);
+        BulkCreateCategory200Response categoryResponse = categoryApi.bulkCreateCategory(postCategories);
 
-        GetAllCategory200Response category = categoryApi.getCategory(String.format("name='%s'", "New Category"));
-        List<GetCategory> payload = category.getPayload();
-        Assertions.assertNotNull(payload);
-        Assertions.assertTrue(payload.size() > 0);
-        GetCategory getCategory = payload.get(0);
-        Assertions.assertEquals("New Category", getCategory.getName());
+        Assertions.assertNotNull(categoryResponse);
+        Assertions.assertNotNull(categoryResponse.getPayload());
+        Assertions.assertTrue(categoryResponse.getPayload().size() > 0);
+        CategoryKey getCategory = categoryResponse.getPayload().get(0);
+        Assertions.assertNotNull(getCategory.getId());
+        Assertions.assertNotEquals("", getCategory.getId());
 
 
         ProductApi productApi = new ProductApi(defaultClient);
-        PostProduct postProduct = new PostProduct()
+        CreateProductRequest postProduct = new CreateProductRequest()
                 .name("New Product")
-                .category(new PostProcurementSupplier().id(getCategory.getId()))
+                .category(new CategoryKey().id(getCategory.getId()))
                 .description("dummy Product");
-        List<PostProduct> postProducts = List.of(postProduct); // List<PostProduct> | Fields needed for creation
-        productApi.createMultipleProduct(postProducts);
+        BulkCreateProduct200Response productsResponse = productApi.bulkCreateProduct(List.of(postProduct));
 
+        Assertions.assertNotNull(productsResponse);
+        Assertions.assertNotNull(productsResponse.getPayload());
+        Assertions.assertTrue(productsResponse.getPayload().size() > 0);
+        ProductKey productKey = productsResponse.getPayload().get(0);
+        Assertions.assertNotNull(productKey.getId());
+        Assertions.assertNotEquals("", productKey.getId());
 
-        GetAllProduct200Response allProduct = productApi.getAllProduct();
-        Assertions.assertNotNull(allProduct.getPayload());
-        Assertions.assertTrue(allProduct.getPayload().size() > 0);
-        GetProduct getProduct = allProduct.getPayload().get(0);
-        Assertions.assertEquals("New Product", getProduct.getName());
-        Assertions.assertEquals("dummy Product", getProduct.getDescription());
+        GetProduct200Response productResponse = productApi.getProduct(String.format("id='%s'", productKey.getId()));
+        Assertions.assertNotNull(productResponse);
+        Product product = productResponse.getPayload();
+        Assertions.assertNotNull(product);
+        Assertions.assertNotNull(product.getCategory());
+        Assertions.assertEquals(getCategory.getId(), product.getCategory().getId());
 
-        GetOneProduct200Response oneProduct = productApi.getOneProduct(String.format("id='%s'", getProduct.getId()));
-        Assertions.assertNotNull(oneProduct.getPayload());
-        GetSingleProduct product = oneProduct.getPayload();
-        GetSingleProductCategory category1 = product.getCategory();
-        Assertions.assertNotNull(category1);
-        Assertions.assertEquals(getCategory.getId(), category1.getId());
 
     }
 

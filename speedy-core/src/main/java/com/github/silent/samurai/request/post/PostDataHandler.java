@@ -9,13 +9,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-public class CreateDataHandler {
+public class PostDataHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CreateDataHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostDataHandler.class);
 
     private final PostRequestContext context;
 
-    public CreateDataHandler(PostRequestContext context) {
+    public PostDataHandler(PostRequestContext context) {
         this.context = context;
     }
 
@@ -32,7 +32,7 @@ public class CreateDataHandler {
         try {
             if (!context.getParsedObjects().isEmpty()) {
                 transaction.begin();
-                EntityMetadata entityMetadata = context.getEntityMetadata();
+                EntityMetadata entityMetadata = context.getParser().getResourceMetadata();
                 for (Object parsedObject : context.getParsedObjects()) {
                     context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
                     Object savedEntity = saveEntity(parsedObject, entityMetadata);
