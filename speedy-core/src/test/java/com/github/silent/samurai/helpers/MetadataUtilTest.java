@@ -8,7 +8,6 @@ import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.parser.SpeedyUriParser;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.collect.Sets;
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -181,7 +180,7 @@ class MetadataUtilTest {
     /*@Test
     void createEntityObjectFromMap() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
-        HashMap hashMap = new Gson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", HashMap.class);
+        HashMap hashMap = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", HashMap.class);
         EntityTestClass entity = (EntityTestClass) MetadataUtil.createEntityFromMap(entityMetadata, hashMap, entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
@@ -191,7 +190,7 @@ class MetadataUtilTest {
     @Test
     void createEntityObjectFromMap1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
-        HashMap hashMap = new Gson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", HashMap.class);
+        HashMap hashMap = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", HashMap.class);
         EntityCompositeKeyTestClass entity = (EntityCompositeKeyTestClass) MetadataUtil.createEntityFromMap(entityMetadata, hashMap, entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
@@ -201,7 +200,7 @@ class MetadataUtilTest {
     @Test
     void createEntityObjectFromJSON() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
-        JsonElement jsonElement = new Gson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", JsonElement.class);
+        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", JsonElement.class);
         EntityTestClass entity = (EntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, jsonElement.getAsJsonObject(), entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
@@ -211,7 +210,7 @@ class MetadataUtilTest {
     @Test
     void createEntityObjectFromJSON1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
-        JsonElement jsonElement = new Gson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", JsonElement.class);
+        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", JsonElement.class);
         EntityCompositeKeyTestClass entity = (EntityCompositeKeyTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, jsonElement.getAsJsonObject(), entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
@@ -221,13 +220,13 @@ class MetadataUtilTest {
     /*@Test
     void updateEntityFromJson1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
-        HashMap hashMap = new Gson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", HashMap.class);
+        HashMap hashMap = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", HashMap.class);
         EntityCompositeKeyTestClass entity = (EntityCompositeKeyTestClass) MetadataUtil.createEntityFromMap(entityMetadata, hashMap, entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
         assertEquals("cat-1", entity.getCategory());
 
-        JsonElement jsonElement = new Gson().fromJson("{'category':'cat-2'}", JsonElement.class);
+        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'category':'cat-2'}", JsonElement.class);
 
         MetadataUtil.updateEntityFromJSON(entityMetadata, entityManager, jsonElement.getAsJsonObject(), entity);
         assertEquals("cat-2", entity.getCategory());
@@ -238,7 +237,7 @@ class MetadataUtilTest {
         AssociationEntity associationEntity = new AssociationEntity();
         Mockito.when(entityManager.find(AssociationEntity.class, "abcd")).thenReturn(associationEntity);
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(AssociatedEntityTestClass.class);
-        JsonElement jsonElement = new Gson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1', 'associationEntity':{'id':'abcd'} }", JsonElement.class);
+        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1', 'associationEntity':{'id':'abcd'} }", JsonElement.class);
         AssociatedEntityTestClass entity = (AssociatedEntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, jsonElement.getAsJsonObject(), entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());

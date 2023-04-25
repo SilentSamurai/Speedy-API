@@ -267,7 +267,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "supplier='uuid', createdBy='null', amount='double', modifiedBy='null', createdAt='date-time', dueAmount='double', purchaseDate='date-time', id='null', product='uuid', modifiedAt='date-time'"
+                        "example": "createdAt='date-time', dueAmount='double', modifiedBy='null', modifiedAt='date-time', purchaseDate='date-time', id='null', product='null', createdBy='null', amount='double', supplier='null'"
                     }
                 ],
                 "responses": {
@@ -557,7 +557,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "phone='null', defaultGenerator='int32', email='null', id='null', createdAt='date-time', extra='null', name='null', deletedAt='date-time', address='null', invoiceNo='int32', updatedAt='date-time', detailsTop='null', currency='null'"
+                        "example": "deletedAt='date-time', updatedAt='date-time', address='null', phone='null', currency='null', defaultGenerator='int32', id='null', name='null', detailsTop='null', invoiceNo='int32', extra='null', createdAt='date-time', email='null'"
                     }
                 ],
                 "responses": {
@@ -591,13 +591,13 @@
                 }
             }
         },
-        "/speedy/v1/Invoice": {
+        "/speedy/v1/Category": {
             "get": {
                 "tags": [
-                    "Invoice"
+                    "Category"
                 ],
-                "summary": "Get all Invoice",
-                "operationId": "GetAllInvoice",
+                "summary": "Get all Category",
+                "operationId": "GetAllCategory",
                 "responses": {
                     "200": {
                         "description": "successful fetch.",
@@ -610,7 +610,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/LightInvoice"
+                                                "$ref": "#/components/schemas/LightCategory"
                                             }
                                         },
                                         "pageCount": {
@@ -630,10 +630,10 @@
             },
             "post": {
                 "tags": [
-                    "Invoice"
+                    "Category"
                 ],
-                "summary": "Bulk create Invoice",
-                "operationId": "BulkCreateInvoice",
+                "summary": "Bulk create Category",
+                "operationId": "BulkCreateCategory",
                 "requestBody": {
                     "description": "Fields needed for creation",
                     "content": {
@@ -642,7 +642,7 @@
                                 "maxItems": 100,
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/components/schemas/CreateInvoiceRequest"
+                                    "$ref": "#/components/schemas/CreateCategoryRequest"
                                 }
                             }
                         }
@@ -660,7 +660,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/InvoiceKey"
+                                                "$ref": "#/components/schemas/CategoryKey"
                                             }
                                         },
                                         "pageCount": {
@@ -680,10 +680,10 @@
             },
             "delete": {
                 "tags": [
-                    "Invoice"
+                    "Category"
                 ],
-                "summary": "Bulk delete Invoice",
-                "operationId": "BulkDeleteInvoice",
+                "summary": "Bulk delete Category",
+                "operationId": "BulkDeleteCategory",
                 "requestBody": {
                     "description": "Fields needed for deletion",
                     "content": {
@@ -692,7 +692,7 @@
                                 "maxItems": 100,
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/components/schemas/InvoiceKey"
+                                    "$ref": "#/components/schemas/CategoryKey"
                                 }
                             }
                         }
@@ -710,7 +710,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/InvoiceKey"
+                                                "$ref": "#/components/schemas/CategoryKey"
                                             }
                                         },
                                         "pageCount": {
@@ -729,13 +729,13 @@
                 }
             }
         },
-        "/speedy/v1/Invoice({identifiers})": {
+        "/speedy/v1/Category({identifiers})": {
             "get": {
                 "tags": [
-                    "Invoice"
+                    "Category"
                 ],
-                "summary": "Get a(n) Invoice",
-                "operationId": "GetInvoice",
+                "summary": "Get a(n) Category",
+                "operationId": "GetCategory",
                 "parameters": [
                     {
                         "name": "identifiers",
@@ -746,7 +746,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "id='null', "
+                        "example": "id='null'"
                     }
                 ],
                 "responses": {
@@ -758,7 +758,7 @@
                                     "type": "object",
                                     "properties": {
                                         "payload": {
-                                            "$ref": "#/components/schemas/Invoice"
+                                            "$ref": "#/components/schemas/Category"
                                         },
                                         "pageCount": {
                                             "type": "integer",
@@ -777,10 +777,10 @@
             },
             "put": {
                 "tags": [
-                    "Invoice"
+                    "Category"
                 ],
-                "summary": "Update a(n) Invoice",
-                "operationId": "UpdateInvoice",
+                "summary": "Update a(n) Category",
+                "operationId": "UpdateCategory",
                 "parameters": [
                     {
                         "name": "identifiers",
@@ -790,7 +790,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "id='null', "
+                        "example": "id='null'"
                     }
                 ],
                 "requestBody": {
@@ -798,7 +798,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UpdateInvoiceRequest"
+                                "$ref": "#/components/schemas/UpdateCategoryRequest"
                             }
                         }
                     }
@@ -812,7 +812,7 @@
                                     "type": "object",
                                     "properties": {
                                         "payload": {
-                                            "$ref": "#/components/schemas/Invoice"
+                                            "$ref": "#/components/schemas/Category"
                                         },
                                         "pageCount": {
                                             "type": "integer",
@@ -830,13 +830,13 @@
                 }
             }
         },
-        "/speedy/v1/Invoice({query})": {
+        "/speedy/v1/Category({query})": {
             "get": {
                 "tags": [
-                    "Invoice"
+                    "Category"
                 ],
-                "summary": "Filter Invoice",
-                "operationId": "GetSomeInvoice",
+                "summary": "Filter Category",
+                "operationId": "GetSomeCategory",
                 "parameters": [
                     {
                         "name": "query",
@@ -847,7 +847,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "modifiedAt='date-time', customer='uuid', adjustment='double', discount='double', notes='null', id='null', createdBy='null', modifiedBy='null', paid='double', invoiceDate='date-time', dueAmount='double', createdAt='date-time'"
+                        "example": "name='null', id='null'"
                     }
                 ],
                 "responses": {
@@ -862,7 +862,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/LightInvoice"
+                                                "$ref": "#/components/schemas/LightCategory"
                                             }
                                         },
                                         "pageCount": {
@@ -1137,7 +1137,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "profilePic='null', phoneNo='null', createdAt='date-time', name='null', email='null', deletedAt='date-time', updatedAt='date-time', id='null', company='uuid'"
+                        "example": "deletedAt='date-time', email='null', name='null', updatedAt='date-time', company='null', id='null', phoneNo='null', createdAt='date-time', profilePic='null'"
                     }
                 ],
                 "responses": {
@@ -1171,13 +1171,13 @@
                 }
             }
         },
-        "/speedy/v1/Category": {
+        "/speedy/v1/Invoice": {
             "get": {
                 "tags": [
-                    "Category"
+                    "Invoice"
                 ],
-                "summary": "Get all Category",
-                "operationId": "GetAllCategory",
+                "summary": "Get all Invoice",
+                "operationId": "GetAllInvoice",
                 "responses": {
                     "200": {
                         "description": "successful fetch.",
@@ -1190,7 +1190,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/LightCategory"
+                                                "$ref": "#/components/schemas/LightInvoice"
                                             }
                                         },
                                         "pageCount": {
@@ -1210,10 +1210,10 @@
             },
             "post": {
                 "tags": [
-                    "Category"
+                    "Invoice"
                 ],
-                "summary": "Bulk create Category",
-                "operationId": "BulkCreateCategory",
+                "summary": "Bulk create Invoice",
+                "operationId": "BulkCreateInvoice",
                 "requestBody": {
                     "description": "Fields needed for creation",
                     "content": {
@@ -1222,7 +1222,7 @@
                                 "maxItems": 100,
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/components/schemas/CreateCategoryRequest"
+                                    "$ref": "#/components/schemas/CreateInvoiceRequest"
                                 }
                             }
                         }
@@ -1240,7 +1240,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/CategoryKey"
+                                                "$ref": "#/components/schemas/InvoiceKey"
                                             }
                                         },
                                         "pageCount": {
@@ -1260,10 +1260,10 @@
             },
             "delete": {
                 "tags": [
-                    "Category"
+                    "Invoice"
                 ],
-                "summary": "Bulk delete Category",
-                "operationId": "BulkDeleteCategory",
+                "summary": "Bulk delete Invoice",
+                "operationId": "BulkDeleteInvoice",
                 "requestBody": {
                     "description": "Fields needed for deletion",
                     "content": {
@@ -1272,7 +1272,7 @@
                                 "maxItems": 100,
                                 "type": "array",
                                 "items": {
-                                    "$ref": "#/components/schemas/CategoryKey"
+                                    "$ref": "#/components/schemas/InvoiceKey"
                                 }
                             }
                         }
@@ -1290,7 +1290,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/CategoryKey"
+                                                "$ref": "#/components/schemas/InvoiceKey"
                                             }
                                         },
                                         "pageCount": {
@@ -1309,13 +1309,13 @@
                 }
             }
         },
-        "/speedy/v1/Category({identifiers})": {
+        "/speedy/v1/Invoice({identifiers})": {
             "get": {
                 "tags": [
-                    "Category"
+                    "Invoice"
                 ],
-                "summary": "Get a(n) Category",
-                "operationId": "GetCategory",
+                "summary": "Get a(n) Invoice",
+                "operationId": "GetInvoice",
                 "parameters": [
                     {
                         "name": "identifiers",
@@ -1338,7 +1338,7 @@
                                     "type": "object",
                                     "properties": {
                                         "payload": {
-                                            "$ref": "#/components/schemas/Category"
+                                            "$ref": "#/components/schemas/Invoice"
                                         },
                                         "pageCount": {
                                             "type": "integer",
@@ -1357,10 +1357,10 @@
             },
             "put": {
                 "tags": [
-                    "Category"
+                    "Invoice"
                 ],
-                "summary": "Update a(n) Category",
-                "operationId": "UpdateCategory",
+                "summary": "Update a(n) Invoice",
+                "operationId": "UpdateInvoice",
                 "parameters": [
                     {
                         "name": "identifiers",
@@ -1378,7 +1378,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/UpdateCategoryRequest"
+                                "$ref": "#/components/schemas/UpdateInvoiceRequest"
                             }
                         }
                     }
@@ -1392,7 +1392,7 @@
                                     "type": "object",
                                     "properties": {
                                         "payload": {
-                                            "$ref": "#/components/schemas/Category"
+                                            "$ref": "#/components/schemas/Invoice"
                                         },
                                         "pageCount": {
                                             "type": "integer",
@@ -1410,13 +1410,13 @@
                 }
             }
         },
-        "/speedy/v1/Category({query})": {
+        "/speedy/v1/Invoice({query})": {
             "get": {
                 "tags": [
-                    "Category"
+                    "Invoice"
                 ],
-                "summary": "Filter Category",
-                "operationId": "GetSomeCategory",
+                "summary": "Filter Invoice",
+                "operationId": "GetSomeInvoice",
                 "parameters": [
                     {
                         "name": "query",
@@ -1427,7 +1427,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "id='null', name='null'"
+                        "example": "paid='double', adjustment='double', createdAt='date-time', modifiedBy='null', createdBy='null', dueAmount='double', customer='null', id='null', modifiedAt='date-time', discount='double', invoiceDate='date-time', notes='null'"
                     }
                 ],
                 "responses": {
@@ -1442,7 +1442,7 @@
                                             "maxItems": 100,
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/components/schemas/LightCategory"
+                                                "$ref": "#/components/schemas/LightInvoice"
                                             }
                                         },
                                         "pageCount": {
@@ -1717,7 +1717,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "altPhoneNo='null', createdAt='date-time', createdBy='null', id='null', phoneNo='null', name='null', email='null', invoices='uuid', address='null'"
+                        "example": "address='null', name='null', createdBy='null', invoices='null', phoneNo='null', createdAt='date-time', email='null', id='null', altPhoneNo='null'"
                     }
                 ],
                 "responses": {
@@ -2007,7 +2007,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "category='uuid', name='null', id='null', description='null'"
+                        "example": "description='null', name='null', id='null', category='null'"
                     }
                 ],
                 "responses": {
@@ -2297,7 +2297,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "name='null', altPhoneNo='null', createdAt='date-time', createdBy='null', email='null', id='null', phoneNo='null', address='null'"
+                        "example": "altPhoneNo='null', address='null', createdBy='null', phoneNo='null', name='null', email='null', id='null', createdAt='date-time'"
                     }
                 ],
                 "responses": {
@@ -2587,7 +2587,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "example": "procurement='uuid', cost='double', product='uuid', soldPrice='double', id='null', invoice='uuid', discount='double', listingPrice='double'"
+                        "example": "cost='double', soldPrice='double', listingPrice='double', invoice='null', discount='double', id='null', procurement='null', product='null'"
                     }
                 ],
                 "responses": {
@@ -2630,16 +2630,6 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -2648,6 +2638,13 @@
                         "type": "number",
                         "format": "double"
                     },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
                     "purchaseDate": {
                         "type": "string",
                         "format": "date-time"
@@ -2655,9 +2652,12 @@
                     "id": {
                         "type": "string"
                     },
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "double"
                     }
                 }
             },
@@ -2667,19 +2667,6 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "supplier": {
-                        "$ref": "#/components/schemas/LightSupplier"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -2687,6 +2674,13 @@
                     "dueAmount": {
                         "type": "number",
                         "format": "double"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
                     },
                     "purchaseDate": {
                         "type": "string",
@@ -2698,9 +2692,15 @@
                     "product": {
                         "$ref": "#/components/schemas/LightProduct"
                     },
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/LightSupplier"
                     }
                 }
             },
@@ -2719,19 +2719,6 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "supplier": {
-                        "$ref": "#/components/schemas/SupplierKey"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -2740,6 +2727,13 @@
                         "type": "number",
                         "format": "double"
                     },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
                     "purchaseDate": {
                         "type": "string",
                         "format": "date-time"
@@ -2747,9 +2741,15 @@
                     "product": {
                         "$ref": "#/components/schemas/ProductKey"
                     },
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/SupplierKey"
                     }
                 }
             },
@@ -2757,19 +2757,6 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "supplier": {
-                        "$ref": "#/components/schemas/SupplierKey"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "amount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -2778,6 +2765,13 @@
                         "type": "number",
                         "format": "double"
                     },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
                     "purchaseDate": {
                         "type": "string",
                         "format": "date-time"
@@ -2785,9 +2779,15 @@
                     "product": {
                         "$ref": "#/components/schemas/ProductKey"
                     },
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/SupplierKey"
                     }
                 }
             },
@@ -2797,48 +2797,48 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "defaultGenerator": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "createdAt": {
+                    "deletedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "extra": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
+                    "updatedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
                     "address": {
                         "type": "string"
                     },
-                    "invoiceNo": {
+                    "phone": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "defaultGenerator": {
                         "type": "integer",
                         "format": "int32"
                     },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
                     },
                     "detailsTop": {
                         "type": "string"
                     },
-                    "currency": {
+                    "invoiceNo": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "extra": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
                         "type": "string"
                     }
                 }
@@ -2849,48 +2849,48 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "defaultGenerator": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "createdAt": {
+                    "deletedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "extra": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
+                    "updatedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
                     "address": {
                         "type": "string"
                     },
-                    "invoiceNo": {
+                    "phone": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "defaultGenerator": {
                         "type": "integer",
                         "format": "int32"
                     },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
                     },
                     "detailsTop": {
                         "type": "string"
                     },
-                    "currency": {
+                    "invoiceNo": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "extra": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
                         "type": "string"
                     }
                 }
@@ -2910,45 +2910,45 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "defaultGenerator": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "createdAt": {
+                    "deletedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "extra": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
+                    "updatedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
                     "address": {
                         "type": "string"
                     },
-                    "invoiceNo": {
+                    "phone": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "defaultGenerator": {
                         "type": "integer",
                         "format": "int32"
                     },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "name": {
+                        "type": "string"
                     },
                     "detailsTop": {
                         "type": "string"
                     },
-                    "currency": {
+                    "invoiceNo": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "extra": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
                         "type": "string"
                     }
                 }
@@ -2957,398 +2957,46 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "defaultGenerator": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "createdAt": {
+                    "deletedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "extra": {
-                        "type": "string"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
+                    "updatedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
                     "address": {
                         "type": "string"
                     },
-                    "invoiceNo": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "detailsTop": {
+                    "phone": {
                         "type": "string"
                     },
                     "currency": {
                         "type": "string"
-                    }
-                }
-            },
-            "LightInvoice": {
-                "required": [
-                    "id"
-                ],
-                "type": "object",
-                "properties": {
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
                     },
-                    "adjustment": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "discount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
-                    "paid": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "invoiceDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                }
-            },
-            "Invoice": {
-                "required": [
-                    "id"
-                ],
-                "type": "object",
-                "properties": {
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "customer": {
-                        "$ref": "#/components/schemas/LightCustomer"
-                    },
-                    "adjustment": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "discount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
-                    "paid": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "invoiceDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                }
-            },
-            "InvoiceKey": {
-                "required": [
-                    "id"
-                ],
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CreateInvoiceRequest": {
-                "required": [],
-                "type": "object",
-                "properties": {
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "customer": {
-                        "$ref": "#/components/schemas/CustomerKey"
-                    },
-                    "adjustment": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "discount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
-                    "paid": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "invoiceDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                }
-            },
-            "UpdateInvoiceRequest": {
-                "required": [],
-                "type": "object",
-                "properties": {
-                    "modifiedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "customer": {
-                        "$ref": "#/components/schemas/CustomerKey"
-                    },
-                    "adjustment": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "discount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
-                    "paid": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "invoiceDate": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    }
-                }
-            },
-            "LightUser": {
-                "required": [
-                    "id"
-                ],
-                "type": "object",
-                "properties": {
-                    "profilePic": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "defaultGenerator": {
+                        "type": "integer",
+                        "format": "int32"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "email": {
+                    "detailsTop": {
                         "type": "string"
                     },
-                    "deletedAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "invoiceNo": {
+                        "type": "integer",
+                        "format": "int32"
                     },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "User": {
-                "required": [
-                    "id"
-                ],
-                "type": "object",
-                "properties": {
-                    "profilePic": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
+                    "extra": {
                         "type": "string"
                     },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "name": {
-                        "type": "string"
-                    },
                     "email": {
                         "type": "string"
-                    },
-                    "deletedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "company": {
-                        "$ref": "#/components/schemas/LightCompany"
-                    }
-                }
-            },
-            "UserKey": {
-                "required": [
-                    "id"
-                ],
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CreateUserRequest": {
-                "required": [],
-                "type": "object",
-                "properties": {
-                    "profilePic": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "company": {
-                        "$ref": "#/components/schemas/CompanyKey"
-                    }
-                }
-            },
-            "UpdateUserRequest": {
-                "required": [],
-                "type": "object",
-                "properties": {
-                    "profilePic": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "company": {
-                        "$ref": "#/components/schemas/CompanyKey"
                     }
                 }
             },
@@ -3358,10 +3006,10 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "id": {
+                    "name": {
                         "type": "string"
                     },
-                    "name": {
+                    "id": {
                         "type": "string"
                     }
                 }
@@ -3372,10 +3020,10 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "id": {
+                    "name": {
                         "type": "string"
                     },
-                    "name": {
+                    "id": {
                         "type": "string"
                     }
                 }
@@ -3409,21 +3057,25 @@
                     }
                 }
             },
-            "LightCustomer": {
+            "LightUser": {
                 "required": [
                     "id"
                 ],
                 "type": "object",
                 "properties": {
-                    "altPhoneNo": {
-                        "type": "string"
-                    },
-                    "createdAt": {
+                    "deletedAt": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "createdBy": {
+                    "email": {
                         "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
                     },
                     "id": {
                         "type": "string"
@@ -3431,13 +3083,361 @@
                     "phoneNo": {
                         "type": "string"
                     },
-                    "name": {
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "profilePic": {
                         "type": "string"
+                    }
+                }
+            },
+            "User": {
+                "required": [
+                    "id"
+                ],
+                "type": "object",
+                "properties": {
+                    "deletedAt": {
+                        "type": "string",
+                        "format": "date-time"
                     },
                     "email": {
                         "type": "string"
                     },
+                    "name": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "company": {
+                        "$ref": "#/components/schemas/LightCompany"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "profilePic": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UserKey": {
+                "required": [
+                    "id"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreateUserRequest": {
+                "required": [],
+                "type": "object",
+                "properties": {
+                    "deletedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "company": {
+                        "$ref": "#/components/schemas/CompanyKey"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "profilePic": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UpdateUserRequest": {
+                "required": [],
+                "type": "object",
+                "properties": {
+                    "deletedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "company": {
+                        "$ref": "#/components/schemas/CompanyKey"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "profilePic": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LightInvoice": {
+                "required": [
+                    "id"
+                ],
+                "type": "object",
+                "properties": {
+                    "paid": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "adjustment": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "invoiceDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "notes": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Invoice": {
+                "required": [
+                    "id"
+                ],
+                "type": "object",
+                "properties": {
+                    "paid": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "adjustment": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "customer": {
+                        "$ref": "#/components/schemas/LightCustomer"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "invoiceDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "notes": {
+                        "type": "string"
+                    }
+                }
+            },
+            "InvoiceKey": {
+                "required": [
+                    "id"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreateInvoiceRequest": {
+                "required": [],
+                "type": "object",
+                "properties": {
+                    "paid": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "adjustment": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "customer": {
+                        "$ref": "#/components/schemas/CustomerKey"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "invoiceDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "notes": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UpdateInvoiceRequest": {
+                "required": [],
+                "type": "object",
+                "properties": {
+                    "paid": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "adjustment": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "customer": {
+                        "$ref": "#/components/schemas/CustomerKey"
+                    },
+                    "modifiedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "invoiceDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "notes": {
+                        "type": "string"
+                    }
+                }
+            },
+            "LightCustomer": {
+                "required": [
+                    "id"
+                ],
+                "type": "object",
+                "properties": {
                     "address": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "altPhoneNo": {
                         "type": "string"
                     }
                 }
@@ -3448,26 +3448,13 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "altPhoneNo": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
+                    "address": {
                         "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "email": {
+                    "createdBy": {
                         "type": "string"
                     },
                     "invoices": {
@@ -3476,7 +3463,20 @@
                             "$ref": "#/components/schemas/LightInvoice"
                         }
                     },
-                    "address": {
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "altPhoneNo": {
                         "type": "string"
                     }
                 }
@@ -3496,23 +3496,13 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "altPhoneNo": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
+                    "address": {
                         "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "email": {
+                    "createdBy": {
                         "type": "string"
                     },
                     "invoices": {
@@ -3521,7 +3511,17 @@
                             "$ref": "#/components/schemas/InvoiceKey"
                         }
                     },
-                    "address": {
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "altPhoneNo": {
                         "type": "string"
                     }
                 }
@@ -3530,23 +3530,13 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "altPhoneNo": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
+                    "address": {
                         "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "email": {
+                    "createdBy": {
                         "type": "string"
                     },
                     "invoices": {
@@ -3555,7 +3545,17 @@
                             "$ref": "#/components/schemas/InvoiceKey"
                         }
                     },
-                    "address": {
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "altPhoneNo": {
                         "type": "string"
                     }
                 }
@@ -3566,13 +3566,13 @@
                 ],
                 "type": "object",
                 "properties": {
+                    "description": {
+                        "type": "string"
+                    },
                     "name": {
                         "type": "string"
                     },
                     "id": {
-                        "type": "string"
-                    },
-                    "description": {
                         "type": "string"
                     }
                 }
@@ -3583,8 +3583,8 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "category": {
-                        "$ref": "#/components/schemas/LightCategory"
+                    "description": {
+                        "type": "string"
                     },
                     "name": {
                         "type": "string"
@@ -3592,8 +3592,8 @@
                     "id": {
                         "type": "string"
                     },
-                    "description": {
-                        "type": "string"
+                    "category": {
+                        "$ref": "#/components/schemas/LightCategory"
                     }
                 }
             },
@@ -3612,14 +3612,14 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "category": {
-                        "$ref": "#/components/schemas/CategoryKey"
+                    "description": {
+                        "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "description": {
-                        "type": "string"
+                    "category": {
+                        "$ref": "#/components/schemas/CategoryKey"
                     }
                 }
             },
@@ -3627,14 +3627,14 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "category": {
-                        "$ref": "#/components/schemas/CategoryKey"
+                    "description": {
+                        "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "description": {
-                        "type": "string"
+                    "category": {
+                        "$ref": "#/components/schemas/CategoryKey"
                     }
                 }
             },
@@ -3644,17 +3644,19 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string"
-                    },
                     "altPhoneNo": {
                         "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "address": {
+                        "type": "string"
                     },
                     "createdBy": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "name": {
                         "type": "string"
                     },
                     "email": {
@@ -3663,11 +3665,9 @@
                     "id": {
                         "type": "string"
                     },
-                    "phoneNo": {
-                        "type": "string"
-                    },
-                    "address": {
-                        "type": "string"
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 }
             },
@@ -3677,17 +3677,19 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string"
-                    },
                     "altPhoneNo": {
                         "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
+                    "address": {
+                        "type": "string"
                     },
                     "createdBy": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "name": {
                         "type": "string"
                     },
                     "email": {
@@ -3696,11 +3698,9 @@
                     "id": {
                         "type": "string"
                     },
-                    "phoneNo": {
-                        "type": "string"
-                    },
-                    "address": {
-                        "type": "string"
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 }
             },
@@ -3719,27 +3719,27 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string"
-                    },
                     "altPhoneNo": {
                         "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdBy": {
+                    "address": {
                         "type": "string"
                     },
-                    "email": {
+                    "createdBy": {
                         "type": "string"
                     },
                     "phoneNo": {
                         "type": "string"
                     },
-                    "address": {
+                    "name": {
                         "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 }
             },
@@ -3747,27 +3747,27 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string"
-                    },
                     "altPhoneNo": {
                         "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "createdBy": {
+                    "address": {
                         "type": "string"
                     },
-                    "email": {
+                    "createdBy": {
                         "type": "string"
                     },
                     "phoneNo": {
                         "type": "string"
                     },
-                    "address": {
+                    "name": {
                         "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 }
             },
@@ -3785,16 +3785,16 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "id": {
-                        "type": "string"
+                    "listingPrice": {
+                        "type": "number",
+                        "format": "double"
                     },
                     "discount": {
                         "type": "number",
                         "format": "double"
                     },
-                    "listingPrice": {
-                        "type": "number",
-                        "format": "double"
+                    "id": {
+                        "type": "string"
                     }
                 }
             },
@@ -3804,22 +3804,17 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "procurement": {
-                        "$ref": "#/components/schemas/LightProcurement"
-                    },
                     "cost": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "product": {
-                        "$ref": "#/components/schemas/LightProduct"
                     },
                     "soldPrice": {
                         "type": "number",
                         "format": "double"
                     },
-                    "id": {
-                        "type": "string"
+                    "listingPrice": {
+                        "type": "number",
+                        "format": "double"
                     },
                     "invoice": {
                         "$ref": "#/components/schemas/LightInvoice"
@@ -3828,9 +3823,14 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "listingPrice": {
-                        "type": "number",
-                        "format": "double"
+                    "id": {
+                        "type": "string"
+                    },
+                    "procurement": {
+                        "$ref": "#/components/schemas/LightProcurement"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/LightProduct"
                     }
                 }
             },
@@ -3849,17 +3849,15 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "procurement": {
-                        "$ref": "#/components/schemas/ProcurementKey"
-                    },
                     "cost": {
                         "type": "number",
                         "format": "double"
                     },
-                    "product": {
-                        "$ref": "#/components/schemas/ProductKey"
-                    },
                     "soldPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "listingPrice": {
                         "type": "number",
                         "format": "double"
                     },
@@ -3870,9 +3868,11 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "listingPrice": {
-                        "type": "number",
-                        "format": "double"
+                    "procurement": {
+                        "$ref": "#/components/schemas/ProcurementKey"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/ProductKey"
                     }
                 }
             },
@@ -3880,17 +3880,15 @@
                 "required": [],
                 "type": "object",
                 "properties": {
-                    "procurement": {
-                        "$ref": "#/components/schemas/ProcurementKey"
-                    },
                     "cost": {
                         "type": "number",
                         "format": "double"
                     },
-                    "product": {
-                        "$ref": "#/components/schemas/ProductKey"
-                    },
                     "soldPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "listingPrice": {
                         "type": "number",
                         "format": "double"
                     },
@@ -3901,9 +3899,11 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "listingPrice": {
-                        "type": "number",
-                        "format": "double"
+                    "procurement": {
+                        "$ref": "#/components/schemas/ProcurementKey"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/ProductKey"
                     }
                 }
             }

@@ -4,7 +4,7 @@ import com.github.silent.samurai.entity.Category;
 import com.github.silent.samurai.entity.Customer;
 import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.service.CategoryRepository;
-import com.google.gson.Gson;
+import com.github.silent.samurai.utils.CommonUtil;
 import net.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -50,7 +50,7 @@ class SpeedyPostTest {
         category.setName("generated-cat");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category")
-                .content(new Gson().toJson(List.of(category)))
+                .content(CommonUtil.getGson().toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(mockHttpServletRequest)
@@ -68,7 +68,7 @@ class SpeedyPostTest {
         category.setName(RandomString.make(251));
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category")
-                .content(new Gson().toJson(List.of(category)))
+                .content(CommonUtil.getGson().toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(createRequest)
@@ -83,7 +83,7 @@ class SpeedyPostTest {
         category.setName("");
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category")
-                .content(new Gson().toJson(List.of(category)))
+                .content(CommonUtil.getGson().toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(createRequest)
@@ -100,7 +100,7 @@ class SpeedyPostTest {
         customer.setAddress("this is a address");
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Customer")
-                .content(new Gson().toJson(List.of(customer)))
+                .content(CommonUtil.getGson().toJson(List.of(customer)))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(createRequest)
@@ -115,7 +115,7 @@ class SpeedyPostTest {
         category.setName("ex-gen-cat");
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category")
-                .content(new Gson().toJson(List.of(category)))
+                .content(CommonUtil.getGson().toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(createRequest)
@@ -142,7 +142,7 @@ class SpeedyPostTest {
         }
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category")
-                .content(new Gson().toJson(categories))
+                .content(CommonUtil.getGson().toJson(categories))
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(mockHttpServletRequest)

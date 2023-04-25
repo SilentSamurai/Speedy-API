@@ -89,11 +89,21 @@
                             <library>resttemplate</library>
                             <generateApiTests>false</generateApiTests>
                             <generateModelTests>false</generateModelTests>
+                            <!--                            <language>spring</language>-->
                             <configOptions>
-                                <dateLibrary>java8</dateLibrary>
+                                <java8>true</java8>
+                                <dateLibrary>custom</dateLibrary>
                                 <annotationLibrary>none</annotationLibrary>
                                 <sourceFolder>src/main/java</sourceFolder>
                             </configOptions>
+                            <typeMappings>
+                                <typeMapping>DateTime=Instant</typeMapping>
+                                <typeMapping>Date=Date</typeMapping>
+                            </typeMappings>
+                            <importMappings>
+                                <importMapping>Instant=java.time.Instant</importMapping>
+                                <importMapping>Date=java.util.Date</importMapping>
+                            </importMappings>
                         </configuration>
                     </execution>
                 </executions>

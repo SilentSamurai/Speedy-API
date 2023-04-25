@@ -1,6 +1,7 @@
 package com.github.silent.samurai.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.silent.samurai.deserializer.GsonInstantAdapter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -8,6 +9,7 @@ import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +74,7 @@ public class CommonUtil {
 
     static {
         gsonBuildr.setDateFormat("yyyy-MM-dd hh:mm:ss.S");
+        gsonBuildr.registerTypeAdapter(Instant.class, new GsonInstantAdapter());
     }
 
     public static Gson getGson() {
