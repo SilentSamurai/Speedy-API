@@ -25,6 +25,12 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
+            <artifactId>spring-boot-starter-speedy-open-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

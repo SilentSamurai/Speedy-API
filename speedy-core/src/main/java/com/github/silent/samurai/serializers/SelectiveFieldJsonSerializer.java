@@ -38,18 +38,18 @@ public class SelectiveFieldJsonSerializer {
                 if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {
                     if (fieldMetadata.isCollection()) {
                         ArrayNode childArray = formCollection((Collection<?>) value, serializedType);
-                        jsonObject.putIfAbsent(fieldMetadata.getClassFieldName(), childArray);
+                        jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
                     } else {
                         ObjectNode childObject = fromObject(value, value.getClass(), serializedType);
-                        jsonObject.putIfAbsent(fieldMetadata.getClassFieldName(), childObject);
+                        jsonObject.set(fieldMetadata.getClassFieldName(), childObject);
                     }
                 }
             } else if (fieldMetadata.isCollection()) {
                 ArrayNode jsonArray = formCollection((Collection<?>) value, serializedType);
-                jsonObject.putIfAbsent(fieldMetadata.getClassFieldName(), jsonArray);
+                jsonObject.set(fieldMetadata.getClassFieldName(), jsonArray);
             } else {
                 JsonNode jsonElement = json.valueToTree(value);
-                jsonObject.putIfAbsent(fieldMetadata.getOutputPropertyName(), jsonElement);
+                jsonObject.set(fieldMetadata.getOutputPropertyName(), jsonElement);
             }
         }
         return jsonObject;

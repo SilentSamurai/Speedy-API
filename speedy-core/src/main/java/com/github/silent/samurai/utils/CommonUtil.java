@@ -2,7 +2,6 @@ package com.github.silent.samurai.utils;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -67,9 +66,7 @@ public class CommonUtil {
     public static Jackson2ObjectMapperBuilder jacksonBuildr = new Jackson2ObjectMapperBuilder();
 
     static {
-        jacksonBuildr
-                .featuresToEnable(SerializationFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE)
-                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        jacksonBuildr.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         jacksonBuildr.featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
     }
 

@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.0</version>
+        <version>2.2.0.RELEASE</version>
         <relativePath/> <!-- lookup parent sender repository -->
     </parent>
 
@@ -31,6 +31,7 @@
     <modules>
         <module>speedy-core</module>
         <module>spring-boot-starter-speedy-api</module>
+        <module>spring-boot-starter-speedy-open-api</module>
         <module>speed-test-app</module>
         <module>antlr-parser</module>
         <module>speedy-commons</module>
@@ -132,12 +133,6 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>com.google.code.gson</groupId>-->
-<!--            <artifactId>gson</artifactId>-->
-<!--            <version>2.10.1</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.jooq</groupId>

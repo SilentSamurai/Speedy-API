@@ -3,7 +3,6 @@ package com.github.silent.samurai.config;
 import com.github.silent.samurai.JpaMetaModelProcessor;
 import com.github.silent.samurai.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
-import com.github.silent.samurai.interfaces.ISpeedyOpenApiConfiguration;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.validation.SpeedyValidation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 @Configuration
-public class SpeedyConfig implements ISpeedyConfiguration, ISpeedyOpenApiConfiguration {
+public class SpeedyConfig implements ISpeedyConfiguration {
 
     @Autowired
     EntityManagerFactory entityManagerFactory;

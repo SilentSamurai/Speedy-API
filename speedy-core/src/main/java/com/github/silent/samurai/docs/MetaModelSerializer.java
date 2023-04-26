@@ -30,13 +30,13 @@ public class MetaModelSerializer {
         entityMetadata.getAllFields().stream()
                 .map(MetaModelSerializer::serializeFieldMetadata)
                 .forEach(fieldArray::add);
-        jsonMetadata.putIfAbsent("fields", fieldArray);
+        jsonMetadata.set("fields", fieldArray);
 
         ArrayNode keyArray = json.createArrayNode();
         entityMetadata.getKeyFields().stream()
                 .map(MetaModelSerializer::serializeFieldMetadata)
                 .forEach(keyArray::add);
-        jsonMetadata.putIfAbsent("keyFields", keyArray);
+        jsonMetadata.set("keyFields", keyArray);
         jsonMetadata.put("hasCompositeKey", entityMetadata.hasCompositeKey());
         jsonMetadata.put("entityType", entityMetadata.getEntityClass().getName());
         jsonMetadata.put("keyType", entityMetadata.getKeyClass().getName());

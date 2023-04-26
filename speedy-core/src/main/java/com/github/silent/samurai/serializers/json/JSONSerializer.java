@@ -50,7 +50,7 @@ public class JSONSerializer implements IResponseSerializer {
         }
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();
-        basePayload.putIfAbsent("payload", jsonElement);
+        basePayload.set("payload", jsonElement);
         basePayload.put("pageIndex", requestedPayload.getPageIndex());
         basePayload.put("pageCount", requestedPayload.getPageCount());
 
