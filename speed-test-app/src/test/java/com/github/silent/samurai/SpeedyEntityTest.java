@@ -1,24 +1,36 @@
 package com.github.silent.samurai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.service.CategoryRepository;
 import org.assertj.core.util.Lists;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
-import org.openapitools.client.api.CompanyApi;
+import org.openapitools.client.api.*;
 import org.openapitools.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -50,9 +62,7 @@ class SpeedyEntityTest {
         defaultClient = new ApiClient(restTemplate);
     }
 
-    @Test
-    void normal() throws Exception {
-
+    Company createCompany() {
         Instant datetime = Instant.now();
         CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest();
         createCompanyRequest.name("New Company")
@@ -77,6 +87,242 @@ class SpeedyEntityTest {
         Company company = company200Response.getPayload();
 
         LOGGER.info("company {}", company);
+        return company;
+    }
+
+    Product createProduct() throws Exception {
+        CategoryApi categoryApi = new CategoryApi(defaultClient);
+        List<CreateCategoryRequest> postCategories = Arrays.asList(
+                new CreateCategoryRequest().name("New Category ALL")
+        ); // List<PostCategory> | Fields needed for creation
+        BulkCreateCategory200Response categoryResponse = categoryApi.bulkCreateCategory(postCategories);
+
+        Assertions.assertNotNull(categoryResponse);
+        Assertions.assertNotNull(categoryResponse.getPayload());
+        Assertions.assertTrue(categoryResponse.getPayload().size() > 0);
+        CategoryKey getCategory = categoryResponse.getPayload().get(0);
+        Assertions.assertNotNull(getCategory.getId());
+        Assertions.assertNotEquals("", getCategory.getId());
+
+
+        ProductApi productApi = new ProductApi(defaultClient);
+        CreateProductRequest postProduct = new CreateProductRequest()
+                .name("New Product All")
+                .category(new CategoryKey().id(getCategory.getId()))
+                .description("dummy Product");
+        BulkCreateProduct200Response productsResponse = productApi.bulkCreateProduct(List.of(postProduct));
+
+        Assertions.assertNotNull(productsResponse);
+        Assertions.assertNotNull(productsResponse.getPayload());
+        Assertions.assertTrue(productsResponse.getPayload().size() > 0);
+        ProductKey productKey = productsResponse.getPayload().get(0);
+        Assertions.assertNotNull(productKey.getId());
+        Assertions.assertNotEquals("", productKey.getId());
+
+        GetProduct200Response productResponse = productApi.getProduct(String.format("id='%s'", productKey.getId()));
+        Assertions.assertNotNull(productResponse);
+        Product product = productResponse.getPayload();
+        Assertions.assertNotNull(product);
+        Assertions.assertNotNull(product.getCategory());
+        Assertions.assertEquals(getCategory.getId(), product.getCategory().getId());
+
+        LOGGER.info(" {} ", product);
+
+        return product;
+    }
+
+    Supplier createSupplier() throws Exception {
+
+        Instant dateTimeInstant = Instant.now();
+
+        CreateSupplierRequest createSupplierRequest = new CreateSupplierRequest();
+        createSupplierRequest.name("new Supplier")
+                .address("ABCD aiohwef")
+                .createdAt(dateTimeInstant)
+                .createdBy("Happy Singh")
+                .email("abcd@smainsda.cs")
+                .altPhoneNo("8594093448")
+                .phoneNo("8594094438");
+
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier")
+                .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        MvcResult mvcResult = mvc.perform(getRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andReturn();
+
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+        BulkCreateSupplier200Response apiResponse = objectMapper.readValue(contentAsString, BulkCreateSupplier200Response.class);
+
+        Assertions.assertNotNull(apiResponse);
+        Assertions.assertNotNull(apiResponse.getPayload());
+        Assertions.assertTrue(apiResponse.getPayload().size() > 0);
+        Assertions.assertNotNull(apiResponse.getPayload().get(0));
+        SupplierKey supplierKey = apiResponse.getPayload().get(0);
+
+        Assertions.assertNotNull(supplierKey.getId());
+        Assertions.assertFalse(supplierKey.getId().isBlank());
+
+        SupplierApi supplierApi = new SupplierApi(defaultClient);
+
+        GetSupplier200Response supplier200Response = supplierApi.getSupplier(String.format("id = '%s' ", supplierKey.getId()));
+        Supplier supplier = supplier200Response.getPayload();
+
+        LOGGER.info("Supplier {}", supplier);
+        assert supplier != null;
+        Assertions.assertNotNull(supplier.getCreatedAt());
+        Assertions.assertTrue(supplier.getCreatedAt().toEpochMilli() - dateTimeInstant.toEpochMilli() <= 1000);
+        return supplier;
+    }
+
+    Procurement createProcurement(Product product, Supplier supplier) throws Exception {
+        CreateProcurementRequest createProcurementRequest = new CreateProcurementRequest();
+        createProcurementRequest
+                .purchaseDate(Instant.now())
+                .supplier(new SupplierKey().id(supplier.getId()))
+                .dueAmount(3.8)
+                .modifiedAt(Instant.now())
+                .createdAt(Instant.now())
+                .modifiedBy("asdads")
+                .createdBy("asfasf")
+                .product(new ProductKey().id(product.getId()))
+                .amount(2.0);
+
+        ProcurementApi procurementApi = new ProcurementApi(defaultClient);
+        BulkCreateProcurement200Response bulkCreateProcurement200Response = procurementApi.bulkCreateProcurement(Lists.newArrayList(createProcurementRequest));
+        ProcurementKey procurementKey = bulkCreateProcurement200Response.getPayload().get(0);
+
+        GetProcurement200Response procurement = procurementApi.getProcurement(String.format("id = '%s' ", procurementKey.getId()));
+
+        LOGGER.info(" {} ", procurement);
+
+        return procurement.getPayload();
+
+    }
+
+    Customer createCustomer() {
+        CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
+        createCustomerRequest.createdAt(Instant.now())
+                .altPhoneNo("0984738260")
+                .createdBy("asfasf")
+                .phoneNo("0984738269")
+                .email("aksmfaksmf@sad.cc")
+                .name("New Customer")
+                .address("gg4g");
+
+        CustomerApi customerApi = new CustomerApi(defaultClient);
+
+        BulkCreateCustomer200Response bulkCreateCustomer200Response = customerApi.bulkCreateCustomer(Lists.newArrayList(createCustomerRequest));
+
+        CustomerKey customerKey = bulkCreateCustomer200Response.getPayload().get(0);
+
+        GetCustomer200Response getCustomer200Response = customerApi.getCustomer(String.format("id = '%s' ", customerKey.getId()));
+
+        Customer payload = getCustomer200Response.getPayload();
+
+        LOGGER.info(" {} ", payload);
+        return payload;
+    }
+
+    Invoice createInvoice(Customer customer) {
+        CreateInvoiceRequest createInvoiceRequest = new CreateInvoiceRequest();
+        createInvoiceRequest.createdAt(Instant.now())
+                .dueAmount(23.7)
+                .paid(34.0)
+                .notes("asf")
+                .discount(24354.9)
+                .modifiedBy("josng")
+                .customer(new CustomerKey().id(customer.getId()))
+                .modifiedAt(Instant.now())
+                .invoiceDate(Instant.now())
+                .adjustment(4545.5)
+                .createdBy("ABCD");
+
+
+        InvoiceApi invoiceApi = new InvoiceApi(defaultClient);
+        BulkCreateInvoice200Response bulkCreateInvoice200Response = invoiceApi.bulkCreateInvoice(Lists.newArrayList(createInvoiceRequest));
+
+        InvoiceKey invoiceKey = bulkCreateInvoice200Response.getPayload().get(0);
+
+        GetInvoice200Response invoice200Response = invoiceApi.getInvoice(String.format("id = '%s' ", invoiceKey.getId()));
+
+        Invoice payload = invoice200Response.getPayload();
+        LOGGER.info(" {} ", payload);
+        return payload;
+    }
+
+    User createUser(Company company) {
+        CreateUserRequest createUserRequest = new CreateUserRequest();
+        createUserRequest.createdAt(Instant.now())
+                .createdAt(Instant.now())
+                .deletedAt(Instant.now())
+                .updatedAt(Instant.now())
+                .phoneNo("0984738269")
+                .email("aksmfaksmf@sad.cc")
+                .name("New Customer")
+                .company(new CompanyKey().id(company.getId()))
+                .profilePic("gg4g");
+
+        UserApi userApi = new UserApi(defaultClient);
+
+        BulkCreateUser200Response bulkCreateUser200Response = userApi.bulkCreateUser(Lists.newArrayList(createUserRequest));
+
+        UserKey userKey = bulkCreateUser200Response.getPayload().get(0);
+
+        GetUser200Response getUser200Response = userApi.getUser(String.format("id = '%s' ", userKey.getId()));
+
+        User payload = getUser200Response.getPayload();
+        LOGGER.info(" {} ", payload);
+        return payload;
+    }
+
+    Inventory createInventory(Procurement procurement, Product product, Invoice invoice) {
+        CreateInventoryRequest createInventoryRequest = new CreateInventoryRequest();
+        createInventoryRequest.cost(230.0)
+                .soldPrice(230.0)
+                .discount(230.0)
+                .listingPrice(230.0)
+                .invoice(new InvoiceKey().id(invoice.getId()))
+                .product(new ProductKey().id(product.getId()))
+                .procurement(new ProcurementKey().id(procurement.getId()));
+
+        InventoryApi inventoryApi = new InventoryApi(defaultClient);
+
+        BulkCreateInventory200Response bulkCreateInventory200Response = inventoryApi.bulkCreateInventory(Lists.newArrayList(createInventoryRequest));
+
+        InventoryKey userKey = bulkCreateInventory200Response.getPayload().get(0);
+
+        GetInventory200Response getInventory200Response = inventoryApi.getInventory(String.format("id = '%s' ", userKey.getId()));
+
+        Inventory payload = getInventory200Response.getPayload();
+        LOGGER.info(" {} ", payload);
+        return payload;
+    }
+
+    @Test
+    void normal() throws Exception {
+
+
+        Company company = createCompany();
+        Product product = createProduct();
+        Supplier supplier = createSupplier();
+
+        Procurement procurement = createProcurement(product, supplier);
+
+        Customer customer = createCustomer();
+
+        Invoice invoice = createInvoice(customer);
+
+        User user = createUser(company);
+
+        Inventory inventory = createInventory(procurement, product, invoice);
+
+        Assertions.assertNotNull(inventory);
+        Assertions.assertFalse(inventory.getId().isBlank());
 
 
     }

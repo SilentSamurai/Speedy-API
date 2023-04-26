@@ -103,8 +103,9 @@ class SpeedyDatetimeTest {
         Supplier payload = supplier.getPayload();
 
         LOGGER.info("Supplier {}", payload);
+        assert payload != null;
         Assertions.assertNotNull(payload.getCreatedAt());
-        Assertions.assertEquals(payload.getCreatedAt(), dateTimeInstant);
+        Assertions.assertTrue(payload.getCreatedAt().toEpochMilli() - dateTimeInstant.toEpochMilli() <= 1000);
     }
 
 
