@@ -1,5 +1,7 @@
 package com.github.silent.samurai;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.annotations.SpeedyIgnore;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
@@ -9,8 +11,6 @@ import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.metamodel.JpaKeyFieldMetadata;
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -90,21 +90,33 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         fieldMetadata.setSerializable(true);
         fieldMetadata.setDeserializable(true);
 
-        Expose gsonExposeAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Expose.class);
-        if (gsonExposeAnnotation != null) {
-            fieldMetadata.setSerializable(gsonExposeAnnotation.serialize());
-            fieldMetadata.setDeserializable(gsonExposeAnnotation.deserialize());
-        }
-
-        SerializedName propertyAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SerializedName.class);
+        JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JsonProperty.class);
         fieldMetadata.setOutputPropertyName(fieldMetadata.getClassFieldName());
         if (propertyAnnotation != null) {
             fieldMetadata.setOutputPropertyName(propertyAnnotation.value());
         }
 
-        SpeedyIgnore annotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyIgnore.class);
-        if (annotation != null) {
-            fieldMetadata.setIgnoreType(annotation.value());
+        JsonIgnore jsonIgnore = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JsonIgnore.class);
+        if (jsonIgnore != null) {
+            fieldMetadata.setSerializable(false);
+            fieldMetadata.setDeserializable(false);
+        }
+
+        SpeedyIgnore speedyIgnore = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyIgnore.class);
+        if (speedyIgnore != null) {
+            switch (speedyIgnore.value()) {
+                case READ:
+                    fieldMetadata.setSerializable(false);
+                    break;
+                case WRITE:
+                    fieldMetadata.setDeserializable(false);
+                    break;
+                case ALL:
+                    fieldMetadata.setSerializable(false);
+                    fieldMetadata.setDeserializable(false);
+                    break;
+            }
+            fieldMetadata.setIgnoreType(speedyIgnore.value());
         }
 
         // MZ: Find the correct method

@@ -46,7 +46,7 @@ public class Customer extends AbstractBaseEntity {
     @Column(name = "created_at")
     private Instant createdAt;
 
-    @SpeedyIgnore(IgnoreType.PERSIST)
+    @SpeedyIgnore(IgnoreType.WRITE)
     @Column(name = "created_by")
     private String createdBy;
 

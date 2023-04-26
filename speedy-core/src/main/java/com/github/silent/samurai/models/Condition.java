@@ -1,9 +1,10 @@
 package com.github.silent.samurai.models;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.core.JsonParser;
+
 
 public interface Condition {
     String getOperator();
 
-    void updateFromJson(JsonElement jsonElement);
+    void updateFromJson(JsonParser jsonParser);
 }

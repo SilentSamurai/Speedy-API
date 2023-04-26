@@ -1,5 +1,7 @@
 package com.github.silent.samurai.helpers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.data.*;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.NotFoundException;
@@ -8,7 +10,6 @@ import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.parser.SpeedyUriParser;
 import com.github.silent.samurai.utils.CommonUtil;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonElement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -141,16 +142,16 @@ class MetadataUtilTest {
     @Test
     void createEntityKeyFromJSON() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
-        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'1234', 'name':'na'}", JsonElement.class);
-        Object primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, jsonElement.getAsJsonObject());
+        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'1234', 'name':'na'}");
+        Object primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
         assertEquals("1234", primaryKey);
     }
 
     @Test
     void createEntityKeyFromJSON1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
-        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'1234', 'name':'na'}", JsonElement.class);
-        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.createIdentifierFromJSON(entityMetadata, jsonElement.getAsJsonObject());
+        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'1234', 'name':'na'}");
+        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
         assertEquals("1234", primaryKey.getId());
         assertEquals("na", primaryKey.getName());
     }
@@ -160,8 +161,8 @@ class MetadataUtilTest {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
                     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
-                    JsonElement jsonElement = CommonUtil.getGson().fromJson("{'name':'na'}", JsonElement.class);
-                    MetadataUtil.createIdentifierFromJSON(entityMetadata, jsonElement.getAsJsonObject());
+                    JsonNode jsonElement = CommonUtil.json().readTree("{'name':'na'}");
+                    MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
                 }
         );
     }
@@ -171,8 +172,8 @@ class MetadataUtilTest {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
                     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
-                    JsonElement jsonElement = CommonUtil.getGson().fromJson("{'name':'na'}", JsonElement.class);
-                    MetadataUtil.createIdentifierFromJSON(entityMetadata, jsonElement.getAsJsonObject());
+                    JsonNode jsonElement = CommonUtil.json().readTree("{'name':'na'}");
+                    MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
                 }
         );
     }
@@ -200,8 +201,8 @@ class MetadataUtilTest {
     @Test
     void createEntityObjectFromJSON() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
-        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", JsonElement.class);
-        EntityTestClass entity = (EntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, jsonElement.getAsJsonObject(), entityManager);
+        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1'}");
+        EntityTestClass entity = (EntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
         assertEquals("cat-1", entity.getCategory());
@@ -210,8 +211,8 @@ class MetadataUtilTest {
     @Test
     void createEntityObjectFromJSON1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
-        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1'}", JsonElement.class);
-        EntityCompositeKeyTestClass entity = (EntityCompositeKeyTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, jsonElement.getAsJsonObject(), entityManager);
+        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1'}");
+        EntityCompositeKeyTestClass entity = (EntityCompositeKeyTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
         assertEquals("cat-1", entity.getCategory());
@@ -228,7 +229,7 @@ class MetadataUtilTest {
 
         JsonElement jsonElement = CommonUtil.getGson().fromJson("{'category':'cat-2'}", JsonElement.class);
 
-        MetadataUtil.updateEntityFromJSON(entityMetadata, entityManager, jsonElement.getAsJsonObject(), entity);
+        MetadataUtil.updateEntityFromJSON(entityMetadata, entityManager, (ObjectNode) jsonElement, entity);
         assertEquals("cat-2", entity.getCategory());
     }*/
 
@@ -237,8 +238,8 @@ class MetadataUtilTest {
         AssociationEntity associationEntity = new AssociationEntity();
         Mockito.when(entityManager.find(AssociationEntity.class, "abcd")).thenReturn(associationEntity);
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(AssociatedEntityTestClass.class);
-        JsonElement jsonElement = CommonUtil.getGson().fromJson("{'id':'abcd', 'name':'na', 'category':'cat-1', 'associationEntity':{'id':'abcd'} }", JsonElement.class);
-        AssociatedEntityTestClass entity = (AssociatedEntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, jsonElement.getAsJsonObject(), entityManager);
+        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1', 'associationEntity':{'id':'abcd'} }");
+        AssociatedEntityTestClass entity = (AssociatedEntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, entityManager);
         assertEquals("abcd", entity.getId());
         assertEquals("na", entity.getName());
         assertEquals("cat-1", entity.getCategory());

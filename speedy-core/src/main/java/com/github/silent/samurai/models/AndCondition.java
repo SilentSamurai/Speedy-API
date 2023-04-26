@@ -1,6 +1,6 @@
 package com.github.silent.samurai.models;
 
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.core.JsonParser;
 import lombok.Data;
 
 import java.util.List;
@@ -12,7 +12,7 @@ public class AndCondition implements Condition {
     private List<Condition> conditions;
 
     @Override
-    public void updateFromJson(JsonElement jsonElement) {
+    public void updateFromJson(JsonParser jsonParser) {
 
     }
 }

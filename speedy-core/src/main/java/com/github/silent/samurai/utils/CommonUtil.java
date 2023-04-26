@@ -1,15 +1,16 @@
 package com.github.silent.samurai.utils;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.silent.samurai.deserializer.GsonInstantAdapter;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,20 +20,13 @@ import java.util.regex.Pattern;
 public class CommonUtil {
 
     private static final ModelMapper modelMapper;
-    private static final ObjectMapper objectMapper;
 
     static {
         modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
                 .setPropertyCondition(Conditions.isNotNull())
                 .setMatchingStrategy(MatchingStrategies.STRICT);
-        objectMapper = new ObjectMapper();
     }
-
-    public static <D> D mapToModel(final Map<String, ?> map, Class<D> type) {
-        return objectMapper.convertValue(map, type);
-    }
-
     public static <D, T> D mapModel(final Object subject, Class<D> tClass) {
         return modelMapper.map(subject, tClass);
     }
@@ -70,19 +64,30 @@ public class CommonUtil {
         return matcher.group(group);
     }
 
-    public static GsonBuilder gsonBuildr = new GsonBuilder();
+    public static Jackson2ObjectMapperBuilder jacksonBuildr = new Jackson2ObjectMapperBuilder();
 
     static {
-        gsonBuildr.setDateFormat("yyyy-MM-dd hh:mm:ss.S");
-        gsonBuildr.registerTypeAdapter(Instant.class, new GsonInstantAdapter());
+        jacksonBuildr
+                .featuresToEnable(SerializationFeature.WRITE_DATES_WITH_CONTEXT_TIME_ZONE)
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        jacksonBuildr.featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
     }
 
-    public static Gson getGson() {
-        return gsonBuildr.create();
+    public static ObjectMapper json() {
+        return jacksonBuildr.build();
     }
 
-    public static <T> T gsonToType(JsonElement jsonElement, Class<T> type) {
-        return gsonBuildr.create().fromJson(jsonElement, type);
+    public static String toJson(Object value) throws JsonProcessingException {
+        return jacksonBuildr.build().writeValueAsString(value);
+    }
+
+    public static <D> D mapToModel(final Map<String, ?> map, Class<D> type) {
+        return json().convertValue(map, type);
+    }
+
+
+    public static <T> T jsonToType(JsonNode jsonNode, Class<T> type) throws JsonProcessingException {
+        return jacksonBuildr.build().treeToValue(jsonNode, type);
     }
 
     public static <T> T quotedStringToPrimitive(String value, Class<T> type) {

@@ -1,8 +1,9 @@
 package com.github.silent.samurai;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.utils.StringUtils;
-import com.google.gson.Gson;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -41,16 +42,15 @@ class AntlrRequestListenerTest {
 
     @Disabled
     @Test
-    void testSingle() {
+    void testSingle() throws JsonProcessingException {
         String input = "/Customer?happy='holi'&metadata='hpo'";
         AntlrRequest antlrRequest = parse(input);
-        LOGGER.info("request {}", new Gson().toJson(antlrRequest));
-
+        LOGGER.info("request {}", new ObjectMapper().writeValueAsString(antlrRequest));
     }
 
 
     @Test
-    void getEntries() {
+    void getEntries() throws JsonProcessingException {
         String[] inputEntries = {
                 "/Customer",
                 "/Customer/",
@@ -66,7 +66,7 @@ class AntlrRequestListenerTest {
 
         for (String input : inputEntries) {
             AntlrRequest antlrRequest = parse(input);
-            LOGGER.info("request {}", new Gson().toJson(antlrRequest));
+            LOGGER.info("request {}", new ObjectMapper().writeValueAsString(antlrRequest));
             assertEquals("Customer", antlrRequest.getResource());
             LOGGER.info("");
         }

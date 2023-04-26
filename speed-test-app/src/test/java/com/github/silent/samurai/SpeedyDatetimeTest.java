@@ -9,18 +9,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.SupplierApi;
-import org.openapitools.client.model.BulkCreateSupplier200Response;
-import org.openapitools.client.model.CreateSupplierRequest;
+import org.openapitools.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -48,48 +46,29 @@ class SpeedyDatetimeTest {
     CategoryRepository categoryRepository;
 
     ApiClient defaultClient;
+
     @Autowired
     ObjectMapper objectMapper;
+
     @Autowired
     private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
-//        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-//        objectMapper.setDateFormat(new StdDateFormat().withColonInTimeZone(true));
-        MappingJackson2HttpMessageConverter cnv = new MappingJackson2HttpMessageConverter(objectMapper);
         MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
         RestTemplate restTemplate = new RestTemplate(requestFactory);
-        restTemplate.getMessageConverters().add(0, cnv);
         defaultClient = new ApiClient(restTemplate);
     }
 
     @Test
-    void createCategory() throws Exception {
-
-        CreateSupplierRequest createSupplierRequest = new CreateSupplierRequest();
-        createSupplierRequest.name("new Supplier")
-                .address("ABCD aiohwef")
-                .createdAt(Instant.now())
-                .createdBy("Happy Singh")
-                .email("abcd@smainsda.cs")
-                .altPhoneNo("4384948475")
-                .phoneNo("4384948475");
-        defaultClient.setDebugging(true);
-
-        SupplierApi supplierApi = new SupplierApi(defaultClient);
-
-        ResponseEntity<BulkCreateSupplier200Response> supplierResponse = supplierApi.bulkCreateSupplierWithHttpInfo(Lists.newArrayList(createSupplierRequest));
-
-        Assertions.assertTrue(supplierResponse.getStatusCode().is2xxSuccessful());
-    }
-
-    @Test
     void CreateSupplier() throws Exception {
+
+        Instant dateTimeInstant = Instant.now();
+
         CreateSupplierRequest createSupplierRequest = new CreateSupplierRequest();
         createSupplierRequest.name("new Supplier")
                 .address("ABCD aiohwef")
-                .createdAt(Instant.now())
+                .createdAt(dateTimeInstant)
                 .createdBy("Happy Singh")
                 .email("abcd@smainsda.cs")
                 .altPhoneNo("9013019322")
@@ -99,12 +78,33 @@ class SpeedyDatetimeTest {
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mvc.perform(getRequest)
+        MvcResult mvcResult = mvc.perform(getRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
                 .andReturn();
+
+        String contentAsString = mvcResult.getResponse().getContentAsString();
+        BulkCreateSupplier200Response apiResponse = objectMapper.readValue(contentAsString, BulkCreateSupplier200Response.class);
+
+        Assertions.assertNotNull(apiResponse);
+        Assertions.assertNotNull(apiResponse.getPayload());
+        Assertions.assertTrue(apiResponse.getPayload().size() > 0);
+        Assertions.assertNotNull(apiResponse.getPayload().get(0));
+        SupplierKey supplierKey = apiResponse.getPayload().get(0);
+
+        Assertions.assertNotNull(supplierKey.getId());
+        Assertions.assertFalse(supplierKey.getId().isBlank());
+
+        SupplierApi supplierApi = new SupplierApi(defaultClient);
+
+        GetSupplier200Response supplier = supplierApi.getSupplier(String.format("id = '%s' ", supplierKey.getId()));
+        Supplier payload = supplier.getPayload();
+
+        LOGGER.info("Supplier {}", payload);
+        Assertions.assertNotNull(payload.getCreatedAt());
+        Assertions.assertEquals(payload.getCreatedAt(), dateTimeInstant);
     }
 
 

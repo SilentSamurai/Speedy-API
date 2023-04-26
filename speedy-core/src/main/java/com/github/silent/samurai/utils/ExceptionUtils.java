@@ -1,10 +1,10 @@
 package com.github.silent.samurai.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.exceptions.SpeedyHttpException;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
 import org.springframework.http.MediaType;
@@ -38,11 +38,11 @@ public class ExceptionUtils {
     public static void writeException(HttpServletResponse response, SpeedyHttpException e) throws IOException {
         response.setStatus(e.getStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        JsonObject basePayload = new JsonObject();
-        basePayload.addProperty("status", e.getStatus());
-        basePayload.addProperty("message", e.getLocalizedMessage());
-        basePayload.addProperty("timestamp", LocalDateTime.now().toString());
-        Gson gson = CommonUtil.getGson();
-        gson.toJson(basePayload, response.getWriter());
+        ObjectMapper jsPr = CommonUtil.json();
+        ObjectNode basePayload = jsPr.createObjectNode();
+        basePayload.put("status", e.getStatus());
+        basePayload.put("message", e.getLocalizedMessage());
+        basePayload.put("timestamp", LocalDateTime.now().toString());
+        jsPr.writeValue(response.getWriter(), basePayload);
     }
 }

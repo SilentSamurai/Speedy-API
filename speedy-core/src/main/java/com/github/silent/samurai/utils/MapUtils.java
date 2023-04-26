@@ -1,10 +1,13 @@
 package com.github.silent.samurai.utils;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class MapUtils {
 
@@ -16,10 +19,11 @@ public class MapUtils {
         return null;
     }
 
-    public static Object findAnyValueInJsonObject(JsonObject jsonObject, Class<?> type) {
-        Optional<Map.Entry<String, JsonElement>> any = jsonObject.entrySet().stream().findAny();
+    public static Object findAnyValueInJsonObject(JsonNode jsonNode, Class<?> type) throws JsonProcessingException {
+        Stream<JsonNode> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(jsonNode.iterator(), 0), false);
+        Optional<JsonNode> any = stream.findAny();
         if (any.isPresent()) {
-            return CommonUtil.gsonToType(any.get().getValue(), type);
+            return CommonUtil.jsonToType(any.get(), type);
         }
         return null;
     }

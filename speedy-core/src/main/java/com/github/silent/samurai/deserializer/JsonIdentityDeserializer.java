@@ -1,19 +1,20 @@
 package com.github.silent.samurai.deserializer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.utils.CommonUtil;
-import com.google.gson.JsonObject;
 
 import java.util.Optional;
 
 public class JsonIdentityDeserializer {
 
     private final EntityMetadata entityMetadata;
-    private final JsonObject keyJson;
+    private final ObjectNode keyJson;
 
-    public JsonIdentityDeserializer(EntityMetadata entityMetadata, JsonObject keyJson) {
+    public JsonIdentityDeserializer(EntityMetadata entityMetadata, ObjectNode keyJson) {
         this.entityMetadata = entityMetadata;
         this.keyJson = keyJson;
     }
@@ -25,13 +26,13 @@ public class JsonIdentityDeserializer {
         return this.getBasicKey();
     }
 
-    private Object getBasicKey() throws BadRequestException {
+    private Object getBasicKey() throws BadRequestException, JsonProcessingException {
         Optional<KeyFieldMetadata> primaryKeyFieldMetadata = this.entityMetadata.getKeyFields().stream().findAny();
         if (primaryKeyFieldMetadata.isPresent()) {
             KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
             String propertyName = keyFieldMetadata.getOutputPropertyName();
             if (keyJson.has(propertyName)) {
-                return CommonUtil.gsonToType(keyJson.get(propertyName), keyFieldMetadata.getFieldType());
+                return CommonUtil.jsonToType(keyJson.get(propertyName), keyFieldMetadata.getFieldType());
             }
         }
         throw new BadRequestException("primary key field not found" + keyJson);
@@ -42,7 +43,7 @@ public class JsonIdentityDeserializer {
         for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
             String propertyName = fieldMetadata.getOutputPropertyName();
             if (keyJson.has(propertyName)) {
-                Object value = CommonUtil.gsonToType(keyJson.get(propertyName), fieldMetadata.getFieldType());
+                Object value = CommonUtil.jsonToType(keyJson.get(propertyName), fieldMetadata.getFieldType());
                 fieldMetadata.setEntityFieldWithValue(newKeyInstance, value);
             } else {
                 throw new BadRequestException("primary key incomplete" + keyJson);

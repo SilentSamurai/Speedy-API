@@ -1,52 +1,55 @@
 package com.github.silent.samurai.docs;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.github.silent.samurai.utils.CommonUtil;
 
 import java.util.Collection;
 
 public class MetaModelSerializer {
 
-    public static JsonElement serializeMetaModel(MetaModelProcessor metaModelProcessor) {
+    public static JsonNode serializeMetaModel(MetaModelProcessor metaModelProcessor) {
         Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
-        JsonArray entityArray = new JsonArray();
+        ArrayNode entityArray = CommonUtil.json().createArrayNode();
         allEntityMetadata.stream()
                 .map(MetaModelSerializer::serializeEntityMetaModel)
                 .forEach(entityArray::add);
         return entityArray;
     }
 
-    public static JsonElement serializeEntityMetaModel(EntityMetadata entityMetadata) {
-        JsonObject jsonMetadata = new JsonObject();
-        jsonMetadata.addProperty("name", entityMetadata.getName());
-        JsonArray fieldArray = new JsonArray();
+    public static JsonNode serializeEntityMetaModel(EntityMetadata entityMetadata) {
+        ObjectMapper json = CommonUtil.json();
+        ObjectNode jsonMetadata = json.createObjectNode();
+        jsonMetadata.put("name", entityMetadata.getName());
+        ArrayNode fieldArray = json.createArrayNode();
         entityMetadata.getAllFields().stream()
                 .map(MetaModelSerializer::serializeFieldMetadata)
                 .forEach(fieldArray::add);
-        jsonMetadata.add("fields", fieldArray);
+        jsonMetadata.putIfAbsent("fields", fieldArray);
 
-        JsonArray keyArray = new JsonArray();
+        ArrayNode keyArray = json.createArrayNode();
         entityMetadata.getKeyFields().stream()
                 .map(MetaModelSerializer::serializeFieldMetadata)
                 .forEach(keyArray::add);
-        jsonMetadata.add("keyFields", keyArray);
-        jsonMetadata.addProperty("hasCompositeKey", entityMetadata.hasCompositeKey());
-        jsonMetadata.addProperty("entityType", entityMetadata.getEntityClass().getName());
-        jsonMetadata.addProperty("keyType", entityMetadata.getKeyClass().getName());
+        jsonMetadata.putIfAbsent("keyFields", keyArray);
+        jsonMetadata.put("hasCompositeKey", entityMetadata.hasCompositeKey());
+        jsonMetadata.put("entityType", entityMetadata.getEntityClass().getName());
+        jsonMetadata.put("keyType", entityMetadata.getKeyClass().getName());
         return jsonMetadata;
     }
 
 
-    public static JsonElement serializeFieldMetadata(FieldMetadata fieldMetadata) {
-        JsonObject fieldMetadataJson = new JsonObject();
-        fieldMetadataJson.addProperty("className", fieldMetadata.getClassFieldName());
-        fieldMetadataJson.addProperty("outputProperty", fieldMetadata.getOutputPropertyName());
-        fieldMetadataJson.addProperty("dbColumn", fieldMetadata.getDbColumnName());
-        fieldMetadataJson.addProperty("fieldType", fieldMetadata.getFieldType().getName());
+    public static JsonNode serializeFieldMetadata(FieldMetadata fieldMetadata) {
+        ObjectNode fieldMetadataJson = CommonUtil.json().createObjectNode();
+        fieldMetadataJson.put("className", fieldMetadata.getClassFieldName());
+        fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
+        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
+        fieldMetadataJson.put("fieldType", fieldMetadata.getFieldType().getName());
         return fieldMetadataJson;
     }
 

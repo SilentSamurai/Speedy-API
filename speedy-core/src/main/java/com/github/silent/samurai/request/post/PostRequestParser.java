@@ -1,13 +1,14 @@
 package com.github.silent.samurai.request.post;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.parser.SpeedyUriParser;
 import com.github.silent.samurai.utils.CommonUtil;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,20 +27,24 @@ public class PostRequestParser {
         parser.parse();
         context.setParser(parser);
 
-        Gson gson = CommonUtil.getGson();
-        JsonElement jsonElement = gson.fromJson(context.getRequest().getReader(), JsonElement.class);
-        if (jsonElement == null) {
+        ObjectMapper json = CommonUtil.json();
+        JsonNode jsonElement = json.readTree(context.getRequest().getReader());
+        if (jsonElement == null || !jsonElement.isArray()) {
             throw new BadRequestException("no content to process");
         }
-        JsonArray batchOfEntities = jsonElement.getAsJsonArray();
-        for (JsonElement element : batchOfEntities) {
-            Object entityInstance = MetadataUtil.createEntityFromJSON(
-                    parser.getResourceMetadata(),
-                    element.getAsJsonObject(),
-                    context.getEntityManager()
-            );
-            LOGGER.info("parsed entity {}", entityInstance);
-            context.getParsedObjects().add(entityInstance);
+        ArrayNode batchOfEntities = (ArrayNode) jsonElement;
+        for (JsonNode element : batchOfEntities) {
+            if (element.isObject()) {
+                Object entityInstance = MetadataUtil.createEntityFromJSON(
+                        parser.getResourceMetadata(),
+                        (ObjectNode) element,
+                        context.getEntityManager()
+                );
+                LOGGER.info("parsed entity {}", entityInstance);
+                context.getParsedObjects().add(entityInstance);
+            } else {
+                throw new BadRequestException("in-valid content");
+            }
         }
     }
 

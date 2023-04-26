@@ -107,7 +107,7 @@ public class OASGenerator {
             if (predicate.test(fieldMetadata)) {
                 Schema fieldSchema = createFieldSchema(fieldMetadata, associationFormat);
                 schema.addProperty(fieldMetadata.getOutputPropertyName(), fieldSchema);
-                if (fieldMetadata instanceof KeyFieldMetadata) {
+                if (fieldMetadata instanceof KeyFieldMetadata || !fieldMetadata.isNullable()) {
                     required.add(fieldMetadata.getOutputPropertyName());
                 }
             }
@@ -117,10 +117,7 @@ public class OASGenerator {
     }
 
     public static Schema wrapInArray(Schema ref) {
-        return new Schema<>()
-                .type("array")
-                .maxItems(100)
-                .items(ref);
+        return new Schema<>().type("array").maxItems(100).items(ref);
     }
 
     public static Schema wrapInPayload(Schema ref) {

@@ -1,13 +1,13 @@
 package com.github.silent.samurai.request.put;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.parser.SpeedyUriParser;
 import com.github.silent.samurai.utils.CommonUtil;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,20 +26,18 @@ public class PutRequestParser {
         parser.parse();
         context.setParser(parser);
 
-        Gson gson = CommonUtil.getGson();
-        JsonElement jsonElement = gson.fromJson(context.getRequest().getReader(), JsonElement.class);
-        if (jsonElement == null) {
+        ObjectMapper json = CommonUtil.json();
+        JsonNode jsonElement = json.readTree(context.getRequest().getReader());
+        if (jsonElement == null || !jsonElement.isObject()) {
             throw new BadRequestException("no content to process");
         }
-        JsonObject resourceFields = jsonElement.getAsJsonObject();
         if (!parser.isOnlyIdentifiersPresent()) {
             throw new BadRequestException("Primary Key Incomplete.");
         }
         EntityMetadata entityMetadata = parser.getResourceMetadata();
-
         Object pk = MetadataUtil.createIdentifierFromParser(parser);
         Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
-        MetadataUtil.updateEntityFromJSON(entityMetadata, context.getEntityManager(), resourceFields, entityInstance);
+        MetadataUtil.updateEntityFromJSON(entityMetadata, context.getEntityManager(), (ObjectNode) jsonElement, entityInstance);
         context.setEntityInstance(entityInstance);
         LOGGER.info(" test {}", entityInstance);
     }

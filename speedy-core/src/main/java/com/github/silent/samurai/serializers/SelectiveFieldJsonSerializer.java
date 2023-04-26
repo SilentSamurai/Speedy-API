@@ -1,15 +1,15 @@
 package com.github.silent.samurai.serializers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.utils.CommonUtil;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -20,47 +20,45 @@ public class SelectiveFieldJsonSerializer {
     private final MetaModelProcessor metaModelProcessor;
     private final Predicate<FieldMetadata> fieldPredicate;
     private int level = 0;
+    private static final ObjectMapper json = CommonUtil.json();
 
     public SelectiveFieldJsonSerializer(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
         this.metaModelProcessor = metaModelProcessor;
         this.fieldPredicate = fieldPredicate;
     }
 
-    public JsonObject fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
-        JsonObject json = new JsonObject();
+    public ObjectNode fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+        ObjectNode jsonObject = json.createObjectNode();
         EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(clazz.getSimpleName());
-        Gson gson = CommonUtil.getGson();
         level++;
-
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
             Object value = fieldMetadata.getEntityFieldValue(entityObject);
             if (fieldMetadata.isAssociation()) {
                 if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {
                     if (fieldMetadata.isCollection()) {
-                        JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                        json.add(fieldMetadata.getClassFieldName(), jsonArray);
+                        ArrayNode childArray = formCollection((Collection<?>) value, serializedType);
+                        jsonObject.putIfAbsent(fieldMetadata.getClassFieldName(), childArray);
                     } else {
-                        JsonObject jsonObject = fromObject(value, value.getClass(), serializedType);
-                        json.add(fieldMetadata.getClassFieldName(), jsonObject);
+                        ObjectNode childObject = fromObject(value, value.getClass(), serializedType);
+                        jsonObject.putIfAbsent(fieldMetadata.getClassFieldName(), childObject);
                     }
                 }
             } else if (fieldMetadata.isCollection()) {
-                JsonArray jsonArray = formCollection((Collection<?>) value, serializedType);
-                json.add(fieldMetadata.getClassFieldName(), jsonArray);
+                ArrayNode jsonArray = formCollection((Collection<?>) value, serializedType);
+                jsonObject.putIfAbsent(fieldMetadata.getClassFieldName(), jsonArray);
             } else {
-                JsonElement jsonElement = gson.toJsonTree(value);
-                json.add(fieldMetadata.getClassFieldName(), jsonElement);
+                JsonNode jsonElement = json.valueToTree(value);
+                jsonObject.putIfAbsent(fieldMetadata.getOutputPropertyName(), jsonElement);
             }
         }
-
-        return json;
+        return jsonObject;
     }
 
-    public JsonArray formCollection(Collection<?> collection, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
-        JsonArray jsonArray = new JsonArray();
+    public ArrayNode formCollection(Collection<?> collection, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+        ArrayNode jsonArray = json.createArrayNode();
         for (Object object : collection) {
-            JsonObject jsonObject = fromObject(object, object.getClass(), serializedType);
+            JsonNode jsonObject = fromObject(object, object.getClass(), serializedType);
             jsonArray.add(jsonObject);
         }
         return jsonArray;

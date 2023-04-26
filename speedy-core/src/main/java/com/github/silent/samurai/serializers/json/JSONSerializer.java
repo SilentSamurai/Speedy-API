@@ -1,14 +1,14 @@
 package com.github.silent.samurai.serializers.json;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.IBaseResponsePayload;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.serializers.SelectiveFieldJsonSerializer;
 import com.github.silent.samurai.utils.CommonUtil;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.springframework.http.MediaType;
 
 import java.util.List;
@@ -40,7 +40,7 @@ public class JSONSerializer implements IResponseSerializer {
     }
 
     public void writeResponse(IBaseResponsePayload requestedPayload) throws Exception {
-        JsonElement jsonElement;
+        JsonNode jsonElement;
         SelectiveFieldJsonSerializer selectiveFieldJsonSerializer = new SelectiveFieldJsonSerializer(context.getMetaModelProcessor(), fieldPredicate);
         if (context.getSerializationType() == IResponseSerializer.MULTIPLE_ENTITY) {
             List<?> resultList = (List<?>) requestedPayload.getPayload();
@@ -48,13 +48,13 @@ public class JSONSerializer implements IResponseSerializer {
         } else {
             jsonElement = selectiveFieldJsonSerializer.fromObject(requestedPayload.getPayload(), requestedPayload.getPayload().getClass(), context.getSerializationType());
         }
-        JsonObject basePayload = new JsonObject();
-        basePayload.add("payload", jsonElement);
-        basePayload.addProperty("pageIndex", requestedPayload.getPageIndex());
-        basePayload.addProperty("pageCount", requestedPayload.getPageCount());
+        ObjectMapper json = CommonUtil.json();
+        ObjectNode basePayload = json.createObjectNode();
+        basePayload.putIfAbsent("payload", jsonElement);
+        basePayload.put("pageIndex", requestedPayload.getPageIndex());
+        basePayload.put("pageCount", requestedPayload.getPageCount());
 
-        Gson gson = CommonUtil.getGson();
-        gson.toJson(basePayload, context.getResponse().getWriter());
+        json.writeValue(context.getResponse().getWriter(), basePayload);
     }
 
 
