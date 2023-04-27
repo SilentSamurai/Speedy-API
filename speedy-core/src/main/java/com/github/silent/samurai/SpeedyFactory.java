@@ -62,9 +62,9 @@ public class SpeedyFactory {
         }
         IResponseSerializer jsonSerializer = new JSONSerializer(context);
         PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(requestData.get());
-        jsonSerializer.writeResponse(responseWrapper);
         response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
+        jsonSerializer.writeResponse(responseWrapper);
     }
 
     public void processPOSTRequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
@@ -79,9 +79,9 @@ public class SpeedyFactory {
         Optional<List<Object>> savedEntities = new PostDataHandler(context).processBatch();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
         PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(savedEntities.orElse(Collections.emptyList()));
-        jsonSerializer.writeResponse(responseWrapper);
         response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
+        jsonSerializer.writeResponse(responseWrapper);
     }
 
     public void processPUTRequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
@@ -99,9 +99,9 @@ public class SpeedyFactory {
         }
         IResponseSerializer jsonSerializer = new JSONSerializer(context);
         PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(savedEntity.get());
-        jsonSerializer.writeResponse(responseWrapper);
         response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
+        jsonSerializer.writeResponse(responseWrapper);
     }
 
     public void processDELETERequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
@@ -110,9 +110,9 @@ public class SpeedyFactory {
         Optional<List<Object>> removedEntities = new DeleteDataHandler(context).process();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
         PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(removedEntities.orElse(Collections.emptyList()));
-        jsonSerializer.writeResponse(responseWrapper);
         response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
+        jsonSerializer.writeResponse(responseWrapper);
     }
 
     public void requestResource(HttpServletRequest request, HttpServletResponse response) throws IOException {

@@ -186,4 +186,35 @@ class SpeedyUriParserTest {
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
+    @Test
+    void processRequest10_3() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?intVal");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertTrue(parser.hasQuery("intVal"));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest10_4() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?intVal=2");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(2, parser.getQuery("intVal", int.class).get(0));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest10_5() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?intVal=2&doubleVal='2.0'");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(2, parser.getQuery("intVal", int.class).get(0));
+        assertEquals(2.0, parser.getQuery("doubleVal", double.class).get(0));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
 }

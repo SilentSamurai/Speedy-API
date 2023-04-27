@@ -1,14 +1,12 @@
 package com.github.silent.samurai;
 
 
-
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class RequestListener extends SpeedyBaseListener {
 
-    private List<AntlrRequest> antlrRequests = new ArrayList<>();
+    private final List<AntlrRequest> antlrRequests = new ArrayList<>();
     private AntlrRequest current;
 
     @Override
@@ -38,7 +36,11 @@ public class RequestListener extends SpeedyBaseListener {
 
     @Override
     public void enterSearchParameter(SpeedyParser.SearchParameterContext ctx) {
-        current.getQuery().add(ctx.identifier().getText(), ctx.valString().getText());
+        if (ctx.paramValue() != null) {
+            current.getQuery().add(ctx.identifier().getText(), ctx.paramValue().getText());
+        } else {
+            current.getQuery().add(ctx.identifier().getText(), String.valueOf(true));
+        }
     }
 
     public List<AntlrRequest> getEntries() {

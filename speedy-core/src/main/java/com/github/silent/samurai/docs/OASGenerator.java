@@ -3,9 +3,11 @@ package com.github.silent.samurai.docs;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
+import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 
@@ -152,6 +154,25 @@ public class OASGenerator {
                                 .schema(wrapInPayload(schema))
                         )
                 );
+    }
+
+    public static void addPagingInfo(Operation operation) {
+        operation.addParametersItem(
+                new Parameter()
+                        .description("the no of the current page you want to request")
+                        .name("pageNo")
+                        .in("query")
+                        .required(false)
+                        .schema(OASGenerator.basicSchema(Integer.class))
+        );
+        operation.addParametersItem(
+                new Parameter()
+                        .description("amount of data in a single page")
+                        .name("pageSize")
+                        .in("query")
+                        .required(false)
+                        .schema(OASGenerator.basicSchema(Integer.class))
+        );
     }
 
 

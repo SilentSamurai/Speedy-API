@@ -67,10 +67,21 @@ public class SpeedyUriParser {
     }
 
     public List<Object> getQuery(String name, Class<?> type) throws NotFoundException {
+        if (!hasQuery(name)) {
+            throw new NotFoundException("query not found");
+        }
         List<String> values = rawQuery.get(name);
         return values.stream()
                 .map(str -> CommonUtil.quotedStringToPrimitive(str, type))
                 .collect(Collectors.toList());
+    }
+
+    public Object getQueryOrDefault(String name, Class<?> type, Object defaultValue) {
+        if (hasQuery(name)) {
+            String queryValue = rawQuery.get(name).get(0);
+            return CommonUtil.quotedStringToPrimitive(queryValue, type);
+        }
+        return defaultValue;
     }
 
     public void parse() throws Exception {

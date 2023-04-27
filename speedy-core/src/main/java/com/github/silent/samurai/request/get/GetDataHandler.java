@@ -4,6 +4,7 @@ import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.interfaces.SpeedyConstant;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -57,10 +58,14 @@ public class GetDataHandler {
         Object requestObject;
         if (context.getParser().isOnlyIdentifiersPresent()) {
             EntityMetadata entityMetadata = context.getResourceMetadata();
-            Object primaryKeyObject = MetadataUtil.createIdentifierFromParser(context.getParser());
-            requestObject = context.getEntityManager().find(entityMetadata.getEntityClass(), primaryKeyObject);
+            Object pk = MetadataUtil.createIdentifierFromParser(context.getParser());
+            requestObject = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
         } else {
             Query query = getQuery(context.getEntityManager());
+            int pageSize = (int) context.getParser().getQueryOrDefault("pageSize", Integer.class, SpeedyConstant.defaultPageSize); // limit to 10 results
+            int pageNumber = (int) context.getParser().getQueryOrDefault("pageNo", Integer.class, 0); // skip first 10 results
+            query.setMaxResults(pageSize);
+            query.setFirstResult(pageSize * pageNumber);
             requestObject = query.getResultList();
         }
         return Optional.ofNullable(requestObject);

@@ -8,14 +8,14 @@ frag: HASH (identifier | DIGITS) ;
 
 query: QM search ;
 search: searchParameter (AND_OP searchParameter)* ;
-searchParameter : identifier (EQ valString)?  ;
+searchParameter : identifier (EQ paramValue)?  ;
 
 
 filters: PNTH_OP (arguments | keywords) PNTH_CL;
 
 keywords: keywordsParams ( ( OR_OP | COMMA_OP | AND_OP ) keywordsParams ) * ;
 keywordsParams : paramKey EQ paramValue  ;
-paramValue: valString;
+paramValue: (valString | DIGITS);
 paramKey: identifier ;
 
 arguments: argument (( OR_OP | COMMA_OP | AND_OP ) argument )* ;
@@ -27,6 +27,7 @@ resource: identifier ;
 valString: VALSTRING ;
 identifier: IDENTIFIER;
 string: STRING ;
+//digits: DIGITS;
 
 
 
@@ -35,10 +36,10 @@ COMMA_OP: ',';
 OR_OP: '|';
 CRLF : '\r' ? '\n' | '\r';
 
+DIGITS : NUMBER+ ;
 VALSTRING: QUOTES EXCHAR+ QUOTES;
 IDENTIFIER: [a-zA-Z$] CHAR*;
 STRING : CHAR+ ;
-DIGITS : NUMBER+ ;
 QUOTES : (SINGLEQUOTE | DOUBLEQUOTE) ;
 
 QM: '?';
