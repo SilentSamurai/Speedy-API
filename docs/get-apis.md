@@ -47,8 +47,10 @@ GET /speedy/v1/Category(id='category-id-1')
         "name": "Generic Category Name",
         "id": "category-id-1"
     },
-    "pageCount": 0,
+    "pageCount": 1,
     "pageIndex": 0
 }
 ```
+
+
 
