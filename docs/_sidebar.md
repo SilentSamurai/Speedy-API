@@ -1,4 +1,7 @@
 <!-- docs/_sidebar.md -->
 
 * [Home](README.md)
-* [Get API](get-apis.md)
+* [GET Operations](get-operation.md)
+* [POST Operations](post-operation.md)
+* [PUT Operations](put-operation.md)
+* [DELETE Operations](delete-operation.md)

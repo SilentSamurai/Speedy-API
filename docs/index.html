@@ -6,7 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     <meta name="description" content="Description">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/buble.css">
+    <link href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" rel="stylesheet">
+    <link href="https://unpkg.com/docsify-plugin-toc@1.3.1/dist/light.css" rel="stylesheet">
 </head>
 <body>
 <nav>
@@ -18,6 +19,11 @@
     window.$docsify = {
         loadSidebar: true,
         coverpage: true,
+        toc: {
+            tocMaxLevel: 5,
+            target: 'h2, h3, h4, h5, h6',
+            ignoreHeaders: ['<!-- {docsify-ignore} -->', '<!-- {docsify-ignore-all} -->']
+        },
         name: 'Speedy API',
         repo: 'https://github.com/SilentSamurai/Speedy-API'
     }
@@ -26,5 +32,6 @@
 <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
 <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-http.min.js"></script>
+<script src="https://unpkg.com/docsify-plugin-toc@1.3.1/dist/docsify-plugin-toc.min.js"></script>
 </body>
 </html>
