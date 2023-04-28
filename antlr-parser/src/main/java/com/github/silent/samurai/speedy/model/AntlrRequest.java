@@ -1,4 +1,4 @@
-package com.github.silent.samurai;
+package com.github.silent.samurai.speedy.model;
 
 import lombok.Data;
 import org.springframework.util.LinkedMultiValueMap;
@@ -13,8 +13,8 @@ import java.util.Map;
 public class AntlrRequest {
 
     private String resource;
-    private Map<String, String> keywords = new HashMap<>();
-    private MultiValueMap<String, String> query = new LinkedMultiValueMap<>();
+    private Map<String, Filter> keywords = new HashMap<>();
+    private MultiValueMap<String, FilterValue> query = new LinkedMultiValueMap<>();
     private List<String> arguments = new LinkedList<>();
     private String fragment;
 

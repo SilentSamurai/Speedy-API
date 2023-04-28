@@ -1,18 +1,25 @@
 package com.github.silent.samurai.parser;
 
 import com.github.silent.samurai.AntlrParser;
-import com.github.silent.samurai.AntlrRequest;
+import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.SpeedyConstant;
+import com.github.silent.samurai.models.Operator;
+import com.github.silent.samurai.models.conditions.BinarySVCondition;
+import com.github.silent.samurai.models.conditions.Condition;
+import com.github.silent.samurai.models.conditions.ConditionFactory;
+import com.github.silent.samurai.models.conditions.EqCondition;
+import com.github.silent.samurai.speedy.model.AntlrRequest;
+import com.github.silent.samurai.speedy.model.Filter;
+import com.github.silent.samurai.speedy.model.FilterValue;
 import com.github.silent.samurai.utils.CommonUtil;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +30,7 @@ public class SpeedyUriParser {
 
     private final MetaModelProcessor metaModelProcessor;
     private final String requestURI;
-    private final Map<String, String> rawKeywords = new HashMap<>();
+    private final MultiValueMap<String, Condition> conditions = new LinkedMultiValueMap<>();
     private final MultiValueMap<String, String> rawQuery = new LinkedMultiValueMap<>();
     private String resource;
     private String secondaryResource;
@@ -37,36 +44,36 @@ public class SpeedyUriParser {
     }
 
     public boolean hasKeyword(String name) {
-        return rawKeywords.containsKey(name);
+        return conditions.containsKey(name);
     }
 
     public boolean hasQuery(String name) {
         return rawQuery.containsKey(name);
     }
 
-    public Set<String> getKeywords() {
-        return rawKeywords.keySet();
+    public <T extends Condition> T getCondition(String name) throws NotFoundException {
+        return (T) this.conditions.get(name)
+                .stream().findFirst()
+                .orElseThrow(NotFoundException::new);
+    }
+
+    public <T> T getConditionValue(String name, Class<T> tClass) throws NotFoundException {
+        BinarySVCondition condition = getCondition(name);
+        String value = condition.getValue();
+        return CommonUtil.quotedStringToPrimitive(value, tClass);
+    }
+
+    public List<Condition> getAllConditions() {
+        return conditions.values().stream()
+                .flatMap(Collection::stream)
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public Set<String> getQueries() {
         return rawQuery.keySet();
     }
 
-    public Object getKeyword(String name) throws NotFoundException {
-        String value = rawKeywords.get(name);
-        FieldMetadata field = resourceMetadata.field(name);
-        return CommonUtil.quotedStringToPrimitive(value, field.getFieldType());
-    }
-
-    public Object getKeyword(String name, Class<?> type) throws NotFoundException {
-        if (!hasKeyword(name)) {
-            throw new NotFoundException("keyword not found");
-        }
-        String value = rawKeywords.get(name);
-        return CommonUtil.quotedStringToPrimitive(value, type);
-    }
-
-    public List<Object> getQuery(String name, Class<?> type) throws NotFoundException {
+    public <T> List<T> getQuery(String name, Class<T> type) throws NotFoundException {
         if (!hasQuery(name)) {
             throw new NotFoundException("query not found");
         }
@@ -76,7 +83,7 @@ public class SpeedyUriParser {
                 .collect(Collectors.toList());
     }
 
-    public Object getQueryOrDefault(String name, Class<?> type, Object defaultValue) {
+    public <T> T getQueryOrDefault(String name, Class<T> type, T defaultValue) {
         if (hasQuery(name)) {
             String queryValue = rawQuery.get(name).get(0);
             return CommonUtil.quotedStringToPrimitive(queryValue, type);
@@ -95,25 +102,36 @@ public class SpeedyUriParser {
         this.resourceMetadata = this.metaModelProcessor.findEntityMetadata(antlrRequest.getResource());
         processFilters(antlrRequest);
         processQuery(antlrRequest);
-        if (MetadataUtil.hasOnlyPrimaryKeyFields(resourceMetadata, rawKeywords.keySet())) {
+        boolean isAllEqualCondition = getAllConditions().stream().allMatch(EqCondition.class::isInstance);
+        if (MetadataUtil.hasOnlyPrimaryKeyFields(resourceMetadata, conditions.keySet()) && isAllEqualCondition) {
             onlyIdentifiersPresent = true;
         }
     }
 
-    private void processFilters(AntlrRequest antlrRequest) {
+    private void processFilters(AntlrRequest antlrRequest) throws BadRequestException {
         if (!antlrRequest.getArguments().isEmpty()) {
-            rawKeywords.put("id", antlrRequest.getArguments().get(0));
+            String value = antlrRequest.getArguments().get(0);
+            Condition idCondition = ConditionFactory.createCondition("id", Operator.EQ, value);
+            conditions.add("id", idCondition);
         }
         if (!antlrRequest.getKeywords().isEmpty()) {
-            rawKeywords.putAll(antlrRequest.getKeywords());
+            for (Filter filter : antlrRequest.getKeywords().values()) {
+                Condition condition = ConditionFactory.createCondition(filter);
+                conditions.add(filter.getIdentifier(), condition);
+            }
         }
     }
 
     private void processQuery(AntlrRequest antlrRequest) {
         if (!antlrRequest.getQuery().isEmpty()) {
-            for (Map.Entry<String, List<String>> entry : antlrRequest.getQuery().entrySet()) {
+            for (Map.Entry<String, List<FilterValue>> entry : antlrRequest.getQuery().entrySet()) {
                 String key = entry.getKey();
-                List<String> valueList = entry.getValue();
+                List<String> valueList = entry.getValue().stream()
+                        .flatMap(fv -> fv.getValues().stream())
+                        .collect(Collectors.toList());
+                if (valueList.isEmpty()) {
+                    valueList.add("true");
+                }
                 valueList.forEach(val -> rawQuery.add(key, val));
             }
         }

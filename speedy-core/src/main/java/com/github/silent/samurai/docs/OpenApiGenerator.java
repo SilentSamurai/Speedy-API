@@ -157,7 +157,7 @@ public class OpenApiGenerator {
                         .schema(OASGenerator.basicSchema(String.class))
                         .example(OASGenerator.getQueryExample(entityMetadata, FieldMetadata::isSerializable))
         );
-        OASGenerator.addPagingInfo(operation);
+        OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.wrapInArray(
@@ -195,7 +195,7 @@ public class OpenApiGenerator {
         operation.operationId("GetAll" + entityMetadata.getName());
         operation.summary("Get all " + entityMetadata.getName());
         operation.tags(Lists.newArrayList(entityMetadata.getName()));
-        OASGenerator.addPagingInfo(operation);
+        OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.wrapInArray(

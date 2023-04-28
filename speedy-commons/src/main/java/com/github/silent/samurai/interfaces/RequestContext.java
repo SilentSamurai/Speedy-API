@@ -14,7 +14,10 @@ public interface RequestContext {
     EntityManager getEntityManager();
 
     default String getRequestURI() throws UnsupportedEncodingException {
-        String requestURI = URLDecoder.decode(getRequest().getRequestURI() + "?" + getRequest().getQueryString(), StandardCharsets.UTF_8.name());
+        String requestURI = URLDecoder.decode(getRequest().getRequestURI(), StandardCharsets.UTF_8.name());
+        if (getRequest().getQueryString() != null) {
+            requestURI += "?" + URLDecoder.decode(getRequest().getQueryString(), StandardCharsets.UTF_8.name());
+        }
         return requestURI.replaceAll(SpeedyConstant.URI, "");
     }
 }

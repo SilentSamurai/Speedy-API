@@ -23,7 +23,7 @@ VALUES ('11', 'cat-11-11');
 INSERT INTO categories(ID, NAME)
 VALUES ('12', 'cat-12-12');
 INSERT INTO categories(ID, NAME)
-VALUES ('12', 'cat-13-13');
+VALUES ('13', 'cat-13-13');
 
 
 

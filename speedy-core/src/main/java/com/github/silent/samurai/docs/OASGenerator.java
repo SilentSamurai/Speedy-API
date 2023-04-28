@@ -156,7 +156,7 @@ public class OASGenerator {
                 );
     }
 
-    public static void addPagingInfo(Operation operation) {
+    public static void addPagingAndOrderingInfo(Operation operation) {
         operation.addParametersItem(
                 new Parameter()
                         .description("the no of the current page you want to request")
@@ -172,6 +172,22 @@ public class OASGenerator {
                         .in("query")
                         .required(false)
                         .schema(OASGenerator.basicSchema(Integer.class))
+        );
+        operation.addParametersItem(
+                new Parameter()
+                        .description("sort the result in ascending order by this column")
+                        .name("orderBy")
+                        .in("query")
+                        .required(false)
+                        .schema(OASGenerator.basicSchema(String.class))
+        );
+        operation.addParametersItem(
+                new Parameter()
+                        .description("sort the result in descending order by this column")
+                        .name("orderByDesc")
+                        .in("query")
+                        .required(false)
+                        .schema(OASGenerator.basicSchema(String.class))
         );
     }
 

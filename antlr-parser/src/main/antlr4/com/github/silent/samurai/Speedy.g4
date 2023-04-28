@@ -14,8 +14,8 @@ searchParameter : identifier (EQ paramValue)?  ;
 filters: PNTH_OP (arguments | keywords) PNTH_CL;
 
 keywords: keywordsParams ( ( OR_OP | COMMA_OP | AND_OP ) keywordsParams ) * ;
-keywordsParams : paramKey EQ paramValue  ;
-paramValue: (valString | DIGITS);
+keywordsParams : paramKey operator paramValue  ;
+paramValue: (constValue | constList);
 paramKey: identifier ;
 
 arguments: argument (( OR_OP | COMMA_OP | AND_OP ) argument )* ;
@@ -23,7 +23,10 @@ argument: valString;
 
 resource: identifier ;
 
+operator: (EQ | NEQ | LT | GT | LTE | GTE | NOT? IN );
 
+constList: BRC_OP constValue (COMMA_OP constValue)*  BRC_CL;
+constValue: (DIGITS | valString);
 valString: VALSTRING ;
 identifier: IDENTIFIER;
 string: STRING ;
@@ -36,6 +39,15 @@ COMMA_OP: ',';
 OR_OP: '|';
 CRLF : '\r' ? '\n' | '\r';
 
+NEQ: '!=';
+EQ: '=';
+LT: '<';
+GT: '>';
+LTE: '<=';
+GTE: '>=';
+IN: 'in';
+NOT : 'not' ;
+
 DIGITS : NUMBER+ ;
 VALSTRING: QUOTES EXCHAR+ QUOTES;
 IDENTIFIER: [a-zA-Z$] CHAR*;
@@ -44,9 +56,13 @@ QUOTES : (SINGLEQUOTE | DOUBLEQUOTE) ;
 
 QM: '?';
 HASH: '#';
-EQ: '=';
+
+
+
 PNTH_OP: '(';
 PNTH_CL: ')';
+BRC_OP: '[';
+BRC_CL: ']';
 SLSH: '/';
 fragment SINGLEQUOTE: '\'';
 fragment DOUBLEQUOTE: '"';

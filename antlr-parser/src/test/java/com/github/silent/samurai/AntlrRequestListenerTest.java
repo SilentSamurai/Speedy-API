@@ -3,6 +3,8 @@ package com.github.silent.samurai;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.silent.samurai.speedy.model.AntlrRequest;
 import com.github.silent.samurai.utils.StringUtils;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -45,7 +47,9 @@ class AntlrRequestListenerTest {
     void testSingle() throws JsonProcessingException {
         String input = "/Customer?happy='holi'&metadata='hpo'";
         AntlrRequest antlrRequest = parse(input);
-        LOGGER.info("request {}", new ObjectMapper().writeValueAsString(antlrRequest));
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+        LOGGER.info("request {}", objectMapper.writeValueAsString(antlrRequest));
     }
 
 
@@ -61,12 +65,18 @@ class AntlrRequestListenerTest {
                 "/Customer('1'& 'joli')",
                 "/Customer('1'| 'joli')",
                 "/Customer('1', 'joli?k$')?happy='holi'",
-                "/Customer(id='1',name='jolly')?happy='holi'"
+                "/Customer(id='1',name='jolly')?happy='holi'",
+                "/Customer(amount < 0)",
+                "/Customer(amount > 0 , amount < 100)",
+                "/Customer(id='1', name='jolly')?orderBy=['name','id']&orderByDesc='obc'",
+                "/Customer(name = ['name','id'], amount < 9)?orderBy=['name','id']&orderByDesc='obc'"
         };
 
         for (String input : inputEntries) {
             AntlrRequest antlrRequest = parse(input);
-            LOGGER.info("request {}", new ObjectMapper().writeValueAsString(antlrRequest));
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            LOGGER.info("request {}", objectMapper.writeValueAsString(antlrRequest));
             assertEquals("Customer", antlrRequest.getResource());
             LOGGER.info("");
         }

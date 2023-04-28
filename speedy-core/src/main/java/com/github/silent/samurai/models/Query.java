@@ -1,5 +1,6 @@
 package com.github.silent.samurai.models;
 
+import com.github.silent.samurai.models.conditions.Condition;
 import lombok.Data;
 
 import javax.validation.Valid;

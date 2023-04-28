@@ -3,7 +3,9 @@ package com.github.silent.samurai.deserializer;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.models.conditions.BinarySVCondition;
 import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.utils.CommonUtil;
 
 import java.util.Optional;
 
@@ -30,7 +32,8 @@ public class ParserIdentityDeserializer {
             KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
             String propertyName = keyFieldMetadata.getOutputPropertyName();
             if (parser.hasKeyword(propertyName)) {
-                return parser.getKeyword(propertyName, keyFieldMetadata.getFieldType());
+                BinarySVCondition condition = parser.getCondition(propertyName);
+                return CommonUtil.quotedStringToPrimitive(condition.getValue(), keyFieldMetadata.getFieldType());
             }
         }
         throw new BadRequestException("primary key field not found");
@@ -41,8 +44,9 @@ public class ParserIdentityDeserializer {
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             String propertyName = keyFieldMetadata.getOutputPropertyName();
             if (parser.hasKeyword(propertyName)) {
-                Object value = parser.getKeyword(propertyName, keyFieldMetadata.getFieldType());
-                keyFieldMetadata.setEntityFieldWithValue(newKeyInstance, value);
+                BinarySVCondition condition = parser.getCondition(propertyName);
+                Object instance = CommonUtil.quotedStringToPrimitive(condition.getValue(), keyFieldMetadata.getFieldType());
+                keyFieldMetadata.setEntityFieldWithValue(newKeyInstance, instance);
             } else {
                 throw new BadRequestException("primary key incomplete");
             }

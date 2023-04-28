@@ -60,7 +60,7 @@ class SpeedyUriParserTest {
 
         assertEquals("Customer", parser.getResource());
         assertTrue(parser.isOnlyIdentifiersPresent());
-        assertEquals("1", parser.getKeyword("id"));
+        assertEquals("1", parser.getConditionValue("id", String.class));
     }
 
     @Test
@@ -79,7 +79,7 @@ class SpeedyUriParserTest {
 
         assertEquals("Customer", parser.getResource());
         assertTrue(parser.isOnlyIdentifiersPresent());
-        assertEquals("1", parser.getKeyword("id"));
+        assertEquals("1", parser.getConditionValue("id", String.class));
     }
 
     @Test
@@ -88,7 +88,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("1", parser.getKeyword("id"));
+        assertEquals("1", parser.getConditionValue("id", String.class));
         assertTrue(parser.isOnlyIdentifiersPresent());
     }
 
@@ -98,8 +98,8 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("apple", parser.getKeyword("name"));
-        assertEquals("1", parser.getKeyword("id"));
+        assertEquals("apple", parser.getConditionValue("name", String.class));
+        assertEquals("1", parser.getConditionValue("id", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
@@ -109,7 +109,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", parser.getKeyword("id"));
+        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", parser.getConditionValue("id", String.class));
         assertTrue(parser.isOnlyIdentifiersPresent());
     }
 
@@ -119,7 +119,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("apple", parser.getKeyword("name"));
+        assertEquals("apple", parser.getConditionValue("name", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
@@ -129,7 +129,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("apple?&*", parser.getKeyword("name"));
+        assertEquals("apple?&*", parser.getConditionValue("name", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
@@ -139,7 +139,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("Test-01B", parser.getKeyword("name"));
+        assertEquals("Test-01B", parser.getConditionValue("name", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
@@ -216,5 +216,38 @@ class SpeedyUriParserTest {
         assertEquals(2.0, parser.getQuery("doubleVal", double.class).get(0));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
+
+    @Test
+    void processRequest11() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?orderBy='name,id'");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals("name,id", parser.getQuery("orderBy", String.class).get(0));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest11_1() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?orderBy='name'&orderBy='id'");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals("name", parser.getQuery("orderBy", String.class).get(0));
+        assertEquals("id", parser.getQuery("orderBy", String.class).get(1));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest11_2() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?orderBy=['name','id']");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals("name", parser.getQuery("orderBy", String.class).get(0));
+        assertEquals("id", parser.getQuery("orderBy", String.class).get(1));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
 
 }
