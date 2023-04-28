@@ -3,6 +3,7 @@ package com.github.silent.samurai.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.github.silent.samurai.exceptions.BadRequestException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,14 +75,14 @@ class CommonUtilTest {
     }
 
     @Test
-    void stringToType() {
+    void stringToType() throws BadRequestException {
         String input = "aisdiohaoisd-asdasd-asf";
         String output = CommonUtil.stringToPrimitive(input, String.class);
         Assertions.assertEquals(input, output);
     }
 
     @Test
-    void stringToType2() {
+    void stringToType2() throws BadRequestException {
         String input = "New Category";
         String output = CommonUtil.stringToPrimitive(input, String.class);
         Assertions.assertEquals(input, output);

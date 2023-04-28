@@ -46,6 +46,7 @@ public class ConditionFactory {
         if (filter.getValue().isMultiple()) {
             return createCondition(filter.getIdentifier(), operator, filter.getValue().getValues());
         }
+        if (filter.getValue().getValues().isEmpty()) throw new BadRequestException();
         return createCondition(filter.getIdentifier(), operator, filter.getValue().getValues().get(0));
     }
 

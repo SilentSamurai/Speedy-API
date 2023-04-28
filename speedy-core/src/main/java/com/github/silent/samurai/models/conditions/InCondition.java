@@ -1,7 +1,6 @@
 package com.github.silent.samurai.models.conditions;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.models.Operator;
@@ -34,7 +33,7 @@ public class InCondition implements BinaryMVCondition {
     @Override
     public Predicate getPredicate(CriteriaBuilder criteriaBuilder,
                                   Root<?> tableRoot,
-                                  EntityMetadata entityMetadata) throws NotFoundException {
+                                  EntityMetadata entityMetadata) throws Exception {
         FieldMetadata fieldMetadata = entityMetadata.field(field);
         String name = fieldMetadata.getClassFieldName();
         List<Object> instances = new LinkedList<>();

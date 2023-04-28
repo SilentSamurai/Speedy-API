@@ -34,7 +34,8 @@ public class AntlrParser {
 
         RequestListener listener = new RequestListener();
         walker.walk(listener, parser.request());
-        if (listener.getEntries().isEmpty()) {
+
+        if (listener.getEntries().isEmpty() || parser.getNumberOfSyntaxErrors() > 0) {
             throw new RuntimeException("Failed to parse the url");
         }
         return listener.getEntries().get(0);

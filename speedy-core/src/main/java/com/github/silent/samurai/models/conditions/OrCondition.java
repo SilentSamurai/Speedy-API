@@ -1,7 +1,6 @@
 package com.github.silent.samurai.models.conditions;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.models.Operator;
 import lombok.Data;
@@ -24,7 +23,7 @@ public class OrCondition implements Condition {
     }
 
     @Override
-    public Predicate getPredicate(CriteriaBuilder criteriaBuilder, Root<?> tableRoot, EntityMetadata entityMetadata) throws NotFoundException {
+    public Predicate getPredicate(CriteriaBuilder criteriaBuilder, Root<?> tableRoot, EntityMetadata entityMetadata) throws Exception {
         List<Predicate> list = new ArrayList<>();
         for (Condition condition : conditions) {
             Predicate predicate = condition.getPredicate(criteriaBuilder, tableRoot, entityMetadata);

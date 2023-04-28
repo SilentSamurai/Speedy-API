@@ -1,6 +1,6 @@
 package com.github.silent.samurai.query;
 
-import com.github.silent.samurai.exceptions.NotFoundException;
+import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.models.conditions.Condition;
@@ -48,7 +48,7 @@ public class QueryBuilder {
         }
     }
 
-    private void addToOrderList(List<Order> orderList, String queryName, boolean isDesc) throws NotFoundException {
+    private void addToOrderList(List<Order> orderList, String queryName, boolean isDesc) throws Exception {
         if (parser.hasQuery(queryName)) {
             Map<Boolean, List<String>> collect = parser.getQuery(queryName, String.class)
                     .stream()
@@ -68,14 +68,14 @@ public class QueryBuilder {
         }
     }
 
-    private void addOrderBy() throws NotFoundException {
+    private void addOrderBy() throws Exception {
         List<Order> orderList = new LinkedList<>();
         addToOrderList(orderList, "orderBy", false);
         addToOrderList(orderList, "orderByDesc", true);
         query.orderBy(orderList);
     }
 
-    private TypedQuery<?> addPageInfo() {
+    private TypedQuery<?> addPageInfo() throws BadRequestException {
         TypedQuery<?> paggedQuery = entityManager.createQuery(query);
         int pageSize = parser.getQueryOrDefault("pageSize", Integer.class, SpeedyConstant.defaultPageSize);
         int pageNumber = parser.getQueryOrDefault("pageNo", Integer.class, 0);

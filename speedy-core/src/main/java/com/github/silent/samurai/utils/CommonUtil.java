@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.silent.samurai.exceptions.BadRequestException;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -26,6 +27,7 @@ public class CommonUtil {
                 .setPropertyCondition(Conditions.isNotNull())
                 .setMatchingStrategy(MatchingStrategies.STRICT);
     }
+
     public static <D, T> D mapModel(final Object subject, Class<D> tClass) {
         return modelMapper.map(subject, tClass);
     }
@@ -87,19 +89,27 @@ public class CommonUtil {
         return jacksonBuildr.build().treeToValue(jsonNode, type);
     }
 
-    public static <T> T quotedStringToPrimitive(String value, Class<T> type) {
-        value = value.replaceAll("['|\"]", "");
-        Object obj = stringToBasic(value, type);
-        if (obj != null && isAssignableClass(obj.getClass(), type)) {
-            return (T) obj;
+    public static <T> T quotedStringToPrimitive(String value, Class<T> type) throws BadRequestException {
+        try {
+            value = value.replaceAll("['|\"]", "");
+            Object obj = stringToBasic(value, type);
+            if (obj != null && isAssignableClass(obj.getClass(), type)) {
+                return (T) obj;
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(e);
         }
         return null;
     }
 
-    public static <T> T stringToPrimitive(String value, Class<T> type) {
-        Object obj = stringToBasic(value, type);
-        if (obj != null && isAssignableClass(obj.getClass(), type)) {
-            return (T) obj;
+    public static <T> T stringToPrimitive(String value, Class<T> type) throws BadRequestException {
+        try {
+            Object obj = stringToBasic(value, type);
+            if (obj != null && isAssignableClass(obj.getClass(), type)) {
+                return (T) obj;
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(e);
         }
         return null;
     }

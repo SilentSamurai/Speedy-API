@@ -59,7 +59,7 @@ public class RequestListener extends SpeedyBaseListener {
 
     @Override
     public void exitKeywordsParams(SpeedyParser.KeywordsParamsContext ctx) {
-        current.getKeywords().put(currentFilter.getIdentifier(), currentFilter);
+        current.getKeywords().add(currentFilter.getIdentifier(), currentFilter);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.github.silent.samurai.parser;
 import com.github.silent.samurai.AntlrParser;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.NotFoundException;
+import com.github.silent.samurai.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
@@ -19,10 +20,7 @@ import com.github.silent.samurai.utils.CommonUtil;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -57,7 +55,7 @@ public class SpeedyUriParser {
                 .orElseThrow(NotFoundException::new);
     }
 
-    public <T> T getConditionValue(String name, Class<T> tClass) throws NotFoundException {
+    public <T> T getConditionValue(String name, Class<T> tClass) throws Exception {
         BinarySVCondition condition = getCondition(name);
         String value = condition.getValue();
         return CommonUtil.quotedStringToPrimitive(value, tClass);
@@ -73,17 +71,20 @@ public class SpeedyUriParser {
         return rawQuery.keySet();
     }
 
-    public <T> List<T> getQuery(String name, Class<T> type) throws NotFoundException {
+    public <T> List<T> getQuery(String name, Class<T> type) throws Exception {
         if (!hasQuery(name)) {
             throw new NotFoundException("query not found");
         }
         List<String> values = rawQuery.get(name);
-        return values.stream()
-                .map(str -> CommonUtil.quotedStringToPrimitive(str, type))
-                .collect(Collectors.toList());
+        List<T> list = new ArrayList<>();
+        for (String str : values) {
+            T t = CommonUtil.quotedStringToPrimitive(str, type);
+            list.add(t);
+        }
+        return list;
     }
 
-    public <T> T getQueryOrDefault(String name, Class<T> type, T defaultValue) {
+    public <T> T getQueryOrDefault(String name, Class<T> type, T defaultValue) throws BadRequestException {
         if (hasQuery(name)) {
             String queryValue = rawQuery.get(name).get(0);
             return CommonUtil.quotedStringToPrimitive(queryValue, type);
@@ -91,7 +92,7 @@ public class SpeedyUriParser {
         return defaultValue;
     }
 
-    public void parse() throws Exception {
+    private void process() throws Exception {
         String sanitizedURI = requestURI;
         if (requestURI.contains(SpeedyConstant.URI)) {
             int indexOf = requestURI.indexOf(SpeedyConstant.URI);
@@ -108,6 +109,14 @@ public class SpeedyUriParser {
         }
     }
 
+    public void parse() throws SpeedyHttpException {
+        try {
+            this.process();
+        } catch (Exception e) {
+            throw new BadRequestException(e);
+        }
+    }
+
     private void processFilters(AntlrRequest antlrRequest) throws BadRequestException {
         if (!antlrRequest.getArguments().isEmpty()) {
             String value = antlrRequest.getArguments().get(0);
@@ -115,9 +124,11 @@ public class SpeedyUriParser {
             conditions.add("id", idCondition);
         }
         if (!antlrRequest.getKeywords().isEmpty()) {
-            for (Filter filter : antlrRequest.getKeywords().values()) {
-                Condition condition = ConditionFactory.createCondition(filter);
-                conditions.add(filter.getIdentifier(), condition);
+            for (List<Filter> filters : antlrRequest.getKeywords().values()) {
+                for (Filter filter : filters) {
+                    Condition condition = ConditionFactory.createCondition(filter);
+                    conditions.add(filter.getIdentifier(), condition);
+                }
             }
         }
     }
