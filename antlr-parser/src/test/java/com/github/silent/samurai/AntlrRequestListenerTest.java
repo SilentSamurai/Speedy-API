@@ -4,18 +4,16 @@ package com.github.silent.samurai;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.silent.samurai.speedy.model.AntlrRequest;
-import com.github.silent.samurai.utils.StringUtils;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import com.github.silent.samurai.speedy.AntlrParser;
+import com.github.silent.samurai.speedy.models.AntlrRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.UnsupportedEncodingException;
 
 class AntlrRequestListenerTest {
 
@@ -25,36 +23,19 @@ class AntlrRequestListenerTest {
     void setUp() {
     }
 
-    AntlrRequest parse(String input) {
-        input = StringUtils.removeSpaces(input);
-        LOGGER.info("input {}", input);
-        SpeedyLexer java8Lexer = new SpeedyLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(java8Lexer);
-        SpeedyParser parser = new SpeedyParser(tokens);
-        ParseTreeWalker walker = new ParseTreeWalker();
-
-        RequestListener listener = new RequestListener();
-        walker.walk(listener, parser.request());
-
-//        List<String> ruleNamesList = Arrays.asList(parser.getRuleNames());
-//        logger.info(TreeUtils.toPrettyTree(parser.request(), ruleNamesList));
-        return listener.getEntries().get(0);
-    }
-
     @Disabled
     @Test
-    void testSingle() throws JsonProcessingException {
+    void testSingle() throws JsonProcessingException, UnsupportedEncodingException {
         String input = "/Customer?happy='holi'&metadata='hpo'";
-        AntlrRequest antlrRequest = parse(input);
+        AntlrRequest parseTree = new AntlrParser(input).parse();
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-        LOGGER.info("request {}", objectMapper.writeValueAsString(antlrRequest));
+        LOGGER.info("request {}", objectMapper.writeValueAsString(parseTree));
     }
 
 
     @Test
-    void getEntries() throws JsonProcessingException {
+    void getEntries() throws JsonProcessingException, UnsupportedEncodingException {
         String[] inputEntries = {
                 "/Customer",
                 "/Customer/",
@@ -62,22 +43,22 @@ class AntlrRequestListenerTest {
                 "/Customer(id='1'& name='jolly')",
                 "/Customer(id='1'| name='jolly')",
                 "/Customer('1', 'joli')",
-                "/Customer('1'& 'joli')",
-                "/Customer('1'| 'joli')",
                 "/Customer('1', 'joli?k$')?happy='holi'",
                 "/Customer(id='1',name='jolly')?happy='holi'",
                 "/Customer(amount < 0)",
                 "/Customer(amount > 0 , amount < 100)",
+                "/Customer(amount <> [1,2,3])",
+                "/Customer(amount <!> [2,3,4])",
                 "/Customer(id='1', name='jolly')?orderBy=['name','id']&orderByDesc='obc'",
-                "/Customer(name = ['name','id'], amount < 9)?orderBy=['name','id']&orderByDesc='obc'"
+                "/Customer(name <> ['name','id'], amount < 9)?orderBy=['name','id']&orderByDesc='obc'"
         };
 
         for (String input : inputEntries) {
-            AntlrRequest antlrRequest = parse(input);
+            AntlrRequest antlrRequest = new AntlrParser(input).parse();
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             LOGGER.info("request {}", objectMapper.writeValueAsString(antlrRequest));
-            assertEquals("Customer", antlrRequest.getResource());
+            Assertions.assertEquals("Customer", antlrRequest.getResource());
             LOGGER.info("");
         }
 

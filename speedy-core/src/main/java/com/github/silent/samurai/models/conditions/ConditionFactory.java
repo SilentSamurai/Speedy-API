@@ -2,14 +2,16 @@ package com.github.silent.samurai.models.conditions;
 
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.models.Operator;
-import com.github.silent.samurai.speedy.model.Filter;
+import com.github.silent.samurai.speedy.models.Filter;
+import com.google.common.collect.Lists;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class ConditionFactory {
 
-    public static Condition createCondition(String identifier, Operator operator, String value) throws BadRequestException {
+    public static BinaryCondition createCondition(String identifier, Operator operator, String value) throws BadRequestException {
         switch (operator) {
             case EQ:
                 return new EqCondition(identifier, value);
@@ -27,7 +29,7 @@ public class ConditionFactory {
         throw new BadRequestException("");
     }
 
-    public static Condition createCondition(String identifier, Operator operator, List<String> values) throws BadRequestException {
+    public static BinaryCondition createCondition(String identifier, Operator operator, List<String> values) throws BadRequestException {
         if (values.isEmpty()) {
             throw new BadRequestException();
         }
@@ -40,14 +42,24 @@ public class ConditionFactory {
         throw new BadRequestException("");
     }
 
-    public static Condition createCondition(Filter filter) throws BadRequestException {
+    public static BinaryCondition createCondition(Filter filter) throws BadRequestException {
+        Objects.requireNonNull(filter);
         Operator operator = Operator.fromSymbol(filter.getOperator());
-        Objects.requireNonNull(filter.getValue());
-        if (filter.getValue().isMultiple()) {
-            return createCondition(filter.getIdentifier(), operator, filter.getValue().getValues());
+        if (filter.isMultiple()) {
+            return createCondition(filter.getField(), operator, filter.getValues());
         }
-        if (filter.getValue().getValues().isEmpty()) throw new BadRequestException();
-        return createCondition(filter.getIdentifier(), operator, filter.getValue().getValues().get(0));
+        if (filter.getValues().isEmpty()) throw new BadRequestException();
+        return createCondition(filter.getField(), operator, filter.getValues().get(0));
+    }
+
+    public static List<String> getConditionValue(BinaryCondition condition) {
+        if (condition instanceof BinarySVCondition) {
+            return Lists.newArrayList(((BinarySVCondition) condition).getValue());
+        }
+        if (condition instanceof BinaryMVCondition) {
+            return ((BinaryMVCondition) condition).getValues();
+        }
+        return Collections.emptyList();
     }
 
 }

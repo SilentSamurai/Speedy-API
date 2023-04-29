@@ -1,4 +1,4 @@
-package com.github.silent.samurai.utils;
+package com.github.silent.samurai.speedy.utils;
 
 import org.springframework.util.ClassUtils;
 

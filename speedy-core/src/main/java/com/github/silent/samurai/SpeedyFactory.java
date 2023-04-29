@@ -20,7 +20,7 @@ import com.github.silent.samurai.request.put.PutRequestContext;
 import com.github.silent.samurai.request.put.PutRequestParser;
 import com.github.silent.samurai.request.put.UpdateDataHandler;
 import com.github.silent.samurai.serializers.json.JSONSerializer;
-import com.github.silent.samurai.utils.ExceptionUtils;
+import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Getter;
 import org.slf4j.Logger;

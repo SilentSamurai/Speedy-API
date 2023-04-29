@@ -2,7 +2,7 @@ package com.github.silent.samurai.deserializer;
 
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
-import com.github.silent.samurai.utils.CommonUtil;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import javax.persistence.EntityManager;
 import java.util.Map;

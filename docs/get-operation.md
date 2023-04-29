@@ -185,3 +185,29 @@ GET / speedy / v1 / Transaction(amount != 50)
 ```
 
 <hr>
+
+#### Filter with Contains Operator
+
+retrieve multiple resource with in operators
+
+**URL**
+
+```javascript
+GET / speedy / v1 / Transaction(type <> ['CREDIT', 'DEBIT'])
+```
+
+```javascript
+GET / speedy / v1 / Transaction(cost <> [23, 50, 72])
+```
+
+eliminate multiple resource with not in operators
+
+**URL**
+
+```javascript
+GET / speedy / v1 / Transaction(type <!> ['TRANSFET'])
+```
+
+```javascript
+GET / speedy / v1 / Transaction(cost <!> [23, 50, 72])
+```

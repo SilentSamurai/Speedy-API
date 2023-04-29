@@ -6,6 +6,7 @@ import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.SpeedyConstant;
+import com.github.silent.samurai.models.Operator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,7 +64,7 @@ class SpeedyUriParserTest {
 
         assertEquals("Customer", parser.getResource());
         assertTrue(parser.isOnlyIdentifiersPresent());
-        assertEquals("1", parser.getConditionValue("id", String.class));
+        assertEquals("1", parser.getFirstFilterValue("id", String.class));
     }
 
     @Test
@@ -82,7 +83,7 @@ class SpeedyUriParserTest {
 
         assertEquals("Customer", parser.getResource());
         assertTrue(parser.isOnlyIdentifiersPresent());
-        assertEquals("1", parser.getConditionValue("id", String.class));
+        assertEquals("1", parser.getFirstFilterValue("id", String.class));
     }
 
     @Test
@@ -91,7 +92,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("1", parser.getConditionValue("id", String.class));
+        assertEquals("1", parser.getFirstFilterValue("id", String.class));
         assertTrue(parser.isOnlyIdentifiersPresent());
     }
 
@@ -101,8 +102,8 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("apple", parser.getConditionValue("name", String.class));
-        assertEquals("1", parser.getConditionValue("id", String.class));
+        assertEquals("apple", parser.getFirstFilterValue("name", String.class));
+        assertEquals("1", parser.getFirstFilterValue("id", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
@@ -112,7 +113,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", parser.getConditionValue("id", String.class));
+        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", parser.getFirstFilterValue("id", String.class));
         assertTrue(parser.isOnlyIdentifiersPresent());
     }
 
@@ -122,7 +123,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("apple", parser.getConditionValue("name", String.class));
+        assertEquals("apple", parser.getFirstFilterValue("name", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
@@ -132,7 +133,7 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("apple?&*", parser.getConditionValue("name", String.class));
+        assertEquals("apple?&*", parser.getFirstFilterValue("name", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
 
@@ -142,9 +143,76 @@ class SpeedyUriParserTest {
         parser.parse();
 
         assertEquals("Customer", parser.getResource());
-        assertEquals("Test-01B", parser.getConditionValue("name", String.class));
+        assertEquals("Test-01B", parser.getFirstFilterValue("name", String.class));
         assertFalse(parser.isOnlyIdentifiersPresent());
     }
+
+    @Test
+    void processRequest8_1() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost < 0)");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(Operator.LT, parser.getFirstConditionByField("cost").getOperator());
+        assertEquals(0, parser.getFirstFilterValue("cost", Integer.class));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest8_2() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost <= 25)");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(Operator.LTE, parser.getFirstConditionByField("cost").getOperator());
+        assertEquals(25, parser.getFirstFilterValue("cost", Integer.class));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest8_3() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost == 25)");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(Operator.EQ, parser.getFirstConditionByField("cost").getOperator());
+        assertEquals(25, parser.getFirstFilterValue("cost", Integer.class));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest8_4() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost = 25)");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(Operator.EQ, parser.getFirstConditionByField("cost").getOperator());
+        assertEquals(25, parser.getFirstFilterValue("cost", Integer.class));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest8_5() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost > 25)");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(Operator.GT, parser.getFirstConditionByField("cost").getOperator());
+        assertEquals(25, parser.getFirstFilterValue("cost", Integer.class));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest8_6() throws Exception {
+        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost >= 25)");
+        parser.parse();
+
+        assertEquals("Customer", parser.getResource());
+        assertEquals(Operator.GTE, parser.getFirstConditionByField("cost").getOperator());
+        assertEquals(25, parser.getFirstFilterValue("cost", Integer.class));
+        assertFalse(parser.isOnlyIdentifiersPresent());
+    }
+
 
     @Test
     void processRequest9() throws Exception {

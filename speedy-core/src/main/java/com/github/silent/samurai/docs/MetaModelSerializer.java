@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.utils.CommonUtil;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.util.Collection;
 

@@ -1,20 +1,25 @@
-package com.github.silent.samurai.utils;
-
-import java.util.List;
+package com.github.silent.samurai.speedy.utils;
 
 import org.antlr.v4.runtime.misc.Utils;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
 
+import java.util.List;
+
 public class TreeUtils {
 
-    /** Platform dependent end-of-line marker */
+    /**
+     * Platform dependent end-of-line marker
+     */
     public static final String Eol = System.lineSeparator();
-    /** The literal indent char(s) used for pretty-printing */
+    /**
+     * The literal indent char(s) used for pretty-printing
+     */
     public static final String Indents = "  ";
     private static int level;
 
-    private TreeUtils() {}
+    private TreeUtils() {
+    }
 
     /**
      * Pretty print out a whole tree. {@link #getNodeText} is used on the node payloads to get the text

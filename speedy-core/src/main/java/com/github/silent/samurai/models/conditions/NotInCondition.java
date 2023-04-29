@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.models.Operator;
-import com.github.silent.samurai.utils.CommonUtil;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Data;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -38,7 +38,7 @@ public class NotInCondition implements BinaryMVCondition {
             Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
             instances.add(instance);
         }
-        return criteriaBuilder.not(criteriaBuilder.in(tableRoot.get(name)).in(values));
+        return criteriaBuilder.not(tableRoot.get(name).in(values));
     }
 
     @Override

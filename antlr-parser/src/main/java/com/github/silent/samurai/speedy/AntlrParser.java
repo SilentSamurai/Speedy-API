@@ -1,7 +1,9 @@
-package com.github.silent.samurai;
+package com.github.silent.samurai.speedy;
 
-import com.github.silent.samurai.speedy.model.AntlrRequest;
-import com.github.silent.samurai.utils.StringUtils;
+import com.github.silent.samurai.SpeedyLexer;
+import com.github.silent.samurai.SpeedyParser;
+import com.github.silent.samurai.speedy.models.AntlrRequest;
+import com.github.silent.samurai.speedy.utils.StringUtils;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -35,7 +37,7 @@ public class AntlrParser {
         RequestListener listener = new RequestListener();
         walker.walk(listener, parser.request());
 
-        if (listener.getEntries().isEmpty() || parser.getNumberOfSyntaxErrors() > 0) {
+        if (parser.getNumberOfSyntaxErrors() > 0) {
             throw new RuntimeException("Failed to parse the url");
         }
         return listener.getEntries().get(0);

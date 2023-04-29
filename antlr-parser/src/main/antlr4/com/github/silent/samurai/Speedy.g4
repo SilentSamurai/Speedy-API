@@ -8,30 +8,34 @@ frag: HASH (identifier | DIGITS) ;
 
 query: QM search ;
 search: searchParameter (AND_OP searchParameter)* ;
-searchParameter : identifier (EQ paramValue)?  ;
-
+searchParameter : identifier (EQ (searchSV | searchMV))?  ;
+searchSV: constValue;
+searchMV: constList;
 
 filters: PNTH_OP (arguments | keywords) PNTH_CL;
 
-keywords: keywordsParams ( ( OR_OP | COMMA_OP | AND_OP ) keywordsParams ) * ;
-keywordsParams : paramKey operator paramValue  ;
-paramValue: (constValue | constList);
-paramKey: identifier ;
+keywords: keywordsParams ( cndoptr keywordsParams ) * ;
+keywordsParams : identifier ( paramSV | paramMV ) ;
+paramSV: svoptr constValue;
+paramMV: mvoptr constList;
 
-arguments: argument (( OR_OP | COMMA_OP | AND_OP ) argument )* ;
-argument: valString;
+arguments: argument (COMMA_OP argument )* ;
+argument: (DIGITS | VALSTRING);
 
-resource: identifier ;
+resource: IDENTIFIER ;
 
-operator: (EQ | NEQ | LT | GT | LTE | GTE | NOT? IN );
+svoptr: (EQ | EEQ | NEQ | LT | GT | LTE | GTE );
+mvoptr: (NOT_IN | IN );
+cndoptr: ( OR_OP | COMMA_OP | AND_OP );
 
-constList: BRC_OP constValue (COMMA_OP constValue)*  BRC_CL;
-constValue: (DIGITS | valString);
-valString: VALSTRING ;
+
+
 identifier: IDENTIFIER;
-string: STRING ;
-//digits: DIGITS;
+constList: BRC_OP constValue (COMMA_OP constValue)*  BRC_CL;
+constValue: (DIGITS | VALSTRING);
+//valString: VALSTRING ;
 
+//string: STRING ;
 
 
 AND_OP :'&';
@@ -41,12 +45,13 @@ CRLF : '\r' ? '\n' | '\r';
 
 NEQ: '!=';
 EQ: '=';
+EEQ: '==';
 LT: '<';
 GT: '>';
 LTE: '<=';
 GTE: '>=';
-IN: 'in';
-NOT : 'not' ;
+IN: '<>';
+NOT_IN : '<!>' ;
 
 DIGITS : NUMBER+ ;
 VALSTRING: QUOTES EXCHAR+ QUOTES;

@@ -1,4 +1,4 @@
-package com.github.silent.samurai.utils;
+package com.github.silent.samurai.speedy.utils;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;

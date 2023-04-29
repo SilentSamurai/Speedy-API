@@ -8,7 +8,7 @@ import com.github.silent.samurai.interfaces.IBaseResponsePayload;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.serializers.SelectiveFieldJsonSerializer;
-import com.github.silent.samurai.utils.CommonUtil;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.http.MediaType;
 
 import java.util.List;

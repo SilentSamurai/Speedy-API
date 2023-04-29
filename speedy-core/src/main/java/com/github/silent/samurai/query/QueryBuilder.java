@@ -3,6 +3,7 @@ package com.github.silent.samurai.query;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.SpeedyConstant;
+import com.github.silent.samurai.models.Operator;
 import com.github.silent.samurai.models.conditions.Condition;
 import com.github.silent.samurai.parser.SpeedyUriParser;
 
@@ -34,18 +35,28 @@ public class QueryBuilder {
     }
 
     private void addWhereQuery() throws Exception {
-        Predicate[] predicates = null;
-        List<Condition> conditions = parser.getAllConditions();
-        if (!conditions.isEmpty()) {
-            List<Predicate> dynamicPredicate = new LinkedList<>();
-            for (Condition condition : conditions) {
-                dynamicPredicate.add(condition.getPredicate(criteriaBuilder, tableRoot, entityMetadata));
+        List<String> conditions = parser.getConditionChain();
+        if (conditions.isEmpty()) {
+            return;
+        }
+        Iterator<String> iterator = conditions.iterator();
+        Condition condition = parser.getConditionByInternalId(iterator.next());
+        Predicate predicate = condition.getPredicate(criteriaBuilder, tableRoot, entityMetadata);
+        while (iterator.hasNext()) {
+            String operator = iterator.next();
+            String internalId = iterator.next();
+            Condition nextCondition = parser.getConditionByInternalId(internalId);
+            Predicate currentPredicate = nextCondition.getPredicate(criteriaBuilder, tableRoot, entityMetadata);
+            if (Operator.fromSymbol(operator) == Operator.AND) {
+                currentPredicate = criteriaBuilder.and(predicate, currentPredicate);
+            } else if (Operator.fromSymbol(operator) == Operator.OR) {
+                currentPredicate = criteriaBuilder.or(predicate, currentPredicate);
+            } else {
+                throw new BadRequestException();
             }
-            predicates = dynamicPredicate.toArray(new Predicate[dynamicPredicate.size()]);
+            predicate = currentPredicate;
         }
-        if (predicates != null) {
-            query.where(criteriaBuilder.and(predicates));
-        }
+        query.where(predicate);
     }
 
     private void addToOrderList(List<Order> orderList, String queryName, boolean isDesc) throws Exception {
@@ -85,7 +96,7 @@ public class QueryBuilder {
     }
 
     public Query getQuery() throws Exception {
-        if (!parser.getAllConditions().isEmpty()) {
+        if (!parser.getConditionChain().isEmpty()) {
             addWhereQuery();
         }
         addOrderBy();

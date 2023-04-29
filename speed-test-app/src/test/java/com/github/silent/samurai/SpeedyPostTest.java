@@ -4,7 +4,7 @@ import com.github.silent.samurai.entity.Category;
 import com.github.silent.samurai.entity.Customer;
 import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.service.CategoryRepository;
-import com.github.silent.samurai.utils.CommonUtil;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import net.bytebuddy.utility.RandomString;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

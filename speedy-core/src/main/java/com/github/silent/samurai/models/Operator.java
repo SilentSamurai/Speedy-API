@@ -3,10 +3,10 @@ package com.github.silent.samurai.models;
 import com.github.silent.samurai.exceptions.BadRequestException;
 
 public enum Operator {
-    EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN;
+    EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR;
 
     public static Operator fromSymbol(String symbol) throws BadRequestException {
-        if (symbol.equals("=")) {
+        if (symbol.equals("=") || symbol.equals("==")) {
             return EQ;
         } else if (symbol.equals("!=")) {
             return NEQ;
@@ -18,10 +18,14 @@ public enum Operator {
             return GT;
         } else if (symbol.equals(">=")) {
             return GTE;
-        } else if (symbol.equals("in")) {
+        } else if (symbol.equals("<>")) {
             return IN;
-        } else if (symbol.equals("ine")) {
+        } else if (symbol.equals("<!>")) {
             return NOT_IN;
+        } else if (symbol.equals("&") || symbol.equals(",")) {
+            return AND;
+        } else if (symbol.equals("|")) {
+            return OR;
         } else {
             throw new BadRequestException("");
         }

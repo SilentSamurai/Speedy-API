@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.models.Operator;
-import com.github.silent.samurai.utils.CommonUtil;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Data;
 
 import javax.persistence.criteria.CriteriaBuilder;
