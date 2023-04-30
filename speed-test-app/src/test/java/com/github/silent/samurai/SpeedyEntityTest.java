@@ -78,12 +78,12 @@ class SpeedyEntityTest {
                 .email("poasdnfi@asd.com");
 
         CompanyApi companyApi = new CompanyApi(defaultClient);
-        BulkCreateCompany200Response bulkCreateCompany200Response = companyApi.bulkCreateCompany(Lists.newArrayList(createCompanyRequest));
+        BulkCreateCompanyResponse bulkCreateCompany = companyApi.bulkCreateCompany(Lists.newArrayList(createCompanyRequest));
 
-        CompanyKey companyKey = bulkCreateCompany200Response.getPayload().get(0);
+        CompanyKey companyKey = bulkCreateCompany.getPayload().get(0);
 
 
-        GetCompany200Response company200Response = companyApi.getCompany(String.format("id = '%s'", companyKey.getId()));
+        CompanyResponse company200Response = companyApi.getCompany(companyKey.getId());
         Company company = company200Response.getPayload();
 
         LOGGER.info("company {}", company);
@@ -95,7 +95,7 @@ class SpeedyEntityTest {
         List<CreateCategoryRequest> postCategories = Arrays.asList(
                 new CreateCategoryRequest().name("New Category ALL")
         ); // List<PostCategory> | Fields needed for creation
-        BulkCreateCategory200Response categoryResponse = categoryApi.bulkCreateCategory(postCategories);
+        BulkCreateCategoryResponse categoryResponse = categoryApi.bulkCreateCategory(postCategories);
 
         Assertions.assertNotNull(categoryResponse);
         Assertions.assertNotNull(categoryResponse.getPayload());
@@ -110,7 +110,7 @@ class SpeedyEntityTest {
                 .name("New Product All")
                 .category(new CategoryKey().id(getCategory.getId()))
                 .description("dummy Product");
-        BulkCreateProduct200Response productsResponse = productApi.bulkCreateProduct(List.of(postProduct));
+        BulkCreateProductResponse productsResponse = productApi.bulkCreateProduct(List.of(postProduct));
 
         Assertions.assertNotNull(productsResponse);
         Assertions.assertNotNull(productsResponse.getPayload());
@@ -119,7 +119,7 @@ class SpeedyEntityTest {
         Assertions.assertNotNull(productKey.getId());
         Assertions.assertNotEquals("", productKey.getId());
 
-        GetProduct200Response productResponse = productApi.getProduct(String.format("id='%s'", productKey.getId()));
+        ProductResponse productResponse = productApi.getProduct(productKey.getId());
         Assertions.assertNotNull(productResponse);
         Product product = productResponse.getPayload();
         Assertions.assertNotNull(product);
@@ -156,7 +156,7 @@ class SpeedyEntityTest {
                 .andReturn();
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
-        BulkCreateSupplier200Response apiResponse = objectMapper.readValue(contentAsString, BulkCreateSupplier200Response.class);
+        BulkCreateSupplierResponse apiResponse = objectMapper.readValue(contentAsString, BulkCreateSupplierResponse.class);
 
         Assertions.assertNotNull(apiResponse);
         Assertions.assertNotNull(apiResponse.getPayload());
@@ -169,7 +169,7 @@ class SpeedyEntityTest {
 
         SupplierApi supplierApi = new SupplierApi(defaultClient);
 
-        GetSupplier200Response supplier200Response = supplierApi.getSupplier(String.format("id = '%s' ", supplierKey.getId()));
+        SupplierResponse supplier200Response = supplierApi.getSupplier(supplierKey.getId());
         Supplier supplier = supplier200Response.getPayload();
 
         LOGGER.info("Supplier {}", supplier);
@@ -193,10 +193,10 @@ class SpeedyEntityTest {
                 .amount(2.0);
 
         ProcurementApi procurementApi = new ProcurementApi(defaultClient);
-        BulkCreateProcurement200Response bulkCreateProcurement200Response = procurementApi.bulkCreateProcurement(Lists.newArrayList(createProcurementRequest));
+        BulkCreateProcurementResponse bulkCreateProcurement200Response = procurementApi.bulkCreateProcurement(Lists.newArrayList(createProcurementRequest));
         ProcurementKey procurementKey = bulkCreateProcurement200Response.getPayload().get(0);
 
-        GetProcurement200Response procurement = procurementApi.getProcurement(String.format("id = '%s' ", procurementKey.getId()));
+        ProcurementResponse procurement = procurementApi.getProcurement(procurementKey.getId());
 
         LOGGER.info(" {} ", procurement);
 
@@ -216,11 +216,11 @@ class SpeedyEntityTest {
 
         CustomerApi customerApi = new CustomerApi(defaultClient);
 
-        BulkCreateCustomer200Response bulkCreateCustomer200Response = customerApi.bulkCreateCustomer(Lists.newArrayList(createCustomerRequest));
+        BulkCreateCustomerResponse bulkCreateCustomer200Response = customerApi.bulkCreateCustomer(Lists.newArrayList(createCustomerRequest));
 
         CustomerKey customerKey = bulkCreateCustomer200Response.getPayload().get(0);
 
-        GetCustomer200Response getCustomer200Response = customerApi.getCustomer(String.format("id = '%s' ", customerKey.getId()));
+        CustomerResponse getCustomer200Response = customerApi.getCustomer(customerKey.getId());
 
         Customer payload = getCustomer200Response.getPayload();
 
@@ -244,11 +244,11 @@ class SpeedyEntityTest {
 
 
         InvoiceApi invoiceApi = new InvoiceApi(defaultClient);
-        BulkCreateInvoice200Response bulkCreateInvoice200Response = invoiceApi.bulkCreateInvoice(Lists.newArrayList(createInvoiceRequest));
+        BulkCreateInvoiceResponse bulkCreateInvoice200Response = invoiceApi.bulkCreateInvoice(Lists.newArrayList(createInvoiceRequest));
 
         InvoiceKey invoiceKey = bulkCreateInvoice200Response.getPayload().get(0);
 
-        GetInvoice200Response invoice200Response = invoiceApi.getInvoice(String.format("id = '%s' ", invoiceKey.getId()));
+        InvoiceResponse invoice200Response = invoiceApi.getInvoice(invoiceKey.getId());
 
         Invoice payload = invoice200Response.getPayload();
         LOGGER.info(" {} ", payload);
@@ -269,11 +269,11 @@ class SpeedyEntityTest {
 
         UserApi userApi = new UserApi(defaultClient);
 
-        BulkCreateUser200Response bulkCreateUser200Response = userApi.bulkCreateUser(Lists.newArrayList(createUserRequest));
+        BulkCreateUserResponse bulkCreateUser200Response = userApi.bulkCreateUser(Lists.newArrayList(createUserRequest));
 
         UserKey userKey = bulkCreateUser200Response.getPayload().get(0);
 
-        GetUser200Response getUser200Response = userApi.getUser(String.format("id = '%s' ", userKey.getId()));
+        UserResponse getUser200Response = userApi.getUser(userKey.getId());
 
         User payload = getUser200Response.getPayload();
         LOGGER.info(" {} ", payload);
@@ -292,11 +292,11 @@ class SpeedyEntityTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        BulkCreateInventory200Response bulkCreateInventory200Response = inventoryApi.bulkCreateInventory(Lists.newArrayList(createInventoryRequest));
+        BulkCreateInventoryResponse bulkCreateInventory200Response = inventoryApi.bulkCreateInventory(Lists.newArrayList(createInventoryRequest));
 
         InventoryKey userKey = bulkCreateInventory200Response.getPayload().get(0);
 
-        GetInventory200Response getInventory200Response = inventoryApi.getInventory(String.format("id = '%s' ", userKey.getId()));
+        InventoryResponse getInventory200Response = inventoryApi.getInventory(userKey.getId());
 
         Inventory payload = getInventory200Response.getPayload();
         LOGGER.info(" {} ", payload);

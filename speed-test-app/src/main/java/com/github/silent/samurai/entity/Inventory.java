@@ -1,7 +1,11 @@
 package com.github.silent.samurai.entity;
 
+import lombok.Data;
+import org.hibernate.annotations.Formula;
+
 import javax.persistence.*;
 
+@Data
 @Table(name = "inventory")
 @Entity
 public class Inventory extends AbstractBaseEntity {
@@ -29,59 +33,8 @@ public class Inventory extends AbstractBaseEntity {
     @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    public Invoice getInvoice() {
-        return invoice;
-    }
+    @GeneratedValue
+    @Formula("sold_price - cost")
+    private Double profit;
 
-    public void setInvoice(Invoice invoice) {
-        this.invoice = invoice;
-    }
-
-    public Procurement getProcurement() {
-        return procurement;
-    }
-
-    public void setProcurement(Procurement procurement) {
-        this.procurement = procurement;
-    }
-
-    public Double getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(Double discount) {
-        this.discount = discount;
-    }
-
-    public Double getSoldPrice() {
-        return soldPrice;
-    }
-
-    public void setSoldPrice(Double soldPrice) {
-        this.soldPrice = soldPrice;
-    }
-
-    public Double getListingPrice() {
-        return listingPrice;
-    }
-
-    public void setListingPrice(Double listingPrice) {
-        this.listingPrice = listingPrice;
-    }
-
-    public Double getCost() {
-        return cost;
-    }
-
-    public void setCost(Double cost) {
-        this.cost = cost;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
 }

@@ -1,10 +1,12 @@
 package com.github.silent.samurai.metamodel;
 
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 
-@Data
+@Getter
+@Setter
 public class JpaKeyFieldMetadata extends JpaFieldMetadata implements KeyFieldMetadata {
 
     private boolean isId;

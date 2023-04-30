@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 public class OpenApiGenerator {
 
@@ -38,8 +39,8 @@ public class OpenApiGenerator {
 
 
             openApi.path(getBasePath(entityMetadata), basePathItem);
-            openApi.path(getParameterPath(entityMetadata, "identifiers"), identifierPathItem);
             openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
+            openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
         }
     }
 
@@ -92,36 +93,13 @@ public class OpenApiGenerator {
         ).description("Fields needed for creation"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("BulkCreate{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_KEY, entityMetadata))
                 )
         ).description("successful creation."));
         operation.responses(apiResponses);
         pathItem.post(operation);
-    }
-
-    private void putOperation(EntityMetadata entityMetadata, PathItem identifierPathItem) {
-        Operation operation = new Operation();
-        operation.operationId("Update" + entityMetadata.getName());
-        operation.summary("Update a(n) " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
-        operation.addParametersItem(
-                new Parameter()
-                        .name("identifiers")
-                        .in("path")
-                        .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(String.class))
-                        .example(OASGenerator.getQueryExample(entityMetadata, KeyFieldMetadata.class::isInstance))
-        );
-        operation.requestBody(OASGenerator.getJsonBody(
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
-        ).description("Fields needed for update"));
-        ApiResponses apiResponses = new ApiResponses();
-        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
-        ).description("successful update."));
-        operation.responses(apiResponses);
-        identifierPathItem.put(operation);
     }
 
     private void deleteOperation(EntityMetadata entityMetadata, PathItem pathItem) {
@@ -135,12 +113,52 @@ public class OpenApiGenerator {
         ).description("Fields needed for deletion"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("BulkDelete{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_KEY, entityMetadata))
                 )
         ).description("successful deletion."));
         operation.responses(apiResponses);
         pathItem.delete(operation);
+    }
+
+    private void putOperation(EntityMetadata entityMetadata, PathItem identifierPathItem) {
+        Operation operation = new Operation();
+        operation.operationId("Update" + entityMetadata.getName());
+        operation.summary("Update a(n) " + entityMetadata.getName());
+        operation.tags(Lists.newArrayList(entityMetadata.getName()));
+
+        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
+
+        operation.requestBody(OASGenerator.getJsonBody(
+                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
+        ).description("Fields needed for update"));
+        ApiResponses apiResponses = new ApiResponses();
+        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("Update{0}Response", entityMetadata),
+                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+        ).description("successful update."));
+        operation.responses(apiResponses);
+        identifierPathItem.put(operation);
+    }
+
+
+
+    private void getWithPrimaryFields(EntityMetadata entityMetadata, PathItem identifierPathItem) {
+        Operation operation = new Operation();
+        operation.operationId("Get" + entityMetadata.getName());
+        operation.summary("Get a(n) " + entityMetadata.getName());
+        operation.tags(Lists.newArrayList(entityMetadata.getName()));
+
+        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
+
+        ApiResponses apiResponses = new ApiResponses();
+        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("{0}Response", entityMetadata),
+                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+        ).description("successful fetch."));
+        operation.responses(apiResponses);
+        identifierPathItem.get(operation);
     }
 
     private void getWithFieldQuery(EntityMetadata entityMetadata, PathItem queryPathItem) {
@@ -160,34 +178,13 @@ public class OpenApiGenerator {
         OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata))
                 )
         ).description("successful fetch."));
         operation.responses(apiResponses);
         queryPathItem.get(operation);
-    }
-
-    private void getWithPrimaryFields(EntityMetadata entityMetadata, PathItem identifierPathItem) {
-        Operation operation = new Operation();
-        operation.operationId("Get" + entityMetadata.getName());
-        operation.summary("Get a(n) " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
-        operation.addParametersItem(
-                new Parameter()
-                        .name("identifiers")
-                        .description("query with all primary keys")
-                        .in("path")
-                        .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(String.class))
-                        .example(OASGenerator.getQueryExample(entityMetadata, KeyFieldMetadata.class::isInstance))
-        );
-        ApiResponses apiResponses = new ApiResponses();
-        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
-        ).description("successful fetch."));
-        operation.responses(apiResponses);
-        identifierPathItem.get(operation);
     }
 
     private void getOperation(EntityMetadata entityMetadata, PathItem pathItem) {
@@ -198,6 +195,7 @@ public class OpenApiGenerator {
         OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("All{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata))
                 )
@@ -216,6 +214,26 @@ public class OpenApiGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
         sb.append("({").append(parameterName).append("})");
+        return sb.toString();
+    }
+
+    private String getIdentifierPath(EntityMetadata entityMetadata) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
+        sb.append("(");
+        Iterator<KeyFieldMetadata> iterator = entityMetadata.getKeyFields().iterator();
+        while (iterator.hasNext()) {
+            KeyFieldMetadata keyField = iterator.next();
+            sb.append(keyField.getOutputPropertyName())
+                    .append("=")
+                    .append("'{")
+                    .append(keyField.getOutputPropertyName())
+                    .append("}'");
+            if (iterator.hasNext()) {
+                sb.append(",");
+            }
+        }
+        sb.append(")");
         return sb.toString();
     }
 

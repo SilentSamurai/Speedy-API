@@ -119,7 +119,7 @@ public class OASGenerator {
     }
 
     public static Schema wrapInArray(Schema ref) {
-        return new Schema<>().type("array").maxItems(100).items(ref);
+        return new Schema<>().type("array").items(ref);
     }
 
     public static Schema wrapInPayload(Schema ref) {
@@ -147,11 +147,11 @@ public class OASGenerator {
                 );
     }
 
-    public static ApiResponse getJsonResponse(Schema schema) {
+    public static ApiResponse getJsonResponse(String name, Schema schema) {
         return new ApiResponse()
                 .content(new Content()
                         .addMediaType(APPLICATION_JSON_VALUE, new MediaType()
-                                .schema(wrapInPayload(schema))
+                                .schema(wrapInPayload(schema).name(name).title(name))
                         )
                 );
     }
@@ -189,6 +189,20 @@ public class OASGenerator {
                         .required(false)
                         .schema(OASGenerator.basicSchema(String.class))
         );
+    }
+
+
+    public static void addPrimaryKeyParameter(Operation operation, EntityMetadata entityMetadata) {
+        for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
+            operation.addParametersItem(
+                    new Parameter()
+                            .name(keyField.getOutputPropertyName())
+                            .description(keyField.getOutputPropertyName() + " field value.")
+                            .in("path")
+                            .allowEmptyValue(false)
+                            .schema(OASGenerator.basicSchema(keyField.getFieldType()))
+            );
+        }
     }
 
 

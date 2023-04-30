@@ -3,14 +3,16 @@ package com.github.silent.samurai.metamodel;
 import com.github.silent.samurai.enums.IgnoreType;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 
-@Data
+@Getter
+@Setter
 public class JpaFieldMetadata implements FieldMetadata {
 
     private String dbColumnName;

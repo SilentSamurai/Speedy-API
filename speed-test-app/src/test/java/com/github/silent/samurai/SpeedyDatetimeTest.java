@@ -86,7 +86,7 @@ class SpeedyDatetimeTest {
                 .andReturn();
 
         String contentAsString = mvcResult.getResponse().getContentAsString();
-        BulkCreateSupplier200Response apiResponse = objectMapper.readValue(contentAsString, BulkCreateSupplier200Response.class);
+        BulkCreateSupplierResponse apiResponse = objectMapper.readValue(contentAsString, BulkCreateSupplierResponse.class);
 
         Assertions.assertNotNull(apiResponse);
         Assertions.assertNotNull(apiResponse.getPayload());
@@ -99,7 +99,7 @@ class SpeedyDatetimeTest {
 
         SupplierApi supplierApi = new SupplierApi(defaultClient);
 
-        GetSupplier200Response supplier = supplierApi.getSupplier(String.format("id = '%s' ", supplierKey.getId()));
+        SupplierResponse supplier = supplierApi.getSupplier(supplierKey.getId());
         Supplier payload = supplier.getPayload();
 
         LOGGER.info("Supplier {}", payload);

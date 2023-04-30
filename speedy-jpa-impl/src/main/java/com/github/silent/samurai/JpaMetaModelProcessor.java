@@ -6,11 +6,11 @@ import com.github.silent.samurai.annotations.SpeedyIgnore;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.metamodel.JpaKeyFieldMetadata;
+import org.hibernate.annotations.Formula;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -18,6 +18,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import javax.persistence.Column;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.GeneratedValue;
+import javax.persistence.IdClass;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
@@ -82,6 +83,13 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
 
         GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), GeneratedValue.class);
         if (generatedValueAnnotation != null) {
+            fieldMetadata.setInsertable(false);
+            fieldMetadata.setUpdatable(false);
+            fieldMetadata.setNullable(false);
+        }
+
+        Formula formulaAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Formula.class);
+        if (formulaAnnotation != null) {
             fieldMetadata.setInsertable(false);
             fieldMetadata.setUpdatable(false);
             fieldMetadata.setNullable(false);
@@ -174,24 +182,26 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         }
     }
 
+    private Class<?> getIdClassType(EntityType<?> entityType) {
+        Class<?> entityClassType = entityType.getBindableJavaType();
+        IdClass idClass = AnnotationUtils.getAnnotation(entityClassType, IdClass.class);
+        if (idClass == null) {
+            return entityType.getIdType().getJavaType();
+        }
+        return idClass.value();
+    }
+
     public void addEntity(EntityType<?> entityType) {
         JpaEntityMetadata entityMetadata = new JpaEntityMetadata();
         entityMetadata.setName(entityType.getName());
         entityMetadata.setJpaEntityType(entityType);
         entityMetadata.setEntityClass(entityType.getBindableJavaType());
-        entityMetadata.setKeyClass(entityType.getIdType().getJavaType());
+        entityMetadata.setKeyClass(getIdClassType(entityType));
         entityMetadata.setHasCompositeKey(!entityType.hasSingleIdAttribute());
 
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
             JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType());
-            entityMetadata.getAllFields().add(memberMetadata);
-            entityMetadata.getFieldMap().put(attribute.getName(), memberMetadata);
-            if (memberMetadata instanceof KeyFieldMetadata) {
-                entityMetadata.getKeyFields().add((KeyFieldMetadata) memberMetadata);
-            }
-            if (memberMetadata.isAssociation()) {
-                entityMetadata.getAssociatedFields().add(memberMetadata);
-            }
+            entityMetadata.addFieldMetadata(memberMetadata);
         }
         entityMap.put(entityType.getName(), entityMetadata);
         typeMap.put(entityMetadata.getEntityClass(), entityMetadata);

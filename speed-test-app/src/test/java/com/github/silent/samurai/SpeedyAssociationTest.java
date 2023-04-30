@@ -64,7 +64,7 @@ class SpeedyAssociationTest {
         List<CreateCategoryRequest> postCategories = Arrays.asList(
                 new CreateCategoryRequest().name("New Category")
         ); // List<PostCategory> | Fields needed for creation
-        BulkCreateCategory200Response categoryResponse = categoryApi.bulkCreateCategory(postCategories);
+        BulkCreateCategoryResponse categoryResponse = categoryApi.bulkCreateCategory(postCategories);
 
         Assertions.assertNotNull(categoryResponse);
         Assertions.assertNotNull(categoryResponse.getPayload());
@@ -79,7 +79,7 @@ class SpeedyAssociationTest {
                 .name("New Product")
                 .category(new CategoryKey().id(getCategory.getId()))
                 .description("dummy Product");
-        BulkCreateProduct200Response productsResponse = productApi.bulkCreateProduct(List.of(postProduct));
+        BulkCreateProductResponse productsResponse = productApi.bulkCreateProduct(List.of(postProduct));
 
         Assertions.assertNotNull(productsResponse);
         Assertions.assertNotNull(productsResponse.getPayload());
@@ -88,7 +88,7 @@ class SpeedyAssociationTest {
         Assertions.assertNotNull(productKey.getId());
         Assertions.assertNotEquals("", productKey.getId());
 
-        GetProduct200Response productResponse = productApi.getProduct(String.format("id='%s'", productKey.getId()));
+        ProductResponse productResponse = productApi.getProduct(productKey.getId());
         Assertions.assertNotNull(productResponse);
         Product product = productResponse.getPayload();
         Assertions.assertNotNull(product);
