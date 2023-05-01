@@ -48,35 +48,40 @@ public class OpenApiGenerator {
         Schema<String> getSchema = OASGenerator.createEntitySchema(
                 entityMetadata,
                 fm -> fm.isSerializable() && !fm.isAssociation(),
-                ""
+                "",
+                false
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata), getSchema);
 
         Schema<String> light = OASGenerator.createEntitySchema(
                 entityMetadata,
                 FieldMetadata::isSerializable,
-                OASGenerator.LIGHT_ENTITY_NAME
+                OASGenerator.LIGHT_ENTITY_NAME,
+                false
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata), light);
 
         Schema entityKeySchema = OASGenerator.createEntitySchema(
                 entityMetadata,
                 KeyFieldMetadata.class::isInstance,
-                OASGenerator.ENTITY_KEY
+                OASGenerator.ENTITY_KEY,
+                true
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.ENTITY_KEY, entityMetadata), entityKeySchema);
 
         Schema createSchema = OASGenerator.createEntitySchema(
                 entityMetadata,
                 FieldMetadata::isInsertable,
-                OASGenerator.ENTITY_KEY
+                OASGenerator.ENTITY_KEY,
+                true
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.CREATE_REQUEST_NAME, entityMetadata), createSchema);
 
         Schema<String> updateSchema = OASGenerator.createEntitySchema(
                 entityMetadata,
                 fm -> !(fm instanceof KeyFieldMetadata) && fm.isUpdatable(),
-                OASGenerator.ENTITY_KEY
+                OASGenerator.ENTITY_KEY,
+                true
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata), updateSchema);
     }

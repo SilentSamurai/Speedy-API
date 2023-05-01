@@ -101,7 +101,8 @@ public class OASGenerator {
 
     public static Schema createEntitySchema(EntityMetadata entityMetadata,
                                             Predicate<FieldMetadata> predicate,
-                                            String associationFormat) {
+                                            String associationFormat,
+                                            boolean isRequest) {
         Schema<String> schema = new Schema<>();
         schema.type("object");
         List<String> required = new LinkedList<>();
@@ -109,7 +110,7 @@ public class OASGenerator {
             if (predicate.test(fieldMetadata)) {
                 Schema fieldSchema = createFieldSchema(fieldMetadata, associationFormat);
                 schema.addProperty(fieldMetadata.getOutputPropertyName(), fieldSchema);
-                if (fieldMetadata instanceof KeyFieldMetadata || !fieldMetadata.isNullable()) {
+                if (isRequest && (fieldMetadata instanceof KeyFieldMetadata || !fieldMetadata.isNullable())) {
                     required.add(fieldMetadata.getOutputPropertyName());
                 }
             }
