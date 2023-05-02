@@ -2,9 +2,12 @@ package com.github.silent.samurai.query;
 
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.models.Operator;
 import com.github.silent.samurai.models.conditions.Condition;
+import com.github.silent.samurai.parser.ResourceSelector;
 import com.github.silent.samurai.parser.SpeedyUriParser;
 
 import javax.persistence.EntityManager;
@@ -16,36 +19,38 @@ import java.util.stream.Collectors;
 
 public class QueryBuilder {
 
-    private final SpeedyUriParser parser;
+    private final ResourceSelector resourceSelector;
     private final EntityMetadata entityMetadata;
     private final EntityManager entityManager;
     private final CriteriaBuilder criteriaBuilder;
     private final CriteriaQuery<?> query;
     private final Root<?> tableRoot;
+    private Predicate previousWherePredicate;
 
-    public QueryBuilder(SpeedyUriParser parser, EntityMetadata entityMetadata, EntityManager entityManager) {
-        this.parser = parser;
-        this.entityMetadata = entityMetadata;
+
+    public QueryBuilder(ResourceSelector resourceSelector, EntityManager entityManager) {
+        this.resourceSelector = resourceSelector;
+        this.entityMetadata = resourceSelector.getResourceMetadata();
         this.entityManager = entityManager;
-        Objects.requireNonNull(entityMetadata, "Entity Not Found " + parser.getResource());
-        Objects.requireNonNull(parser, "query required");
+        Objects.requireNonNull(entityMetadata, "Entity Not Found " + resourceSelector.getResource());
+        Objects.requireNonNull(resourceSelector, "query required");
         criteriaBuilder = entityManager.getCriteriaBuilder();
         query = criteriaBuilder.createQuery(entityMetadata.getEntityClass());
         tableRoot = query.from(entityMetadata.getEntityClass());
     }
 
-    private void addWhereQuery() throws Exception {
-        List<String> conditions = parser.getConditionChain();
+    public void addWhereQuery() throws Exception {
+        List<String> conditions = resourceSelector.getConditionChain();
         if (conditions.isEmpty()) {
             return;
         }
         Iterator<String> iterator = conditions.iterator();
-        Condition condition = parser.getConditionByInternalId(iterator.next());
+        Condition condition = resourceSelector.getConditionByInternalId(iterator.next());
         Predicate predicate = condition.getPredicate(criteriaBuilder, tableRoot, entityMetadata);
         while (iterator.hasNext()) {
             String operator = iterator.next();
             String internalId = iterator.next();
-            Condition nextCondition = parser.getConditionByInternalId(internalId);
+            Condition nextCondition = resourceSelector.getConditionByInternalId(internalId);
             Predicate currentPredicate = nextCondition.getPredicate(criteriaBuilder, tableRoot, entityMetadata);
             if (Operator.fromSymbol(operator) == Operator.AND) {
                 currentPredicate = criteriaBuilder.and(predicate, currentPredicate);
@@ -56,10 +61,31 @@ public class QueryBuilder {
             }
             predicate = currentPredicate;
         }
-        query.where(predicate);
+        previousWherePredicate = predicate;
     }
 
-    private void addToOrderList(List<Order> orderList, String queryName, boolean isDesc) throws Exception {
+    public void addAssociationFK(EntityMetadata secondaryResource, Object instance) throws BadRequestException {
+        List<Predicate> fkPredicate = new LinkedList<>();
+        FieldMetadata associatedField = this.entityMetadata.getAssociatedField(secondaryResource)
+                .orElseThrow(BadRequestException::new);
+        Path<Object> objectPath = tableRoot.get(associatedField.getClassFieldName());
+        for (KeyFieldMetadata keyField : secondaryResource.getKeyFields()) {
+            Object fieldValue = keyField.getEntityFieldValue(instance);
+            Predicate equal = criteriaBuilder.equal(objectPath.get(keyField.getClassFieldName()), fieldValue);
+            fkPredicate.add(equal);
+        }
+        if (previousWherePredicate != null) {
+            fkPredicate.add(previousWherePredicate);
+        }
+        Predicate[] predicates = fkPredicate.toArray(new Predicate[fkPredicate.size()]);
+        previousWherePredicate = criteriaBuilder.and(predicates);
+    }
+
+
+    private void addToOrderList(SpeedyUriParser parser,
+                                List<Order> orderList,
+                                String queryName,
+                                boolean isDesc) throws Exception {
         if (parser.hasQuery(queryName)) {
             Map<Boolean, List<String>> collect = parser.getQuery(queryName, String.class)
                     .stream()
@@ -79,14 +105,14 @@ public class QueryBuilder {
         }
     }
 
-    private void addOrderBy() throws Exception {
+    private void addOrderBy(SpeedyUriParser parser) throws Exception {
         List<Order> orderList = new LinkedList<>();
-        addToOrderList(orderList, "orderBy", false);
-        addToOrderList(orderList, "orderByDesc", true);
+        addToOrderList(parser, orderList, "orderBy", false);
+        addToOrderList(parser, orderList, "orderByDesc", true);
         query.orderBy(orderList);
     }
 
-    private TypedQuery<?> addPageInfo() throws BadRequestException {
+    private TypedQuery<?> addPageInfo(SpeedyUriParser parser) throws BadRequestException {
         TypedQuery<?> paggedQuery = entityManager.createQuery(query);
         int pageSize = parser.getQueryOrDefault("pageSize", Integer.class, SpeedyConstant.defaultPageSize);
         int pageNumber = parser.getQueryOrDefault("pageNo", Integer.class, 0);
@@ -95,12 +121,12 @@ public class QueryBuilder {
         return paggedQuery;
     }
 
-    public Query getQuery() throws Exception {
-        if (!parser.getConditionChain().isEmpty()) {
-            addWhereQuery();
+    public Query getQuery(SpeedyUriParser parser) throws Exception {
+        if (previousWherePredicate != null) {
+            query.where(previousWherePredicate);
         }
-        addOrderBy();
-        return addPageInfo();
+        addOrderBy(parser);
+        return addPageInfo(parser);
     }
 
 

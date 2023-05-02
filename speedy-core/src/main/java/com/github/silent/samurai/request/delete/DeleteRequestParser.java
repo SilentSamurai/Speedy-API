@@ -27,7 +27,7 @@ public class DeleteRequestParser {
         SpeedyUriParser parser = new SpeedyUriParser(context.getMetaModelProcessor(), context.getRequestURI());
         parser.parse();
         context.setParser(parser);
-        EntityMetadata resourceMetadata = parser.getResourceMetadata();
+        EntityMetadata resourceMetadata = parser.getPrimaryResource().getResourceMetadata();
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());

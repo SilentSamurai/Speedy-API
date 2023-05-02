@@ -29,7 +29,7 @@ public class MetadataUtil {
 
     public static Object createIdentifierFromParser(SpeedyUriParser parser) throws Exception {
         try {
-            ParserIdentityDeserializer deserializer = new ParserIdentityDeserializer(parser);
+            ParserIdentityDeserializer deserializer = new ParserIdentityDeserializer(parser.getPrimaryResource());
             return deserializer.deserialize();
         } catch (Exception e) {
             throw new BadRequestException("failed to parse parameters");

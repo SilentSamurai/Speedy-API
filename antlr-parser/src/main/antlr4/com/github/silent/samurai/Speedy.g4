@@ -2,9 +2,11 @@
 grammar Speedy;
 
 
-request : SLSH resource filters? SLSH? query? frag? CRLF? ;
+request : resource+ SLSH? query? frag? CRLF? ;
 
-frag: HASH (identifier | DIGITS) ;
+resource: SLSH IDENTIFIER filters? ;
+
+frag: HASH (identifier | DIGITS);
 
 query: QM search ;
 search: searchParameter (AND_OP searchParameter)* ;
@@ -21,8 +23,6 @@ paramMV: mvoptr constList;
 
 arguments: argument (COMMA_OP argument )* ;
 argument: (DIGITS | VALSTRING);
-
-resource: IDENTIFIER ;
 
 svoptr: (EQ | EEQ | NEQ | LT | GT | LTE | GTE );
 mvoptr: (NOT_IN | IN );

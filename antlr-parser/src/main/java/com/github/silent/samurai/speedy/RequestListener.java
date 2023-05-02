@@ -6,6 +6,7 @@ import com.github.silent.samurai.SpeedyParser;
 import com.github.silent.samurai.speedy.models.AntlrRequest;
 import com.github.silent.samurai.speedy.models.Filter;
 import com.github.silent.samurai.speedy.models.Query;
+import com.github.silent.samurai.speedy.models.ResourceRequest;
 import org.antlr.v4.runtime.RuleContext;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ public class RequestListener extends SpeedyBaseListener {
 
     private final List<AntlrRequest> antlrRequests = new ArrayList<>();
     private AntlrRequest current;
+    private ResourceRequest resourceRequest;
     private Filter currentFilter;
     private Query currentQuery;
 
@@ -29,13 +31,19 @@ public class RequestListener extends SpeedyBaseListener {
     }
 
     @Override
+    public void exitResource(SpeedyParser.ResourceContext ctx) {
+        current.getRequestList().add(resourceRequest);
+    }
+
+    @Override
     public void enterResource(SpeedyParser.ResourceContext ctx) {
-        current.setResource(ctx.getText());
+        resourceRequest = new ResourceRequest();
+        resourceRequest.setResource(ctx.IDENTIFIER().getText());
     }
 
     @Override
     public void enterArgument(SpeedyParser.ArgumentContext ctx) {
-        current.getArguments().add(ctx.getText());
+        resourceRequest.getArguments().add(ctx.getText());
     }
 
     @Override
@@ -60,12 +68,12 @@ public class RequestListener extends SpeedyBaseListener {
 
     @Override
     public void exitKeywordsParams(SpeedyParser.KeywordsParamsContext ctx) {
-        current.addFilter(currentFilter);
+        resourceRequest.addFilter(currentFilter);
     }
 
     @Override
     public void enterCndoptr(SpeedyParser.CndoptrContext ctx) {
-        current.getFilterOrder().add(ctx.getText());
+        resourceRequest.getFilterOrder().add(ctx.getText());
     }
 
 

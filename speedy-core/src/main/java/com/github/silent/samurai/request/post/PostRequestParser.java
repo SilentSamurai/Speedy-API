@@ -36,7 +36,7 @@ public class PostRequestParser {
         for (JsonNode element : batchOfEntities) {
             if (element.isObject()) {
                 Object entityInstance = MetadataUtil.createEntityFromJSON(
-                        parser.getResourceMetadata(),
+                        parser.getPrimaryResource().getResourceMetadata(),
                         (ObjectNode) element,
                         context.getEntityManager()
                 );

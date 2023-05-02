@@ -2,6 +2,7 @@ package com.github.silent.samurai.interfaces;
 
 import com.github.silent.samurai.exceptions.NotFoundException;
 
+import java.util.Optional;
 import java.util.Set;
 
 public interface EntityMetadata {
@@ -31,4 +32,10 @@ public interface EntityMetadata {
     Object createNewKeyInstance() throws Exception;
 
     Set<FieldMetadata> getAssociatedFields();
+
+    default Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {
+        return this.getAssociatedFields().stream()
+                .filter(fld -> fld.getAssociationMetadata() == secondaryResource)
+                .findAny();
+    }
 }

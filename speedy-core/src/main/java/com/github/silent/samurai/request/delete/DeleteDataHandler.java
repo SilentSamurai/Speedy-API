@@ -25,7 +25,9 @@ public class DeleteDataHandler {
             if (!context.getObjectsToBeRemoved().isEmpty()) {
                 transaction.begin();
                 for (Object parsedObject : context.getObjectsToBeRemoved()) {
-                    context.getValidationProcessor().validateDeleteRequestEntity(context.getParser().getResourceMetadata(), parsedObject);
+                    context.getValidationProcessor().validateDeleteRequestEntity(
+                            context.getParser().getPrimaryResource().getResourceMetadata(),
+                            parsedObject);
                     context.getEntityManager().remove(parsedObject);
                     deletedObjects.add(parsedObject);
                 }

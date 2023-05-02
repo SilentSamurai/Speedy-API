@@ -4,7 +4,7 @@ import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.models.conditions.BinarySVCondition;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.ResourceSelector;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.util.Optional;
@@ -12,11 +12,11 @@ import java.util.Optional;
 public class ParserIdentityDeserializer {
 
     private final EntityMetadata entityMetadata;
-    private final SpeedyUriParser parser;
+    private final ResourceSelector resourceSelector;
 
-    public ParserIdentityDeserializer(SpeedyUriParser parser) {
-        this.parser = parser;
-        this.entityMetadata = parser.getResourceMetadata();
+    public ParserIdentityDeserializer(ResourceSelector resourceSelector) {
+        this.resourceSelector = resourceSelector;
+        this.entityMetadata = resourceSelector.getResourceMetadata();
     }
 
     public Object deserialize() throws Exception {
@@ -31,8 +31,8 @@ public class ParserIdentityDeserializer {
         if (primaryKeyFieldMetadata.isPresent()) {
             KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
             String propertyName = keyFieldMetadata.getOutputPropertyName();
-            if (parser.hasKeyword(propertyName)) {
-                BinarySVCondition condition = parser.getFirstConditionByField(propertyName);
+            if (resourceSelector.hasKeyword(propertyName)) {
+                BinarySVCondition condition = resourceSelector.getFirstConditionByField(propertyName);
                 return CommonUtil.quotedStringToPrimitive(condition.getValue(), keyFieldMetadata.getFieldType());
             }
         }
@@ -43,8 +43,8 @@ public class ParserIdentityDeserializer {
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             String propertyName = keyFieldMetadata.getOutputPropertyName();
-            if (parser.hasKeyword(propertyName)) {
-                BinarySVCondition condition = parser.getFirstConditionByField(propertyName);
+            if (resourceSelector.hasKeyword(propertyName)) {
+                BinarySVCondition condition = resourceSelector.getFirstConditionByField(propertyName);
                 Object instance = CommonUtil.quotedStringToPrimitive(condition.getValue(), keyFieldMetadata.getFieldType());
                 keyFieldMetadata.setEntityFieldWithValue(newKeyInstance, instance);
             } else {

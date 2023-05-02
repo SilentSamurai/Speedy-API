@@ -42,6 +42,6 @@ public class PutRequestContext implements ResponseReturningRequestContext {
     }
 
     public EntityMetadata getEntityMetadata() {
-        return parser.getResourceMetadata();
+        return parser.getPrimaryResource().getResourceMetadata();
     }
 }

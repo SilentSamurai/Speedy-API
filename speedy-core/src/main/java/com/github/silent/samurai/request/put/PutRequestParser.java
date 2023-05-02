@@ -31,10 +31,10 @@ public class PutRequestParser {
         if (jsonElement == null || !jsonElement.isObject()) {
             throw new BadRequestException("no content to process");
         }
-        if (!parser.isOnlyIdentifiersPresent()) {
+        if (!parser.getPrimaryResource().isOnlyIdentifiersPresent()) {
             throw new BadRequestException("Primary Key Incomplete.");
         }
-        EntityMetadata entityMetadata = parser.getResourceMetadata();
+        EntityMetadata entityMetadata = parser.getPrimaryResource().getResourceMetadata();
         Object pk = MetadataUtil.createIdentifierFromParser(parser);
         Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
         MetadataUtil.updateEntityFromJSON(entityMetadata, context.getEntityManager(), (ObjectNode) jsonElement, entityInstance);

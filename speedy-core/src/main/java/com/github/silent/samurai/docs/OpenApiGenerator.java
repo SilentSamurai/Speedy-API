@@ -31,12 +31,13 @@ public class OpenApiGenerator {
             postOperation(entityMetadata, basePathItem);
             putOperation(entityMetadata, identifierPathItem);
             deleteOperation(entityMetadata, basePathItem);
-            getOperation(entityMetadata, basePathItem);
-            getWithFieldQuery(entityMetadata, queryPathItem);
             getWithPrimaryFields(entityMetadata, identifierPathItem);
 
-            createSchemas(entityMetadata, openApi);
+            getOperation(entityMetadata, basePathItem);
+            getWithFieldQuery(entityMetadata, queryPathItem);
 
+
+            createSchemas(entityMetadata, openApi);
 
             openApi.path(getBasePath(entityMetadata), basePathItem);
             openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
@@ -178,7 +179,16 @@ public class OpenApiGenerator {
                         .in("path")
                         .allowEmptyValue(true)
                         .schema(OASGenerator.basicSchema(String.class))
-                        .example(OASGenerator.getQueryExample(entityMetadata, FieldMetadata::isSerializable))
+                        .example("(id='1',amount=2)")
+        );
+        operation.addParametersItem(
+                new Parameter()
+                        .description("these are queries on the entity")
+                        .name("association")
+                        .in("path")
+                        .allowEmptyValue(true)
+                        .schema(OASGenerator.basicSchema(String.class))
+                        .example("Category(id='1')")
         );
         OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
@@ -218,7 +228,8 @@ public class OpenApiGenerator {
     private String getParameterPath(EntityMetadata entityMetadata, String parameterName) {
         StringBuilder sb = new StringBuilder();
         sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
-        sb.append("({").append(parameterName).append("})");
+        sb.append("{").append(parameterName).append("}");
+        sb.append("/").append("{association}");
         return sb.toString();
     }
 

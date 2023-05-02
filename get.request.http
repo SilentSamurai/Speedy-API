@@ -1,5 +1,46 @@
 GET http://localhost:8080/speedy/v1.0/Category/
 Accept: application/json
+Content-Type: application/json
+
+{
+    "where": [
+        {
+            "operator": "=",
+            "field": "NAME",
+            "value": "Piyush"
+        },
+        {
+            "operator": "in",
+            "field": "ROLL",
+            "value": [
+                13
+            ]
+        },
+        {
+            "operator": "OR",
+            "conditions": [
+                {
+                    "operator": "equal",
+                    "field": "A",
+                    "value": 5
+                },
+                {
+                    "operator": "equal",
+                    "field": "A",
+                    "value": 10
+                }
+            ]
+        },
+        {
+            "operator": "dateBetween",
+            "field": "BIRTH",
+            "value": {
+                "start": "Date('')",
+                "end": "Date('')"
+            }
+        }
+    ]
+}
 
 ###
 GET http://localhost:80/speedy/v1.0/Category/

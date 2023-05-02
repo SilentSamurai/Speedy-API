@@ -32,7 +32,7 @@ public class PostDataHandler {
         try {
             if (!context.getParsedObjects().isEmpty()) {
                 transaction.begin();
-                EntityMetadata entityMetadata = context.getParser().getResourceMetadata();
+                EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
                 for (Object parsedObject : context.getParsedObjects()) {
                     context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
                     Object savedEntity = saveEntity(parsedObject, entityMetadata);

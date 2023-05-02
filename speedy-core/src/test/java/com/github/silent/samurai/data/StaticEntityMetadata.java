@@ -121,4 +121,9 @@ public class StaticEntityMetadata implements EntityMetadata {
     public Set<FieldMetadata> getAssociatedFields() {
         return null;
     }
+
+    @Override
+    public Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {
+        return Optional.empty();
+    }
 }

@@ -29,16 +29,12 @@ public class GetRequestContext implements ResponseReturningRequestContext {
     }
 
     public EntityMetadata getResourceMetadata() {
-        return parser.getResourceMetadata();
-    }
-
-    public String getResource() {
-        return parser.getResource();
+        return parser.getPrimaryResource().getResourceMetadata();
     }
 
     @Override
     public int getSerializationType() {
-        if (parser.isOnlyIdentifiersPresent()) {
+        if (parser.getPrimaryResource().isOnlyIdentifiersPresent()) {
             return IResponseSerializer.SINGLE_ENTITY;
         }
         return IResponseSerializer.MULTIPLE_ENTITY;
