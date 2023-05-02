@@ -22,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class SpeedyUriParserTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyUriParserTest.class);
+class SpeedyUriContextTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyUriContextTest.class);
 
     @Mock
     MetaModelProcessor metaModelProcessor;
@@ -39,7 +39,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer");
         parser.parse();
         assertEquals("Customer", parser.getPrimaryResource().getResource());
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
@@ -47,7 +47,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest_1() {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "Customer");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "Customer");
         try {
             parser.parse();
         } catch (RuntimeException e) {
@@ -59,7 +59,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest3() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer('1')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer('1')");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -69,7 +69,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest2() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer/");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer/");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -78,7 +78,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest4() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer('1')/");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer('1')/");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -88,7 +88,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest6() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(id='1')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(id='1')");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -98,7 +98,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest6_1() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(id='1', name='apple')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(id='1', name='apple')");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -109,7 +109,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest6_2() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(id='fdc0bff1-8cc6-446e-a74e-5295039a92dd')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(id='fdc0bff1-8cc6-446e-a74e-5295039a92dd')");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -119,7 +119,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest7() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(name='apple')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name='apple')");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -129,7 +129,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest7_1() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(name='apple?&*')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name='apple?&*')");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -139,7 +139,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest8() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(name='Test-01%42')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name='Test-01%42')");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -149,7 +149,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest8_1() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost < 0)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost < 0)");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -160,7 +160,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest8_2() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost <= 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost <= 25)");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -171,7 +171,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest8_3() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost == 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost == 25)");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -182,7 +182,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest8_4() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost = 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost = 25)");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -193,7 +193,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest8_5() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost > 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost > 25)");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -204,7 +204,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest8_6() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer(cost >= 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost >= 25)");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -216,7 +216,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest9() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?$format='JSON'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?$format='JSON'");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -226,7 +226,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest10() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?$format='JSON'&$metadata='true'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?$format='JSON'&$metadata='true'");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -237,7 +237,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest10_1() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?$format='JSON&'&$metadata='true'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?$format='JSON&'&$metadata='true'");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -248,7 +248,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest10_2() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?intVal='2'&doubleVal='2.0'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal='2'&doubleVal='2.0'");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -259,7 +259,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest10_3() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?intVal");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -269,7 +269,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest10_4() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?intVal=2");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal=2");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -279,7 +279,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest10_5() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?intVal=2&doubleVal='2.0'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal=2&doubleVal='2.0'");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -290,7 +290,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest11() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?orderBy='name,id'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?orderBy='name,id'");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -300,7 +300,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest11_1() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?orderBy='name'&orderBy='id'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?orderBy='name'&orderBy='id'");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
@@ -311,7 +311,7 @@ class SpeedyUriParserTest {
 
     @Test
     void processRequest11_2() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(metaModelProcessor, UriRoot + "/Customer?orderBy=['name','id']");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?orderBy=['name','id']");
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());

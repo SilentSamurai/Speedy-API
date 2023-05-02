@@ -3,7 +3,7 @@ package com.github.silent.samurai.request.delete;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class DeleteRequestContext implements ResponseReturningRequestContext {
     private final EntityManager entityManager;
     private final List<Object> objectsToBeRemoved = new LinkedList<>();
 
-    private SpeedyUriParser parser;
+    private SpeedyUriContext parser;
 
     public DeleteRequestContext(HttpServletRequest request,
                                 HttpServletResponse response, MetaModelProcessor metaModelProcessor,

@@ -2,7 +2,7 @@ package com.github.silent.samurai.request.get;
 
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.github.silent.samurai.query.QueryBuilder;
 
 import javax.persistence.Query;
@@ -19,7 +19,7 @@ public class GetDataHandler {
     }
 
     private Object getAssociationQuery() throws Exception {
-        SpeedyUriParser parser = context.getParser();
+        SpeedyUriContext parser = context.getParser();
         List<Object> resultObject = new LinkedList<>();
 
         QueryBuilder secondaryQB = new QueryBuilder(
@@ -49,7 +49,7 @@ public class GetDataHandler {
     }
 
     private Object normalQuery() throws Exception {
-        SpeedyUriParser parser = context.getParser();
+        SpeedyUriContext parser = context.getParser();
         QueryBuilder queryBuilder = new QueryBuilder(
                 parser.getPrimaryResource(),
                 context.getEntityManager());
@@ -60,7 +60,7 @@ public class GetDataHandler {
 
     public Optional<Object> process() throws Exception {
         Object requestObject;
-        SpeedyUriParser parser = context.getParser();
+        SpeedyUriContext parser = context.getParser();
         EntityMetadata entityMetadata = context.getResourceMetadata();
         if (parser.getPrimaryResource().isOnlyIdentifiersPresent()) {
             Object pk = MetadataUtil.createIdentifierFromParser(parser);

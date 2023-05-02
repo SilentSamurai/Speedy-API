@@ -26,21 +26,20 @@ public class OpenApiGenerator {
 
             PathItem basePathItem = new PathItem();
             PathItem identifierPathItem = new PathItem();
-            PathItem queryPathItem = new PathItem();
+//            PathItem queryPathItem = new PathItem();
 
             postOperation(entityMetadata, basePathItem);
             putOperation(entityMetadata, identifierPathItem);
             deleteOperation(entityMetadata, basePathItem);
             getWithPrimaryFields(entityMetadata, identifierPathItem);
-
             getOperation(entityMetadata, basePathItem);
-            getWithFieldQuery(entityMetadata, queryPathItem);
+//            getWithFieldQuery(entityMetadata, queryPathItem);
 
 
             createSchemas(entityMetadata, openApi);
 
             openApi.path(getBasePath(entityMetadata), basePathItem);
-            openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
+//            openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
         }
     }
@@ -85,6 +84,22 @@ public class OpenApiGenerator {
                 true
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata), updateSchema);
+
+        Schema aSchema = new Schema();
+        for (FieldMetadata associatedField : entityMetadata.getAssociatedFields()) {
+            EntityMetadata associationMetadata = associatedField.getAssociationMetadata();
+            aSchema.addProperty(associationMetadata.getName(), OASGenerator.basicSchema(String.class));
+        }
+
+        Schema schema = new Schema()
+                .addProperty("where", OASGenerator.basicSchema(String.class))
+                .addProperty("join", aSchema)
+                .addProperty("pageSize", OASGenerator.basicSchema(Integer.class))
+                .addProperty("pageIndex", OASGenerator.basicSchema(Integer.class))
+                .addProperty("orderBy", OASGenerator.wrapInArray(OASGenerator.basicSchema(String.class)))
+                .addProperty("orderByDesc", OASGenerator.wrapInArray(OASGenerator.basicSchema(String.class)));
+
+        openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.GET_REQUEST_NAME, entityMetadata), schema);
     }
 
     private void postOperation(EntityMetadata entityMetadata, PathItem pathItem) {
@@ -149,7 +164,6 @@ public class OpenApiGenerator {
     }
 
 
-
     private void getWithPrimaryFields(EntityMetadata entityMetadata, PathItem identifierPathItem) {
         Operation operation = new Operation();
         operation.operationId("Get" + entityMetadata.getName());
@@ -204,13 +218,17 @@ public class OpenApiGenerator {
 
     private void getOperation(EntityMetadata entityMetadata, PathItem pathItem) {
         Operation operation = new Operation();
-        operation.operationId("GetAll" + entityMetadata.getName());
-        operation.summary("Get all " + entityMetadata.getName());
+        operation.operationId("GetSome" + entityMetadata.getName());
+        operation.summary("Filter " + entityMetadata.getName());
         operation.tags(Lists.newArrayList(entityMetadata.getName()));
-        OASGenerator.addPagingAndOrderingInfo(operation);
+        operation.requestBody(OASGenerator.getJsonBody(
+                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.GET_REQUEST_NAME, entityMetadata))
+        ).description("Fields needed for filtering"));
+
+//        OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
-                OASGenerator.getSchemaName("All{0}Response", entityMetadata),
+                OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata))
                 )
@@ -242,9 +260,9 @@ public class OpenApiGenerator {
             KeyFieldMetadata keyField = iterator.next();
             sb.append(keyField.getOutputPropertyName())
                     .append("=")
-                    .append("'{")
+                    .append("\"{")
                     .append(keyField.getOutputPropertyName())
-                    .append("}'");
+                    .append("}\"");
             if (iterator.hasNext()) {
                 sb.append(",");
             }

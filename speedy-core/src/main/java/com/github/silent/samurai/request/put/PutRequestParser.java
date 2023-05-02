@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,7 @@ public class PutRequestParser {
     }
 
     public void process() throws Exception {
-        SpeedyUriParser parser = new SpeedyUriParser(context.getMetaModelProcessor(), context.getRequestURI());
+        SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
         parser.parse();
         context.setParser(parser);
 

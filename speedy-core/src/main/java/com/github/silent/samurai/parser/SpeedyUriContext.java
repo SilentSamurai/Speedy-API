@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class SpeedyUriParser {
+public class SpeedyUriContext {
 
     private final MetaModelProcessor metaModelProcessor;
     private final String requestURI;
@@ -27,6 +27,11 @@ public class SpeedyUriParser {
     private String fragment;
     private ResourceSelector primaryResource;
     private ResourceSelector secondaryResource;
+
+    public SpeedyUriContext(MetaModelProcessor metaModelProcessor, String requestURI) {
+        this.metaModelProcessor = metaModelProcessor;
+        this.requestURI = requestURI;
+    }
 
     public ResourceSelector getPrimaryResource() {
         return primaryResource;
@@ -40,9 +45,8 @@ public class SpeedyUriParser {
         return secondaryResource != null;
     }
 
-    public SpeedyUriParser(MetaModelProcessor metaModelProcessor, String requestURI) {
-        this.metaModelProcessor = metaModelProcessor;
-        this.requestURI = requestURI;
+    public MultiValueMap<String, String> getRawQuery() {
+        return rawQuery;
     }
 
     public boolean hasQuery(String queryName) {

@@ -4,7 +4,7 @@ import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Data;
 
@@ -21,7 +21,7 @@ public class PutRequestContext implements ResponseReturningRequestContext {
     private final EntityManager entityManager;
     private final ValidationProcessor validationProcessor;
 
-    private SpeedyUriParser parser;
+    private SpeedyUriContext parser;
     private Object entityInstance;
 
     public PutRequestContext(HttpServletRequest request,

@@ -124,5 +124,18 @@ class SpeedyGetTest {
                 .andReturn();
     }
 
+    @Test
+    void getAssociation() throws Exception {
+
+        mvc.perform(get(SpeedyConstant.URI + "/Product/Category('1')")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(2)))
+                .andReturn();
+    }
+
 
 }

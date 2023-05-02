@@ -4,7 +4,7 @@ import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import lombok.Data;
 
 import javax.persistence.EntityManager;
@@ -19,7 +19,7 @@ public class GetRequestContext implements ResponseReturningRequestContext {
     private final MetaModelProcessor metaModelProcessor;
     private final EntityManager entityManager;
 
-    private SpeedyUriParser parser;
+    private SpeedyUriContext parser;
 
     public GetRequestContext(HttpServletRequest request, HttpServletResponse response, MetaModelProcessor metaModelProcessor, EntityManager entityManager) {
         this.request = request;

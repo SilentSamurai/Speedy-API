@@ -7,7 +7,7 @@ import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,9 +95,9 @@ class MetadataUtilTest {
     void createEntityKeyFromMap() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
         Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
-        SpeedyUriParser speedyUriParser = new SpeedyUriParser(metaModelProcessor, "/Category(id='1234')");
-        speedyUriParser.parse();
-        Object primaryKey = MetadataUtil.createIdentifierFromParser(speedyUriParser);
+        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(id='1234')");
+        speedyUriContext.parse();
+        Object primaryKey = MetadataUtil.createIdentifierFromParser(speedyUriContext);
         assertEquals("1234", primaryKey);
     }
 
@@ -105,9 +105,9 @@ class MetadataUtilTest {
     void createEntityKeyFromMap1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
         Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
-        SpeedyUriParser speedyUriParser = new SpeedyUriParser(metaModelProcessor, "/Category(id='1234', name='na')");
-        speedyUriParser.parse();
-        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.createIdentifierFromParser(speedyUriParser);
+        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(id='1234', name='na')");
+        speedyUriContext.parse();
+        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.createIdentifierFromParser(speedyUriContext);
         assertEquals("1234", primaryKey.getId());
         assertEquals("na", primaryKey.getName());
     }
@@ -118,9 +118,9 @@ class MetadataUtilTest {
                 () -> {
                     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
                     Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
-                    SpeedyUriParser speedyUriParser = new SpeedyUriParser(metaModelProcessor, "/Category(name='1234')");
-                    speedyUriParser.parse();
-                    MetadataUtil.createIdentifierFromParser(speedyUriParser);
+                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(name='1234')");
+                    speedyUriContext.parse();
+                    MetadataUtil.createIdentifierFromParser(speedyUriContext);
                 }
         );
     }
@@ -131,9 +131,9 @@ class MetadataUtilTest {
                 () -> {
                     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
                     Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
-                    SpeedyUriParser speedyUriParser = new SpeedyUriParser(metaModelProcessor, "/Category(name='na')");
-                    speedyUriParser.parse();
-                    MetadataUtil.createIdentifierFromParser(speedyUriParser);
+                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(name='na')");
+                    speedyUriContext.parse();
+                    MetadataUtil.createIdentifierFromParser(speedyUriContext);
                 }
         );
     }

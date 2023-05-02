@@ -3,7 +3,7 @@ package com.github.silent.samurai.request.post;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Data;
 
@@ -23,7 +23,7 @@ public class PostRequestContext implements ResponseReturningRequestContext {
     private final ValidationProcessor validationProcessor;
     private final List<Object> parsedObjects = new LinkedList<>();
 
-    private SpeedyUriParser parser;
+    private SpeedyUriContext parser;
 
     public PostRequestContext(HttpServletRequest request,
                               HttpServletResponse response,

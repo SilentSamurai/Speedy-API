@@ -26,6 +26,7 @@ public class OASGenerator {
     public static final String ENTITY_KEY = "{0}Key";
     public static final String CREATE_REQUEST_NAME = "Create{0}Request";
     public static final String UPDATE_REQUEST_NAME = "Update{0}Request";
+    public static final String GET_REQUEST_NAME = "Get{0}Request";
 
 
     private static final Map<Class<?>, Schema<?>> PRIMITIVE_TYPE_TO_SCHEMA_MAP = new HashMap<>();

@@ -8,7 +8,7 @@ import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.models.Operator;
 import com.github.silent.samurai.models.conditions.Condition;
 import com.github.silent.samurai.parser.ResourceSelector;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -82,7 +82,7 @@ public class QueryBuilder {
     }
 
 
-    private void addToOrderList(SpeedyUriParser parser,
+    private void addToOrderList(SpeedyUriContext parser,
                                 List<Order> orderList,
                                 String queryName,
                                 boolean isDesc) throws Exception {
@@ -96,6 +96,9 @@ public class QueryBuilder {
                     .flatMap(qry -> Arrays.stream(qry.split(",")))
                     .forEach(withoutComma::add);
             for (String orderBy : withoutComma) {
+                if (!this.entityMetadata.has(orderBy)) {
+                    throw new BadRequestException(orderBy + " field not found");
+                }
                 if (isDesc) {
                     orderList.add(criteriaBuilder.desc(tableRoot.get(orderBy)));
                 } else {
@@ -105,14 +108,14 @@ public class QueryBuilder {
         }
     }
 
-    private void addOrderBy(SpeedyUriParser parser) throws Exception {
+    private void addOrderBy(SpeedyUriContext parser) throws Exception {
         List<Order> orderList = new LinkedList<>();
         addToOrderList(parser, orderList, "orderBy", false);
         addToOrderList(parser, orderList, "orderByDesc", true);
         query.orderBy(orderList);
     }
 
-    private TypedQuery<?> addPageInfo(SpeedyUriParser parser) throws BadRequestException {
+    private TypedQuery<?> addPageInfo(SpeedyUriContext parser) throws BadRequestException {
         TypedQuery<?> paggedQuery = entityManager.createQuery(query);
         int pageSize = parser.getQueryOrDefault("pageSize", Integer.class, SpeedyConstant.defaultPageSize);
         int pageNumber = parser.getQueryOrDefault("pageNo", Integer.class, 0);
@@ -121,7 +124,7 @@ public class QueryBuilder {
         return paggedQuery;
     }
 
-    public Query getQuery(SpeedyUriParser parser) throws Exception {
+    public Query getQuery(SpeedyUriContext parser) throws Exception {
         if (previousWherePredicate != null) {
             query.where(previousWherePredicate);
         }

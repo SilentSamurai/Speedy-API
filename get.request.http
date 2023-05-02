@@ -3,42 +3,18 @@ Accept: application/json
 Content-Type: application/json
 
 {
-    "where": [
-        {
-            "operator": "=",
-            "field": "NAME",
-            "value": "Piyush"
-        },
-        {
-            "operator": "in",
-            "field": "ROLL",
-            "value": [
-                13
-            ]
-        },
-        {
-            "operator": "OR",
-            "conditions": [
-                {
-                    "operator": "equal",
-                    "field": "A",
-                    "value": 5
-                },
-                {
-                    "operator": "equal",
-                    "field": "A",
-                    "value": 10
-                }
-            ]
-        },
-        {
-            "operator": "dateBetween",
-            "field": "BIRTH",
-            "value": {
-                "start": "Date('')",
-                "end": "Date('')"
-            }
-        }
+    "where": " id = 'ABCD' ",
+    "join": {
+        "Category": " id = 'ABCD' "
+    },
+    "pageSize": 25,
+    "pageIndex": 0,
+    "orderBy": [
+        "name",
+        "date"
+    ],
+    "orderByDesc": [
+        "Happy"
     ]
 }
 

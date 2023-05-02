@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.InventoryApi;
 import org.openapitools.client.api.ProductApi;
-import org.openapitools.client.model.FilteredInventoryResponse;
-import org.openapitools.client.model.FilteredProductResponse;
-import org.openapitools.client.model.LightInventory;
-import org.openapitools.client.model.LightProduct;
+import org.openapitools.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +53,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost<50)", "", null, null, null, null);
+        GetInventoryRequest getInventoryRequest = new GetInventoryRequest();
+        getInventoryRequest.setWhere("cost<50");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(getInventoryRequest);
 
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -73,7 +73,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <= 75)", "", null, null, null, null);
+        GetInventoryRequest getInventoryRequest = new GetInventoryRequest();
+        getInventoryRequest.setWhere("cost <= 75");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(getInventoryRequest);
 
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -90,7 +93,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost > 75)", "", null, null, null, null);
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost > 75");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
 
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -107,7 +113,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost >= 75)", "", null, null, null, null);
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost >= 75");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
 
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -124,7 +133,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost != 75)", "", null, null, null, null);
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost != 75");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
 
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -139,7 +151,11 @@ class SpeedyGetConditionTest {
     @Test
     void equals() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost = 75)", "", null, null, null, null);
+
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost = 75");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
@@ -152,7 +168,11 @@ class SpeedyGetConditionTest {
     @Test
     void multiple1() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost < 75 & cost >= 25)", "", null, null, null, null);
+
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost < 75 & cost >= 25");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
@@ -165,7 +185,11 @@ class SpeedyGetConditionTest {
     @Test
     void multiple2() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost < 25 | cost > 75)", "", null, null, null, null);
+
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost < 25 | cost > 75");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
@@ -178,7 +202,11 @@ class SpeedyGetConditionTest {
     @Test
     void multiple3() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost > 75 & cost < 25 | cost > 45 & cost < 60 )", "", null, null, null, null);
+
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost > 75 & cost < 25 | cost > 45 & cost < 60 ");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
@@ -193,7 +221,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <> [ 25, 50, 75])", "", null, null, null, null);
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost <> [ 25, 50, 75]");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
 
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -211,7 +242,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <!> [ 25, 50, 75])", "", null, null, null, null);
+        GetInventoryRequest inventoryRequest = new GetInventoryRequest();
+        inventoryRequest.setWhere("cost <!> [ 25, 50, 75]");
+
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(inventoryRequest);
 
         List<LightInventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -228,8 +262,10 @@ class SpeedyGetConditionTest {
     @Test
     void associationTest() throws Exception {
 
+        GetProductRequest productRequest = new GetProductRequest();
+        productRequest.join(new GetProductRequestJoin().category("id='1'"));
 
-        FilteredProductResponse someInventory = productApi.getSomeProduct("", "Category(id='1')", null, null, null, null);
+        FilteredProductResponse someInventory = productApi.getSomeProduct(productRequest);
 
         List<LightProduct> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -243,7 +279,11 @@ class SpeedyGetConditionTest {
     @Test
     void association1Test() throws Exception {
 
-        FilteredProductResponse someInventory = productApi.getSomeProduct("(name='Product 1')", "Category(id='1')", null, null, null, null);
+        GetProductRequest productRequest = new GetProductRequest();
+        productRequest.where("name='Product 1'");
+        productRequest.join(new GetProductRequestJoin().category("id='1'"));
+
+        FilteredProductResponse someInventory = productApi.getSomeProduct(productRequest);
 
         List<LightProduct> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);

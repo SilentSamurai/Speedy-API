@@ -5,7 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.InventoryApi;
-import org.openapitools.client.model.AllInventoryResponse;
+import org.openapitools.client.model.FilteredInventoryResponse;
+import org.openapitools.client.model.GetInventoryRequest;
 import org.openapitools.client.model.LightInventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +47,9 @@ class SpeedyGetFormulaFieldTest {
     @Test
     void getViaPrimaryKey() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-        AllInventoryResponse allInventory = inventoryApi.getAllInventory(null, null, null, null);
-        List<LightInventory> payload = allInventory.getPayload();
+        GetInventoryRequest getInventoryRequest = new GetInventoryRequest();
+        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory(getInventoryRequest);
+        List<LightInventory> payload = someInventory.getPayload();
         LightInventory inventory = payload.get(0);
         Assertions.assertNotNull(inventory.getProfit());
     }

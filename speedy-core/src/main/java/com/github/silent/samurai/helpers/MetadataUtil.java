@@ -6,7 +6,7 @@ import com.github.silent.samurai.deserializer.JsonIdentityDeserializer;
 import com.github.silent.samurai.deserializer.ParserIdentityDeserializer;
 import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.parser.SpeedyUriParser;
+import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.google.common.collect.Sets;
 
 import javax.persistence.EntityManager;
@@ -27,7 +27,7 @@ public class MetadataUtil {
         return false;
     }
 
-    public static Object createIdentifierFromParser(SpeedyUriParser parser) throws Exception {
+    public static Object createIdentifierFromParser(SpeedyUriContext parser) throws Exception {
         try {
             ParserIdentityDeserializer deserializer = new ParserIdentityDeserializer(parser.getPrimaryResource());
             return deserializer.deserialize();
