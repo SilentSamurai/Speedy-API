@@ -28,6 +28,7 @@ public class JpaFieldMetadata implements FieldMetadata {
     private boolean isUpdatable;
     private boolean isUnique;
     private boolean isNullable;
+    private boolean isRequired;
     private boolean isSerializable;
     private boolean isDeserializable;
     private EntityMetadata associationMetadata;

@@ -111,7 +111,7 @@ public class OASGenerator {
             if (predicate.test(fieldMetadata)) {
                 Schema fieldSchema = createFieldSchema(fieldMetadata, associationFormat);
                 schema.addProperty(fieldMetadata.getOutputPropertyName(), fieldSchema);
-                if (isRequest && !fieldMetadata.isNullable()) {
+                if (isRequest && fieldMetadata.isRequired()) {
                     required.add(fieldMetadata.getOutputPropertyName());
                 }
             }

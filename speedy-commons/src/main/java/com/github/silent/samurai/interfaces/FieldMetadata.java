@@ -18,6 +18,8 @@ public interface FieldMetadata {
 
     boolean isNullable();
 
+    boolean isRequired();
+
     boolean isSerializable();
 
     boolean isDeserializable();

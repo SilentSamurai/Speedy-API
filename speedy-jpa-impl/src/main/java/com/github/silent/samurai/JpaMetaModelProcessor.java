@@ -68,6 +68,9 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         fieldMetadata.setUnique(false);
         fieldMetadata.setUpdatable(true);
         fieldMetadata.setNullable(false);
+        fieldMetadata.setRequired(false);
+        fieldMetadata.setSerializable(true);
+        fieldMetadata.setDeserializable(true);
 
         Column columnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Column.class);
         if (columnAnnotation != null) {
@@ -76,6 +79,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             fieldMetadata.setUnique(columnAnnotation.unique());
             fieldMetadata.setUpdatable(columnAnnotation.updatable());
             fieldMetadata.setNullable(columnAnnotation.nullable());
+
         }
 
         JoinColumn joinColumnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JoinColumn.class);
@@ -92,6 +96,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             fieldMetadata.setInsertable(false);
             fieldMetadata.setUpdatable(false);
             fieldMetadata.setNullable(false);
+            fieldMetadata.setDeserializable(false);
         }
 
         Formula formulaAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Formula.class);
@@ -99,10 +104,9 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             fieldMetadata.setInsertable(false);
             fieldMetadata.setUpdatable(false);
             fieldMetadata.setNullable(false);
+            fieldMetadata.setNullable(false);
+            fieldMetadata.setDeserializable(false);
         }
-
-        fieldMetadata.setSerializable(true);
-        fieldMetadata.setDeserializable(true);
 
         JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JsonProperty.class);
         fieldMetadata.setOutputPropertyName(fieldMetadata.getClassFieldName());
@@ -131,6 +135,10 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
                     break;
             }
             fieldMetadata.setIgnoreType(speedyIgnore.value());
+        }
+
+        if (!fieldMetadata.isNullable() && fieldMetadata.isDeserializable()) {
+            fieldMetadata.setRequired(true);
         }
 
         // MZ: Find the correct method

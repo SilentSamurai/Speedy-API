@@ -58,6 +58,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     }
 
     @Override
+    public boolean isRequired() {
+        return false;
+    }
+
+    @Override
     public boolean isSerializable() {
         return true;
     }
