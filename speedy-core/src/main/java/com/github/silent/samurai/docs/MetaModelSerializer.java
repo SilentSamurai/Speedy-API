@@ -50,6 +50,13 @@ public class MetaModelSerializer {
         fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
         fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
         fieldMetadataJson.put("fieldType", fieldMetadata.getFieldType().getName());
+        fieldMetadataJson.put("isNullable", fieldMetadata.isNullable());
+        fieldMetadataJson.put("isAssociation", fieldMetadata.isAssociation());
+        fieldMetadataJson.put("isCollection", fieldMetadata.isCollection());
+        fieldMetadataJson.put("isSerializable", fieldMetadata.isSerializable());
+        fieldMetadataJson.put("isDeserializable", fieldMetadata.isDeserializable());
+        fieldMetadataJson.put("isUnique", fieldMetadata.isUnique());
+
         return fieldMetadataJson;
     }
 

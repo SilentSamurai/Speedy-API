@@ -15,10 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import javax.persistence.Column;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.GeneratedValue;
-import javax.persistence.IdClass;
+import javax.persistence.*;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.SingularAttribute;
@@ -79,6 +76,15 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
             fieldMetadata.setUnique(columnAnnotation.unique());
             fieldMetadata.setUpdatable(columnAnnotation.updatable());
             fieldMetadata.setNullable(columnAnnotation.nullable());
+        }
+
+        JoinColumn joinColumnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JoinColumn.class);
+        if (joinColumnAnnotation != null) {
+            fieldMetadata.setDbColumnName(joinColumnAnnotation.name());
+            fieldMetadata.setInsertable(joinColumnAnnotation.insertable());
+            fieldMetadata.setUnique(joinColumnAnnotation.unique());
+            fieldMetadata.setUpdatable(joinColumnAnnotation.updatable());
+            fieldMetadata.setNullable(joinColumnAnnotation.nullable());
         }
 
         GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), GeneratedValue.class);

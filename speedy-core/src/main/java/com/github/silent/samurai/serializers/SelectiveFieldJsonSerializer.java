@@ -38,26 +38,34 @@ public class SelectiveFieldJsonSerializer {
                         if (serializedType == IResponseSerializer.SINGLE_ENTITY) {
                             // performance optimization as retrieving value can execute sql
                             Object value = fieldMetadata.getEntityFieldValue(entityObject);
-                            ArrayNode childArray = formCollection((Collection<?>) value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
-                            jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
+                            if (value != null) {
+                                ArrayNode childArray = formCollection((Collection<?>) value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
+                                jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
+                            }
                         }
                     } else {
                         // performance optimization as retrieving value can execute sql
                         Object value = fieldMetadata.getEntityFieldValue(entityObject);
-                        ObjectNode childObject = fromObject(value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
-                        jsonObject.set(fieldMetadata.getClassFieldName(), childObject);
+                        if (value != null) {
+                            ObjectNode childObject = fromObject(value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
+                            jsonObject.set(fieldMetadata.getClassFieldName(), childObject);
+                        }
                     }
                 }
             } else if (fieldMetadata.isCollection() && !fieldMetadata.isAssociation()) {
                 // performance optimization as retrieving value can execute sql
                 Object value = fieldMetadata.getEntityFieldValue(entityObject);
-                ArrayNode jsonArray = formCollectionOfBasics((Collection<?>) value);
-                jsonObject.set(fieldMetadata.getClassFieldName(), jsonArray);
+                if (value != null) {
+                    ArrayNode jsonArray = formCollectionOfBasics((Collection<?>) value);
+                    jsonObject.set(fieldMetadata.getClassFieldName(), jsonArray);
+                }
             } else {
                 // performance optimization as retrieving value can execute sql
                 Object value = fieldMetadata.getEntityFieldValue(entityObject);
-                JsonNode jsonElement = json.valueToTree(value);
-                jsonObject.set(fieldMetadata.getOutputPropertyName(), jsonElement);
+                if (value != null) {
+                    JsonNode jsonElement = json.valueToTree(value);
+                    jsonObject.set(fieldMetadata.getOutputPropertyName(), jsonElement);
+                }
             }
         }
         return jsonObject;
