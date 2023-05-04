@@ -44,9 +44,9 @@ public class JSONSerializer implements IResponseSerializer {
         SelectiveFieldJsonSerializer selectiveFieldJsonSerializer = new SelectiveFieldJsonSerializer(context.getMetaModelProcessor(), fieldPredicate);
         if (context.getSerializationType() == IResponseSerializer.MULTIPLE_ENTITY) {
             List<?> resultList = (List<?>) requestedPayload.getPayload();
-            jsonElement = selectiveFieldJsonSerializer.formCollection(resultList, context.getSerializationType());
+            jsonElement = selectiveFieldJsonSerializer.formCollection(resultList, context.getEntityMetadata(), context.getSerializationType(), 0);
         } else {
-            jsonElement = selectiveFieldJsonSerializer.fromObject(requestedPayload.getPayload(), requestedPayload.getPayload().getClass(), context.getSerializationType());
+            jsonElement = selectiveFieldJsonSerializer.fromObject(requestedPayload.getPayload(), context.getEntityMetadata(), context.getSerializationType(), 0);
         }
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();

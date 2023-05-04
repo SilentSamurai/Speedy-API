@@ -61,7 +61,7 @@ public class GetDataHandler {
     public Optional<Object> process() throws Exception {
         Object requestObject;
         SpeedyUriContext parser = context.getParser();
-        EntityMetadata entityMetadata = context.getResourceMetadata();
+        EntityMetadata entityMetadata = context.getEntityMetadata();
         if (parser.getPrimaryResource().isOnlyIdentifiersPresent()) {
             Object pk = MetadataUtil.createIdentifierFromParser(parser);
             requestObject = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);

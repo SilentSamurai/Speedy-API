@@ -19,7 +19,6 @@ public class SelectiveFieldJsonSerializer {
 
     private final MetaModelProcessor metaModelProcessor;
     private final Predicate<FieldMetadata> fieldPredicate;
-    private int level = 0;
     private static final ObjectMapper json = CommonUtil.json();
 
     public SelectiveFieldJsonSerializer(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
@@ -27,27 +26,36 @@ public class SelectiveFieldJsonSerializer {
         this.fieldPredicate = fieldPredicate;
     }
 
-    public ObjectNode fromObject(Object entityObject, Class<?> clazz, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ObjectNode fromObject(Object entityObject, EntityMetadata entityMetadata, int serializedType, int level) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ObjectNode jsonObject = json.createObjectNode();
-        EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(clazz.getSimpleName());
-        level++;
+
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
-            Object value = fieldMetadata.getEntityFieldValue(entityObject);
+
             if (fieldMetadata.isAssociation()) {
-                if (serializedType == IResponseSerializer.SINGLE_ENTITY && level < 2) {
+                if (level < 1) {
                     if (fieldMetadata.isCollection()) {
-                        ArrayNode childArray = formCollection((Collection<?>) value, serializedType);
-                        jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
+                        if (serializedType == IResponseSerializer.SINGLE_ENTITY) {
+                            // performance optimization as retrieving value can execute sql
+                            Object value = fieldMetadata.getEntityFieldValue(entityObject);
+                            ArrayNode childArray = formCollection((Collection<?>) value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
+                            jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
+                        }
                     } else {
-                        ObjectNode childObject = fromObject(value, value.getClass(), serializedType);
+                        // performance optimization as retrieving value can execute sql
+                        Object value = fieldMetadata.getEntityFieldValue(entityObject);
+                        ObjectNode childObject = fromObject(value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
                         jsonObject.set(fieldMetadata.getClassFieldName(), childObject);
                     }
                 }
-            } else if (fieldMetadata.isCollection()) {
-                ArrayNode jsonArray = formCollection((Collection<?>) value, serializedType);
+            } else if (fieldMetadata.isCollection() && !fieldMetadata.isAssociation()) {
+                // performance optimization as retrieving value can execute sql
+                Object value = fieldMetadata.getEntityFieldValue(entityObject);
+                ArrayNode jsonArray = formCollectionOfBasics((Collection<?>) value);
                 jsonObject.set(fieldMetadata.getClassFieldName(), jsonArray);
             } else {
+                // performance optimization as retrieving value can execute sql
+                Object value = fieldMetadata.getEntityFieldValue(entityObject);
                 JsonNode jsonElement = json.valueToTree(value);
                 jsonObject.set(fieldMetadata.getOutputPropertyName(), jsonElement);
             }
@@ -55,10 +63,19 @@ public class SelectiveFieldJsonSerializer {
         return jsonObject;
     }
 
-    public ArrayNode formCollection(Collection<?> collection, int serializedType) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ArrayNode formCollectionOfBasics(Collection<?> collection) {
+        ArrayNode jsonArray = json.createArrayNode();
+        for (Object value : collection) {
+            JsonNode jsonElement = json.valueToTree(value);
+            jsonArray.add(jsonElement);
+        }
+        return jsonArray;
+    }
+
+    public ArrayNode formCollection(Collection<?> collection, EntityMetadata entityMetadata, int serializedType, int level) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
         for (Object object : collection) {
-            JsonNode jsonObject = fromObject(object, object.getClass(), serializedType);
+            JsonNode jsonObject = fromObject(object, entityMetadata, serializedType, level);
             jsonArray.add(jsonObject);
         }
         return jsonArray;

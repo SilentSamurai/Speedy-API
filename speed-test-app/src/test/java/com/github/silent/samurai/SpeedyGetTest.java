@@ -137,5 +137,20 @@ class SpeedyGetTest {
                 .andReturn();
     }
 
+    @Test
+    void getviadoublequotes() throws Exception {
+
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + "/Category(id=\"1\")")
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mvc.perform(getRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload.name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload.name").value("cat-1-1"))
+                .andReturn();
+    }
+
 
 }

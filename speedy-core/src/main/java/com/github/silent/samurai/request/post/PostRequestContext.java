@@ -1,5 +1,6 @@
 package com.github.silent.samurai.request.post;
 
+import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
@@ -40,5 +41,10 @@ public class PostRequestContext implements ResponseReturningRequestContext {
     @Override
     public int getSerializationType() {
         return IResponseSerializer.MULTIPLE_ENTITY;
+    }
+
+    @Override
+    public EntityMetadata getEntityMetadata() {
+        return parser.getPrimaryResource().getResourceMetadata();
     }
 }

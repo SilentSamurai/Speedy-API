@@ -47,8 +47,8 @@ public class OpenApiGenerator {
     private void createSchemas(EntityMetadata entityMetadata, OpenAPI openAPI) {
         Schema<String> getSchema = OASGenerator.createEntitySchema(
                 entityMetadata,
-                fm -> fm.isSerializable() && !fm.isAssociation(),
-                "",
+                fm -> fm.isSerializable() && ((fm.isCollection() && !fm.isAssociation()) || !fm.isCollection()),
+                OASGenerator.LIGHT_ENTITY_NAME,
                 false
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata), getSchema);

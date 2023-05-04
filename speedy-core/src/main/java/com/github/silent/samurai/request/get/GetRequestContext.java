@@ -28,7 +28,7 @@ public class GetRequestContext implements ResponseReturningRequestContext {
         this.entityManager = entityManager;
     }
 
-    public EntityMetadata getResourceMetadata() {
+    public EntityMetadata getEntityMetadata() {
         return parser.getPrimaryResource().getResourceMetadata();
     }
 

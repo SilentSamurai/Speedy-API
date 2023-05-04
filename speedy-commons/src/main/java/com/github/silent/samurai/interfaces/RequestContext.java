@@ -13,6 +13,8 @@ public interface RequestContext {
 
     EntityManager getEntityManager();
 
+    EntityMetadata getEntityMetadata();
+
     default String getRequestURI() throws UnsupportedEncodingException {
         String requestURI = URLDecoder.decode(getRequest().getRequestURI(), StandardCharsets.UTF_8.name());
         if (getRequest().getQueryString() != null) {

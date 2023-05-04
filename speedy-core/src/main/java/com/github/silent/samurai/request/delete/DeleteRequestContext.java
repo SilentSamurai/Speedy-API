@@ -1,5 +1,6 @@
 package com.github.silent.samurai.request.delete;
 
+import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.IResponseSerializer;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
@@ -39,5 +40,10 @@ public class DeleteRequestContext implements ResponseReturningRequestContext {
     @Override
     public int getSerializationType() {
         return IResponseSerializer.MULTIPLE_ENTITY;
+    }
+
+    @Override
+    public EntityMetadata getEntityMetadata() {
+        return parser.getPrimaryResource().getResourceMetadata();
     }
 }
