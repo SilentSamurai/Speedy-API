@@ -1,20 +1,15 @@
-GET http://localhost:8080/speedy/v1.0/Category/
+GET http://localhost:8080/speedy/v1/Procurement
 Accept: application/json
 Content-Type: application/json
 
 {
-    "where": " id = 'ABCD' ",
-    "join": {
-        "Category": " id = 'ABCD' "
-    },
+    "where": " purchaseDate < '2022-01-01T00:00:00Z' ",
+    "join": {},
     "pageSize": 25,
     "pageIndex": 0,
     "orderBy": [
-        "name",
-        "date"
     ],
     "orderByDesc": [
-        "Happy"
     ]
 }
 
@@ -23,6 +18,10 @@ GET http://localhost:80/speedy/v1.0/Category/
 Content-Type: application/json
 
 {
+    "select": [
+        "name",
+        "createdBy"
+    ],
     "aggregation": [
         {
             "fn": "count",

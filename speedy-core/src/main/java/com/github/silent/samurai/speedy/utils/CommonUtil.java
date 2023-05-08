@@ -6,18 +6,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.silent.samurai.exceptions.BadRequestException;
+import com.github.silent.samurai.serializers.basic.BasicDeserializer;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -121,40 +116,7 @@ public class CommonUtil {
     }
 
     public static Object stringToBasic(String value, Class<?> targetType) throws Exception {
-        if (targetType == int.class || targetType == Integer.class) {
-            return Integer.parseInt(value);
-        } else if (targetType == long.class || targetType == Long.class) {
-            return Long.parseLong(value);
-        } else if (targetType == float.class || targetType == Float.class) {
-            return Float.parseFloat(value);
-        } else if (targetType == double.class || targetType == Double.class) {
-            return Double.parseDouble(value);
-        } else if (targetType == boolean.class || targetType == Boolean.class) {
-            return Boolean.parseBoolean(value);
-        } else if (targetType == byte.class || targetType == Byte.class) {
-            return Byte.parseByte(value);
-        } else if (targetType == short.class || targetType == Short.class) {
-            return Short.parseShort(value);
-        } else if (targetType == Date.class) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
-            return dateFormat.parse(value);
-        } else if (targetType == Instant.class) {
-            return Instant.parse(value);
-        } else if (targetType == LocalDate.class) {
-            LocalDateTime datetime = LocalDateTime.parse(value);
-            return datetime.toLocalDate();
-        } else if (targetType == LocalDateTime.class) {
-            return LocalDateTime.parse(value);
-        } else if (targetType == Timestamp.class) {
-            return Timestamp.valueOf(value);
-        } else if (targetType == char.class || targetType == Character.class) {
-            if (value.length() > 0) {
-                return value.charAt(0);
-            }
-        } else if (targetType == String.class) {
-            return value;
-        }
-        return null;
+        return BasicDeserializer.deserialize(value, targetType);
     }
 
     public static List<String> inQuotesSplitter(String input, String regex) {
