@@ -11,7 +11,13 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -114,7 +120,7 @@ public class CommonUtil {
         return null;
     }
 
-    public static Object stringToBasic(String value, Class<?> targetType) {
+    public static Object stringToBasic(String value, Class<?> targetType) throws Exception {
         if (targetType == int.class || targetType == Integer.class) {
             return Integer.parseInt(value);
         } else if (targetType == long.class || targetType == Long.class) {
@@ -129,6 +135,18 @@ public class CommonUtil {
             return Byte.parseByte(value);
         } else if (targetType == short.class || targetType == Short.class) {
             return Short.parseShort(value);
+        } else if (targetType == Date.class) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+            return dateFormat.parse(value);
+        } else if (targetType == Instant.class) {
+            return Instant.parse(value);
+        } else if (targetType == LocalDate.class) {
+            LocalDateTime datetime = LocalDateTime.parse(value);
+            return datetime.toLocalDate();
+        } else if (targetType == LocalDateTime.class) {
+            return LocalDateTime.parse(value);
+        } else if (targetType == Timestamp.class) {
+            return Timestamp.valueOf(value);
         } else if (targetType == char.class || targetType == Character.class) {
             if (value.length() > 0) {
                 return value.charAt(0);

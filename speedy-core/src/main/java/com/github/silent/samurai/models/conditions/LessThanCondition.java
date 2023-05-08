@@ -32,6 +32,6 @@ public class LessThanCondition implements BinarySVCondition {
         FieldMetadata fieldMetadata = entityMetadata.field(field);
         String name = fieldMetadata.getClassFieldName();
         Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        return criteriaBuilder.lt(tableRoot.get(name), (Number) instance);
+        return criteriaBuilder.lessThan(tableRoot.get(name), (Comparable) instance);
     }
 }

@@ -73,5 +73,5 @@ fragment SINGLEQUOTE: '\'';
 fragment DOUBLEQUOTE: '"';
 fragment NUMBER : [0-9];
 fragment CHAR: [a-zA-Z_0-9$];
-fragment EXCHAR: [a-zA-Z_0-9+-.*$%?& ];
+fragment EXCHAR: [a-zA-Z_0-9+-.*$%?& :];
 WS: [ \n\t\r]+ -> skip;

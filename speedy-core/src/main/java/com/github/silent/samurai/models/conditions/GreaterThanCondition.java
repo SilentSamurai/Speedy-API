@@ -1,7 +1,6 @@
 package com.github.silent.samurai.models.conditions;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.models.Operator;
@@ -9,6 +8,7 @@ import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Data;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
@@ -35,9 +35,7 @@ public class GreaterThanCondition implements BinarySVCondition {
         FieldMetadata fieldMetadata = entityMetadata.field(field);
         String name = fieldMetadata.getClassFieldName();
         Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        if (instance instanceof Number) {
-            return criteriaBuilder.gt(tableRoot.get(name), (Number) instance);
-        }
-        throw new BadRequestException(field + " field is not of type number.");
+        Path<Comparable> path = tableRoot.get(name);
+        return criteriaBuilder.greaterThan(path, (Comparable) instance);
     }
 }
