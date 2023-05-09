@@ -11,8 +11,15 @@ public class Filter {
     private String internalId;
     private String field;
     private String operator;
+    private String associationId;
     private List<String> values = new LinkedList<>();
     private boolean multiple;
+    private boolean associationPresent = false;
+
+    public void setAssociationId(String associationId) {
+        this.associationId = associationId;
+        this.associationPresent = true;
+    }
 
     public void addValue(String value) {
         if (!multiple) {

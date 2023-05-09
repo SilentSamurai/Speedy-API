@@ -2,7 +2,7 @@
 grammar Speedy;
 
 
-request : resource+ SLSH? query? frag? CRLF? ;
+request : resource SLSH? query? frag? CRLF? ;
 
 resource: SLSH IDENTIFIER filters? ;
 
@@ -17,7 +17,7 @@ searchMV: constList;
 filters: PNTH_OP (arguments | keywords) PNTH_CL;
 
 keywords: keywordsParams ( cndoptr keywordsParams ) * ;
-keywordsParams : identifier ( paramSV | paramMV ) ;
+keywordsParams : identifier assoIdenfier? ( paramSV | paramMV ) ;
 paramSV: svoptr constValue;
 paramMV: mvoptr constList;
 
@@ -29,7 +29,7 @@ mvoptr: (NOT_IN | IN );
 cndoptr: ( OR_OP | COMMA_OP | AND_OP );
 
 
-
+assoIdenfier: DOT identifier;
 identifier: IDENTIFIER;
 constList: BRC_OP constValue (COMMA_OP constValue)*  BRC_CL;
 constValue: (DIGITS | VALSTRING);
@@ -61,7 +61,7 @@ QUOTES : (SINGLEQUOTE | DOUBLEQUOTE) ;
 
 QM: '?';
 HASH: '#';
-
+DOT: '.';
 
 
 PNTH_OP: '(';

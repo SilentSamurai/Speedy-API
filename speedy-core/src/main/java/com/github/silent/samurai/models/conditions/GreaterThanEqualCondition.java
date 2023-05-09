@@ -2,9 +2,7 @@ package com.github.silent.samurai.models.conditions;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.models.Operator;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Data;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -14,13 +12,13 @@ import javax.persistence.criteria.Root;
 @Data
 public class GreaterThanEqualCondition implements BinarySVCondition {
 
-    private String field;
+    private DbField field;
+    private Object instance;
     private Operator operator = Operator.GTE;
-    private String value;
 
-    public GreaterThanEqualCondition(String field, String value) {
+    public GreaterThanEqualCondition(DbField field, Object instance) {
         this.field = field;
-        this.value = value;
+        this.instance = instance;
     }
 
     @Override
@@ -31,9 +29,6 @@ public class GreaterThanEqualCondition implements BinarySVCondition {
     public Predicate getPredicate(CriteriaBuilder criteriaBuilder,
                                   Root<?> tableRoot,
                                   EntityMetadata entityMetadata) throws Exception {
-        FieldMetadata fieldMetadata = entityMetadata.field(field);
-        String name = fieldMetadata.getClassFieldName();
-        Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        return criteriaBuilder.greaterThan(tableRoot.get(name), (Comparable) instance);
+        return criteriaBuilder.greaterThanOrEqualTo(field.getPath(criteriaBuilder, tableRoot), (Comparable) instance);
     }
 }

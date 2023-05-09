@@ -18,36 +18,6 @@ public class GetDataHandler {
         this.context = context;
     }
 
-    private Object getAssociationQuery() throws Exception {
-        SpeedyUriContext parser = context.getParser();
-        List<Object> resultObject = new LinkedList<>();
-
-        QueryBuilder secondaryQB = new QueryBuilder(
-                parser.getSecondaryResource(),
-                context.getEntityManager());
-        secondaryQB.addWhereQuery();
-        Query secondaryQuery = secondaryQB.getQuery(parser);
-        List fkObjects = secondaryQuery.getResultList();
-
-        for (Object instance : fkObjects) {
-            QueryBuilder queryBuilder = new QueryBuilder(
-                    parser.getPrimaryResource(),
-                    context.getEntityManager());
-
-            queryBuilder.addWhereQuery();
-            queryBuilder.addAssociationFK(
-                    parser.getSecondaryResource().getResourceMetadata(),
-                    instance
-            );
-
-            Query query = queryBuilder.getQuery(parser);
-            List resultList = query.getResultList();
-            resultObject.addAll(resultList);
-        }
-
-        return resultObject;
-    }
-
     private Object normalQuery() throws Exception {
         SpeedyUriContext parser = context.getParser();
         QueryBuilder queryBuilder = new QueryBuilder(
@@ -66,11 +36,7 @@ public class GetDataHandler {
             Object pk = MetadataUtil.createIdentifierFromParser(parser);
             requestObject = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
         } else {
-            if (parser.isAssociationFilterRequired()) {
-                requestObject = this.getAssociationQuery();
-            } else {
-                requestObject = this.normalQuery();
-            }
+            requestObject = this.normalQuery();
         }
         return Optional.ofNullable(requestObject);
     }

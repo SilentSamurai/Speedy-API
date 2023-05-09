@@ -43,13 +43,20 @@ public class RequestListener extends SpeedyBaseListener {
 
     @Override
     public void enterArgument(SpeedyParser.ArgumentContext ctx) {
-        resourceRequest.getArguments().add(ctx.getText());
+        Filter argumentFilter = new Filter();
+        argumentFilter.setField("id");
+        argumentFilter.setOperator("=");
+        argumentFilter.addValue(ctx.getText());
+        resourceRequest.addFilter(argumentFilter);
     }
 
     @Override
     public void enterKeywordsParams(SpeedyParser.KeywordsParamsContext ctx) {
         currentFilter = new Filter();
         currentFilter.setField(ctx.identifier().getText());
+        if (ctx.assoIdenfier() != null) {
+            currentFilter.setAssociationId(ctx.assoIdenfier().identifier().getText());
+        }
     }
 
     @Override

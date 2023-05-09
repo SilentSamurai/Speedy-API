@@ -127,7 +127,7 @@ class SpeedyGetTest {
     @Test
     void getAssociation() throws Exception {
 
-        mvc.perform(get(SpeedyConstant.URI + "/Product/Category('1')")
+        mvc.perform(get(SpeedyConstant.URI + "/Product( category.id = '1')")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())

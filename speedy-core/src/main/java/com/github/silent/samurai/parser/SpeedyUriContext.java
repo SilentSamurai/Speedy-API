@@ -26,7 +26,6 @@ public class SpeedyUriContext {
     private final MultiValueMap<String, String> rawQuery = new LinkedMultiValueMap<>();
     private String fragment;
     private ResourceSelector primaryResource;
-    private ResourceSelector secondaryResource;
 
     public SpeedyUriContext(MetaModelProcessor metaModelProcessor, String requestURI) {
         this.metaModelProcessor = metaModelProcessor;
@@ -35,14 +34,6 @@ public class SpeedyUriContext {
 
     public ResourceSelector getPrimaryResource() {
         return primaryResource;
-    }
-
-    public ResourceSelector getSecondaryResource() {
-        return secondaryResource;
-    }
-
-    public boolean isAssociationFilterRequired() {
-        return secondaryResource != null;
     }
 
     public MultiValueMap<String, String> getRawQuery() {
@@ -95,10 +86,6 @@ public class SpeedyUriContext {
         AntlrRequest antlrRequest = new AntlrParser(sanitizedURI).parse();
         this.primaryResource = new ResourceSelector(this.metaModelProcessor);
         this.primaryResource.process(antlrRequest.getRequestList().get(0));
-        if (antlrRequest.getRequestList().size() > 1) {
-            this.secondaryResource = new ResourceSelector(this.metaModelProcessor);
-            this.secondaryResource.process(antlrRequest.getRequestList().get(1));
-        }
         processQuery(antlrRequest);
     }
 

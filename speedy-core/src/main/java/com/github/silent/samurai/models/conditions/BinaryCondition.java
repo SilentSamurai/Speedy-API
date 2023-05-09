@@ -4,7 +4,7 @@ import com.github.silent.samurai.models.Operator;
 
 public interface BinaryCondition extends Condition {
 
-    String getField();
+    DbField getField();
 
     Operator getOperator();
 }

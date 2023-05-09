@@ -1,16 +1,16 @@
 package com.github.silent.samurai.parser;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.exceptions.NotFoundException;
 import com.github.silent.samurai.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.helpers.MetadataUtil;
 import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.models.Operator;
-import com.github.silent.samurai.models.conditions.*;
+import com.github.silent.samurai.models.conditions.BinaryCondition;
+import com.github.silent.samurai.models.conditions.BinarySVCondition;
+import com.github.silent.samurai.models.conditions.Condition;
+import com.github.silent.samurai.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.models.Filter;
 import com.github.silent.samurai.speedy.models.ResourceRequest;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -71,10 +71,9 @@ public class ResourceSelector {
         List<T> values = new LinkedList<>();
         for (String internalId : internalIds) {
             BinaryCondition condition = (BinaryCondition) conditions.get(internalId);
-            List<String> conditionValues = ConditionFactory.getConditionValue(condition);
-            for (String valueString : conditionValues) {
-                T value = CommonUtil.quotedStringToPrimitive(valueString, type);
-                values.add(value);
+            List<Object> conditionValues = ConditionFactory.getConditionValue(condition);
+            for (Object instance : conditionValues) {
+                values.add(type.cast(instance));
             }
         }
         return Collections.unmodifiableList(values);
@@ -82,8 +81,8 @@ public class ResourceSelector {
 
     public <T> T getFirstFilterValue(String name, Class<T> tClass) throws Exception {
         BinarySVCondition condition = getFirstConditionByField(name);
-        String value = condition.getValue();
-        return CommonUtil.quotedStringToPrimitive(value, tClass);
+        Object instance = condition.getInstance();
+        return tClass.cast(instance);
     }
 
     public List<String> getConditionChain() {
@@ -117,19 +116,16 @@ public class ResourceSelector {
     }
 
 
-    private void processFilters(ResourceRequest resourceRequest) throws BadRequestException {
-        if (!resourceRequest.getArguments().isEmpty()) {
-            String value = resourceRequest.getArguments().get(0);
-            Condition idCondition = ConditionFactory.createCondition("id", Operator.EQ, value);
-            conditions.put("id", idCondition);
-            filterConditionChain.add("id");
-            keywords.add("id", "id");
-        }
+    private void processFilters(ResourceRequest resourceRequest) throws SpeedyHttpException {
         if (!resourceRequest.getFilters().isEmpty()) {
             for (Filter filter : resourceRequest.getFilters().values()) {
-                BinaryCondition condition = ConditionFactory.createCondition(filter);
+                BinaryCondition condition = ConditionFactory.createCondition(filter, getResourceMetadata());
                 conditions.put(filter.getInternalId(), condition);
-                keywords.add(filter.getField(), filter.getInternalId());
+                String kwd = filter.getField();
+                if (filter.isAssociationPresent()) {
+                    kwd += "." + filter.getAssociationId();
+                }
+                keywords.add(kwd, filter.getInternalId());
             }
         }
     }

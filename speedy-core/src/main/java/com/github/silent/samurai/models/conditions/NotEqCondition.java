@@ -2,25 +2,24 @@ package com.github.silent.samurai.models.conditions;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.models.Operator;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Data;
 
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 @Data
 public class NotEqCondition implements BinarySVCondition {
 
-    private String field;
+    private DbField field;
+    private Object instance;
     private Operator operator = Operator.NEQ;
-    private String value;
 
-    public NotEqCondition(String field, String value) {
+    public NotEqCondition(DbField field, Object instance) {
         this.field = field;
-        this.value = value;
+        this.instance = instance;
     }
 
     @Override
@@ -29,9 +28,7 @@ public class NotEqCondition implements BinarySVCondition {
 
     @Override
     public Predicate getPredicate(CriteriaBuilder criteriaBuilder, Root<?> tableRoot, EntityMetadata entityMetadata) throws Exception {
-        FieldMetadata fieldMetadata = entityMetadata.field(field);
-        String name = fieldMetadata.getClassFieldName();
-        Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        return criteriaBuilder.notEqual(tableRoot.get(name), instance);
+        Path<? extends Comparable<?>> path = field.getPath(criteriaBuilder, tableRoot);
+        return criteriaBuilder.notEqual(path, instance);
     }
 }

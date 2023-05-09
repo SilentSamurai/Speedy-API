@@ -64,22 +64,22 @@ public class QueryBuilder {
         previousWherePredicate = predicate;
     }
 
-    public void addAssociationFK(EntityMetadata secondaryResource, Object instance) throws BadRequestException {
-        List<Predicate> fkPredicate = new LinkedList<>();
-        FieldMetadata associatedField = this.entityMetadata.getAssociatedField(secondaryResource)
-                .orElseThrow(BadRequestException::new);
-        Path<Object> objectPath = tableRoot.get(associatedField.getClassFieldName());
-        for (KeyFieldMetadata keyField : secondaryResource.getKeyFields()) {
-            Object fieldValue = keyField.getEntityFieldValue(instance);
-            Predicate equal = criteriaBuilder.equal(objectPath.get(keyField.getClassFieldName()), fieldValue);
-            fkPredicate.add(equal);
-        }
-        if (previousWherePredicate != null) {
-            fkPredicate.add(previousWherePredicate);
-        }
-        Predicate[] predicates = fkPredicate.toArray(new Predicate[fkPredicate.size()]);
-        previousWherePredicate = criteriaBuilder.and(predicates);
-    }
+//    public void addAssociationFK(EntityMetadata secondaryResource, Object instance) throws BadRequestException {
+//        List<Predicate> fkPredicate = new LinkedList<>();
+//        FieldMetadata associatedField = this.entityMetadata.getAssociatedField(secondaryResource)
+//                .orElseThrow(BadRequestException::new);
+//        Path<Object> objectPath = tableRoot.get(associatedField.getClassFieldName());
+//        for (KeyFieldMetadata keyField : secondaryResource.getKeyFields()) {
+//            Object fieldValue = keyField.getEntityFieldValue(instance);
+//            Predicate equal = criteriaBuilder.equal(objectPath.get(keyField.getClassFieldName()), fieldValue);
+//            fkPredicate.add(equal);
+//        }
+//        if (previousWherePredicate != null) {
+//            fkPredicate.add(previousWherePredicate);
+//        }
+//        Predicate[] predicates = fkPredicate.toArray(new Predicate[fkPredicate.size()]);
+//        previousWherePredicate = criteriaBuilder.and(predicates);
+//    }
 
 
     private void addToOrderList(SpeedyUriContext parser,

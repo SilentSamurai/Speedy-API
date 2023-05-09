@@ -26,20 +26,20 @@ public class OpenApiGenerator {
 
             PathItem basePathItem = new PathItem();
             PathItem identifierPathItem = new PathItem();
-//            PathItem queryPathItem = new PathItem();
+            PathItem queryPathItem = new PathItem();
 
             postOperation(entityMetadata, basePathItem);
             putOperation(entityMetadata, identifierPathItem);
             deleteOperation(entityMetadata, basePathItem);
             getWithPrimaryFields(entityMetadata, identifierPathItem);
-            getOperation(entityMetadata, basePathItem);
+            getOperation(entityMetadata, queryPathItem);
 //            getWithFieldQuery(entityMetadata, queryPathItem);
 
 
             createSchemas(entityMetadata, openApi);
 
             openApi.path(getBasePath(entityMetadata), basePathItem);
-//            openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
+            openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
         }
     }
@@ -221,9 +221,15 @@ public class OpenApiGenerator {
         operation.operationId("GetSome" + entityMetadata.getName());
         operation.summary("Filter " + entityMetadata.getName());
         operation.tags(Lists.newArrayList(entityMetadata.getName()));
-        operation.requestBody(OASGenerator.getJsonBody(
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.GET_REQUEST_NAME, entityMetadata))
-        ).description("Fields needed for filtering"));
+        operation.addParametersItem(
+                new Parameter()
+                        .description("these are queries on the entity")
+                        .name("query")
+                        .in("path")
+                        .allowEmptyValue(true)
+                        .schema(OASGenerator.basicSchema(String.class))
+                        .example("(id='1',amount=2)")
+        );
 
 //        OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
@@ -247,7 +253,7 @@ public class OpenApiGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
         sb.append("{").append(parameterName).append("}");
-        sb.append("/").append("{association}");
+//        sb.append("/").append("{association}");
         return sb.toString();
     }
 

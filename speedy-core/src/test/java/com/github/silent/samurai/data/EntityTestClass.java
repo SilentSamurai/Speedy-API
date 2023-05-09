@@ -13,5 +13,6 @@ public class EntityTestClass {
     String id;
     String name;
     String category;
+    Integer cost;
 
 }
