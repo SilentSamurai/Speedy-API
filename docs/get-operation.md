@@ -1,6 +1,6 @@
 # Speedy Get API
 
-create entity CRUD apis with writing a line of code
+create entity CRUD apis without writing a line of code
 
 ### Get Operations
 
@@ -26,7 +26,16 @@ GET / speedy / v1 / Transaction
             "currency": "INR",
             "date": "2023-04-27T13:53:49+00:00",
             "quantity": 10,
-            "notes": ""
+            "notes": "",
+            "procurement": {
+                "id": "procurement-1",
+                "product": "Product 1"
+            },
+            "account": {
+                "id": "account-1",
+                "name": "New Transaction Account",
+                "type": "Cash"
+            }
         },
         {
             "id": "transaction-2",
@@ -35,7 +44,16 @@ GET / speedy / v1 / Transaction
             "currency": "INR",
             "date": "2023-04-27T13:53:49+00:00",
             "quantity": 4,
-            "notes": ""
+            "notes": "",
+            "procurement": {
+                "id": "procurement-1",
+                "product": "Product 1"
+            },
+            "account": {
+                "id": "account-2",
+                "name": "New Savings Account",
+                "type": "Electronic"
+            }
         }
     ],
     "pageCount": 1,
@@ -64,20 +82,23 @@ GET / speedy / v1 / Transaction(id = 'transaction-1')
         "type": "DEBIT",
         "amount": 250,
         "currency": "INR",
-        "date": "2023-04-27T13:53:49+00:00",
         "quantity": 10,
-        "product": {
-            "id": "product-1",
-            "name": "Product 1"
+        "account": {
+            "id": "account-1",
+            "name": "New Transaction Account",
+            "type": "Cash"
         },
-        "vendor": {
-            "id": "vendor-1",
-            "name": "Vendor 1"
+        "procurement": {
+            "id": "procurement-1",
+            "product": "Product 1"
         },
-        "customer": {
-            "id": "customer-1",
-            "name": "Customer 1"
-        },
+        "invoices": [
+            {
+                "id": "inv-1",
+                "date": "2023-04-27T13:53:49+00:00",
+                "discount": 23
+            }
+        ],
         "notes": ""
     },
     "pageCount": 1,
@@ -107,11 +128,12 @@ get all transaction of DEBIT type
         {
             "id": "transaction-1",
             "type": "DEBIT",
-            "amount": 250,
-            "currency": "INR",
-            "date": "2023-04-27T13:53:49+00:00",
-            "quantity": 10,
-            "notes": ""
+            ...
+        },
+        {
+            "id": "transaction-5",
+            "type": "DEBIT",
+            ...
         }
     ],
     "pageCount": 1,
@@ -132,6 +154,30 @@ GET / speedy / v1 / Transaction(type = 'DEBIT', currency = 'INR')
 ```
 
 get all transaction of DEBIT type and currency INR
+
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "type": "DEBIT",
+            "currency": "INR",
+            ...
+        },
+        {
+            "id": "transaction-7",
+            "type": "DEBIT",
+            "currency": "INR",
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
+```
+
 <hr>
 
 #### Filter with And Operator
@@ -158,6 +204,28 @@ GET / speedy / v1 / Transaction(currency = 'USD' | currency = 'EUR')
 ```
 
 get all transaction of currency USD or currency EUR
+
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "currency": "INR",
+            ...
+        },
+        {
+            "id": "transaction-12",
+            "currency": "USD",
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
+```
+
 <hr>
 
 #### Filter with Comparison Operator
@@ -172,16 +240,88 @@ get all transaction where amount > 100
 GET / speedy / v1 / Transaction(amount > 100)
 ```
 
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "amount": 100,
+            ...
+        },
+        {
+            "id": "transaction-11",
+            "amount": 150,
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
+```
+
+**URL**
+
 get all transaction where amount <= 50
 
 ```javascript
 GET / speedy / v1 / Transaction(amount <= 50)
 ```
 
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "amount": 50,
+            ...
+        },
+        {
+            "id": "transaction-11",
+            "amount": 20,
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
+```
+
+**URL**
+
 get all transaction where amount != 50
 
 ```javascript
 GET / speedy / v1 / Transaction(amount != 50)
+```
+
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "amount": 20,
+            ...
+        },
+        {
+            "id": "transaction-11",
+            "amount": 100,
+            ...
+        },
+        {
+            "id": "transaction-11",
+            "amount": 150,
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
 ```
 
 <hr>
@@ -193,21 +333,109 @@ retrieve multiple resource with in operators
 **URL**
 
 ```javascript
-GET / speedy / v1 / Transaction(type <> ['CREDIT', 'DEBIT'])
+GET / speedy / v1 / Transaction(type < > ['CREDIT', 'DEBIT'])
 ```
 
 ```javascript
-GET / speedy / v1 / Transaction(cost <> [23, 50, 72])
+GET / speedy / v1 / Transaction(cost < > [23, 50, 72])
 ```
 
 eliminate multiple resource with not in operators
 
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "type": "CREDIT",
+            ...
+        },
+        {
+            "id": "transaction-11",
+            "amount": "DEBIT",
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
+```
+
 **URL**
 
 ```javascript
-GET / speedy / v1 / Transaction(type <!> ['TRANSFET'])
+GET / speedy / v1 / Transaction(type < ! > ['TRANSFER'])
 ```
 
 ```javascript
-GET / speedy / v1 / Transaction(cost <!> [23, 50, 72])
+GET / speedy / v1 / Transaction(cost < ! > [23, 50, 72])
+```
+
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "type": "CREDIT",
+            ...
+        },
+        {
+            "id": "transaction-11",
+            "amount": "DEBIT",
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
+```
+
+<hr>
+
+#### Filter with Association
+
+retrieve multiple resource with foreign keys
+**URL**
+
+```javascript
+GET / speedy / v1 / Transaction(procurement.id = 'procurement-1')
+```
+
+```javascript
+GET / speedy / v1 / Transaction(procurement.product = 'Product 1')
+```
+
+```javascript
+GET / speedy / v1 / Transaction(account.type = 'cash')
+```
+
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "transaction-1",
+            "procurement": {
+                ...
+                "product": "Product 1"
+            },
+            ...
+        },
+        {
+            "id": "transaction-11",
+            "procurement": {
+                ...
+                "product": "Product 1"
+            },
+            ...
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
 ```

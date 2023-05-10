@@ -14,9 +14,3 @@ docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli generate -i 
 
 
 
-
-# DOCUMENTATION
-
-npm i docsify-cli -g
-docsify init ./docs
-docsify serve docs
