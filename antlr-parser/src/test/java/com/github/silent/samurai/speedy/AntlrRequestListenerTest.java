@@ -1,10 +1,9 @@
-package com.github.silent.samurai;
+package com.github.silent.samurai.speedy;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.silent.samurai.speedy.AntlrParser;
 import com.github.silent.samurai.speedy.models.AntlrRequest;
 import com.github.silent.samurai.speedy.models.ResourceRequest;
 import org.junit.jupiter.api.Assertions;

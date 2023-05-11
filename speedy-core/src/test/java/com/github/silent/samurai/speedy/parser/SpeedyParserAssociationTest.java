@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.parser;
 
 
-import com.github.silent.samurai.data.AssociatedEntityTestClass;
-import com.github.silent.samurai.data.StaticEntityMetadata;
+import com.github.silent.samurai.speedy.data.AssociatedEntityTestClass;
+import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;

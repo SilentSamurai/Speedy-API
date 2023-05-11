@@ -84,22 +84,6 @@ public class OpenApiGenerator {
                 true
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata), updateSchema);
-
-        Schema aSchema = new Schema();
-        for (FieldMetadata associatedField : entityMetadata.getAssociatedFields()) {
-            EntityMetadata associationMetadata = associatedField.getAssociationMetadata();
-            aSchema.addProperty(associationMetadata.getName(), OASGenerator.basicSchema(String.class));
-        }
-
-        Schema schema = new Schema()
-                .addProperty("where", OASGenerator.basicSchema(String.class))
-                .addProperty("join", aSchema)
-                .addProperty("pageSize", OASGenerator.basicSchema(Integer.class))
-                .addProperty("pageIndex", OASGenerator.basicSchema(Integer.class))
-                .addProperty("orderBy", OASGenerator.wrapInArray(OASGenerator.basicSchema(String.class)))
-                .addProperty("orderByDesc", OASGenerator.wrapInArray(OASGenerator.basicSchema(String.class)));
-
-        openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.GET_REQUEST_NAME, entityMetadata), schema);
     }
 
     private void postOperation(EntityMetadata entityMetadata, PathItem pathItem) {

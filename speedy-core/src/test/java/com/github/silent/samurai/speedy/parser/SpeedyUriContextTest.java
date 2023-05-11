@@ -1,12 +1,13 @@
 package com.github.silent.samurai.speedy.parser;
 
-import com.github.silent.samurai.data.EntityTestClass;
-import com.github.silent.samurai.data.StaticEntityMetadata;
+import com.github.silent.samurai.speedy.data.EntityTestClass;
+import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.models.Operator;
+import com.github.silent.samurai.speedy.models.conditions.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -318,6 +321,30 @@ class SpeedyUriContextTest {
         assertEquals("name", parser.getQuery("orderBy", String.class).get(0));
         assertEquals("id", parser.getQuery("orderBy", String.class).get(1));
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+    }
+
+    @Test
+    void processRequest12_2() throws Exception {
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer");
+        parser.parse();
+        try {
+            List<String> names = parser.getPrimaryResource().getFilterValuesByField("name", String.class);
+            assertNotNull(names);
+            assertTrue(names.isEmpty());
+        } catch (NotFoundException e) {
+            assertEquals("keyword not found", e.getMessage());
+        }
+
+        parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name == 'koil')");
+        parser.parse();
+        List<String> names = parser.getPrimaryResource().getFilterValuesByField("name", String.class);
+        assertNotNull(names);
+        assertFalse(names.isEmpty());
+        assertEquals("koil", names.get(0));
+
+        List<? extends Condition> conditions = parser.getPrimaryResource().getConditionsByField("name");
+        assertNotNull(conditions);
+        assertFalse(conditions.isEmpty());
     }
 
 

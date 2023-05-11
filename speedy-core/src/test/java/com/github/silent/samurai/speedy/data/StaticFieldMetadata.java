@@ -1,4 +1,4 @@
-package com.github.silent.samurai.data;
+package com.github.silent.samurai.speedy.data;
 
 import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;

@@ -1,8 +1,6 @@
 package com.github.silent.samurai.speedy;
 
 
-import com.github.silent.samurai.SpeedyBaseListener;
-import com.github.silent.samurai.SpeedyParser;
 import com.github.silent.samurai.speedy.models.AntlrRequest;
 import com.github.silent.samurai.speedy.models.Filter;
 import com.github.silent.samurai.speedy.models.ResourceRequest;

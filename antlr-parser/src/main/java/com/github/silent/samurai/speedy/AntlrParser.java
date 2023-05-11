@@ -1,7 +1,5 @@
 package com.github.silent.samurai.speedy;
 
-import com.github.silent.samurai.SpeedyLexer;
-import com.github.silent.samurai.SpeedyParser;
 import com.github.silent.samurai.speedy.models.AntlrRequest;
 import com.github.silent.samurai.speedy.utils.StringUtils;
 import org.antlr.v4.runtime.CharStreams;

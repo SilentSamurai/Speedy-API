@@ -1,4 +1,4 @@
-package com.github.silent.samurai.data;
+package com.github.silent.samurai.speedy.data;
 
 import javax.persistence.Id;
 
