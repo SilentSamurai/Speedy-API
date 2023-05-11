@@ -439,3 +439,55 @@ GET / speedy / v1 / Transaction(account.type = 'cash')
     "pageIndex": 0
 }
 ```
+
+#### Paged Request
+
+the request are by default paged, use this to get different pages
+
+**URL**
+
+```javascript
+GET / speedy / v1 / Transaction?pageSize=100&pageNo=0
+```
+
+```javascript
+GET / speedy / v1 / Transaction(amount > 100)?pageSize=10&pageNo=2
+```
+
+**Response**
+
+```json
+{
+    "payload": [
+        {...},
+        {...}
+    ],
+    "pageCount": 2,
+    "pageIndex": 0 // page starts from 0 indexed
+}
+```
+
+#### Ordered Request
+
+order the request with different columns
+
+```javascript
+GET / speedy / v1 / Transaction?orderBy='createdAt'&orderByDesc='amount'
+```
+
+```javascript
+GET / speedy / v1 / Transaction?orderBy=['createdAt','amount']
+```
+
+**Response**
+
+```json
+{
+    "payload": [ // ordered request
+        {...},
+        {...} 
+    ],
+    "pageCount": 2,
+    "pageIndex": 0
+}
+```
