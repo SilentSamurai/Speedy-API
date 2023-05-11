@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.silent.samurai.SpeedyApiDocumentationAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.silent.samurai.speedy.SpeedyApiDocumentationAutoConfiguration

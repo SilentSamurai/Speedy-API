@@ -12,7 +12,7 @@ import java.util.List;
 public class AntlrRequest {
 
     private List<ResourceRequest> requestList = new LinkedList<>();
-    private final MultiValueMap<String, Query> queries = new LinkedMultiValueMap<>();
+    private final MultiValueMap<String, UrlQuery> queries = new LinkedMultiValueMap<>();
     private String fragment;
 
 

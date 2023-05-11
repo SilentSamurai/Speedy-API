@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy;
 
-import com.github.silent.samurai.SpeedyFactory;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.service.CategoryRepository;

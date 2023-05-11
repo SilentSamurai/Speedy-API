@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy;
 
-import com.github.silent.samurai.SpeedyFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

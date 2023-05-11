@@ -5,8 +5,8 @@ import com.github.silent.samurai.SpeedyBaseListener;
 import com.github.silent.samurai.SpeedyParser;
 import com.github.silent.samurai.speedy.models.AntlrRequest;
 import com.github.silent.samurai.speedy.models.Filter;
-import com.github.silent.samurai.speedy.models.Query;
 import com.github.silent.samurai.speedy.models.ResourceRequest;
+import com.github.silent.samurai.speedy.models.UrlQuery;
 import org.antlr.v4.runtime.RuleContext;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class RequestListener extends SpeedyBaseListener {
     private AntlrRequest current;
     private ResourceRequest resourceRequest;
     private Filter currentFilter;
-    private Query currentQuery;
+    private UrlQuery currentUrlQuery;
 
     @Override
     public void enterRequest(SpeedyParser.RequestContext ctx) {
@@ -86,25 +86,25 @@ public class RequestListener extends SpeedyBaseListener {
 
     @Override
     public void enterSearchParameter(SpeedyParser.SearchParameterContext ctx) {
-        currentQuery = new Query();
-        currentQuery.setIdentifier(ctx.identifier().getText());
+        currentUrlQuery = new UrlQuery();
+        currentUrlQuery.setIdentifier(ctx.identifier().getText());
     }
 
     @Override
     public void enterSearchSV(SpeedyParser.SearchSVContext ctx) {
-        currentQuery.addValue(ctx.constValue().getText());
+        currentUrlQuery.addValue(ctx.constValue().getText());
     }
 
     @Override
     public void enterSearchMV(SpeedyParser.SearchMVContext ctx) {
         ctx.constList().constValue().stream()
                 .map(RuleContext::getText)
-                .forEach(currentQuery::addValue);
+                .forEach(currentUrlQuery::addValue);
     }
 
     @Override
     public void exitSearchParameter(SpeedyParser.SearchParameterContext ctx) {
-        current.getQueries().add(ctx.identifier().getText(), currentQuery);
+        current.getQueries().add(ctx.identifier().getText(), currentUrlQuery);
     }
 
 

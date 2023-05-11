@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.config;
 
-import com.github.silent.samurai.JpaMetaModelProcessor;
+import com.github.silent.samurai.speedy.JpaMetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;

@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy;
 
-import com.github.silent.samurai.SpeedyFactory;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
