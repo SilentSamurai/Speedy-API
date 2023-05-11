@@ -1,7 +1,7 @@
 package com.github.silent.samurai.models.conditions;
 
-import com.github.silent.samurai.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;

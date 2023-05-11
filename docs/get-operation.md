@@ -10,7 +10,7 @@ retrieve all resource in a single resource type / entity
 
 **URL**
 
-```javascript
+```http
 GET / speedy / v1 / Transaction
 ```
 

@@ -1,11 +1,11 @@
 package com.github.silent.samurai.parser;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
 import com.github.silent.samurai.models.Operator;
 import com.github.silent.samurai.models.conditions.*;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.Filter;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Lists;
@@ -56,7 +56,7 @@ public class ConditionFactory {
         Operator operator = Operator.fromSymbol(filter.getOperator());
         DbField field = getDbField(filter, entityMetadata);
         List<String> values = filter.getValues();
-        if (filter.isMultiple()) {
+        if (operator.doesAcceptMultipleValues()) {
             List<Object> instances = new LinkedList<>();
             for (String value : values) {
                 Object instance = CommonUtil.quotedStringToPrimitive(value, field.getFieldMetadata().getFieldType());

@@ -1,6 +1,6 @@
 package com.github.silent.samurai.models;
 
-import com.github.silent.samurai.interfaces.IBaseResponsePayload;
+import com.github.silent.samurai.speedy.interfaces.IBaseResponsePayload;
 import lombok.Data;
 
 @Data

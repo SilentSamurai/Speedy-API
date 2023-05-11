@@ -1,9 +1,9 @@
 package com.github.silent.samurai.data;
 
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import lombok.Data;
 import lombok.SneakyThrows;
 
@@ -30,6 +30,7 @@ public class StaticEntityMetadata implements EntityMetadata {
         } else {
             Optional<Field> idField = Arrays.stream(entityClass.getDeclaredFields())
                     .filter(field -> field.getAnnotation(Id.class) != null)
+                    .filter(field -> !field.getName().startsWith("__"))
                     .findAny();
             entityMetadata.setKeyClass(idField.get().getType());
         }
@@ -61,6 +62,7 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public Set<FieldMetadata> getAllFields() {
         return Arrays.stream(entityClass.getDeclaredFields())
+                .filter(field -> !field.getName().startsWith("__"))
                 .map(StaticFieldMetadata::createFieldMetadata)
                 .collect(Collectors.toSet());
     }
@@ -91,10 +93,12 @@ public class StaticEntityMetadata implements EntityMetadata {
     public Set<KeyFieldMetadata> getKeyFields() {
         if (this.hasCompositeKey()) {
             return Arrays.stream(keyClass.getDeclaredFields())
+                    .filter(field -> !field.getName().startsWith("__"))
                     .map(StaticFieldMetadata::createFieldMetadata)
                     .collect(Collectors.toSet());
         }
         return Arrays.stream(entityClass.getDeclaredFields())
+                .filter(field -> !field.getName().startsWith("__"))
                 .filter(field -> field.getAnnotation(Id.class) != null)
                 .map(StaticFieldMetadata::createFieldMetadata)
                 .collect(Collectors.toSet());

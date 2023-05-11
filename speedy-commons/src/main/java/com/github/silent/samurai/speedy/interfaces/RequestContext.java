@@ -1,4 +1,4 @@
-package com.github.silent.samurai.interfaces;
+package com.github.silent.samurai.speedy.interfaces;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;

@@ -3,9 +3,9 @@ package com.github.silent.samurai.query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.models.Operator;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;

@@ -14,7 +14,7 @@ delete multiple transactions
 DELETE / speedy / v1 / Transaction
 ```
 
-**Response Body**
+**Request Body**
 
 ```json
 [

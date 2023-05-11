@@ -1,4 +1,4 @@
-package com.github.silent.samurai.exceptions;
+package com.github.silent.samurai.speedy.exceptions;
 
 import javax.servlet.http.HttpServletResponse;
 

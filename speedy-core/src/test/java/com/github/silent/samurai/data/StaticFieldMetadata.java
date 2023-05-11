@@ -1,8 +1,8 @@
 package com.github.silent.samurai.data;
 
-import com.github.silent.samurai.enums.IgnoreType;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import lombok.Data;
 import lombok.SneakyThrows;
 

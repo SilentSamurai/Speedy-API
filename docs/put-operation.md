@@ -14,7 +14,7 @@ update transaction object using primary key
 PUT / speedy / v1 / Transaction(id = 'transaction-1')
 ```
 
-**Response Body**
+**Request Body**
 
 ```json
  {

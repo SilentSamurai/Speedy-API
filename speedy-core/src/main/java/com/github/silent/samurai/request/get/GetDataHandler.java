@@ -1,13 +1,11 @@
 package com.github.silent.samurai.request.get;
 
 import com.github.silent.samurai.helpers.MetadataUtil;
-import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.parser.SpeedyUriContext;
 import com.github.silent.samurai.query.QueryBuilder;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 
 import javax.persistence.Query;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 public class GetDataHandler {

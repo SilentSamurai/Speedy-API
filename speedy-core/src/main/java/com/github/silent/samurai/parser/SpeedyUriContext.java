@@ -1,11 +1,11 @@
 package com.github.silent.samurai.parser;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.AntlrParser;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.models.AntlrRequest;
 import com.github.silent.samurai.speedy.models.Query;
 import com.github.silent.samurai.speedy.utils.CommonUtil;

@@ -3,8 +3,8 @@ package com.github.silent.samurai.request.get;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.util.Map;

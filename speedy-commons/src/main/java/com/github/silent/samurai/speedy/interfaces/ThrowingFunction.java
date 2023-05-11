@@ -1,4 +1,4 @@
-package com.github.silent.samurai.interfaces;
+package com.github.silent.samurai.speedy.interfaces;
 
 @FunctionalInterface
 public interface ThrowingFunction<T, R, E extends Exception> {

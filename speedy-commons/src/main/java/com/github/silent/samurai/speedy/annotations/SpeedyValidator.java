@@ -1,7 +1,7 @@
-package com.github.silent.samurai.annotations;
+package com.github.silent.samurai.speedy.annotations;
 
-import com.github.silent.samurai.enums.SpeedyRequestType;
-import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
+import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

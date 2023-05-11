@@ -1,8 +1,8 @@
 package com.github.silent.samurai.metamodel;
 
-import com.github.silent.samurai.enums.IgnoreType;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import lombok.Getter;
 import lombok.Setter;
 

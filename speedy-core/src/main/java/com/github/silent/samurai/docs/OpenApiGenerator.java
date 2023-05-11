@@ -1,6 +1,6 @@
 package com.github.silent.samurai.docs;
 
-import com.github.silent.samurai.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.google.common.collect.Lists;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;

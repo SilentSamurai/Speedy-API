@@ -1,16 +1,15 @@
 package com.github.silent.samurai.metamodel;
 
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.metamodel.EntityType;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 

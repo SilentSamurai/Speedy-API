@@ -1,8 +1,8 @@
 package com.github.silent.samurai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.service.CategoryRepository;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

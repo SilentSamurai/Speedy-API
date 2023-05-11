@@ -1,6 +1,6 @@
 package com.github.silent.samurai.metamodel;
 
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import lombok.Getter;
 import lombok.Setter;
 

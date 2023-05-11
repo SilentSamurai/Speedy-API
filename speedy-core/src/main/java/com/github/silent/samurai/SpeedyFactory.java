@@ -1,11 +1,5 @@
 package com.github.silent.samurai;
 
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.interfaces.IResponseSerializer;
-import com.github.silent.samurai.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.models.PayloadWrapper;
 import com.github.silent.samurai.request.delete.DeleteDataHandler;
 import com.github.silent.samurai.request.delete.DeleteRequestContext;
@@ -20,6 +14,12 @@ import com.github.silent.samurai.request.put.PutRequestContext;
 import com.github.silent.samurai.request.put.PutRequestParser;
 import com.github.silent.samurai.request.put.UpdateDataHandler;
 import com.github.silent.samurai.serializers.json.JSONSerializer;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.validation.ValidationProcessor;
 import lombok.Getter;

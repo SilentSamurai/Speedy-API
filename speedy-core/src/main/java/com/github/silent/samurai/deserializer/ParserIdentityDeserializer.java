@@ -1,10 +1,10 @@
 package com.github.silent.samurai.deserializer;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.models.conditions.BinarySVCondition;
 import com.github.silent.samurai.parser.ResourceSelector;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 
 import java.util.Optional;
 
@@ -47,7 +47,7 @@ public class ParserIdentityDeserializer {
                 Object instance = condition.getInstance();
                 keyFieldMetadata.setEntityFieldWithValue(newKeyInstance, instance);
             } else {
-                throw new BadRequestException("primary key incomplete");
+                throw new BadRequestException(String.format("primary key incomplete, field not found '%s' ", propertyName));
             }
         }
         return newKeyInstance;

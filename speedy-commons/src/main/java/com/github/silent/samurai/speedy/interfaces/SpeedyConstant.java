@@ -1,4 +1,4 @@
-package com.github.silent.samurai.interfaces;
+package com.github.silent.samurai.speedy.interfaces;
 
 public interface SpeedyConstant {
     String URI = "/speedy/v1";

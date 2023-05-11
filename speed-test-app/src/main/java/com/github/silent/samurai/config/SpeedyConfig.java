@@ -1,9 +1,9 @@
 package com.github.silent.samurai.config;
 
 import com.github.silent.samurai.JpaMetaModelProcessor;
-import com.github.silent.samurai.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.validation.SpeedyValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

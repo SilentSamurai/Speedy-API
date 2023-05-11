@@ -14,7 +14,7 @@ create multiple transaction
 POST / speedy / v1 / Transaction
 ```
 
-**Response Body**
+**Request Body**
 
 ```json
 [

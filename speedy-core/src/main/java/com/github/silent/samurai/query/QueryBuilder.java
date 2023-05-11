@@ -1,14 +1,12 @@
 package com.github.silent.samurai.query;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.FieldMetadata;
-import com.github.silent.samurai.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.models.Operator;
 import com.github.silent.samurai.models.conditions.Condition;
 import com.github.silent.samurai.parser.ResourceSelector;
 import com.github.silent.samurai.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;

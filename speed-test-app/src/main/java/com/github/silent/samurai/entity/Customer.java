@@ -1,8 +1,8 @@
 package com.github.silent.samurai.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.github.silent.samurai.annotations.SpeedyIgnore;
-import com.github.silent.samurai.enums.IgnoreType;
+import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
+import com.github.silent.samurai.speedy.enums.IgnoreType;
 import lombok.Data;
 
 import javax.persistence.*;

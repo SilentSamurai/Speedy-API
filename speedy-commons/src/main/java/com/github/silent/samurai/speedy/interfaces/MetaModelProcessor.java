@@ -1,6 +1,6 @@
-package com.github.silent.samurai.interfaces;
+package com.github.silent.samurai.speedy.interfaces;
 
-import com.github.silent.samurai.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
 import java.util.Collection;
 

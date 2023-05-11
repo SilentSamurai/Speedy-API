@@ -2,9 +2,9 @@ package com.github.silent.samurai.speedy.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
 import org.springframework.http.MediaType;

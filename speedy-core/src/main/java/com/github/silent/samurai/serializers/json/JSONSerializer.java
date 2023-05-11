@@ -3,11 +3,11 @@ package com.github.silent.samurai.serializers.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.interfaces.FieldMetadata;
-import com.github.silent.samurai.interfaces.IBaseResponsePayload;
-import com.github.silent.samurai.interfaces.IResponseSerializer;
-import com.github.silent.samurai.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.serializers.SelectiveFieldJsonSerializer;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.IBaseResponsePayload;
+import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
+import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.http.MediaType;
 

@@ -11,10 +11,12 @@ import javax.persistence.IdClass;
 @IdClass(PrimaryKeyTestClass.class)
 public class EntityCompositeKeyTestClass {
 
-    String category;
+
     @Id
     private String id;
     @Id
     private String name;
+
+    String category;
 
 }

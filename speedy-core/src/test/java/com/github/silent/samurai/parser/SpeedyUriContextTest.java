@@ -2,11 +2,11 @@ package com.github.silent.samurai.parser;
 
 import com.github.silent.samurai.data.EntityTestClass;
 import com.github.silent.samurai.data.StaticEntityMetadata;
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.interfaces.SpeedyConstant;
 import com.github.silent.samurai.models.Operator;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

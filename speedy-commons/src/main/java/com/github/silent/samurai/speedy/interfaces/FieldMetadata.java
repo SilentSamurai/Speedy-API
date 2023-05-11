@@ -1,6 +1,6 @@
-package com.github.silent.samurai.interfaces;
+package com.github.silent.samurai.speedy.interfaces;
 
-import com.github.silent.samurai.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.IgnoreType;
 
 public interface FieldMetadata {
 

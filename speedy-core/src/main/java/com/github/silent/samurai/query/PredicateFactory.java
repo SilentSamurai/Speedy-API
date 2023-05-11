@@ -1,7 +1,7 @@
 package com.github.silent.samurai.query;
 
-import com.github.silent.samurai.exceptions.BadRequestException;
 import com.github.silent.samurai.models.Operator;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;

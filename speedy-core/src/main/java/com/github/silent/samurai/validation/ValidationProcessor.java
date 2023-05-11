@@ -1,12 +1,12 @@
 package com.github.silent.samurai.validation;
 
-import com.github.silent.samurai.annotations.SpeedyValidator;
-import com.github.silent.samurai.enums.SpeedyRequestType;
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.ISpeedyCustomValidation;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.annotations.SpeedyValidator;
+import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,6 @@
 package com.github.silent.samurai.request.put;
 
-import com.github.silent.samurai.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

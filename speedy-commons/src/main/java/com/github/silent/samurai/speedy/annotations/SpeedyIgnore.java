@@ -1,6 +1,6 @@
-package com.github.silent.samurai.annotations;
+package com.github.silent.samurai.speedy.annotations;
 
-import com.github.silent.samurai.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.IgnoreType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,14 +1,14 @@
 package com.github.silent.samurai.parser;
 
-import com.github.silent.samurai.exceptions.NotFoundException;
-import com.github.silent.samurai.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.helpers.MetadataUtil;
-import com.github.silent.samurai.interfaces.EntityMetadata;
-import com.github.silent.samurai.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.models.conditions.BinaryCondition;
 import com.github.silent.samurai.models.conditions.BinarySVCondition;
 import com.github.silent.samurai.models.conditions.Condition;
 import com.github.silent.samurai.models.conditions.EqCondition;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.models.Filter;
 import com.github.silent.samurai.speedy.models.ResourceRequest;
 import org.springframework.util.LinkedMultiValueMap;

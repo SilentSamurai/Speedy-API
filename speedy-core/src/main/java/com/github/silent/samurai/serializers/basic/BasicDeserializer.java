@@ -1,6 +1,6 @@
 package com.github.silent.samurai.serializers.basic;
 
-import com.github.silent.samurai.interfaces.ThrowingFunction;
+import com.github.silent.samurai.speedy.interfaces.ThrowingFunction;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;

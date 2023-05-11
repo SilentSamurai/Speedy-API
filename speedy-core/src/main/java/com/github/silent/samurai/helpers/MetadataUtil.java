@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.deserializer.JsonEntityDeserializer;
 import com.github.silent.samurai.deserializer.JsonIdentityDeserializer;
 import com.github.silent.samurai.deserializer.ParserIdentityDeserializer;
-import com.github.silent.samurai.exceptions.BadRequestException;
-import com.github.silent.samurai.interfaces.EntityMetadata;
 import com.github.silent.samurai.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.google.common.collect.Sets;
 
 import javax.persistence.EntityManager;
@@ -32,7 +32,7 @@ public class MetadataUtil {
             ParserIdentityDeserializer deserializer = new ParserIdentityDeserializer(parser.getPrimaryResource());
             return deserializer.deserialize();
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse parameters");
+            throw new BadRequestException("failed to parse parameters", e);
         }
     }
 
@@ -46,7 +46,7 @@ public class MetadataUtil {
             JsonEntityDeserializer deserializer = new JsonEntityDeserializer(asJsonObject, entityMetadata, entityManager);
             return deserializer.deserialize();
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse body");
+            throw new BadRequestException("failed to parse body", e);
         }
     }
 
