@@ -21,7 +21,7 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
-import com.github.silent.samurai.validation.ValidationProcessor;
+import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
