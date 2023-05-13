@@ -116,7 +116,9 @@ public class OASGenerator {
                 }
             }
         }
-        schema.required(required);
+        if (!required.isEmpty()) {
+            schema.required(required);
+        }
         return schema;
     }
 

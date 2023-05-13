@@ -66,19 +66,21 @@ public class CommonUtil {
         return matcher.group(group);
     }
 
-    public static Jackson2ObjectMapperBuilder jacksonBuildr = new Jackson2ObjectMapperBuilder();
+    private static final Jackson2ObjectMapperBuilder jacksonBuildr = new Jackson2ObjectMapperBuilder();
+    private static final ObjectMapper standardMapper;
 
     static {
         jacksonBuildr.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         jacksonBuildr.featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
+        standardMapper = jacksonBuildr.build();
     }
 
     public static ObjectMapper json() {
-        return jacksonBuildr.build();
+        return standardMapper;
     }
 
     public static String toJson(Object value) throws JsonProcessingException {
-        return jacksonBuildr.build().writeValueAsString(value);
+        return standardMapper.writeValueAsString(value);
     }
 
     public static <D> D mapToModel(final Map<String, ?> map, Class<D> type) {
@@ -87,7 +89,7 @@ public class CommonUtil {
 
 
     public static <T> T jsonToType(JsonNode jsonNode, Class<T> type) throws JsonProcessingException {
-        return jacksonBuildr.build().treeToValue(jsonNode, type);
+        return standardMapper.treeToValue(jsonNode, type);
     }
 
     public static <T> T quotedStringToPrimitive(String value, Class<T> type) throws BadRequestException {

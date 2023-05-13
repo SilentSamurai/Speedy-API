@@ -62,6 +62,8 @@ public class SpeedyFactory {
         }
         IResponseSerializer jsonSerializer = new JSONSerializer(context);
         PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(requestData.get());
+        int pageNumber = context.getParser().getQueryOrDefault("pageNo", Integer.class, 0);
+        responseWrapper.setPageIndex(pageNumber);
         response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
         jsonSerializer.writeResponse(responseWrapper);

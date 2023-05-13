@@ -1,0 +1,31 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="K6 Load Test" type="K6ConfigurationType" factoryName="k6"
+                   show_console_on_std_err="false" show_console_on_std_out="false">
+        <option name="allowRunningInParallel" value="false"/>
+        <option name="data">
+            <K6RunData>
+                <option name="additionalParams" value=""/>
+                <option name="envs">
+                    <map/>
+                </option>
+                <option name="pty" value="true"/>
+                <option name="script" value="D:\Programming\Speedy-API\k6-load-test\script.js"/>
+                <option name="thresholdsAsTests" value="true"/>
+                <option name="type" value="local"/>
+            </K6RunData>
+        </option>
+        <option name="projectPathOnTarget"/>
+        <option name="selectedOptions">
+            <list/>
+        </option>
+        <option name="additionalParams" value=""/>
+        <option name="envs">
+            <map/>
+        </option>
+        <option name="pty" value="true"/>
+        <option name="script" value="D:\Programming\Speedy-API\k6-load-test\script.js"/>
+        <option name="thresholdsAsTests" value="true"/>
+        <option name="type" value="local"/>
+        <method v="2"/>
+    </configuration>
+</component>
