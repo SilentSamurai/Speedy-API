@@ -32,7 +32,7 @@
         <module>speedy-core</module>
         <module>spring-boot-starter-speedy-api</module>
         <module>spring-boot-starter-speedy-open-api</module>
-        <module>speed-test-app</module>
+        <module>speedy-test-app</module>
         <module>antlr-parser</module>
         <module>speedy-commons</module>
         <module>speedy-jpa-impl</module>

@@ -34,12 +34,10 @@ class SpeedyGetConditionTest {
 
     @Autowired
     SpeedyFactory speedyFactory;
-
-    @Autowired
-    private MockMvc mvc;
-
     ApiClient defaultClient;
     ProductApi productApi;
+    @Autowired
+    private MockMvc mvc;
 
     @BeforeEach
     void setUp() {
