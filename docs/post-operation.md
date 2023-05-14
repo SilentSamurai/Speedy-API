@@ -10,8 +10,8 @@ create multiple transaction
 
 **URL**
 
-```javascript
-POST / speedy / v1 / Transaction
+```http
+[POST] /speedy/v1/Transaction
 ```
 
 **Request Body**

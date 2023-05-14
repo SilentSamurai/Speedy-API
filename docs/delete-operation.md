@@ -10,8 +10,8 @@ delete multiple transactions
 
 **URL**
 
-```javascript
-DELETE / speedy / v1 / Transaction
+```http
+[DELETE] /speedy/v1/Transaction
 ```
 
 **Request Body**

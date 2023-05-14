@@ -10,8 +10,8 @@ update transaction object using primary key
 
 **URL**
 
-```javascript
-PUT / speedy / v1 / Transaction(id = 'transaction-1')
+```http
+[PUT] /speedy/v1/Transaction(id = 'transaction-1')
 ```
 
 **Request Body**

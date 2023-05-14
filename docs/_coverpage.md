@@ -4,15 +4,16 @@
 
 # Speedy API <small>1.0</small>
 
-> A magical api generator.
+> a magical resource api.
 
 - Simple and lightweight
 - Json serializer
 - Spring boot integration
 
-[GitHub](https://github.com/SilentSamurai/Speedy-API)
 [Get Started](README.md)
+[GitHub](https://github.com/SilentSamurai/Speedy-API)
+
 
 <!-- background image -->
 
-![](_media/mountain.bg.jpg)
+[comment]: <> (![]&#40;_media/mountain.bg.jpg&#41;)

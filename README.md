@@ -12,4 +12,4 @@ All entity in one api resource manager
 
 #### Documentation
 
-[Getting Started](https://silentsamurai.github.io/Speedy-API/)
+[Docs](https://silentsamurai.github.io/Speedy-API/)

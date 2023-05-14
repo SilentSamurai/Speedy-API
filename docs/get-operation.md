@@ -11,7 +11,7 @@ retrieve all resource in a single resource type / entity
 **URL**
 
 ```http
-GET / speedy / v1 / Transaction
+[GET] /speedy/v1/Transaction
 ```
 
 **Response**
@@ -69,8 +69,8 @@ retrieve a single resource with primary key
 
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(id = 'transaction-1')
+```http
+[GET] /speedy/v1/Transaction(id = 'transaction-1')
 ```
 
 **Response**
@@ -114,8 +114,8 @@ retrieve multiple resource with filter with resource fields
 
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(type = 'DEBIT')
+```http
+[GET] /speedy/v1/Transaction(type = 'DEBIT')
 ```
 
 get all transaction of DEBIT type
@@ -149,8 +149,8 @@ retrieve multiple resource with filter with resource fields
 
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(type = 'DEBIT', currency = 'INR')
+```http
+[GET] /speedy/v1/Transaction(type = 'DEBIT', currency = 'INR')
 ```
 
 get all transaction of DEBIT type and currency INR
@@ -186,8 +186,8 @@ retrieve multiple resource with filter with resource fields
 
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(type = 'DEBIT' & currency = 'INR')
+```http
+[GET] /speedy/v1/Transaction(type = 'DEBIT' & currency = 'INR')
 ```
 
 get all transaction of DEBIT type and currency INR
@@ -199,8 +199,8 @@ retrieve multiple resource with filter with resource fields
 
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(currency = 'USD' | currency = 'EUR')
+```http
+[GET] /speedy/v1/Transaction(currency = 'USD' | currency = 'EUR')
 ```
 
 get all transaction of currency USD or currency EUR
@@ -236,8 +236,8 @@ retrieve multiple resource with filter with resource fields
 
 get all transaction where amount > 100
 
-```javascript
-GET / speedy / v1 / Transaction(amount > 100)
+```http
+[GET] /speedy/v1/Transaction(amount > 100)
 ```
 
 **Response**
@@ -265,8 +265,8 @@ GET / speedy / v1 / Transaction(amount > 100)
 
 get all transaction where amount <= 50
 
-```javascript
-GET / speedy / v1 / Transaction(amount <= 50)
+```http
+[GET] /speedy/v1/Transaction(amount <= 50)
 ```
 
 **Response**
@@ -294,8 +294,8 @@ GET / speedy / v1 / Transaction(amount <= 50)
 
 get all transaction where amount != 50
 
-```javascript
-GET / speedy / v1 / Transaction(amount != 50)
+```http
+[GET] /speedy/v1/Transaction(amount != 50)
 ```
 
 **Response**
@@ -330,17 +330,16 @@ GET / speedy / v1 / Transaction(amount != 50)
 
 retrieve multiple resource with in operators
 
+##### In Operation
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(type < > ['CREDIT', 'DEBIT'])
+```http
+[GET] /speedy/v1/Transaction(type <> ['CREDIT', 'DEBIT'])
 ```
 
-```javascript
-GET / speedy / v1 / Transaction(cost < > [23, 50, 72])
+```http
+[GET] /speedy/v1/Transaction(cost <> [23, 50, 72])
 ```
-
-eliminate multiple resource with not in operators
 
 **Response**
 
@@ -363,14 +362,18 @@ eliminate multiple resource with not in operators
 }
 ```
 
+##### Not In Operation
+
+eliminate multiple resource with not in operators
+
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(type < ! > ['TRANSFER'])
+```http
+[GET] /speedy/v1/Transaction(type <!> ['TRANSFER'])
 ```
 
-```javascript
-GET / speedy / v1 / Transaction(cost < ! > [23, 50, 72])
+```http
+[GET] /speedy/v1/Transaction(cost <!> [23, 50, 72])
 ```
 
 **Response**
@@ -401,16 +404,16 @@ GET / speedy / v1 / Transaction(cost < ! > [23, 50, 72])
 retrieve multiple resource with foreign keys
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction(procurement.id = 'procurement-1')
+```http
+[GET] /speedy/v1/Transaction(procurement.id = 'procurement-1')
 ```
 
-```javascript
-GET / speedy / v1 / Transaction(procurement.product = 'Product 1')
+```http
+[GET] /speedy/v1/Transaction(procurement.product = 'Product 1')
 ```
 
-```javascript
-GET / speedy / v1 / Transaction(account.type = 'cash')
+```http
+[GET] /speedy/v1/Transaction(account.type = 'cash')
 ```
 
 **Response**
@@ -446,12 +449,12 @@ the request are by default paged, use this to get different pages
 
 **URL**
 
-```javascript
-GET / speedy / v1 / Transaction?pageSize=100&pageNo=0
+```http
+[GET] /speedy/v1/Transaction ? pageSize = 100 & pageNo = 0
 ```
 
-```javascript
-GET / speedy / v1 / Transaction(amount > 100)?pageSize=10&pageNo=2
+```http
+[GET] /speedy/v1/Transaction(amount > 100) ? pageSize = 10 & pageNo = 2
 ```
 
 **Response**
@@ -459,11 +462,16 @@ GET / speedy / v1 / Transaction(amount > 100)?pageSize=10&pageNo=2
 ```json
 {
     "payload": [
-        {...},
-        {...}
+        {
+            ...
+        },
+        {
+            ...
+        }
     ],
     "pageCount": 2,
-    "pageIndex": 0 // page starts from 0 indexed
+    "pageIndex": 0
+    // page starts from 0 indexed
 }
 ```
 
@@ -471,21 +479,26 @@ GET / speedy / v1 / Transaction(amount > 100)?pageSize=10&pageNo=2
 
 order the request with different columns
 
-```javascript
-GET / speedy / v1 / Transaction?orderBy='createdAt'&orderByDesc='amount'
+```http
+[GET] /speedy/v1/Transaction?orderBy='createdAt' & orderByDesc = 'amount'
 ```
 
-```javascript
-GET / speedy / v1 / Transaction?orderBy=['createdAt','amount']
+```http
+[GET] /speedy/v1/Transaction?orderBy=['createdAt', 'amount']
 ```
 
 **Response**
 
 ```json
 {
-    "payload": [ // ordered request
-        {...},
-        {...} 
+    "payload": [
+        // ordered request
+        {
+            ...
+        },
+        {
+            ...
+        }
     ],
     "pageCount": 2,
     "pageIndex": 0

@@ -9,7 +9,3 @@ Create CRUD Api for all your JPA Entities
 #### Getting Started
 
 [Getting Started](https://silentsamurai.github.io/Speedy-API/#/getting-started)
-
-#### Documentation
-
-[Getting Started](https://silentsamurai.github.io/Speedy-API/)
