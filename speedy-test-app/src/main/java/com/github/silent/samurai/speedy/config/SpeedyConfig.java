@@ -1,8 +1,10 @@
 package com.github.silent.samurai.speedy.config;
 
 import com.github.silent.samurai.speedy.JpaMetaModelProcessor;
+import com.github.silent.samurai.speedy.events.EntityEvents;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyEventRegistry;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     @Autowired
     SpeedyValidation speedyValidation;
 
+    @Autowired
+    EntityEvents entityEvents;
+
     @Override
     public EntityManager createEntityManager() {
         return entityManagerFactory.createEntityManager();
@@ -33,5 +38,10 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     @Override
     public ISpeedyCustomValidation getCustomValidator() {
         return speedyValidation;
+    }
+
+    @Override
+    public void registerEvents(ISpeedyEventRegistry registry) {
+        registry.registerHandler(entityEvents);
     }
 }

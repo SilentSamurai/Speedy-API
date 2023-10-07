@@ -31,7 +31,6 @@ public class SpeedyApiController {
     @Autowired
     SpeedyFactory speedyFactory;
 
-
     @Hidden
     @GetMapping(value = "/$metadata")
     public String metadata() throws JsonProcessingException {

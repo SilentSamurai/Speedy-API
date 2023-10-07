@@ -18,7 +18,6 @@ public class UpdateDataHandler {
     }
 
     private Object saveEntity(Object entityInstance, EntityMetadata entityMetadata) throws Exception {
-        context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entityInstance);
         context.getEntityManager().persist(entityInstance);
         context.getEntityManager().flush();
         LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
@@ -33,7 +32,10 @@ public class UpdateDataHandler {
             Object entityInstance = context.getEntityInstance();
             if (entityInstance != null) {
                 transaction.begin();
+                context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entityInstance);
+                context.getEventProcessor().triggerPreUpdateEvent(entityMetadata, entityInstance);
                 savedEntity = saveEntity(entityInstance, entityMetadata);
+                context.getEventProcessor().triggerPostUpdateEvent(entityMetadata, entityInstance);
                 transaction.commit();
             }
         } catch (Throwable throwable) {

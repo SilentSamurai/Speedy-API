@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.request.delete;
 
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,14 +22,17 @@ public class DeleteDataHandler {
     public Optional<List<Object>> process() throws Exception {
         EntityTransaction transaction = context.getEntityManager().getTransaction();
         List<Object> deletedObjects = new LinkedList<>();
+        EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
         try {
             if (!context.getObjectsToBeRemoved().isEmpty()) {
                 transaction.begin();
                 for (Object parsedObject : context.getObjectsToBeRemoved()) {
                     context.getValidationProcessor().validateDeleteRequestEntity(
-                            context.getParser().getPrimaryResource().getResourceMetadata(),
+                            entityMetadata,
                             parsedObject);
+                    context.getEventProcessor().triggerPreDeleteEvent(entityMetadata, parsedObject);
                     context.getEntityManager().remove(parsedObject);
+                    context.getEventProcessor().triggerPostDeleteEvent(entityMetadata, parsedObject);
                     deletedObjects.add(parsedObject);
                 }
                 transaction.commit();

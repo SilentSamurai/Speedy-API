@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.request.put;
 
+import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
@@ -20,6 +21,7 @@ public class PutRequestContext implements ResponseReturningRequestContext {
     private final MetaModelProcessor metaModelProcessor;
     private final EntityManager entityManager;
     private final ValidationProcessor validationProcessor;
+    private final EventProcessor eventProcessor;
 
     private SpeedyUriContext parser;
     private Object entityInstance;
@@ -28,12 +30,13 @@ public class PutRequestContext implements ResponseReturningRequestContext {
                              HttpServletResponse response,
                              MetaModelProcessor metaModelProcessor,
                              EntityManager entityManager,
-                             ValidationProcessor validationProcessor) {
+                             ValidationProcessor validationProcessor, EventProcessor eventProcessor) {
         this.request = request;
         this.response = response;
         this.metaModelProcessor = metaModelProcessor;
         this.entityManager = entityManager;
         this.validationProcessor = validationProcessor;
+        this.eventProcessor = eventProcessor;
     }
 
     @Override

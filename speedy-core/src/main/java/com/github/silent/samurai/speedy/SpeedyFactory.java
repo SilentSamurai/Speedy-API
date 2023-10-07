@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy;
 
+import com.github.silent.samurai.speedy.events.EventProcessor;
+import com.github.silent.samurai.speedy.events.EventRegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
@@ -43,13 +45,19 @@ public class SpeedyFactory {
     private final ISpeedyConfiguration speedyConfiguration;
     private final MetaModelProcessor metaModelProcessor;
     private final ValidationProcessor validationProcessor;
-
+    private final EventProcessor eventProcessor;
+    private final EventRegistryImpl eventRegistry;
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) {
         this.speedyConfiguration = speedyConfiguration;
         this.metaModelProcessor = speedyConfiguration.createMetaModelProcessor();
         this.validationProcessor = new ValidationProcessor(speedyConfiguration.getCustomValidator(), metaModelProcessor);
         this.validationProcessor.process();
+        // events
+        this.eventRegistry = new EventRegistryImpl();
+        speedyConfiguration.registerEvents(eventRegistry);
+        this.eventProcessor = new EventProcessor(metaModelProcessor, eventRegistry);
+        this.eventProcessor.processRegistry();
     }
 
     public void processGETRequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager)
@@ -75,8 +83,8 @@ public class SpeedyFactory {
                 response,
                 metaModelProcessor,
                 entityManager,
-                validationProcessor
-        );
+                validationProcessor,
+                eventProcessor);
         new PostRequestParser(context).processBatch();
         Optional<List<Object>> savedEntities = new PostDataHandler(context).processBatch();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
@@ -92,8 +100,8 @@ public class SpeedyFactory {
                 response,
                 metaModelProcessor,
                 entityManager,
-                validationProcessor
-        );
+                validationProcessor,
+                eventProcessor);
         new PutRequestParser(context).process();
         Optional<Object> savedEntity = new UpdateDataHandler(context).process();
         if (savedEntity.isEmpty()) {
@@ -107,7 +115,7 @@ public class SpeedyFactory {
     }
 
     public void processDELETERequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
-        DeleteRequestContext context = new DeleteRequestContext(request, response, metaModelProcessor, validationProcessor, entityManager);
+        DeleteRequestContext context = new DeleteRequestContext(request, response, metaModelProcessor, validationProcessor, entityManager, eventProcessor);
         new DeleteRequestParser(context).process();
         Optional<List<Object>> removedEntities = new DeleteDataHandler(context).process();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);

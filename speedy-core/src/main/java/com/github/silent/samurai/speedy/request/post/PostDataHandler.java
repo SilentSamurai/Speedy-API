@@ -35,7 +35,9 @@ public class PostDataHandler {
                 EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
                 for (Object parsedObject : context.getParsedObjects()) {
                     context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
+                    context.getEventProcessor().triggerPreInsertEvent(entityMetadata, parsedObject);
                     Object savedEntity = saveEntity(parsedObject, entityMetadata);
+                    context.getEventProcessor().triggerPostInsertEvent(entityMetadata, parsedObject);
                     savedObjects.add(savedEntity);
                 }
                 transaction.commit();
