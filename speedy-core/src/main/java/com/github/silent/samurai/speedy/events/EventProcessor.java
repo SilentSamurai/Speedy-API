@@ -20,12 +20,20 @@ public class EventProcessor {
 
     private final MetaModelProcessor metaModelProcessor;
     private final EventRegistryImpl eventRegistry;
-    private final Map<String, EventHandlerMetadata> preInsertEventHandler = new HashMap<>();
-    private final Map<String, EventHandlerMetadata> preUpdateEventHandler = new HashMap<>();
-    private final Map<String, EventHandlerMetadata> preDeleteEventHandler = new HashMap<>();
-    private final Map<String, EventHandlerMetadata> postInsertEventHandler = new HashMap<>();
-    private final Map<String, EventHandlerMetadata> postUpdateEventHandler = new HashMap<>();
-    private final Map<String, EventHandlerMetadata> postDeleteEventHandler = new HashMap<>();
+
+    /*
+    {
+        "POST_INSERT": {
+            Category: handler,
+            Customer: handler
+        },
+        "POST_UPDATE": {
+            Category: handler,
+            Customer: handler
+        }
+    }
+     */
+    private final Map<SpeedyEventType, Map<String, EventHandlerMetadata>> eventMap = new HashMap<>();
 
     public EventProcessor(MetaModelProcessor metaModelProcessor, EventRegistryImpl eventRegistry) {
         this.metaModelProcessor = metaModelProcessor;
@@ -46,29 +54,13 @@ public class EventProcessor {
                     SpeedyEvent annotation = declaredMethod.getAnnotation(SpeedyEvent.class);
                     Class<?> entityClass = annotation.value();
                     EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entityClass.getSimpleName());
-                    if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == SpeedyEventType.PRE_INSERT)) {
-                        EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
-                        preInsertEventHandler.put(entityMetadata.getName(), metadata);
-                    }
-                    if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == SpeedyEventType.PRE_UPDATE)) {
-                        EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
-                        preUpdateEventHandler.put(entityMetadata.getName(), metadata);
-                    }
-                    if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == SpeedyEventType.PRE_DELETE)) {
-                        EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
-                        preDeleteEventHandler.put(entityMetadata.getName(), metadata);
-                    }
-                    if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == SpeedyEventType.POST_INSERT)) {
-                        EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
-                        postInsertEventHandler.put(entityMetadata.getName(), metadata);
-                    }
-                    if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == SpeedyEventType.POST_UPDATE)) {
-                        EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
-                        postUpdateEventHandler.put(entityMetadata.getName(), metadata);
-                    }
-                    if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == SpeedyEventType.POST_DELETE)) {
-                        EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
-                        postDeleteEventHandler.put(entityMetadata.getName(), metadata);
+                    for (SpeedyEventType event : SpeedyEventType.values()) {
+                        eventMap.putIfAbsent(event, new HashMap<>());
+                        Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(event);
+                        if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == event)) {
+                            EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
+                            eventEntityMap.put(entityMetadata.getName(), metadata);
+                        }
                     }
                 }
             } catch (NotFoundException e) {
@@ -77,46 +69,18 @@ public class EventProcessor {
         }
     }
 
-    public void triggerPreInsertEvent(EntityMetadata entityMetadata, Object entity) throws Exception {
-        if (preInsertEventHandler.containsKey(entityMetadata.getName())) {
-            EventHandlerMetadata metadata = preInsertEventHandler.get(entityMetadata.getName());
-            metadata.invokeEventHandler(entity);
+    public Object triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, Object entity) throws Exception {
+        Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
+        if (eventEntityMap.containsKey(entityMetadata.getName())) {
+            EventHandlerMetadata metadata = eventEntityMap.get(entityMetadata.getName());
+            return metadata.invokeEventHandler(entity);
         }
+        return null;
     }
 
-    public void triggerPreUpdateEvent(EntityMetadata entityMetadata, Object entity) throws Exception {
-        if (preUpdateEventHandler.containsKey(entityMetadata.getName())) {
-            EventHandlerMetadata metadata = preUpdateEventHandler.get(entityMetadata.getName());
-            metadata.invokeEventHandler(entity);
-        }
-    }
-
-    public void triggerPreDeleteEvent(EntityMetadata entityMetadata, Object entity) throws Exception {
-        if (preDeleteEventHandler.containsKey(entityMetadata.getName())) {
-            EventHandlerMetadata metadata = preDeleteEventHandler.get(entityMetadata.getName());
-            metadata.invokeEventHandler(entity);
-        }
-    }
-
-    public void triggerPostInsertEvent(EntityMetadata entityMetadata, Object entity) throws Exception {
-        if (postInsertEventHandler.containsKey(entityMetadata.getName())) {
-            EventHandlerMetadata metadata = postInsertEventHandler.get(entityMetadata.getName());
-            metadata.invokeEventHandler(entity);
-        }
-    }
-
-    public void triggerPostUpdateEvent(EntityMetadata entityMetadata, Object entity) throws Exception {
-        if (postUpdateEventHandler.containsKey(entityMetadata.getName())) {
-            EventHandlerMetadata metadata = postUpdateEventHandler.get(entityMetadata.getName());
-            metadata.invokeEventHandler(entity);
-        }
-    }
-
-    public void triggerPostDeleteEvent(EntityMetadata entityMetadata, Object entity) throws Exception {
-        if (postDeleteEventHandler.containsKey(entityMetadata.getName())) {
-            EventHandlerMetadata metadata = postDeleteEventHandler.get(entityMetadata.getName());
-            metadata.invokeEventHandler(entity);
-        }
+    public boolean isEventPresent(SpeedyEventType eventType, EntityMetadata entityMetadata) {
+        Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
+        return eventEntityMap.containsKey(entityMetadata.getName());
     }
 
     static class EventHandlerMetadata {
@@ -128,8 +92,8 @@ public class EventProcessor {
             this.method = method;
         }
 
-        private void invokeEventHandler(Object entity) throws Exception {
-            Object valid = method.invoke(instance, entity);
+        private Object invokeEventHandler(Object entity) throws Exception {
+            return method.invoke(instance, entity);
         }
     }
 

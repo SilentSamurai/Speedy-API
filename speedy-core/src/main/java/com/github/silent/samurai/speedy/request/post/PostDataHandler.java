@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy.request.post;
 
+import com.github.silent.samurai.speedy.enums.SpeedyEventType;
+import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,31 +22,44 @@ public class PostDataHandler {
     }
 
     private Object saveEntity(Object entityInstance, EntityMetadata entityMetadata) {
-        entityInstance = context.getEntityManager().merge(entityInstance);
-        context.getEntityManager().flush();
-        LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
+        EntityTransaction transaction = context.getEntityManager().getTransaction();
+        try {
+            transaction.begin();
+            entityInstance = context.getEntityManager().merge(entityInstance);
+            context.getEntityManager().flush();
+            LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
+            transaction.commit();
+        } catch (Throwable throwable) {
+            transaction.rollback();
+            throw throwable;
+        }
         return entityInstance;
     }
 
     public Optional<List<Object>> processBatch() throws Exception {
-        EntityTransaction transaction = context.getEntityManager().getTransaction();
         List<Object> savedObjects = new LinkedList<>();
-        try {
-            if (!context.getParsedObjects().isEmpty()) {
-                transaction.begin();
-                EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
-                for (Object parsedObject : context.getParsedObjects()) {
-                    context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
-                    context.getEventProcessor().triggerPreInsertEvent(entityMetadata, parsedObject);
+        EventProcessor eventProcessor = context.getEventProcessor();
+        if (!context.getParsedObjects().isEmpty()) {
+            EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
+            for (Object parsedObject : context.getParsedObjects()) {
+
+                context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
+
+                eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT,
+                        entityMetadata, parsedObject);
+
+                if (eventProcessor.isEventPresent(SpeedyEventType.IN_PLACE_OF_INSERT, entityMetadata)) {
+                    Object savedEntity = eventProcessor.triggerEvent(SpeedyEventType.IN_PLACE_OF_INSERT,
+                            entityMetadata, parsedObject);
+                    savedObjects.add(savedEntity);
+                } else {
                     Object savedEntity = saveEntity(parsedObject, entityMetadata);
-                    context.getEventProcessor().triggerPostInsertEvent(entityMetadata, parsedObject);
                     savedObjects.add(savedEntity);
                 }
-                transaction.commit();
+
+                eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT,
+                        entityMetadata, parsedObject);
             }
-        } catch (Throwable throwable) {
-            transaction.rollback();
-            throw throwable;
         }
         return Optional.of(savedObjects);
     }

@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy.request.put;
 
+import com.github.silent.samurai.speedy.enums.SpeedyEventType;
+import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,30 +20,41 @@ public class UpdateDataHandler {
     }
 
     private Object saveEntity(Object entityInstance, EntityMetadata entityMetadata) throws Exception {
-        context.getEntityManager().persist(entityInstance);
-        context.getEntityManager().flush();
-        LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
+        EntityTransaction transaction = context.getEntityManager().getTransaction();
+        try {
+            transaction.begin();
+            context.getEntityManager().persist(entityInstance);
+            context.getEntityManager().flush();
+            LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
+            transaction.commit();
+        } catch (Throwable throwable) {
+            transaction.rollback();
+            throw throwable;
+        }
         return entityInstance;
     }
 
     public Optional<Object> process() throws Exception {
         EntityMetadata entityMetadata = context.getEntityMetadata();
-        EntityTransaction transaction = context.getEntityManager().getTransaction();
+        EventProcessor eventProcessor = context.getEventProcessor();
         Object savedEntity = null;
-        try {
-            Object entityInstance = context.getEntityInstance();
-            if (entityInstance != null) {
-                transaction.begin();
-                context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entityInstance);
-                context.getEventProcessor().triggerPreUpdateEvent(entityMetadata, entityInstance);
+        Object entityInstance = context.getEntityInstance();
+        if (entityInstance != null) {
+            context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entityInstance);
+
+            eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE,
+                    entityMetadata, entityInstance);
+            if (eventProcessor.isEventPresent(SpeedyEventType.IN_PLACE_OF_UPDATE, entityMetadata)) {
+                savedEntity = eventProcessor.triggerEvent(SpeedyEventType.IN_PLACE_OF_UPDATE,
+                        entityMetadata, entityInstance);
+            } else {
                 savedEntity = saveEntity(entityInstance, entityMetadata);
-                context.getEventProcessor().triggerPostUpdateEvent(entityMetadata, entityInstance);
-                transaction.commit();
             }
-        } catch (Throwable throwable) {
-            transaction.rollback();
-            throw throwable;
+            eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE,
+                    entityMetadata, entityInstance);
+
         }
+
         return Optional.ofNullable(savedEntity);
     }
 }
