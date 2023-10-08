@@ -82,12 +82,23 @@ Content-Type: application/json
         "A"
     ]
 }
+
 ###
 
-GET http://localhost:8080/speedy/v1.0/$metadata/
+GET http://localhost:8080/speedy/v1/$metadata/
 Accept: application/json
 
 ###
 
+POST http://localhost:8080/speedy/v2/$query
+Accept: application/json
+
+Category
+.where(id="abcd" & name="acs")
+.orderBy("name")
+.page(0, 100);
+
+
+###
 
 
