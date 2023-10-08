@@ -5,6 +5,8 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
@@ -14,6 +16,8 @@ import java.lang.reflect.Method;
 @Getter
 @Setter
 public class JpaFieldMetadata implements FieldMetadata {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JpaFieldMetadata.class);
 
     private String dbColumnName;
     private String outputPropertyName;
@@ -47,6 +51,7 @@ public class JpaFieldMetadata implements FieldMetadata {
             this.setter.invoke(entity, value);
             return true;
         } catch (Exception e) {
+            LOGGER.error("Unable to set entity field", e);
             return false;
         }
     }
@@ -56,6 +61,7 @@ public class JpaFieldMetadata implements FieldMetadata {
         try {
             return this.getter.invoke(entityObject);
         } catch (Exception e) {
+            LOGGER.error("Unable to get entity field", e);
             return null;
         }
     }

@@ -92,6 +92,19 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return field.getAnnotation(Id.class) != null;
     }
 
+    @SneakyThrows
+    @Override
+    public boolean setIdFieldWithValue(Object idInstance, Object value) {
+        field.set(idInstance, value);
+        return false;
+    }
+
+    @SneakyThrows
+    @Override
+    public Object getIdFieldValue(Object idInstance) {
+        return field.get(idInstance);
+    }
+
     @Override
     public IgnoreType getIgnoreType() {
         return IgnoreType.ALL;

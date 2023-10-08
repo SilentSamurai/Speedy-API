@@ -45,7 +45,7 @@ public class ParserIdentityDeserializer {
             if (resourceSelector.hasKeyword(propertyName)) {
                 BinarySVCondition condition = resourceSelector.getFirstConditionByField(propertyName);
                 Object instance = condition.getInstance();
-                keyFieldMetadata.setEntityFieldWithValue(newKeyInstance, instance);
+                keyFieldMetadata.setIdFieldWithValue(newKeyInstance, instance);
             } else {
                 throw new BadRequestException(String.format("primary key incomplete, field not found '%s' ", propertyName));
             }

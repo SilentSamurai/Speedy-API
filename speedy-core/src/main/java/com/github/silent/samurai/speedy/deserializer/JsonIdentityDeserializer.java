@@ -40,11 +40,11 @@ public class JsonIdentityDeserializer {
 
     private Object getCompositeKey() throws Exception {
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
-        for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
-            String propertyName = fieldMetadata.getOutputPropertyName();
+        for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
+            String propertyName = keyFieldMetadata.getOutputPropertyName();
             if (keyJson.has(propertyName)) {
-                Object value = CommonUtil.jsonToType(keyJson.get(propertyName), fieldMetadata.getFieldType());
-                fieldMetadata.setEntityFieldWithValue(newKeyInstance, value);
+                Object value = CommonUtil.jsonToType(keyJson.get(propertyName), keyFieldMetadata.getFieldType());
+                keyFieldMetadata.setIdFieldWithValue(newKeyInstance, value);
             } else {
                 throw new BadRequestException("primary key incomplete" + keyJson);
             }

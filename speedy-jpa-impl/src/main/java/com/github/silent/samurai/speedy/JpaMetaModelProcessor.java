@@ -43,13 +43,27 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         processAssociations();
     }
 
-    public static JpaFieldMetadata findFieldMetadata(Attribute<?, ?> attribute, Class<?> entityClass) {
+    public static JpaFieldMetadata findFieldMetadata(Attribute<?, ?> attribute, Class<?> entityClass, JpaEntityMetadata entityMetadata) {
         Member member = attribute.getJavaMember();
         JpaFieldMetadata fieldMetadata;
 
         if (attribute instanceof SingularAttribute && ((SingularAttribute<?, ?>) attribute).isId()) {
             JpaKeyFieldMetadata jpaKeyFieldMetadata = new JpaKeyFieldMetadata();
             jpaKeyFieldMetadata.setId(true);
+            if (entityMetadata.hasCompositeKey()) {
+                Class<?> idClass = entityMetadata.getKeyClass();
+                Field idClassField = JpaMetaModelProcessor.getField(idClass, member.getName());
+                jpaKeyFieldMetadata.setIdClassField(idClassField);
+                Map<String, Method> getterSetter = findGetterSetter(idClass, idClassField.getName());
+                jpaKeyFieldMetadata.setIdClassGetter(getterSetter.get("GET"));
+                jpaKeyFieldMetadata.setIdClassSetter(getterSetter.get("SET"));
+            } else {
+                Field idClassField = JpaMetaModelProcessor.getField(entityClass, member.getName());
+                jpaKeyFieldMetadata.setIdClassField(idClassField);
+                Map<String, Method> getterSetter = findGetterSetter(entityClass, idClassField.getName());
+                jpaKeyFieldMetadata.setIdClassGetter(getterSetter.get("GET"));
+                jpaKeyFieldMetadata.setIdClassSetter(getterSetter.get("SET"));
+            }
             fieldMetadata = jpaKeyFieldMetadata;
         } else {
             fieldMetadata = new JpaFieldMetadata();
@@ -142,21 +156,29 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         }
 
         // MZ: Find the correct method
-        for (Method method : entityClass.getMethods()) {
-            if (method.getName().toLowerCase().endsWith(member.getName().toLowerCase())) {
+        Map<String, Method> getterSetter = findGetterSetter(entityClass, member.getName());
+        fieldMetadata.setGetter(getterSetter.get("GET"));
+        fieldMetadata.setSetter(getterSetter.get("SET"));
+        return fieldMetadata;
+    }
+
+    public static Map<String, Method> findGetterSetter(Class<?> clazz, String fieldName) {
+        Map<String, Method> getterSetter = new HashMap<>();
+        for (Method method : clazz.getMethods()) {
+            if (method.getName().toLowerCase().endsWith(fieldName.toLowerCase())) {
                 try {
-                    if ((method.getName().startsWith("get")) && (method.getName().length() == (member.getName().length() + 3))) {
-                        fieldMetadata.setGetter(method);
+                    if ((method.getName().startsWith("get")) && (method.getName().length() == (fieldName.length() + 3))) {
+                        getterSetter.put("GET", method);
                     }
-                    if ((method.getName().startsWith("set")) && (method.getName().length() == (member.getName().length() + 3))) {
-                        fieldMetadata.setSetter(method);
+                    if ((method.getName().startsWith("set")) && (method.getName().length() == (fieldName.length() + 3))) {
+                        getterSetter.put("SET", method);
                     }
                 } catch (IllegalStateException e) {
-                    LOGGER.error("Could not determine method: {} ", member, e);
+                    LOGGER.error("Could not determine method: {} ", fieldName, e);
                 }
             }
         }
-        return fieldMetadata;
+        return getterSetter;
     }
 
     public static Field getField(Class<?> clazz, String fieldName) throws IllegalStateException {
@@ -214,7 +236,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         entityMetadata.setHasCompositeKey(!entityType.hasSingleIdAttribute());
 
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
-            JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType());
+            JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType(), entityMetadata);
             entityMetadata.addFieldMetadata(memberMetadata);
         }
         entityMap.put(entityType.getName(), entityMetadata);
