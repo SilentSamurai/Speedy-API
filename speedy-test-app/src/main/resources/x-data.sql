@@ -1,3 +1,7 @@
+INSERT INTO product_view (ID, NAME, DESCRIPTION)
+VALUES ('1', 'Product 1', 'Description 1');
+
+
 INSERT INTO categories(ID, NAME)
 VALUES ('1', 'cat-1-1');
 INSERT INTO categories(ID, NAME)

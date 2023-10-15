@@ -19,7 +19,7 @@ public class EventProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(EventProcessor.class);
 
     private final MetaModelProcessor metaModelProcessor;
-    private final EventRegistryImpl eventRegistry;
+    private final RegistryImpl eventRegistry;
 
     /*
     {
@@ -35,7 +35,7 @@ public class EventProcessor {
      */
     private final Map<SpeedyEventType, Map<String, EventHandlerMetadata>> eventMap = new HashMap<>();
 
-    public EventProcessor(MetaModelProcessor metaModelProcessor, EventRegistryImpl eventRegistry) {
+    public EventProcessor(MetaModelProcessor metaModelProcessor, RegistryImpl eventRegistry) {
         this.metaModelProcessor = metaModelProcessor;
         this.eventRegistry = eventRegistry;
     }

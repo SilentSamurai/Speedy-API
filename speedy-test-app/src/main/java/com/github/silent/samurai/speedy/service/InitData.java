@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.service;
 
+import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

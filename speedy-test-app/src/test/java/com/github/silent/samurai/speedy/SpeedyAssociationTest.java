@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy;
 
-import com.github.silent.samurai.speedy.service.CategoryRepository;
+import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

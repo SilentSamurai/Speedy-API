@@ -10,6 +10,6 @@ public interface ISpeedyConfiguration {
 
     ISpeedyCustomValidation getCustomValidator();
 
-    void registerEvents(ISpeedyEventRegistry registry);
+    void register(ISpeedyRegistry registry);
 
 }

@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.request.post;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +49,9 @@ public class PostDataHandler {
                 eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT,
                         entityMetadata, parsedObject);
 
-                if (eventProcessor.isEventPresent(SpeedyEventType.IN_PLACE_OF_INSERT, entityMetadata)) {
-                    Object savedEntity = eventProcessor.triggerEvent(SpeedyEventType.IN_PLACE_OF_INSERT,
-                            entityMetadata, parsedObject);
+                if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
+                    SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
+                    Object savedEntity = handler.create(parsedObject);
                     savedObjects.add(savedEntity);
                 } else {
                     Object savedEntity = saveEntity(parsedObject, entityMetadata);

@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.request.delete;
 
 import com.github.silent.samurai.speedy.events.EventProcessor;
+import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
@@ -24,6 +25,7 @@ public class DeleteRequestContext implements ResponseReturningRequestContext {
     private final ValidationProcessor validationProcessor;
     private final EntityManager entityManager;
     private final EventProcessor eventProcessor;
+    private final VirtualEntityProcessor vEntityProcessor;
     private final List<Object> objectsToBeRemoved = new LinkedList<>();
 
     private SpeedyUriContext parser;
@@ -31,13 +33,14 @@ public class DeleteRequestContext implements ResponseReturningRequestContext {
     public DeleteRequestContext(HttpServletRequest request,
                                 HttpServletResponse response, MetaModelProcessor metaModelProcessor,
                                 ValidationProcessor validationProcessor,
-                                EntityManager entityManager, EventProcessor eventProcessor) {
+                                EntityManager entityManager, EventProcessor eventProcessor, VirtualEntityProcessor vEntityProcessor) {
         this.request = request;
         this.response = response;
         this.metaModelProcessor = metaModelProcessor;
         this.validationProcessor = validationProcessor;
         this.entityManager = entityManager;
         this.eventProcessor = eventProcessor;
+        this.vEntityProcessor = vEntityProcessor;
     }
 
     @Override

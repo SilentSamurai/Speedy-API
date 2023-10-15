@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.request.delete;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +51,9 @@ public class DeleteDataHandler {
                 eventProcessor.triggerEvent(SpeedyEventType.PRE_DELETE,
                         entityMetadata, parsedObject);
 
-                if (eventProcessor.isEventPresent(SpeedyEventType.IN_PLACE_OF_DELETE, entityMetadata)) {
-                    eventProcessor.triggerEvent(SpeedyEventType.IN_PLACE_OF_DELETE,
-                            entityMetadata, parsedObject);
+                if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
+                    SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
+                    handler.delete(parsedObject);
                 } else {
                     deleteEntity(parsedObject, entityMetadata);
                 }

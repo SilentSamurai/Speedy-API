@@ -227,20 +227,14 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         return idClass.value();
     }
 
-    public void addEntity(EntityType<?> entityType) {
-        JpaEntityMetadata entityMetadata = new JpaEntityMetadata();
-        entityMetadata.setName(entityType.getName());
-        entityMetadata.setJpaEntityType(entityType);
-        entityMetadata.setEntityClass(entityType.getBindableJavaType());
-        entityMetadata.setKeyClass(getIdClassType(entityType));
-        entityMetadata.setHasCompositeKey(!entityType.hasSingleIdAttribute());
-
-        for (Attribute<?, ?> attribute : entityType.getAttributes()) {
-            JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType(), entityMetadata);
-            entityMetadata.addFieldMetadata(memberMetadata);
+    static String getTableName(Class<?> entityClass) {
+        if (entityClass.isAnnotationPresent(Entity.class)) {
+            Table tableAnnotation = entityClass.getAnnotation(Table.class);
+            if (tableAnnotation != null) {
+                return tableAnnotation.name();
+            }
         }
-        entityMap.put(entityType.getName(), entityMetadata);
-        typeMap.put(entityMetadata.getEntityClass(), entityMetadata);
+        return null;
     }
 
     @Override
@@ -275,5 +269,22 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
     public FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException {
         EntityMetadata entityMetadata = findEntityMetadata(entityName);
         return entityMetadata.field(entityName);
+    }
+
+    public void addEntity(EntityType<?> entityType) {
+        JpaEntityMetadata entityMetadata = new JpaEntityMetadata();
+        entityMetadata.setName(entityType.getName());
+        entityMetadata.setJpaEntityType(entityType);
+        entityMetadata.setEntityClass(entityType.getBindableJavaType());
+        entityMetadata.setKeyClass(getIdClassType(entityType));
+        entityMetadata.setHasCompositeKey(!entityType.hasSingleIdAttribute());
+        entityMetadata.setTableName(getTableName(entityType.getJavaType()));
+
+        for (Attribute<?, ?> attribute : entityType.getAttributes()) {
+            JpaFieldMetadata memberMetadata = findFieldMetadata(attribute, entityType.getJavaType(), entityMetadata);
+            entityMetadata.addFieldMetadata(memberMetadata);
+        }
+        entityMap.put(entityType.getName(), entityMetadata);
+        typeMap.put(entityMetadata.getEntityClass(), entityMetadata);
     }
 }

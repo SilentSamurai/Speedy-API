@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.service;
+package com.github.silent.samurai.speedy.repositories;
 
 
 import com.github.silent.samurai.speedy.entity.Category;

@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.request.put;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +45,9 @@ public class UpdateDataHandler {
 
             eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE,
                     entityMetadata, entityInstance);
-            if (eventProcessor.isEventPresent(SpeedyEventType.IN_PLACE_OF_UPDATE, entityMetadata)) {
-                savedEntity = eventProcessor.triggerEvent(SpeedyEventType.IN_PLACE_OF_UPDATE,
-                        entityMetadata, entityInstance);
+            if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
+                SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
+                savedEntity = handler.update(entityInstance);
             } else {
                 savedEntity = saveEntity(entityInstance, entityMetadata);
             }
