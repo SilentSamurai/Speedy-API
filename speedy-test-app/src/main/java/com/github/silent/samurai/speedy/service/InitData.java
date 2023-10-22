@@ -42,6 +42,7 @@ public class InitData {
         try (Connection connection = dataSource.getConnection()) {
             String[] sqls = fetchSql();
             for (String sql : sqls) {
+                LOGGER.info("sql : {}", sql);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.executeUpdate();
                 } catch (Exception e) {

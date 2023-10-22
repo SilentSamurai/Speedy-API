@@ -94,8 +94,10 @@ POST http://localhost:8080/speedy/v2/$query
 Accept: application/json
 
 Category
-.where(id="abcd" & name="acs")
-.orderBy("name")
+.where( (id="abcd" & name="acs") || (category.product.name = "P1") )
+.orderBy( des("name"), asc("id") )
+.expand("product")
+.group("category", "product")
 .page(0, 100);
 
 
