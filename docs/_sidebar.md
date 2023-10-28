@@ -7,3 +7,5 @@
 * [POST Operations](post-operation.md)
 * [PUT Operations](put-operation.md)
 * [DELETE Operations](delete-operation.md)
+* [Virtual Entity](virtual-entity.md)
+* [Speedy Events](speedy-events.md)
