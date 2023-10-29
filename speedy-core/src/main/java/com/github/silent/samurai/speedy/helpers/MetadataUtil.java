@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.deserializer.JsonIdentityDeserializer;
 import com.github.silent.samurai.speedy.deserializer.ParserIdentityDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.google.common.collect.Sets;
 
@@ -69,6 +70,16 @@ public class MetadataUtil {
         } catch (Exception e) {
             throw new BadRequestException("failed to parse body");
         }
+    }
+
+    public static boolean isKeyCompleteInEntity(EntityMetadata entityMetadata, Object entityInstance) {
+        for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
+            Object keyFieldValue = keyField.getIdFieldValue(entityInstance);
+            if (keyFieldValue == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String getEntityNameFromType(Class<?> entityType) {

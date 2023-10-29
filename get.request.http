@@ -92,32 +92,43 @@ Accept: application/json
 
 POST http://localhost:8080/speedy/v2/$query
 Accept: application/json
+Content-Type: application/json
 
-Category: {
-   where: {
-      (id="abcd" & name="acs") || (category.product.name = "P1")
-   },
-   select: [
-      "id", "name", "desc"
-   ],
-   orderBy: [
-      des("name"), asc("id")
-   ],
-   expand: {
-      "product"
-   },
-   page: {
-      index: 0,
-      size: 100
-   }
+{
+    "where": {
+        "$and": [
+            {
+                "id": {
+                    "$eq": "abcd"
+                },
+                "name": "acs"
+            },
+            {
+                "category.product.name": "P1"
+            }
+        ]
+    },
+    "select": [
+        "id",
+        "name",
+        "desc"
+    ],
+    "orderBy": [
+        {
+            "name": "desc"
+        },
+        {
+            "id": "asc"
+        }
+    ],
+    "expand": [
+        "product"
+    ],
+    "page": {
+        "index": 0,
+        "size": 100
+    }
 }
-
-Category
-.where( (id="abcd" & name="acs") || (category.product.name = "P1") )
-.orderBy( des("name"), asc("id") )
-.expand("product")
-.group("category", "product")
-.page(0, 100);
 
 
 ###

@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,11 +17,11 @@ public class Order implements Serializable {
 
     @Id
     @Column(name = "product_id", nullable = false, length = 250)
-    private String product;
+    private String productId;
 
     @Id
     @Column(name = "supplier_id", nullable = false, length = 250)
-    private String supplier;
+    private String supplierId;
 
     @Column(name = "order_date")
     private Instant orderDate;
@@ -30,5 +31,15 @@ public class Order implements Serializable {
 
     @Column(name = "discount")
     private Double discount;
+
+    @JsonBackReference
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "product_id", nullable = false, insertable = false, updatable = false)
+    private Product product;
+
+    @JsonBackReference
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "supplier_id", nullable = false, insertable = false, updatable = false)
+    private Supplier supplier;
 
 }

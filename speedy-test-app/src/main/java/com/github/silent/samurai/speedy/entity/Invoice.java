@@ -1,10 +1,14 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.Instant;
 
+@Getter
+@Setter
 @Table(name = "invoices")
 @Entity
 public class Invoice extends AbstractBaseEntity {
@@ -44,91 +48,5 @@ public class Invoice extends AbstractBaseEntity {
     @Column(name = "modified_by")
     private String modifiedBy;
 
-    public String getModifiedBy() {
-        return modifiedBy;
-    }
 
-    public void setModifiedBy(String modifiedBy) {
-        this.modifiedBy = modifiedBy;
-    }
-
-    public Instant getModifiedAt() {
-        return modifiedAt;
-    }
-
-    public void setModifiedAt(Instant modifiedAt) {
-        this.modifiedAt = modifiedAt;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getInvoiceDate() {
-        return invoiceDate;
-    }
-
-    public void setInvoiceDate(Instant invoiceDate) {
-        this.invoiceDate = invoiceDate;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public Double getDueAmount() {
-        return dueAmount;
-    }
-
-    public void setDueAmount(Double dueAmount) {
-        this.dueAmount = dueAmount;
-    }
-
-    public Double getAdjustment() {
-        return adjustment;
-    }
-
-    public void setAdjustment(Double adjustment) {
-        this.adjustment = adjustment;
-    }
-
-    public Double getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(Double discount) {
-        this.discount = discount;
-    }
-
-    public Double getPaid() {
-        return paid;
-    }
-
-    public void setPaid(Double paid) {
-        this.paid = paid;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
 }

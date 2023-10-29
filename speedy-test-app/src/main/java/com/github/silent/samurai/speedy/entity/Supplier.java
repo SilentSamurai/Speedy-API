@@ -1,11 +1,16 @@
 package com.github.silent.samurai.speedy.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import java.time.Instant;
 
+@Getter
+@Setter
 @Table(name = "suppliers", indexes = {
         @Index(name = "suppliers_alt_phone_no_key", columnList = "alt_phone_no", unique = true),
         @Index(name = "suppliers_phone_no_key", columnList = "phone_no", unique = true)
@@ -33,59 +38,5 @@ public class Supplier extends AbstractBaseEntity {
     @Column(name = "created_by")
     private String createdBy;
 
-    public String getCreatedBy() {
-        return createdBy;
-    }
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public String getAltPhoneNo() {
-        return altPhoneNo;
-    }
-
-    public void setAltPhoneNo(String altPhoneNo) {
-        this.altPhoneNo = altPhoneNo;
-    }
-
-    public String getPhoneNo() {
-        return phoneNo;
-    }
-
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

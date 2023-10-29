@@ -30,7 +30,7 @@ public interface FieldMetadata {
 
     String getOutputPropertyName();
 
-    IgnoreType getIgnoreType();
+    IgnoreType getIgnoreProperty();
 
     Class<?> getFieldType();
 

@@ -106,7 +106,7 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     }
 
     @Override
-    public IgnoreType getIgnoreType() {
+    public IgnoreType getIgnoreProperty() {
         return IgnoreType.ALL;
     }
 

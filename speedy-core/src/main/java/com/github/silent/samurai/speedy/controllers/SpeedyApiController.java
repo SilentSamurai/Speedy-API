@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +35,13 @@ public class SpeedyApiController {
     @Hidden
     @GetMapping(value = "/$metadata")
     public String metadata() throws JsonProcessingException {
+        MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
+        JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);
+        return CommonUtil.json().writeValueAsString(jsonElement);
+    }
+
+    @PostMapping(value = "/$query")
+    public String query() throws JsonProcessingException {
         MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
         JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);
         return CommonUtil.json().writeValueAsString(jsonElement);

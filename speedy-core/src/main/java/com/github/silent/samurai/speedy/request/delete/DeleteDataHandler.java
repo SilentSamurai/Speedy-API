@@ -27,7 +27,7 @@ public class DeleteDataHandler {
         try {
             transaction.begin();
             context.getEntityManager().remove(parsedObject);
-            LOGGER.info("{} saved {}", entityMetadata.getName(), parsedObject);
+            LOGGER.info("{} deleted {}", entityMetadata.getName(), parsedObject);
             transaction.commit();
         } catch (Throwable throwable) {
             transaction.rollback();
@@ -43,14 +43,14 @@ public class DeleteDataHandler {
         EventProcessor eventProcessor = context.getEventProcessor();
         if (!context.getObjectsToBeRemoved().isEmpty()) {
             for (Object parsedObject : context.getObjectsToBeRemoved()) {
-
+                // validate b4 delete
                 context.getValidationProcessor().validateDeleteRequestEntity(
                         entityMetadata,
                         parsedObject);
-
+                // pre delete event fired
                 eventProcessor.triggerEvent(SpeedyEventType.PRE_DELETE,
                         entityMetadata, parsedObject);
-
+                // handle delete request
                 if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
                     SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
                     handler.delete(parsedObject);
@@ -58,10 +58,9 @@ public class DeleteDataHandler {
                     deleteEntity(parsedObject, entityMetadata);
                 }
                 deletedObjects.add(parsedObject);
-
+                // fire post delete event
                 eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE,
                         entityMetadata, parsedObject);
-
             }
         }
         return Optional.of(deletedObjects);

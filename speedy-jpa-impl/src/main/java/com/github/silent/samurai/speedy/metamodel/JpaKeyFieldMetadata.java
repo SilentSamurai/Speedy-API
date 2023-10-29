@@ -30,22 +30,35 @@ public class JpaKeyFieldMetadata extends JpaFieldMetadata implements KeyFieldMet
     @Override
     public boolean setIdFieldWithValue(Object idInstance, Object value) {
         try {
-            this.idClassSetter.invoke(idInstance, value);
-            return true;
+            if (idInstance.getClass() == idClassSetter.getDeclaringClass()) {
+                this.idClassSetter.invoke(idInstance, value);
+                return true;
+            }
+            if (idInstance.getClass() == super.getSetter().getDeclaringClass()) {
+                super.getSetter().invoke(idInstance);
+                return true;
+            }
+            LOGGER.error("entity object class did not match the metadata classes {}", idInstance.getClass().getName());
         } catch (Exception e) {
             LOGGER.error("Unable to set entity field", e);
-            return false;
         }
+        return false;
     }
 
     @Override
     public Object getIdFieldValue(Object idInstance) {
         try {
-            return this.idClassGetter.invoke(idInstance);
+            if (idInstance.getClass() == idClassGetter.getDeclaringClass()) {
+                return this.idClassGetter.invoke(idInstance);
+            }
+            if (idInstance.getClass() == super.getGetter().getDeclaringClass()) {
+                return super.getGetter().invoke(idInstance);
+            }
+            LOGGER.error("entity object class did not match the metadata classes {}", idInstance.getClass().getName());
         } catch (Exception e) {
             LOGGER.error("Unable to get entity field", e);
-            return null;
         }
+        return null;
     }
 
 }

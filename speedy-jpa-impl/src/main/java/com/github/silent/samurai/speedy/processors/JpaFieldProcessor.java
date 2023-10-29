@@ -188,7 +188,7 @@ public class JpaFieldProcessor {
                     fieldMetadata.setDeserializable(false);
                     break;
             }
-            fieldMetadata.setIgnoreType(speedyIgnore.value());
+            fieldMetadata.setIgnoreProperty(speedyIgnore.value());
         }
 
         if (!fieldMetadata.isNullable() && fieldMetadata.isDeserializable()) {

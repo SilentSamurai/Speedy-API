@@ -2,6 +2,8 @@ package com.github.silent.samurai.speedy.request.post;
 
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import org.slf4j.Logger;
@@ -22,44 +24,71 @@ public class PostDataHandler {
         this.context = context;
     }
 
-    private Object saveEntity(Object entityInstance, EntityMetadata entityMetadata) {
-        EntityTransaction transaction = context.getEntityManager().getTransaction();
-        try {
-            transaction.begin();
-            entityInstance = context.getEntityManager().merge(entityInstance);
-            context.getEntityManager().flush();
-            LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
-            transaction.commit();
-        } catch (Throwable throwable) {
-            transaction.rollback();
-            throw throwable;
+    private void processVirtual(List<Object> savedObjects) throws Exception {
+        EventProcessor eventProcessor = context.getEventProcessor();
+        EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
+        for (Object parsedObject : context.getParsedObjects()) {
+            // validation
+            context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
+            // event trigger
+            eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT,
+                    entityMetadata, parsedObject);
+            // save handler trigger
+            SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
+            Object savedEntity = handler.create(parsedObject);
+            if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
+                throw new BadRequestException("Incomplete Key after save");
+            }
+            savedObjects.add(savedEntity);
+            eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT,
+                    entityMetadata, parsedObject);
         }
-        return entityInstance;
+    }
+
+    private void processPhysical(List<Object> savedObjects) throws Exception {
+        EventProcessor eventProcessor = context.getEventProcessor();
+        EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
+        EntityTransaction transaction = context.getEntityManager().getTransaction();
+        transaction.begin();
+        for (Object parsedObject : context.getParsedObjects()) {
+            try {
+                // validate entity
+                context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
+                // trigger pre insert event
+                eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT,
+                        entityMetadata, parsedObject);
+                // save the entity
+                Object savedEntity = context.getEntityManager().merge(parsedObject);
+                context.getEntityManager().flush();
+                LOGGER.info("{} saved {}", entityMetadata.getName(), parsedObject);
+                // check if primary key is complete
+                if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
+                    throw new BadRequestException("Incomplete Key after save");
+                }
+                // trigger post insert event
+                eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT,
+                        entityMetadata, parsedObject);
+                // add to saved objects
+                savedObjects.add(savedEntity);
+
+            } catch (Throwable throwable) {
+                // rollback all changes if any exception occurs
+                transaction.rollback();
+                throw throwable;
+            }
+        }
+        // commit only if all entities are saved
+        transaction.commit();
     }
 
     public Optional<List<Object>> processBatch() throws Exception {
         List<Object> savedObjects = new LinkedList<>();
-        EventProcessor eventProcessor = context.getEventProcessor();
         if (!context.getParsedObjects().isEmpty()) {
             EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
-            for (Object parsedObject : context.getParsedObjects()) {
-
-                context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
-
-                eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT,
-                        entityMetadata, parsedObject);
-
-                if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
-                    SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
-                    Object savedEntity = handler.create(parsedObject);
-                    savedObjects.add(savedEntity);
-                } else {
-                    Object savedEntity = saveEntity(parsedObject, entityMetadata);
-                    savedObjects.add(savedEntity);
-                }
-
-                eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT,
-                        entityMetadata, parsedObject);
+            if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
+                processVirtual(savedObjects);
+            } else {
+                processPhysical(savedObjects);
             }
         }
         return Optional.of(savedObjects);

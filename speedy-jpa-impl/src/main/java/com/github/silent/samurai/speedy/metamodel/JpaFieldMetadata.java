@@ -26,7 +26,7 @@ public class JpaFieldMetadata implements FieldMetadata {
     private Method setter;
     private Field field;
     private Attribute<?, ?> jpaAttribute;
-    private IgnoreType ignoreType = null;
+    private IgnoreType ignoreProperty = null;
     private Class<?> fieldType;
     private boolean isInsertable;
     private boolean isUpdatable;
