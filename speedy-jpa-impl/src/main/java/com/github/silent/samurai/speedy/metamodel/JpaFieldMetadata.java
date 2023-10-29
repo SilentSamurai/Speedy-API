@@ -35,6 +35,7 @@ public class JpaFieldMetadata implements FieldMetadata {
     private boolean isRequired;
     private boolean isSerializable;
     private boolean isDeserializable;
+    private EntityMetadata entityMetadata;
     private EntityMetadata associationMetadata;
 
     public boolean isAssociation() {

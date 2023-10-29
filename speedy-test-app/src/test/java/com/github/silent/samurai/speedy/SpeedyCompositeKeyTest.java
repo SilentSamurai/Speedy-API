@@ -134,6 +134,15 @@ class SpeedyCompositeKeyTest {
 
     }
 
+    @Test
+    void duplicateCreate() throws Exception {
+        OrderKey orderKey = createOrder();
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            // Code that should throw a RuntimeException
+            createOrder();
+        });
+    }
+
 }
 
 

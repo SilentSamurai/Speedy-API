@@ -116,6 +116,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     }
 
     @Override
+    public EntityMetadata getEntityMetadata() {
+        return null;
+    }
+
+    @Override
     public EntityMetadata getAssociationMetadata() {
         return StaticEntityMetadata.createEntityMetadata(AssociationEntity.class);
     }

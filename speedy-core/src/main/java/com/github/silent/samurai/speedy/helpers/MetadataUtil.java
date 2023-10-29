@@ -68,7 +68,7 @@ public class MetadataUtil {
             JsonIdentityDeserializer deserializer = new JsonIdentityDeserializer(entityMetadata, keyJson);
             return deserializer.deserialize();
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse body");
+            throw new BadRequestException("failed to parse body", e);
         }
     }
 

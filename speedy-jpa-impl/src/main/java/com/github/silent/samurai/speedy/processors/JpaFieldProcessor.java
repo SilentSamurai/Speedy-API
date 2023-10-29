@@ -108,7 +108,7 @@ public class JpaFieldProcessor {
         } else {
             fieldMetadata = new JpaFieldMetadata();
         }
-
+        fieldMetadata.setEntityMetadata(entityMetadata);
         fieldMetadata.setJpaAttribute(attribute);
         fieldMetadata.setClassFieldName(member.getName());
         fieldMetadata.setFieldType(attribute.getJavaType());

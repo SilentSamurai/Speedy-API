@@ -132,6 +132,7 @@ public class SpeedyFactory {
 
     public void requestResource(HttpServletRequest request, HttpServletResponse response) throws IOException {
         EntityManager entityManager = null;
+        LOGGER.info("REQ: {} {} ", request.getMethod(), request.getRequestURI());
         try {
             entityManager = speedyConfiguration.createEntityManager();
             if (request.getMethod().equals(HttpMethod.GET.name())) {

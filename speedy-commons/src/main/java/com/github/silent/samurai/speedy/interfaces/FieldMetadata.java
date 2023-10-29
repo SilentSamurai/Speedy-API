@@ -34,6 +34,8 @@ public interface FieldMetadata {
 
     Class<?> getFieldType();
 
+    EntityMetadata getEntityMetadata();
+
     EntityMetadata getAssociationMetadata();
 
     boolean setEntityFieldWithValue(Object entity, Object value);
