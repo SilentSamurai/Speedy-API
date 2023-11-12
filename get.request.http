@@ -1,0 +1,136 @@
+GET http://localhost:8080/speedy/v1/Procurement( supplier.id = '1' )
+Accept: application/json
+Content-Type: application/json
+
+{
+    "where": " purchaseDate < '2022-01-01T00:00:00Z' ",
+    "join": {},
+    "pageSize": 25,
+    "pageIndex": 0,
+    "orderBy": [
+    ],
+    "orderByDesc": [
+    ]
+}
+
+###
+GET http://localhost:80/speedy/v1.0/Category/
+Content-Type: application/json
+
+{
+    "select": [
+        "name",
+        "createdBy"
+    ],
+    "aggregation": [
+        {
+            "fn": "count",
+            "args": "D",
+            "alias": "CNT"
+        }
+    ],
+    "where": [
+        {
+            "operator": "=",
+            "field": "NAME",
+            "value": "Piyush"
+        },
+        {
+            "operator": "in",
+            "field": "ROLL",
+            "value": [
+                13
+            ]
+        },
+        {
+            "operator": "OR",
+            "conditions": [
+                {
+                    "operator": "equal",
+                    "field": "A",
+                    "value": 5
+                },
+                {
+                    "operator": "equal",
+                    "field": "A",
+                    "value": 10
+                }
+            ]
+        },
+        {
+            "operator": "dateBetween",
+            "field": "BIRTH",
+            "value": {
+                "start": "Date('')",
+                "end": "Date('')"
+            }
+        }
+    ],
+    "groupBy": [
+        "A",
+        "B",
+        "C"
+    ],
+    "having": [
+        {
+            "operator": "equal",
+            "field": "NAME",
+            "value": "Piyush"
+        }
+    ],
+    "orderBy": [
+        "A"
+    ]
+}
+
+###
+
+GET http://localhost:8080/speedy/v1/$metadata/
+Accept: application/json
+
+###
+
+POST http://localhost:8080/speedy/v2/$query
+Accept: application/json
+Content-Type: application/json
+
+{
+    "where": {
+        "$and": [
+            {
+                "id": {
+                    "$eq": "abcd"
+                },
+                "name": "acs"
+            },
+            {
+                "category.product.name": "P1"
+            }
+        ]
+    },
+    "select": [
+        "id",
+        "name",
+        "desc"
+    ],
+    "orderBy": [
+        {
+            "name": "desc"
+        },
+        {
+            "id": "asc"
+        }
+    ],
+    "expand": [
+        "product"
+    ],
+    "page": {
+        "index": 0,
+        "size": 100
+    }
+}
+
+
+###
+
+
