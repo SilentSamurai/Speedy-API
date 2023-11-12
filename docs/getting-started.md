@@ -10,7 +10,7 @@ Speedy spring boot auto configurations
 <dependency>
     <groupId>com.github.SilentSamurai</groupId>
     <artifactId>spring-boot-starter-speedy-api</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
@@ -20,7 +20,7 @@ include the jpa implementation of the Speedy System
 <dependency>
     <groupId>com.github.SilentSamurai</groupId>
     <artifactId>speedy-jpa-impl</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 

@@ -5,7 +5,7 @@
 
     <groupId>com.github.SilentSamurai</groupId>
     <artifactId>speedy-api-parent</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <name>speedy-api-parent</name>
     <description>All entity in one api resource manager</description>
     <packaging>pom</packaging>
@@ -41,7 +41,7 @@
     <developers>
         <developer>
             <name>Sourav Das</name>
-            <email>sourav.das2582@gmail.com</email>
+            <email>sourav.das08@outlook.com</email>
             <organization>com.github.SilentSamurai</organization>
             <organizationUrl>http://www.github.com/SilentSamurai</organizationUrl>
         </developer>
