@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
+import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.Condition;
 import lombok.Data;
 
@@ -7,8 +9,9 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Data
+public class Query implements SpeedyQuery {
 
-public class Query {
+    public String from;
 
     @Valid
     public List<Aggregation> aggregation;
@@ -23,6 +26,6 @@ public class Query {
     public List<Condition> having;
 
     @Valid
-    public List<String> orderBy;
+    public List<OrderBy> orderBy;
 
 }

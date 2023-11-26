@@ -1,15 +1,15 @@
-package com.github.silent.samurai.speedy.models;
+package com.github.silent.samurai.speedy.enums;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 
-public enum Operator {
+public enum ConditionOperator {
     EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR;
 
     public boolean doesAcceptMultipleValues() {
         return this == IN || this == NOT_IN;
     }
 
-    public static Operator fromSymbol(String symbol) throws BadRequestException {
+    public static ConditionOperator fromSymbol(String symbol) throws BadRequestException {
         if (symbol.equals("=") || symbol.equals("==")) {
             return EQ;
         } else if (symbol.equals("!=")) {

@@ -2,11 +2,11 @@ package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.data.EntityTestClass;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.models.Operator;
 import com.github.silent.samurai.speedy.models.conditions.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -156,7 +156,7 @@ class SpeedyUriContextTest {
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.LT, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
+        assertEquals(ConditionOperator.LT, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
         assertEquals(0, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
@@ -167,7 +167,7 @@ class SpeedyUriContextTest {
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.LTE, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
+        assertEquals(ConditionOperator.LTE, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
         assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
@@ -178,7 +178,7 @@ class SpeedyUriContextTest {
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.EQ, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
+        assertEquals(ConditionOperator.EQ, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
         assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
@@ -189,7 +189,7 @@ class SpeedyUriContextTest {
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.EQ, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
+        assertEquals(ConditionOperator.EQ, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
         assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
@@ -200,7 +200,7 @@ class SpeedyUriContextTest {
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.GT, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
+        assertEquals(ConditionOperator.GT, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
         assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
@@ -211,7 +211,7 @@ class SpeedyUriContextTest {
         parser.parse();
 
         assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.GTE, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
+        assertEquals(ConditionOperator.GTE, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
         assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
         assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }

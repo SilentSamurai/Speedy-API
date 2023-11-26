@@ -1,11 +1,11 @@
 package com.github.silent.samurai.speedy.parser;
 
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.Filter;
-import com.github.silent.samurai.speedy.models.Operator;
 import com.github.silent.samurai.speedy.models.conditions.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Lists;
@@ -17,7 +17,7 @@ import java.util.Objects;
 
 public class ConditionFactory {
 
-    public static BinarySVCondition createCondition(DbField field, Operator operator, Object instance) throws SpeedyHttpException {
+    public static BinarySVCondition createCondition(DbField field, ConditionOperator operator, Object instance) throws SpeedyHttpException {
         switch (operator) {
             case EQ:
                 return new EqCondition(field, instance);
@@ -37,7 +37,7 @@ public class ConditionFactory {
 
     public static BinaryMVCondition createCondition(
             DbField field,
-            Operator operator,
+            ConditionOperator operator,
             List<Object> instances) throws SpeedyHttpException {
         if (instances.isEmpty()) {
             throw new BadRequestException();
@@ -53,7 +53,7 @@ public class ConditionFactory {
 
     public static BinaryCondition createCondition(Filter filter, EntityMetadata entityMetadata) throws SpeedyHttpException {
         Objects.requireNonNull(filter);
-        Operator operator = Operator.fromSymbol(filter.getOperator());
+        ConditionOperator operator = ConditionOperator.fromSymbol(filter.getOperator());
         DbField field = getDbField(filter, entityMetadata);
         List<String> values = filter.getValues();
         if (operator.doesAcceptMultipleValues()) {

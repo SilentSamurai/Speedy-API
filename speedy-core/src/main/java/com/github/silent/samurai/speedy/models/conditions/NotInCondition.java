@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.models.conditions;
 
 import com.fasterxml.jackson.core.JsonParser;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.models.Operator;
 import lombok.Data;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -15,7 +15,7 @@ import java.util.List;
 public class NotInCondition implements BinaryMVCondition {
 
     private DbField field;
-    private Operator operator = Operator.NOT_IN;
+    private ConditionOperator conditionOperator = ConditionOperator.NOT_IN;
     private List<Object> instances;
 
     public NotInCondition(DbField field, List<Object> instances) {

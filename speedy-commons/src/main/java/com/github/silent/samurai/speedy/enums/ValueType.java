@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.enums;
 
-public enum ColumnType {
+public enum ValueType {
     TEXT,
     INT,
     FLOAT,

@@ -3,9 +3,9 @@ package com.github.silent.samurai.speedy.query;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.models.Operator;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -50,7 +50,7 @@ public class JsonQueryBuilder {
         } else if (node.isObject()) {
             ObjectNode objectNode = (ObjectNode) node;
             if (objectNode.has("operator") && objectNode.has("field") && objectNode.has("value")) {
-                Operator operator = Operator.fromSymbol(objectNode.get("operator").asText());
+                ConditionOperator conditionOperator = ConditionOperator.fromSymbol(objectNode.get("operator").asText());
                 String field = objectNode.get("field").asText();
                 JsonNode valueNode = objectNode.get("value");
                 if (valueNode.isArray()) {
@@ -59,10 +59,10 @@ public class JsonQueryBuilder {
                     return predicateFactory.create(operator, field, valueNode.asText());
                 }
             } else if (objectNode.has("operator") && objectNode.has("conditions")) {
-                Operator operator = Operator.fromSymbol(objectNode.get("operator").asText());
+                ConditionOperator conditionOperator = ConditionOperator.fromSymbol(objectNode.get("operator").asText());
                 JsonNode conditionsNode = objectNode.get("conditions");
                 Predicate[] predicates = buildPredicate((ArrayNode) conditionsNode.elements());
-                return operator == Operator.AND ? criteriaBuilder.and(predicates) : criteriaBuilder.or(predicates);
+                return operator == ConditionOperator.AND ? criteriaBuilder.and(predicates) : criteriaBuilder.or(predicates);
             } else if (objectNode.has("operator") && objectNode.has("field") && objectNode.has("value") && objectNode.get("operator").asText().equals("dateBetween")) {
                 String field = objectNode.get("field").asText();
                 Date start = Date.from(Instant.parse(objectNode.get("value").get("start").asText().replace("Date(", "").replace(")", "")));

@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.query;
 
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.models.Operator;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
@@ -19,7 +19,7 @@ public class PredicateFactory {
         this.root = root;
     }
 
-    public Predicate create(Operator operator, String fieldName, Object fieldValue) throws BadRequestException {
+    public Predicate create(ConditionOperator operator, String fieldName, Object fieldValue) throws BadRequestException {
         Path<Comparable> path = root.get(fieldName);
 
         switch (operator) {
