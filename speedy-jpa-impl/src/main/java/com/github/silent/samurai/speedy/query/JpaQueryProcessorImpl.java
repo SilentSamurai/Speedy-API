@@ -1,8 +1,9 @@
 package com.github.silent.samurai.speedy.query;
 
-import com.github.silent.samurai.speedy.interfaces.SpeedyEntity;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -35,7 +36,25 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
         return resultList.stream().map(e -> new JpaSpeedyEntity(e, speedyQuery.getFrom())).collect(Collectors.toList());
     }
 
+    @Override
+    public boolean exists(SpeedyEntityKey entityKey) {
+        return false;
+    }
 
+    @Override
+    public boolean create(SpeedyEntity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean update(SpeedyEntity entity) {
+        return false;
+    }
+
+    @Override
+    public boolean delete(SpeedyEntityKey entityKey) {
+        return false;
+    }
 
 
 }

@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.enums;
 
 import java.sql.Date;
 import java.time.*;
+import java.util.Collection;
 
 public enum ValueType {
     TEXT,
@@ -10,7 +11,8 @@ public enum ValueType {
     DATE,
     TIME,
     DATE_TIME,
-    NA;
+    OBJECT,
+    COLLECTION;
 
     public static ValueType fromClass(Class<?> clazz) {
         if (String.class.isAssignableFrom(clazz)) {
@@ -26,8 +28,10 @@ public enum ValueType {
                 || LocalDateTime.class.isAssignableFrom(clazz) || ZonedDateTime.class.isAssignableFrom(clazz)
                 || Instant.class.isAssignableFrom(clazz)) {
             return DATE_TIME;
+        } else if (Collection.class.isAssignableFrom(clazz)) {
+            return COLLECTION;
         } else {
-            return NA;
+            return OBJECT;
         }
     }
 }

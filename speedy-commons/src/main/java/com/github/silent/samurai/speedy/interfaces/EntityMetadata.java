@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
 import java.util.Optional;
 import java.util.Set;
@@ -27,9 +29,9 @@ public interface EntityMetadata {
 
     Set<String> getKeyFieldNames();
 
-    Object createNewEntityInstance() throws Exception;
+    SpeedyEntity createNewEntityInstance() throws Exception;
 
-    Object createNewKeyInstance() throws Exception;
+    SpeedyEntityKey createNewKeyInstance() throws Exception;
 
     Set<FieldMetadata> getAssociatedFields();
 

@@ -4,63 +4,60 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyValueImpl;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-
-import javax.persistence.EntityManager;
 
 public class JsonEntityDeserializer {
 
     private final JsonNode entityJson;
     private final EntityMetadata entityMetadata;
-    private final EntityManager entityManager;
-    private Object entityInstance;
 
-    public JsonEntityDeserializer(JsonNode entityJson, EntityMetadata entityMetadata, EntityManager entityManager) {
+    public JsonEntityDeserializer(JsonNode entityJson, EntityMetadata entityMetadata) throws Exception {
         this.entityJson = entityJson;
         this.entityMetadata = entityMetadata;
-        this.entityManager = entityManager;
     }
 
-    public Object deserialize() throws Exception {
-        entityInstance = entityMetadata.createNewEntityInstance();
-        createEntity(this.entityMetadata, entityJson);
-        return entityInstance;
+    public SpeedyEntity deserialize() throws Exception {
+        return createEntity(this.entityMetadata, entityJson);
     }
 
-    public void deserializeOn(Object entityInstance) throws Exception {
-        this.entityInstance = entityInstance;
-        createEntity(this.entityMetadata, entityJson);
-    }
+//    public void deserializeOn(SpeedyEntity speedyEntity) throws Exception {
+//        this.speedyEntity = speedyEntity;
+//        createEntity(this.entityMetadata, entityJson);
+//    }
 
-    private void createEntity(EntityMetadata entityMetadata, JsonNode entityJson) throws Exception {
+    private SpeedyEntity createEntity(EntityMetadata entityMetadata, JsonNode entityJson) throws Exception {
+        SpeedyEntity speedyEntity = entityMetadata.createNewEntityInstance();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isDeserializable()) continue;
-            Object value = this.retrieveFieldValue(
+            SpeedyValue value = this.retrieveFieldValue(
                     fieldMetadata, entityJson
             );
             if (value != null) {
-                fieldMetadata.setEntityFieldWithValue(this.entityInstance, value);
+                speedyEntity.setBasicValue(fieldMetadata, value);
             }
         }
-
+        return speedyEntity;
     }
 
-    private Object retrieveFieldValue(
+    private SpeedyValue retrieveFieldValue(
             FieldMetadata fieldMetadata,
             JsonNode entityObject) throws Exception {
-        Object value = null;
+        SpeedyValue value = null;
         String propertyName = fieldMetadata.getOutputPropertyName();
         if (entityObject.has(propertyName)) {
             if (fieldMetadata.isAssociation()) {
                 EntityMetadata association = fieldMetadata.getAssociationMetadata();
                 if (entityObject.get(propertyName).isObject()) {
-
-                    Object primaryKey = this.createEntityKey(association, (ObjectNode) entityObject.get(propertyName));
-                    value = entityManager.find(association.getEntityClass(), primaryKey);
+                    SpeedyEntity associationEntity = this.createEntity(association, entityObject.get(propertyName));
+                    value = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), associationEntity);
                 }
                 // array of association
             } else {
-                value = CommonUtil.jsonToType(entityObject.get(propertyName), fieldMetadata.getFieldType());
+                Object po = CommonUtil.jsonToType(entityObject.get(propertyName), fieldMetadata.getFieldType());
+                value = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), po);
             }
         }
         return value;

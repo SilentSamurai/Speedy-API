@@ -76,8 +76,6 @@ public class ConditionFactory {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
         QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
-
-
         Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
         SpeedyValue speedyValue = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), instance);
         return createCondition(queryField, operator, speedyValue);

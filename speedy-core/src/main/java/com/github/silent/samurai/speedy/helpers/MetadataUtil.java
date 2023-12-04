@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.google.common.collect.Sets;
 
 import javax.persistence.EntityManager;
@@ -42,9 +43,9 @@ public class MetadataUtil {
 //        return deserializer.deserialize();
 //    }
 
-    public static Object createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode asJsonObject, EntityManager entityManager) throws Exception {
+    public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode asJsonObject) throws Exception {
         try {
-            JsonEntityDeserializer deserializer = new JsonEntityDeserializer(asJsonObject, entityMetadata, entityManager);
+            JsonEntityDeserializer deserializer = new JsonEntityDeserializer(asJsonObject, entityMetadata);
             return deserializer.deserialize();
         } catch (Exception e) {
             throw new BadRequestException("failed to parse body", e);
@@ -56,7 +57,7 @@ public class MetadataUtil {
                                             ObjectNode asJsonObject,
                                             Object entityInstance) throws Exception {
         try {
-            JsonEntityDeserializer deserializer = new JsonEntityDeserializer(asJsonObject, entityMetadata, entityManager);
+            JsonEntityDeserializer deserializer = new JsonEntityDeserializer(asJsonObject, entityMetadata);
             deserializer.deserializeOn(entityInstance);
         } catch (Exception e) {
             throw new BadRequestException("failed to parse body");

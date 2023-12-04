@@ -12,7 +12,6 @@ public class OrderByImpl implements OrderBy {
     private final FieldMetadata fieldMetadata;
     private final OrderByOperator operator;
 
-
     public OrderByImpl(FieldMetadata fieldMetadata, OrderByOperator operator) {
         this.fieldMetadata = fieldMetadata;
         this.operator = operator;

@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.request.get;
 
-import com.github.silent.samurai.speedy.interfaces.SpeedyEntity;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 
 import java.util.List;
 import java.util.Optional;

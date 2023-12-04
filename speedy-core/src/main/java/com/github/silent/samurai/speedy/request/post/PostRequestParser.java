@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Sets;
@@ -53,13 +54,12 @@ public class PostRequestParser {
                     }
                 }
 
-                Object entityInstance = MetadataUtil.createEntityFromJSON(
+                SpeedyEntity speedyEntity = MetadataUtil.createEntityFromJSON(
                         resourceMetadata,
-                        objectNode,
-                        context.getEntityManager()
+                        objectNode
                 );
-                LOGGER.info("parsed entity {}", entityInstance);
-                context.getParsedObjects().add(entityInstance);
+                LOGGER.info("parsed entity {}", speedyEntity);
+                context.getParsedObjects().add(speedyEntity);
             } else {
                 throw new BadRequestException("in-valid content");
             }
