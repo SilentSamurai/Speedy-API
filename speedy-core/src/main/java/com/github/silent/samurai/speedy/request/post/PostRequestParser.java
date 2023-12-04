@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Sets;
@@ -26,8 +27,8 @@ public class PostRequestParser {
 
     public void processBatch() throws Exception {
         SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
-        parser.parse();
-        context.setParser(parser);
+        SpeedyQuery speedyQuery = parser.parse();
+        context.setEntityMetadata(speedyQuery.getFrom());
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());
@@ -35,7 +36,7 @@ public class PostRequestParser {
             throw new BadRequestException("no content to process");
         }
         ArrayNode batchOfEntities = (ArrayNode) jsonElement;
-        EntityMetadata resourceMetadata = parser.getPrimaryResource().getResourceMetadata();
+        EntityMetadata resourceMetadata = speedyQuery.getFrom();
         for (JsonNode element : batchOfEntities) {
             if (element.isObject()) {
                 ObjectNode objectNode = (ObjectNode) element;

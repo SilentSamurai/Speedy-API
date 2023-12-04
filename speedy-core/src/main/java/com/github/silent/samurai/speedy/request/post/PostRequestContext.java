@@ -6,9 +6,9 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
-import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.LinkedList;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 public class PostRequestContext implements ResponseReturningRequestContext {
 
     private final HttpServletRequest request;
@@ -28,7 +29,7 @@ public class PostRequestContext implements ResponseReturningRequestContext {
     private final VirtualEntityProcessor vEntityProcessor;
     private final List<Object> parsedObjects = new LinkedList<>();
 
-    private SpeedyUriContext parser;
+    EntityMetadata entityMetadata;
 
     public PostRequestContext(HttpServletRequest request,
                               HttpServletResponse response,
@@ -50,8 +51,4 @@ public class PostRequestContext implements ResponseReturningRequestContext {
         return IResponseSerializer.MULTIPLE_ENTITY;
     }
 
-    @Override
-    public EntityMetadata getEntityMetadata() {
-        return parser.getPrimaryResource().getResourceMetadata();
-    }
 }

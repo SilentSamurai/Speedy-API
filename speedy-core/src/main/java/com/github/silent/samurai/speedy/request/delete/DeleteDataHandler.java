@@ -39,7 +39,7 @@ public class DeleteDataHandler {
     public Optional<List<Object>> process() throws Exception {
 
         List<Object> deletedObjects = new LinkedList<>();
-        EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
+        EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();
         if (!context.getObjectsToBeRemoved().isEmpty()) {
             for (Object parsedObject : context.getObjectsToBeRemoved()) {

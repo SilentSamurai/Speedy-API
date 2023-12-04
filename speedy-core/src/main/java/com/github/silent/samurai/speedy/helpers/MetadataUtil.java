@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.deserializer.ParserIdentityDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.google.common.collect.Sets;
 
 import javax.persistence.EntityManager;
@@ -28,9 +28,9 @@ public class MetadataUtil {
         return false;
     }
 
-    public static Object createIdentifierFromParser(SpeedyUriContext parser) throws Exception {
+    public static Object createIdentifierFromParser(SpeedyQuery speedyQuery) throws Exception {
         try {
-            ParserIdentityDeserializer deserializer = new ParserIdentityDeserializer(parser.getPrimaryResource());
+            ParserIdentityDeserializer deserializer = new ParserIdentityDeserializer(speedyQuery);
             return deserializer.deserialize();
         } catch (Exception e) {
             throw new BadRequestException("failed to parse parameters", e);

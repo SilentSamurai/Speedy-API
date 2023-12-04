@@ -3,10 +3,7 @@ package com.github.silent.samurai.speedy.serializers.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.IBaseResponsePayload;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
-import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.serializers.SelectiveFieldJsonSerializer;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.http.MediaType;
@@ -43,17 +40,17 @@ public class JSONSerializer implements IResponseSerializer {
         JsonNode jsonElement;
         SelectiveFieldJsonSerializer selectiveFieldJsonSerializer = new SelectiveFieldJsonSerializer(context.getMetaModelProcessor(), fieldPredicate);
         if (context.getSerializationType() == IResponseSerializer.MULTIPLE_ENTITY) {
-            List<?> resultList = (List<?>) requestedPayload.getPayload();
+            List<SpeedyEntity> resultList = (List<SpeedyEntity>) requestedPayload.getPayload();
             jsonElement = selectiveFieldJsonSerializer.formCollection(resultList, context.getEntityMetadata(), context.getSerializationType(), 0);
         } else {
-            jsonElement = selectiveFieldJsonSerializer.fromObject(requestedPayload.getPayload(), context.getEntityMetadata(), context.getSerializationType(), 0);
+            SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
+            jsonElement = selectiveFieldJsonSerializer.fromSpeedyEntity(payload, context.getEntityMetadata(), context.getSerializationType(), 0);
         }
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();
         basePayload.set("payload", jsonElement);
         basePayload.put("pageIndex", requestedPayload.getPageIndex());
         basePayload.put("pageCount", requestedPayload.getPageCount());
-
         json.writeValue(context.getResponse().getWriter(), basePayload);
     }
 

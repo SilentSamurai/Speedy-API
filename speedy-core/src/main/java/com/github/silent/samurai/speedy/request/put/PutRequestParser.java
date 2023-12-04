@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.slf4j.Logger;
@@ -23,19 +24,19 @@ public class PutRequestParser {
 
     public void process() throws Exception {
         SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
-        parser.parse();
-        context.setParser(parser);
+        SpeedyQuery speedyQuery = parser.parse();
+        context.setSpeedyQuery(speedyQuery);
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());
         if (jsonElement == null || !jsonElement.isObject()) {
             throw new BadRequestException("no content to process");
         }
-        if (!parser.getPrimaryResource().isOnlyIdentifiersPresent()) {
+        if (!speedyQuery.isOnlyIdentifiersPresent()) {
             throw new BadRequestException("Primary Key Incomplete.");
         }
-        EntityMetadata entityMetadata = parser.getPrimaryResource().getResourceMetadata();
-        Object pk = MetadataUtil.createIdentifierFromParser(parser);
+        EntityMetadata entityMetadata = speedyQuery.getFrom();
+        Object pk = MetadataUtil.createIdentifierFromParser(speedyQuery);
         Object entityInstance = context.getEntityManager().find(entityMetadata.getEntityClass(), pk);
         MetadataUtil.updateEntityFromJSON(entityMetadata, context.getEntityManager(), (ObjectNode) jsonElement, entityInstance);
         context.setEntityInstance(entityInstance);

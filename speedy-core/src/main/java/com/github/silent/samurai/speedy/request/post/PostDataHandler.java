@@ -26,7 +26,7 @@ public class PostDataHandler {
 
     private void processVirtual(List<Object> savedObjects) throws Exception {
         EventProcessor eventProcessor = context.getEventProcessor();
-        EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
+        EntityMetadata entityMetadata = context.getEntityMetadata();
         for (Object parsedObject : context.getParsedObjects()) {
             // validation
             context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
@@ -47,7 +47,7 @@ public class PostDataHandler {
 
     private void processPhysical(List<Object> savedObjects) throws Exception {
         EventProcessor eventProcessor = context.getEventProcessor();
-        EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
+        EntityMetadata entityMetadata = context.getEntityMetadata();
         EntityTransaction transaction = context.getEntityManager().getTransaction();
         transaction.begin();
         for (Object parsedObject : context.getParsedObjects()) {
@@ -84,7 +84,7 @@ public class PostDataHandler {
     public Optional<List<Object>> processBatch() throws Exception {
         List<Object> savedObjects = new LinkedList<>();
         if (!context.getParsedObjects().isEmpty()) {
-            EntityMetadata entityMetadata = context.getParser().getPrimaryResource().getResourceMetadata();
+            EntityMetadata entityMetadata = context.getEntityMetadata();
             if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
                 processVirtual(savedObjects);
             } else {

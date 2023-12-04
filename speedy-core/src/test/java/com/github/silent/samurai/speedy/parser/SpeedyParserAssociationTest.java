@@ -6,6 +6,8 @@ import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -36,11 +38,12 @@ public class SpeedyParserAssociationTest {
         Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
 
         SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(associationEntity.id='1')");
-        parser.parse();
+        SpeedyQuery speedyQuery = parser.parse();
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals("1", parser.getPrimaryResource().getFirstFilterValue("associationEntity.id", String.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        assertEquals("Customer", speedyQuery.getFrom().getName());
+        EqCondition condition = (EqCondition) speedyQuery.getWhere().getConditions().get(0);
+        assertEquals("1", condition.getSpeedyValue().getSingleValue());
+        assertFalse(speedyQuery.isOnlyIdentifiersPresent());
     }
 
 }

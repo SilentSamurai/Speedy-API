@@ -14,7 +14,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8080/speedy/v1/$query/
+POST http://localhost:8080/speedy/v1/$speedyQueryImpl/
 Content-Type: application/json
 
 {
@@ -33,12 +33,12 @@ Content-Type: application/json
     "where": [
         {
             "operator": "=",
-            "field": "NAME",
+            "queryField": "NAME",
             "value": "Piyush"
         },
         {
             "operator": "in",
-            "field": "ROLL",
+            "queryField": "ROLL",
             "value": [
                 13
             ]
@@ -48,19 +48,19 @@ Content-Type: application/json
             "conditions": [
                 {
                     "operator": "equal",
-                    "field": "A",
+                    "queryField": "A",
                     "value": 5
                 },
                 {
                     "operator": "equal",
-                    "field": "A",
+                    "queryField": "A",
                     "value": 10
                 }
             ]
         },
         {
             "operator": "dateBetween",
-            "field": "BIRTH",
+            "queryField": "BIRTH",
             "value": {
                 "start": "Date('')",
                 "end": "Date('')"
@@ -75,7 +75,7 @@ Content-Type: application/json
     "having": [
         {
             "operator": "equal",
-            "field": "NAME",
+            "queryField": "NAME",
             "value": "Piyush"
         }
     ],
@@ -91,7 +91,7 @@ Accept: application/json
 
 ###
 
-POST http://localhost:8080/speedy/v2/$query
+POST http://localhost:8080/speedy/v2/$speedyQueryImpl
 Accept: application/json
 Content-Type: application/json
 

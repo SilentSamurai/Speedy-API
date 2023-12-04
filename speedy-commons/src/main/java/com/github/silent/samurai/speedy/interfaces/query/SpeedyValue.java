@@ -12,4 +12,6 @@ public interface SpeedyValue {
 
     List<Object> getValues();
 
+    boolean isEmpty();
+
 }

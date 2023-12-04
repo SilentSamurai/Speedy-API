@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.processors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.speedy.metamodel.JpaKeyFieldMetadata;
@@ -199,6 +200,7 @@ public class JpaFieldProcessor {
         Map<String, Method> getterSetter = findGetterSetter(entityClass, member.getName());
         fieldMetadata.setGetter(getterSetter.get("GET"));
         fieldMetadata.setSetter(getterSetter.get("SET"));
+        fieldMetadata.setValueType(ValueType.fromClass(fieldMetadata.getFieldType()));
         return fieldMetadata;
     }
 }

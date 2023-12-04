@@ -5,10 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.lang.reflect.InvocationTargetException;
@@ -26,7 +24,7 @@ public class SelectiveFieldJsonSerializer {
         this.fieldPredicate = fieldPredicate;
     }
 
-    public ObjectNode fromObject(Object entityObject, EntityMetadata entityMetadata, int serializedType, int level) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity, EntityMetadata entityMetadata, int serializedType, int level) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ObjectNode jsonObject = json.createObjectNode();
 
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
@@ -36,34 +34,30 @@ public class SelectiveFieldJsonSerializer {
                 if (level < 1) {
                     if (fieldMetadata.isCollection()) {
                         if (serializedType == IResponseSerializer.SINGLE_ENTITY) {
-                            // performance optimization as retrieving value can execute sql
-                            Object value = fieldMetadata.getEntityFieldValue(entityObject);
+                            Collection<SpeedyEntity> value = speedyEntity.getManyAssociatedValue(fieldMetadata);
                             if (value != null) {
-                                ArrayNode childArray = formCollection((Collection<?>) value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
+                                ArrayNode childArray = formCollection(value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
                                 jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
                             }
                         }
                     } else {
-                        // performance optimization as retrieving value can execute sql
-                        Object value = fieldMetadata.getEntityFieldValue(entityObject);
+                        SpeedyEntity value = speedyEntity.getOneAssociatedValue(fieldMetadata);
                         if (value != null) {
-                            ObjectNode childObject = fromObject(value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
+                            ObjectNode childObject = fromSpeedyEntity(value, fieldMetadata.getAssociationMetadata(), serializedType, level + 1);
                             jsonObject.set(fieldMetadata.getClassFieldName(), childObject);
                         }
                     }
                 }
             } else if (fieldMetadata.isCollection() && !fieldMetadata.isAssociation()) {
-                // performance optimization as retrieving value can execute sql
-                Object value = fieldMetadata.getEntityFieldValue(entityObject);
+                SpeedyValue value = speedyEntity.getManyBasicValue(fieldMetadata);
                 if (value != null) {
-                    ArrayNode jsonArray = formCollectionOfBasics((Collection<?>) value);
+                    ArrayNode jsonArray = formCollectionOfBasics(value.getValues());
                     jsonObject.set(fieldMetadata.getClassFieldName(), jsonArray);
                 }
             } else {
-                // performance optimization as retrieving value can execute sql
-                Object value = fieldMetadata.getEntityFieldValue(entityObject);
+                SpeedyValue value = speedyEntity.getBasicValue(fieldMetadata);
                 if (value != null) {
-                    JsonNode jsonElement = json.valueToTree(value);
+                    JsonNode jsonElement = json.valueToTree(value.getSingleValue());
                     jsonObject.set(fieldMetadata.getOutputPropertyName(), jsonElement);
                 }
             }
@@ -80,10 +74,10 @@ public class SelectiveFieldJsonSerializer {
         return jsonArray;
     }
 
-    public ArrayNode formCollection(Collection<?> collection, EntityMetadata entityMetadata, int serializedType, int level) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ArrayNode formCollection(Collection<SpeedyEntity> collection, EntityMetadata entityMetadata, int serializedType, int level) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
-        for (Object object : collection) {
-            JsonNode jsonObject = fromObject(object, entityMetadata, serializedType, level);
+        for (SpeedyEntity object : collection) {
+            JsonNode jsonObject = fromSpeedyEntity(object, entityMetadata, serializedType, level);
             jsonArray.add(jsonObject);
         }
         return jsonArray;

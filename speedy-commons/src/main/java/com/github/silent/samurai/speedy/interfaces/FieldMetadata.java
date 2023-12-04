@@ -1,8 +1,11 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ValueType;
 
 public interface FieldMetadata {
+
+    ValueType getValueType();
 
     Object getEntityFieldValue(Object entity);
 

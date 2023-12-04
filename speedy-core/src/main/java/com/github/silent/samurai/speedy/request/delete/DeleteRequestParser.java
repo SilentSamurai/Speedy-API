@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Sets;
@@ -25,9 +26,9 @@ public class DeleteRequestParser {
 
     public void process() throws Exception {
         SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
-        parser.parse();
-        context.setParser(parser);
-        EntityMetadata resourceMetadata = parser.getPrimaryResource().getResourceMetadata();
+        SpeedyQuery speedyQuery = parser.parse();
+        context.setEntityMetadata(speedyQuery.getFrom());
+        EntityMetadata resourceMetadata = speedyQuery.getFrom();
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());

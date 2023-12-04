@@ -2,11 +2,11 @@ package com.github.silent.samurai.speedy.interfaces.query;
 
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 
-public interface Field {
+public interface QueryField {
 
     FieldMetadata getFieldMetadata();
 
-    boolean hasAssociatedFieldMetadata();
+    boolean isAssociated();
 
     FieldMetadata getAssociatedFieldMetadata();
 }

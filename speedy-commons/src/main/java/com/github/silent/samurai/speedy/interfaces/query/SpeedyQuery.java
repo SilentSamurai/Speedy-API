@@ -8,14 +8,16 @@ public interface SpeedyQuery {
 
     EntityMetadata getFrom();
 
-    Condition getWhere();
+    BooleanCondition getWhere();
 
     List<String> getGroupBy();
 
     Condition getHaving();
 
-    List<OrderBy> getOrderBy();
+    List<OrderBy> getOrderByList();
 
     PageInfo getPageInfo();
+
+    boolean isOnlyIdentifiersPresent();
 
 }

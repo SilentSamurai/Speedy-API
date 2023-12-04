@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.request.get;
 
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 
 public class GetRequestParser {
@@ -12,8 +13,8 @@ public class GetRequestParser {
 
     public void process() throws Exception {
         SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
-        parser.parse();
-        context.setParser(parser);
+        SpeedyQuery speedyQuery = parser.parse();
+        context.setSpeedyQuery(speedyQuery);
     }
 
 

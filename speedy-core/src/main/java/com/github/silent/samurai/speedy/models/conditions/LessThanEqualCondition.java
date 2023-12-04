@@ -1,32 +1,21 @@
 package com.github.silent.samurai.speedy.models.conditions;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import lombok.Data;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import lombok.Getter;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+@Getter
+public class LessThanEqualCondition implements BinaryCondition {
 
-@Data
-public class LessThanEqualCondition implements BinarySVCondition {
+    private final QueryField field;
+    private final SpeedyValue speedyValue;
+    private final ConditionOperator operator = ConditionOperator.LTE;
 
-    private DbField field;
-    private Object instance;
-    private ConditionOperator conditionOperator = ConditionOperator.LTE;
 
-    public LessThanEqualCondition(DbField field, Object instance) {
+    public LessThanEqualCondition(QueryField field, SpeedyValue speedyValue) {
         this.field = field;
-        this.instance = instance;
-    }
-
-    @Override
-    public void updateFromJson(JsonParser jsonParser) {
-    }
-
-    @Override
-    public Predicate getPredicate(CriteriaBuilder criteriaBuilder, Root<?> tableRoot, EntityMetadata entityMetadata) throws Exception {
-        return criteriaBuilder.lessThanOrEqualTo(field.getPath(criteriaBuilder, tableRoot), (Comparable) instance);
+        this.speedyValue = speedyValue;
     }
 }

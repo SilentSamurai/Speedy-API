@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface QueryProcessor {
 
-    SpeedyEntity executeOne(SpeedyQuery query);
+    SpeedyEntity executeOne(SpeedyQuery query) throws Exception;
 
     List<SpeedyEntity> executeMany(SpeedyQuery query) throws Exception;
+
+
 }

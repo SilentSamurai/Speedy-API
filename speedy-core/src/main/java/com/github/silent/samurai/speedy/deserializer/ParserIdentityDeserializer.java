@@ -3,19 +3,18 @@ package com.github.silent.samurai.speedy.deserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.models.conditions.BinarySVCondition;
-import com.github.silent.samurai.speedy.parser.ResourceSelector;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 
 import java.util.Optional;
 
 public class ParserIdentityDeserializer {
 
     private final EntityMetadata entityMetadata;
-    private final ResourceSelector resourceSelector;
+    private final SpeedyQuery speedyQuery;
 
-    public ParserIdentityDeserializer(ResourceSelector resourceSelector) {
-        this.resourceSelector = resourceSelector;
-        this.entityMetadata = resourceSelector.getResourceMetadata();
+    public ParserIdentityDeserializer(SpeedyQuery speedyQuery) {
+        this.speedyQuery = speedyQuery;
+        this.entityMetadata = speedyQuery.getFrom();
     }
 
     public Object deserialize() throws Exception {
@@ -30,10 +29,11 @@ public class ParserIdentityDeserializer {
         if (primaryKeyFieldMetadata.isPresent()) {
             KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
             String propertyName = keyFieldMetadata.getOutputPropertyName();
-            if (resourceSelector.hasKeyword(propertyName)) {
-                BinarySVCondition condition = resourceSelector.getFirstConditionByField(propertyName);
-                return condition.getInstance();
-            }
+            // TODO:
+//            if (resourceSelector.hasKeyword(propertyName)) {
+//                BinarySVCondition condition = resourceSelector.getFirstConditionByField(propertyName);
+//                return condition.getInstance();
+//            }
         }
         throw new BadRequestException("primary key field not found");
     }
@@ -42,13 +42,14 @@ public class ParserIdentityDeserializer {
         Object newKeyInstance = entityMetadata.createNewKeyInstance();
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             String propertyName = keyFieldMetadata.getOutputPropertyName();
-            if (resourceSelector.hasKeyword(propertyName)) {
-                BinarySVCondition condition = resourceSelector.getFirstConditionByField(propertyName);
-                Object instance = condition.getInstance();
-                keyFieldMetadata.setIdFieldWithValue(newKeyInstance, instance);
-            } else {
-                throw new BadRequestException(String.format("primary key incomplete, field not found '%s' ", propertyName));
-            }
+            // TODO:
+//            if (resourceSelector.hasKeyword(propertyName)) {
+//                BinarySVCondition condition = resourceSelector.getFirstConditionByField(propertyName);
+//                Object instance = condition.getInstance();
+//                keyFieldMetadata.setIdFieldWithValue(newKeyInstance, instance);
+//            } else {
+//                throw new BadRequestException(String.format("primary key incomplete, field not found '%s' ", propertyName));
+//            }
         }
         return newKeyInstance;
     }

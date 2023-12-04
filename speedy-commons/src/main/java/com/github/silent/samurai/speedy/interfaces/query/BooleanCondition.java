@@ -5,4 +5,6 @@ import java.util.List;
 public interface BooleanCondition extends Condition {
 
     List<Condition> getConditions();
+
+    void addSubCondition(Condition condition);
 }

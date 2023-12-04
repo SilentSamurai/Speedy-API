@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 
 public interface BinaryCondition extends Condition {
 
-    Field getField();
+    QueryField getField();
 
     SpeedyValue getSpeedyValue();
 }

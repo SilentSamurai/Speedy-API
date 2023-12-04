@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
-import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Data;
 
@@ -25,7 +25,7 @@ public class PutRequestContext implements ResponseReturningRequestContext {
     private final EventProcessor eventProcessor;
     private final VirtualEntityProcessor vEntityProcessor;
 
-    private SpeedyUriContext parser;
+    private SpeedyQuery speedyQuery;
     private Object entityInstance;
 
     public PutRequestContext(HttpServletRequest request,
@@ -48,6 +48,6 @@ public class PutRequestContext implements ResponseReturningRequestContext {
     }
 
     public EntityMetadata getEntityMetadata() {
-        return parser.getPrimaryResource().getResourceMetadata();
+        return speedyQuery.getFrom();
     }
 }

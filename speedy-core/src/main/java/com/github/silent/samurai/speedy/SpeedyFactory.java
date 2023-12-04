@@ -68,13 +68,18 @@ public class SpeedyFactory {
             throws Exception {
         GetRequestContext context = new GetRequestContext(request, response, metaModelProcessor, entityManager);
         new GetRequestParser(context).process();
-        Optional<Object> requestData = new GetDataHandler(context).process();
-        if (requestData.isEmpty()) {
+        Optional<?> requestedData;
+        if (false) {
+            requestedData = new GetDataHandler(context).processOne();
+        } else {
+            requestedData = new GetDataHandler(context).processMany();
+        }
+        if (requestedData.isEmpty()) {
             throw new NotFoundException();
         }
         IResponseSerializer jsonSerializer = new JSONSerializer(context);
-        PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(requestData.get());
-        int pageNumber = context.getParser().getQueryOrDefault("pageNo", Integer.class, 0);
+        PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(requestedData.get());
+        int pageNumber = context.getSpeedyQuery().getPageInfo().getPageNo();
         responseWrapper.setPageIndex(pageNumber);
         response.setContentType(jsonSerializer.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);

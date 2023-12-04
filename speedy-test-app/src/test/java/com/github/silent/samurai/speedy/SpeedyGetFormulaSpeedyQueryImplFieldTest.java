@@ -21,9 +21,9 @@ import java.util.List;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class SpeedyGetFormulaFieldTest {
+class SpeedyGetFormulaSpeedyQueryImplFieldTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyGetFormulaFieldTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyGetFormulaSpeedyQueryImplFieldTest.class);
 
     @Autowired
     EntityManagerFactory entityManagerFactory;

@@ -2,13 +2,13 @@
 grammar Speedy;
 
 
-request : resource SLSH? query? frag? CRLF? ;
+request : resource SLSH? speedyQueryImpl? frag? CRLF? ;
 
 resource: SLSH IDENTIFIER filters? ;
 
 frag: HASH (identifier | DIGITS);
 
-query: QM search ;
+speedyQueryImpl: QM search ;
 search: searchParameter (AND_OP searchParameter)* ;
 searchParameter : identifier (EQ (searchSV | searchMV))?  ;
 searchSV: constValue;

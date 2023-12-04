@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.docs.MetaModelSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.models.Query;
+import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import io.swagger.v3.oas.annotations.Hidden;
 import org.slf4j.Logger;
@@ -39,10 +39,10 @@ public class SpeedyApiController {
     }
 
     @PostMapping(value = "/$query")
-    public String query(@RequestBody Query query) throws JsonProcessingException {
+    public String query(@RequestBody SpeedyQueryImpl speedyQueryImpl) throws JsonProcessingException {
         MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
         JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);
-        LOGGER.info("query received : {}", query);
+        LOGGER.info("query received : {}", speedyQueryImpl);
         return CommonUtil.json().writeValueAsString(jsonElement);
     }
 

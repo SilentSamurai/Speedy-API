@@ -54,13 +54,13 @@ public class QueryBuilder {
         }
 
         BinaryCondition bCondition = (BinaryCondition) condition;
-        Field field = bCondition.getField();
+        QueryField queryField = bCondition.getField();
         Expression<? extends Comparable> path;
-        if (field.hasAssociatedFieldMetadata()) {
-            path = tableRoot.get(field.getFieldMetadata().getClassFieldName())
-                    .get(field.getAssociatedFieldMetadata().getClassFieldName());
+        if (queryField.isAssociated()) {
+            path = tableRoot.get(queryField.getFieldMetadata().getClassFieldName())
+                    .get(queryField.getAssociatedFieldMetadata().getClassFieldName());
         } else {
-            path = tableRoot.get(field.getFieldMetadata().getClassFieldName());
+            path = tableRoot.get(queryField.getFieldMetadata().getClassFieldName());
         }
 
         switch (condition.getOperator()) {
@@ -91,7 +91,7 @@ public class QueryBuilder {
 
     List<Order> captureOrderBy() {
         List<Order> orderList = new LinkedList<>();
-        for (OrderBy orderBy : speedyQuery.getOrderBy()) {
+        for (OrderBy orderBy : speedyQuery.getOrderByList()) {
             String classFieldName = orderBy.getFieldMetadata().getClassFieldName();
             OrderByOperator operator = orderBy.getOperator();
             if (operator == OrderByOperator.ASC) {

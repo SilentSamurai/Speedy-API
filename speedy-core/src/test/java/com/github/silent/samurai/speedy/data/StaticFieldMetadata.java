@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.data;
 
 import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import lombok.Data;
@@ -19,6 +20,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         field.setAccessible(true);
         fieldMetadata.setField(field);
         return fieldMetadata;
+    }
+
+    @Override
+    public ValueType getValueType() {
+        return ValueType.fromClass(field.getType());
     }
 
     @SneakyThrows
