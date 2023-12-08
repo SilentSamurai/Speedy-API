@@ -1,14 +1,16 @@
 package com.github.silent.samurai.speedy.models;
 
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 
 import java.util.Map;
 
-public class SpeedyEntity {
+public class SpeedyEntity implements SpeedyValue {
 
     private final EntityMetadata entityMetadata;
-    private Map<FieldMetadata, SpeedyField> data;
+    private Map<FieldMetadata, SpeedyValue> fields;
 
     public SpeedyEntity(EntityMetadata entityMetadata) {
         this.entityMetadata = entityMetadata;
@@ -16,14 +18,19 @@ public class SpeedyEntity {
 
     @Override
     public String toString() {
-        return data.toString();
+        return fields.toString();
     }
 
-    public SpeedyField get(FieldMetadata fieldMetadata) {
-        return data.get(fieldMetadata);
+    public SpeedyValue get(FieldMetadata fieldMetadata) {
+        return fields.get(fieldMetadata);
     }
 
-    public void put(FieldMetadata fieldMetadata, SpeedyField value) {
-        data.put(fieldMetadata, value);
+    public void put(FieldMetadata fieldMetadata, SpeedyValue value) {
+        fields.put(fieldMetadata, value);
+    }
+
+    @Override
+    public ValueType getValueType() {
+        return ValueType.OBJECT;
     }
 }

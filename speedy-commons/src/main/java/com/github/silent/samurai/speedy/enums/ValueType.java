@@ -12,7 +12,8 @@ public enum ValueType {
     TIME,
     DATE_TIME,
     OBJECT,
-    COLLECTION;
+    COLLECTION,
+    NULL;
 
     public static ValueType fromClass(Class<?> clazz) {
         if (String.class.isAssignableFrom(clazz)) {

@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyValueImpl;
+import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 public class JsonEntityDeserializer {
@@ -29,14 +29,14 @@ public class JsonEntityDeserializer {
 //    }
 
     private SpeedyEntity createEntity(EntityMetadata entityMetadata, JsonNode entityJson) throws Exception {
-        SpeedyEntity speedyEntity = entityMetadata.createNewEntityInstance();
+        SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isDeserializable()) continue;
             SpeedyValue value = this.retrieveFieldValue(
                     fieldMetadata, entityJson
             );
             if (value != null) {
-                speedyEntity.setBasicValue(fieldMetadata, value);
+                speedyEntity.put(fieldMetadata, value);
             }
         }
         return speedyEntity;
@@ -52,12 +52,12 @@ public class JsonEntityDeserializer {
                 EntityMetadata association = fieldMetadata.getAssociationMetadata();
                 if (entityObject.get(propertyName).isObject()) {
                     SpeedyEntity associationEntity = this.createEntity(association, entityObject.get(propertyName));
-                    value = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), associationEntity);
+                    value = SpeedyValueFactory.fromOne(fieldMetadata.getValueType(), associationEntity);
                 }
                 // array of association
             } else {
                 Object po = CommonUtil.jsonToType(entityObject.get(propertyName), fieldMetadata.getFieldType());
-                value = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), po);
+                value = SpeedyValueFactory.fromOne(fieldMetadata.getValueType(), po);
             }
         }
         return value;

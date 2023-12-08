@@ -8,10 +8,4 @@ public interface SpeedyValue {
 
     ValueType getValueType();
 
-    Object getSingleValue();
-
-    List<Object> getValues();
-
-    boolean isEmpty();
-
 }

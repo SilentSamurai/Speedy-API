@@ -4,8 +4,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyField;
-import com.github.silent.samurai.speedy.models.SpeedyValueImpl;
+import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
 
 public class CommonUtil {
 
@@ -30,7 +29,7 @@ public class CommonUtil {
                 }
             }
 
-            SpeedyValue speedyValue = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), value);
+            SpeedyValue speedyValue = SpeedyValueFactory.fromOne(fieldMetadata.getValueType(), value);
             speedyEntity.put(fieldMetadata, speedyValue);
         }
         return speedyEntity;

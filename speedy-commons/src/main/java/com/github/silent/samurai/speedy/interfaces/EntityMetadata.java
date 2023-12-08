@@ -29,10 +29,6 @@ public interface EntityMetadata {
 
     Set<String> getKeyFieldNames();
 
-    SpeedyEntity createNewEntityInstance() throws Exception;
-
-    SpeedyEntityKey createNewKeyInstance() throws Exception;
-
     Set<FieldMetadata> getAssociatedFields();
 
     default Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {

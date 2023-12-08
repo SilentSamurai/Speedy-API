@@ -8,7 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
-import com.github.silent.samurai.speedy.models.SpeedyValueImpl;
+import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.models.conditions.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
@@ -49,7 +49,7 @@ public class ConditionFactory {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
         Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        SpeedyValue speedyValue = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), instance);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromValueTypePrimitive(fieldMetadata.getValueType(), instance);
         QueryField normalField = new NormalField(fieldMetadata);
         return createCondition(normalField, operator, speedyValue);
     }
@@ -62,7 +62,7 @@ public class ConditionFactory {
             Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
             instances.add(instance);
         }
-        SpeedyValue speedyValue = SpeedyValueImpl.fromMany(fieldMetadata.getValueType(), instances);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromValueTypePrimitive(fieldMetadata.getValueType(), instances);
         QueryField normalField = new NormalField(fieldMetadata);
         return createCondition(normalField, operator, speedyValue);
     }
@@ -77,7 +77,7 @@ public class ConditionFactory {
         FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
         QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
         Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        SpeedyValue speedyValue = SpeedyValueImpl.fromOne(fieldMetadata.getValueType(), instance);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromValueTypePrimitive(fieldMetadata.getValueType(), instance);
         return createCondition(queryField, operator, speedyValue);
     }
 

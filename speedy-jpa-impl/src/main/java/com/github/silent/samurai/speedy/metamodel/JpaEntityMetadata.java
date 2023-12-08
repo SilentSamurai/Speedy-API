@@ -77,12 +77,11 @@ public class JpaEntityMetadata implements EntityMetadata {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    @Override
+
     public Object createNewEntityInstance() throws Exception {
         return entityClass.getConstructor().newInstance();
     }
 
-    @Override
     public Object createNewKeyInstance() throws Exception {
         return keyClass.getConstructor().newInstance();
     }
