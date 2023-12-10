@@ -24,7 +24,6 @@ public class QueryBuilder {
     private final CriteriaQuery<?> query;
     private final Root<?> tableRoot;
 
-
     public QueryBuilder(SpeedyQuery speedyQuery, EntityManager entityManager) {
         this.speedyQuery = speedyQuery;
         this.entityMetadata = speedyQuery.getFrom();
