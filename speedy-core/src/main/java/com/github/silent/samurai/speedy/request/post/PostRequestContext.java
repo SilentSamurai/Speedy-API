@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +28,7 @@ public class PostRequestContext implements ResponseReturningRequestContext {
     private final ValidationProcessor validationProcessor;
     private final EventProcessor eventProcessor;
     private final VirtualEntityProcessor vEntityProcessor;
-    private final List<Object> parsedObjects = new LinkedList<>();
+    private final List<SpeedyEntity> parsedEntity = new LinkedList<>();
 
     EntityMetadata entityMetadata;
 

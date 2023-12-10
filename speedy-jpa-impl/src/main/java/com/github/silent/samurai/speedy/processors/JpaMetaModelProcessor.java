@@ -79,7 +79,7 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
     }
 
     @Override
-    public QueryProcessor getQueryProcess(EntityManager entityManager) {
+    public QueryProcessor getQueryProcessor(EntityManager entityManager) {
         return new JpaQueryProcessorImpl(entityManager);
     }
 

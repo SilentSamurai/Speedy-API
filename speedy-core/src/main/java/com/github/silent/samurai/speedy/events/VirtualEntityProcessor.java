@@ -21,7 +21,7 @@ public class VirtualEntityProcessor {
     private final RegistryImpl eventRegistry;
 
 
-    private final Map<String, SpeedyVirtualEntityHandler<?>> virtualEntityHandlerMap = new HashMap<>();
+    private final Map<String, SpeedyVirtualEntityHandler> virtualEntityHandlerMap = new HashMap<>();
 
     public VirtualEntityProcessor(MetaModelProcessor metaModelProcessor, RegistryImpl eventRegistry) {
         this.metaModelProcessor = metaModelProcessor;
@@ -47,7 +47,7 @@ public class VirtualEntityProcessor {
     }
 
     public void processRegistry() {
-        for (SpeedyVirtualEntityHandler<?> virtualEntityHandler : eventRegistry.getVirtualEntityHandlers()) {
+        for (SpeedyVirtualEntityHandler virtualEntityHandler : eventRegistry.getVirtualEntityHandlers()) {
             Optional<Type> typeParameters = getTypeParameters(virtualEntityHandler.getClass());
 
 
@@ -67,8 +67,8 @@ public class VirtualEntityProcessor {
         return virtualEntityHandlerMap.containsKey(entityMetadata.getName());
     }
 
-    public SpeedyVirtualEntityHandler<Object> getHandler(EntityMetadata entityMetadata) {
-        return (SpeedyVirtualEntityHandler<Object>) virtualEntityHandlerMap.get(entityMetadata.getName());
+    public SpeedyVirtualEntityHandler getHandler(EntityMetadata entityMetadata) {
+        return virtualEntityHandlerMap.get(entityMetadata.getName());
     }
 
 }

@@ -28,7 +28,6 @@ public class CommonUtil {
 
                 }
             }
-
             SpeedyValue speedyValue = SpeedyValueFactory.fromOne(fieldMetadata.getValueType(), value);
             speedyEntity.put(fieldMetadata, speedyValue);
         }

@@ -47,12 +47,12 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
     }
 
     @Override
-    public boolean update(SpeedyEntity entity) {
+    public boolean update(SpeedyEntityKey pk, SpeedyEntity entity) {
         return false;
     }
 
     @Override
-    public boolean delete(SpeedyEntityKey entityKey) {
+    public boolean delete(SpeedyEntityKey pk) {
         return false;
     }
 

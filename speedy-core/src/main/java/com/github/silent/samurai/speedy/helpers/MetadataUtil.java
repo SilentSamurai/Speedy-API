@@ -3,15 +3,17 @@ package com.github.silent.samurai.speedy.helpers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.deserializer.JsonEntityDeserializer;
 import com.github.silent.samurai.speedy.deserializer.JsonIdentityDeserializer;
-import com.github.silent.samurai.speedy.deserializer.ParserIdentityDeserializer;
+import com.github.silent.samurai.speedy.deserializer.QueryKeyDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.google.common.collect.Sets;
 
-import javax.persistence.EntityManager;
 import java.util.Set;
 
 public class MetadataUtil {
@@ -29,19 +31,14 @@ public class MetadataUtil {
         return false;
     }
 
-    public static Object createIdentifierFromParser(SpeedyQuery speedyQuery) throws Exception {
+    public static SpeedyEntityKey createIdentifierFromQuery(SpeedyQuery speedyQuery) throws Exception {
         try {
-            ParserIdentityDeserializer deserializer = new ParserIdentityDeserializer(speedyQuery);
+            QueryKeyDeserializer deserializer = new QueryKeyDeserializer(speedyQuery);
             return deserializer.deserialize();
         } catch (Exception e) {
             throw new BadRequestException("failed to parse parameters", e);
         }
     }
-
-//    public static Object createEntityFromMap(EntityMetadata entityMetadata, HashMap hashMap, EntityManager entityManager) throws Exception {
-//        MapEntityDeserializer deserializer = new MapEntityDeserializer(hashMap, entityMetadata, entityManager);
-//        return deserializer.deserialize();
-//    }
 
     public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode asJsonObject) throws Exception {
         try {
@@ -52,19 +49,7 @@ public class MetadataUtil {
         }
     }
 
-    public static void updateEntityFromJSON(EntityMetadata entityMetadata,
-                                            EntityManager entityManager,
-                                            ObjectNode asJsonObject,
-                                            Object entityInstance) throws Exception {
-        try {
-            JsonEntityDeserializer deserializer = new JsonEntityDeserializer(asJsonObject, entityMetadata);
-            deserializer.deserializeOn(entityInstance);
-        } catch (Exception e) {
-            throw new BadRequestException("failed to parse body");
-        }
-    }
-
-    public static Object createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson) throws Exception {
+    public static SpeedyEntityKey createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson) throws Exception {
         try {
             JsonIdentityDeserializer deserializer = new JsonIdentityDeserializer(entityMetadata, keyJson);
             return deserializer.deserialize();
@@ -73,10 +58,10 @@ public class MetadataUtil {
         }
     }
 
-    public static boolean isKeyCompleteInEntity(EntityMetadata entityMetadata, Object entityInstance) {
+    public static boolean isKeyCompleteInEntity(EntityMetadata entityMetadata, SpeedyEntity entity) {
         for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
-            Object keyFieldValue = keyField.getIdFieldValue(entityInstance);
-            if (keyFieldValue == null) {
+            SpeedyValue keyFieldValue = entity.get(keyField);
+            if (keyFieldValue == SpeedyNull.SPEEDY_NULL) {
                 return false;
             }
         }

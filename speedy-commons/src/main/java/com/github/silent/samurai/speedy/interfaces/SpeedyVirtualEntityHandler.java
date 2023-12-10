@@ -1,11 +1,14 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-public interface SpeedyVirtualEntityHandler<T> {
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
-    T create(T entity);
+public interface SpeedyVirtualEntityHandler {
 
-    T update(T entity);
+    SpeedyEntity create(SpeedyEntity entity);
 
-    T delete(T entity);
+    SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity);
+
+    SpeedyEntity delete(SpeedyEntityKey pk);
 
 }

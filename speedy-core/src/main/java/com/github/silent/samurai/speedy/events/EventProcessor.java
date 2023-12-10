@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +70,7 @@ public class EventProcessor {
         }
     }
 
-    public Object triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, Object entity) throws Exception {
+    public Object triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
         if (eventEntityMap.containsKey(entityMetadata.getName())) {
             EventHandlerMetadata metadata = eventEntityMap.get(entityMetadata.getName());

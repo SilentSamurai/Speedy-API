@@ -4,6 +4,9 @@ import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,20 +42,23 @@ public class UpdateDataHandler {
         EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();
         Object savedEntity = null;
-        Object entityInstance = context.getEntityInstance();
-        if (entityInstance != null) {
-            context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entityInstance);
+        SpeedyEntity entity = context.getEntity();
+        SpeedyEntityKey entityKey = context.getEntityKey();
+        if (entity != null) {
+            context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entity);
 
             eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE,
-                    entityMetadata, entityInstance);
+                    entityMetadata, entity);
             if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
-                SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
-                savedEntity = handler.update(entityInstance);
+                SpeedyVirtualEntityHandler handler = context.getVEntityProcessor().getHandler(entityMetadata);
+                savedEntity = handler.update(entityKey, entity);
             } else {
-                savedEntity = saveEntity(entityInstance, entityMetadata);
+                QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
+//                savedEntity = saveEntity(entityInstance, entityMetadata);
+                queryProcessor.update(entityKey, entity);
             }
             eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE,
-                    entityMetadata, entityInstance);
+                    entityMetadata, entity);
 
         }
 

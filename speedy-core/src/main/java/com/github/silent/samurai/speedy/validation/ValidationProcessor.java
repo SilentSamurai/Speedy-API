@@ -7,6 +7,8 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +68,7 @@ public class ValidationProcessor {
         }
     }
 
-    private void defaultValidator(Object entity) throws BadRequestException {
+    private void defaultValidator(SpeedyEntity entity) throws BadRequestException {
         Set<ConstraintViolation<Object>> constraintViolations = validator.validate(entity);
         if (!constraintViolations.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -78,7 +80,7 @@ public class ValidationProcessor {
         }
     }
 
-    private void invokeValidationMethod(Method method, Object entity) throws Exception {
+    private void invokeValidationMethod(Method method, SpeedyEntity entity) throws Exception {
         Object valid = method.invoke(validationInstance, entity);
         if (valid instanceof Boolean) {
             boolean validVal = (Boolean) valid;
@@ -88,7 +90,7 @@ public class ValidationProcessor {
         }
     }
 
-    public void validateCreateRequestEntity(EntityMetadata entityMetadata, Object entity) throws Exception {
+    public void validateCreateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         if (createValidationMethods.containsKey(entityMetadata.getName())) {
             Method method = createValidationMethods.get(entityMetadata.getName());
             invokeValidationMethod(method, entity);
@@ -97,7 +99,7 @@ public class ValidationProcessor {
         }
     }
 
-    public void validateUpdateRequestEntity(EntityMetadata entityMetadata, Object entity) throws Exception {
+    public void validateUpdateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         if (updateValidationMethods.containsKey(entityMetadata.getName())) {
             Method method = updateValidationMethods.get(entityMetadata.getName());
             invokeValidationMethod(method, entity);
@@ -106,12 +108,12 @@ public class ValidationProcessor {
         }
     }
 
-    public void validateDeleteRequestEntity(EntityMetadata entityMetadata, Object entity) throws Exception {
+    public void validateDeleteRequestEntity(EntityMetadata entityMetadata, SpeedyEntityKey entityKey) throws Exception {
         if (deleteValidationMethods.containsKey(entityMetadata.getName())) {
             Method method = deleteValidationMethods.get(entityMetadata.getName());
-            invokeValidationMethod(method, entity);
+            invokeValidationMethod(method, entityKey);
         } else {
-            defaultValidator(entity);
+            defaultValidator(entityKey);
         }
     }
 }

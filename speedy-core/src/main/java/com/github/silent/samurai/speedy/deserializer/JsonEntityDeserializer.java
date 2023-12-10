@@ -1,71 +1,95 @@
 package com.github.silent.samurai.speedy.deserializer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.models.SpeedyNull;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Collection;
+import java.util.LinkedList;
+
+import static com.github.silent.samurai.speedy.models.SpeedyValueFactory.*;
 
 public class JsonEntityDeserializer {
 
-    private final JsonNode entityJson;
+    private final ObjectNode entityJson;
     private final EntityMetadata entityMetadata;
 
-    public JsonEntityDeserializer(JsonNode entityJson, EntityMetadata entityMetadata) throws Exception {
+    public JsonEntityDeserializer(ObjectNode entityJson, EntityMetadata entityMetadata) {
         this.entityJson = entityJson;
         this.entityMetadata = entityMetadata;
     }
 
-    public SpeedyEntity deserialize() throws Exception {
-        return createEntity(this.entityMetadata, entityJson);
+    public static SpeedyValue fromValueTypePrimitive(ValueType type, JsonNode jsonNode) {
+        switch (type) {
+            case TEXT:
+                return fromText(jsonNode.asText());
+            case INT:
+                return fromInt(jsonNode.asInt());
+            case FLOAT:
+                return fromDouble(jsonNode.asDouble());
+            case DATE:
+                String dateValue = jsonNode.asText();
+                return fromDate(LocalDate.parse(dateValue));
+            case TIME:
+                String timeValue = jsonNode.asText();
+                return fromTime(LocalTime.parse(timeValue));
+            case DATE_TIME:
+                String datetimeValue = jsonNode.asText();
+                return fromDateTime(LocalDateTime.parse(datetimeValue));
+            default:
+                return SpeedyNull.SPEEDY_NULL;
+        }
     }
 
-//    public void deserializeOn(SpeedyEntity speedyEntity) throws Exception {
-//        this.speedyEntity = speedyEntity;
-//        createEntity(this.entityMetadata, entityJson);
-//    }
-
-    private SpeedyEntity createEntity(EntityMetadata entityMetadata, JsonNode entityJson) throws Exception {
+    public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (!fieldMetadata.isDeserializable()) continue;
-            SpeedyValue value = this.retrieveFieldValue(
-                    fieldMetadata, entityJson
-            );
-            if (value != null) {
-                speedyEntity.put(fieldMetadata, value);
-            }
+            JsonNode fieldObject = jsonNode.get(fieldMetadata.getOutputPropertyName());
+            SpeedyValue speedyValue = fromFieldMetadata(fieldMetadata, fieldObject);
+            speedyEntity.put(fieldMetadata, speedyValue);
         }
         return speedyEntity;
     }
 
-    private SpeedyValue retrieveFieldValue(
-            FieldMetadata fieldMetadata,
-            JsonNode entityObject) throws Exception {
-        SpeedyValue value = null;
-        String propertyName = fieldMetadata.getOutputPropertyName();
-        if (entityObject.has(propertyName)) {
-            if (fieldMetadata.isAssociation()) {
-                EntityMetadata association = fieldMetadata.getAssociationMetadata();
-                if (entityObject.get(propertyName).isObject()) {
-                    SpeedyEntity associationEntity = this.createEntity(association, entityObject.get(propertyName));
-                    value = SpeedyValueFactory.fromOne(fieldMetadata.getValueType(), associationEntity);
+    public static SpeedyValue fromFieldMetadata(FieldMetadata fieldMetadata, JsonNode jsonNode) {
+        if (fieldMetadata.isAssociation()) {
+            if (fieldMetadata.isCollection()) {
+                ArrayNode arrayNode = (ArrayNode) jsonNode;
+                Collection<SpeedyValue> collection = new LinkedList<>();
+                for (JsonNode item : arrayNode) {
+                    SpeedyValue speedyValue = fromEntityMetadata(fieldMetadata.getAssociationMetadata(), (ObjectNode) item);
+                    collection.add(speedyValue);
                 }
-                // array of association
+                return fromCollection(collection);
             } else {
-                Object po = CommonUtil.jsonToType(entityObject.get(propertyName), fieldMetadata.getFieldType());
-                value = SpeedyValueFactory.fromOne(fieldMetadata.getValueType(), po);
+                return fromEntityMetadata(fieldMetadata.getAssociationMetadata(), (ObjectNode) jsonNode);
+            }
+        } else {
+            if (fieldMetadata.isCollection()) {
+                ArrayNode arrayNode = (ArrayNode) jsonNode;
+                Collection<SpeedyValue> collection = new LinkedList<>();
+                for (JsonNode item : arrayNode) {
+                    SpeedyValue speedyValue = fromValueTypePrimitive(fieldMetadata.getValueType(), item);
+                    collection.add(speedyValue);
+                }
+                return fromCollection(collection);
+            } else {
+                return fromValueTypePrimitive(fieldMetadata.getValueType(), jsonNode);
             }
         }
-        return value;
     }
 
-    private Object createEntityKey(EntityMetadata association, ObjectNode jsonObject) throws Exception {
-        JsonIdentityDeserializer deserializer = new JsonIdentityDeserializer(association, jsonObject);
-        return deserializer.deserialize();
+    public SpeedyEntity deserialize() throws Exception {
+        return fromEntityMetadata(entityMetadata, entityJson);
     }
 
 

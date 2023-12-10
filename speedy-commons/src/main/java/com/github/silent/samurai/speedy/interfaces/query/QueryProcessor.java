@@ -15,7 +15,7 @@ public interface QueryProcessor {
 
     boolean create(SpeedyEntity entity);
 
-    boolean update(SpeedyEntity entity);
+    boolean update(SpeedyEntityKey pk, SpeedyEntity entity);
 
     boolean delete(SpeedyEntityKey entityKey);
 

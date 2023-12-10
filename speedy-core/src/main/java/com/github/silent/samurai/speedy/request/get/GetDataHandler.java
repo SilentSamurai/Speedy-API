@@ -17,7 +17,7 @@ public class GetDataHandler {
 
     public Optional<SpeedyEntity> processOne() throws Exception {
         QueryProcessor queryProcessor = context.getMetaModelProcessor()
-                .getQueryProcess(context.getEntityManager());
+                .getQueryProcessor(context.getEntityManager());
         SpeedyQuery speedyQuery = context.getSpeedyQuery();
         SpeedyEntity result = queryProcessor.executeOne(speedyQuery);
         return Optional.ofNullable(result);
@@ -25,7 +25,7 @@ public class GetDataHandler {
 
     public Optional<List<SpeedyEntity>> processMany() throws Exception {
         QueryProcessor queryProcessor = context.getMetaModelProcessor()
-                .getQueryProcess(context.getEntityManager());
+                .getQueryProcessor(context.getEntityManager());
         SpeedyQuery speedyQuery = context.getSpeedyQuery();
         List<SpeedyEntity> result = queryProcessor.executeMany(speedyQuery);
         return Optional.ofNullable(result);

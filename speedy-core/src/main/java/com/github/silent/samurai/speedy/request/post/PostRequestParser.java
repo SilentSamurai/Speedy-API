@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Sets;
@@ -38,17 +40,17 @@ public class PostRequestParser {
         }
         ArrayNode batchOfEntities = (ArrayNode) jsonElement;
         EntityMetadata resourceMetadata = speedyQuery.getFrom();
+        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
         for (JsonNode element : batchOfEntities) {
             if (element.isObject()) {
                 ObjectNode objectNode = (ObjectNode) element;
 
                 if (MetadataUtil.isPrimaryKeyComplete(resourceMetadata, Sets.newHashSet(objectNode.fieldNames()))) {
-                    Object pk = MetadataUtil.createIdentifierFromJSON(
+                    SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(
                             resourceMetadata,
                             objectNode);
                     if (pk != null) {
-                        Object entityInDb = context.getEntityManager().find(resourceMetadata.getEntityClass(), pk);
-                        if (entityInDb != null) {
+                        if (queryProcessor.exists(pk)) {
                             throw new BadRequestException("Entity already present.");
                         }
                     }
@@ -59,7 +61,7 @@ public class PostRequestParser {
                         objectNode
                 );
                 LOGGER.info("parsed entity {}", speedyEntity);
-                context.getParsedObjects().add(speedyEntity);
+                context.getParsedEntity().add(speedyEntity);
             } else {
                 throw new BadRequestException("in-valid content");
             }

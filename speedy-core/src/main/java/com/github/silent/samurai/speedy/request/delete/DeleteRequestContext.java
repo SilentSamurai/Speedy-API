@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Data;
 
@@ -25,7 +26,7 @@ public class DeleteRequestContext implements ResponseReturningRequestContext {
     private final EntityManager entityManager;
     private final EventProcessor eventProcessor;
     private final VirtualEntityProcessor vEntityProcessor;
-    private final List<Object> objectsToBeRemoved = new LinkedList<>();
+    private final List<SpeedyEntityKey> keysToBeRemoved = new LinkedList<>();
 
     private EntityMetadata entityMetadata;
 

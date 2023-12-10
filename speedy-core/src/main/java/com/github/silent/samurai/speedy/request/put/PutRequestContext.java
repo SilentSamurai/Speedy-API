@@ -7,14 +7,18 @@ import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Data
+@Getter
+@Setter
 public class PutRequestContext implements ResponseReturningRequestContext {
 
     private final HttpServletRequest request;
@@ -26,7 +30,8 @@ public class PutRequestContext implements ResponseReturningRequestContext {
     private final VirtualEntityProcessor vEntityProcessor;
 
     private SpeedyQuery speedyQuery;
-    private Object entityInstance;
+    private SpeedyEntity entity;
+    private SpeedyEntityKey entityKey;
 
     public PutRequestContext(HttpServletRequest request,
                              HttpServletResponse response,

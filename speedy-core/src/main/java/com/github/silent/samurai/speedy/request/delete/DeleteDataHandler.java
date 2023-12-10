@@ -4,6 +4,8 @@ import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,26 +43,28 @@ public class DeleteDataHandler {
         List<Object> deletedObjects = new LinkedList<>();
         EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();
-        if (!context.getObjectsToBeRemoved().isEmpty()) {
-            for (Object parsedObject : context.getObjectsToBeRemoved()) {
+        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
+        if (!context.getKeysToBeRemoved().isEmpty()) {
+            for (SpeedyEntityKey parsedKey : context.getKeysToBeRemoved()) {
                 // validate b4 delete
                 context.getValidationProcessor().validateDeleteRequestEntity(
                         entityMetadata,
-                        parsedObject);
+                        parsedKey);
                 // pre delete event fired
                 eventProcessor.triggerEvent(SpeedyEventType.PRE_DELETE,
-                        entityMetadata, parsedObject);
+                        entityMetadata, parsedKey);
                 // handle delete request
                 if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
-                    SpeedyVirtualEntityHandler<Object> handler = context.getVEntityProcessor().getHandler(entityMetadata);
-                    handler.delete(parsedObject);
+                    SpeedyVirtualEntityHandler handler = context.getVEntityProcessor().getHandler(entityMetadata);
+                    handler.delete(parsedKey);
                 } else {
-                    deleteEntity(parsedObject, entityMetadata);
+                    queryProcessor.delete(parsedKey);
+//                    deleteEntity(parsedKey, entityMetadata);
                 }
-                deletedObjects.add(parsedObject);
+                deletedObjects.add(parsedKey);
                 // fire post delete event
                 eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE,
-                        entityMetadata, parsedObject);
+                        entityMetadata, parsedKey);
             }
         }
         return Optional.of(deletedObjects);

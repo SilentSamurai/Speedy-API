@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Sets;
@@ -29,6 +31,7 @@ public class DeleteRequestParser {
         SpeedyQuery speedyQuery = parser.parse();
         context.setEntityMetadata(speedyQuery.getFrom());
         EntityMetadata resourceMetadata = speedyQuery.getFrom();
+        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());
@@ -41,12 +44,11 @@ public class DeleteRequestParser {
                 if (!MetadataUtil.isPrimaryKeyComplete(resourceMetadata, Sets.newHashSet(element.fieldNames()))) {
                     throw new BadRequestException("Primary Key Incomplete ");
                 }
-                Object pk = MetadataUtil.createIdentifierFromJSON(resourceMetadata, (ObjectNode) element);
-                Object entityInstance = context.getEntityManager().find(resourceMetadata.getEntityClass(), pk);
-                if (entityInstance == null) {
+                SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(resourceMetadata, (ObjectNode) element);
+                if (!queryProcessor.exists(pk)) {
                     throw new BadRequestException("entity not found");
                 }
-                context.getObjectsToBeRemoved().add(entityInstance);
+                context.getKeysToBeRemoved().add(pk);
                 LOGGER.info("parsed primary key {}", pk);
             } else {
                 throw new BadRequestException("in-valid request body");

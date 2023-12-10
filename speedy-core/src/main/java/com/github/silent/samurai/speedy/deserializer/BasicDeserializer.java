@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.serializers.basic;
 
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.ThrowingFunction;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -18,6 +20,36 @@ public class BasicDeserializer {
     static {
         initConverters();
     }
+
+    public static <T> T quotedStringToPrimitive(String value, Class<T> type) throws BadRequestException {
+        try {
+            value = value.replaceAll("['|\"]", "");
+            Object obj = stringToBasic(value, type);
+            if (obj != null && CommonUtil.isAssignableClass(obj.getClass(), type)) {
+                return (T) obj;
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(e);
+        }
+        return null;
+    }
+
+    public static <T> T stringToPrimitive(String value, Class<T> type) throws BadRequestException {
+        try {
+            Object obj = stringToBasic(value, type);
+            if (obj != null && CommonUtil.isAssignableClass(obj.getClass(), type)) {
+                return (T) obj;
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(e);
+        }
+        return null;
+    }
+
+    public static Object stringToBasic(String value, Class<?> targetType) throws Exception {
+        return BasicDeserializer.deserialize(value, targetType);
+    }
+
 
     public static Object deserialize(String value, Class<?> clazz) throws Exception {
         if (!converters.containsKey(clazz)) {

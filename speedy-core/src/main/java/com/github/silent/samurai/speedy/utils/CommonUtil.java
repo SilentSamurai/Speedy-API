@@ -5,8 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.serializers.basic.BasicDeserializer;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -90,35 +88,6 @@ public class CommonUtil {
 
     public static <T> T jsonToType(JsonNode jsonNode, Class<T> type) throws JsonProcessingException {
         return standardMapper.treeToValue(jsonNode, type);
-    }
-
-    public static <T> T quotedStringToPrimitive(String value, Class<T> type) throws BadRequestException {
-        try {
-            value = value.replaceAll("['|\"]", "");
-            Object obj = stringToBasic(value, type);
-            if (obj != null && isAssignableClass(obj.getClass(), type)) {
-                return (T) obj;
-            }
-        } catch (Exception e) {
-            throw new BadRequestException(e);
-        }
-        return null;
-    }
-
-    public static <T> T stringToPrimitive(String value, Class<T> type) throws BadRequestException {
-        try {
-            Object obj = stringToBasic(value, type);
-            if (obj != null && isAssignableClass(obj.getClass(), type)) {
-                return (T) obj;
-            }
-        } catch (Exception e) {
-            throw new BadRequestException(e);
-        }
-        return null;
-    }
-
-    public static Object stringToBasic(String value, Class<?> targetType) throws Exception {
-        return BasicDeserializer.deserialize(value, targetType);
     }
 
     public static List<String> inQuotesSplitter(String input, String regex) {

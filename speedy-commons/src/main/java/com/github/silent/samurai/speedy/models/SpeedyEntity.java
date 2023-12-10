@@ -5,17 +5,17 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SpeedyEntity implements SpeedyValue {
 
     private final EntityMetadata entityMetadata;
-    private Map<FieldMetadata, SpeedyValue> fields;
+    private final Map<FieldMetadata, SpeedyValue> fields = new HashMap<>();
 
     public SpeedyEntity(EntityMetadata entityMetadata) {
         this.entityMetadata = entityMetadata;
     }
-
     @Override
     public String toString() {
         return fields.toString();
