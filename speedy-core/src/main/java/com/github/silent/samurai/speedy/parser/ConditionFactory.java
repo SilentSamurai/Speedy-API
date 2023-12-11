@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy.parser;
 
+import com.github.silent.samurai.speedy.deserializer.BasicDeserializer;
+import com.github.silent.samurai.speedy.deserializer.JsonEntityDeserializer;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -48,8 +50,7 @@ public class ConditionFactory {
     public BinaryCondition createBinaryCondition(String field, String operatorSymbol, String value) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
-        Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        SpeedyValue speedyValue = SpeedyValueFactory.fromValueTypePrimitive(fieldMetadata.getValueType(), instance);
+        SpeedyValue speedyValue = BasicDeserializer.fromValueTypeQuotedString(fieldMetadata.getValueType(), value);
         QueryField normalField = new NormalField(fieldMetadata);
         return createCondition(normalField, operator, speedyValue);
     }
@@ -57,12 +58,12 @@ public class ConditionFactory {
     public BinaryCondition createBinaryCondition(String field, String operatorSymbol, List<String> values) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
-        List<Object> instances = new LinkedList<>();
+        List<SpeedyValue> instances = new LinkedList<>();
         for (String value : values) {
-            Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-            instances.add(instance);
+            SpeedyValue speedyValue = BasicDeserializer.fromValueTypeQuotedString(fieldMetadata.getValueType(), value);
+            instances.add(speedyValue);
         }
-        SpeedyValue speedyValue = SpeedyValueFactory.fromValueTypePrimitive(fieldMetadata.getValueType(), instances);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromCollection(instances);
         QueryField normalField = new NormalField(fieldMetadata);
         return createCondition(normalField, operator, speedyValue);
     }
@@ -76,8 +77,7 @@ public class ConditionFactory {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
         QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
-        Object instance = CommonUtil.quotedStringToPrimitive(value, fieldMetadata.getFieldType());
-        SpeedyValue speedyValue = SpeedyValueFactory.fromValueTypePrimitive(fieldMetadata.getValueType(), instance);
+        SpeedyValue speedyValue = BasicDeserializer.fromValueTypeQuotedString(fieldMetadata.getValueType(), value);
         return createCondition(queryField, operator, speedyValue);
     }
 

@@ -11,4 +11,9 @@ public class SpeedyNull implements SpeedyValue {
     public ValueType getValueType() {
         return ValueType.NULL;
     }
+
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
 }

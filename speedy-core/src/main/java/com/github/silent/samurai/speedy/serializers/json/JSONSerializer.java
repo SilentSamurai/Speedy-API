@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.IBaseResponsePayload;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.serializers.SelectiveFieldJsonSerializer;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -44,7 +45,7 @@ public class JSONSerializer implements IResponseSerializer {
         JsonNode jsonElement;
         SelectiveFieldJsonSerializer selectiveFieldJsonSerializer = new SelectiveFieldJsonSerializer(context.getMetaModelProcessor(), fieldPredicate);
         if (context.getSerializationType() == IResponseSerializer.MULTIPLE_ENTITY) {
-            List<SpeedyEntity> resultList = (List<SpeedyEntity>) requestedPayload.getPayload();
+            List<SpeedyValue> resultList = (List<SpeedyValue>) requestedPayload.getPayload();
             jsonElement = selectiveFieldJsonSerializer.formCollection(resultList, context.getEntityMetadata(), context.getSerializationType(), 0);
         } else {
             SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();

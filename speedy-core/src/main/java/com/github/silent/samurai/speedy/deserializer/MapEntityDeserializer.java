@@ -6,7 +6,6 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
-import com.github.silent.samurai.speedy.serializers.basic.BasicDeserializer;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;

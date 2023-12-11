@@ -10,6 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.models.PayloadWrapper;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.request.delete.DeleteDataHandler;
 import com.github.silent.samurai.speedy.request.delete.DeleteRequestContext;
 import com.github.silent.samurai.speedy.request.delete.DeleteRequestParser;
@@ -96,7 +97,7 @@ public class SpeedyFactory {
                 eventProcessor,
                 vEntityProcessor);
         new PostRequestParser(context).processBatch();
-        Optional<List<Object>> savedEntities = new PostDataHandler(context).processBatch();
+        Optional<List<SpeedyEntity>> savedEntities = new PostDataHandler(context).processBatch();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
         PayloadWrapper responseWrapper = PayloadWrapper.wrapperInResponse(savedEntities.orElse(Collections.emptyList()));
         response.setContentType(jsonSerializer.getContentType());

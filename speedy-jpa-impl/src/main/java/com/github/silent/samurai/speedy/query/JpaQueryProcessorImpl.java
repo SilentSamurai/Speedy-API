@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.util.CommonUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -25,7 +26,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
         Query query = qb.getQuery();
         List<?> resultList = query.getResultList();
         Object reqObj = resultList.get(0);
-        return new JpaSpeedyEntity(reqObj, speedyQuery.getFrom());
+        return CommonUtil.fromJpaEntity(reqObj, speedyQuery.getFrom());
     }
 
     @Override
@@ -33,7 +34,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
         QueryBuilder qb = new QueryBuilder(speedyQuery, entityManager);
         Query query = qb.getQuery();
         List<?> resultList = query.getResultList();
-        return resultList.stream().map(e -> new JpaSpeedyEntity(e, speedyQuery.getFrom())).collect(Collectors.toList());
+        return resultList.stream().map(e -> CommonUtil.fromJpaEntity(e, speedyQuery.getFrom())).collect(Collectors.toList());
     }
 
     @Override

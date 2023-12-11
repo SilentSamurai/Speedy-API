@@ -10,6 +10,10 @@ import java.util.Collection;
 
 public class SpeedyValueFactory {
 
+    public static SpeedyNull fromNull() {
+        return SpeedyNull.SPEEDY_NULL;
+    }
+
     public static SpeedyText fromText(String value) {
         return new SpeedyText(value);
     }

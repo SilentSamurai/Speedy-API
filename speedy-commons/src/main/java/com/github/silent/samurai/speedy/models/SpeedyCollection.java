@@ -2,23 +2,26 @@ package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import lombok.Getter;
 
 import java.util.Collection;
 
+@Getter
 public class SpeedyCollection implements SpeedyValue {
 
-    private Collection<SpeedyValue> collection;
+    private Collection<SpeedyValue> value;
 
     public SpeedyCollection(Collection<SpeedyValue> collection) {
-        this.collection = collection;
-    }
-
-    public boolean isEmpty() {
-        return collection.isEmpty();
+        this.value = collection;
     }
 
     @Override
     public ValueType getValueType() {
         return ValueType.COLLECTION;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return value == null || value.isEmpty();
     }
 }

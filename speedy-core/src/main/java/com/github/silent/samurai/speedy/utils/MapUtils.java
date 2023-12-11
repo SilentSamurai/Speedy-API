@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.silent.samurai.speedy.deserializer.BasicDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 
 import java.util.Map;
@@ -15,7 +16,7 @@ public class MapUtils {
     public static Object findAnyValueInMap(Map<String, String> map, Class<?> keyClass) throws BadRequestException {
         Optional<String> any = map.values().stream().findAny();
         if (any.isPresent()) {
-            return CommonUtil.stringToPrimitive(any.get(), keyClass);
+            return BasicDeserializer.stringToPrimitive(any.get(), keyClass);
         }
         return null;
     }

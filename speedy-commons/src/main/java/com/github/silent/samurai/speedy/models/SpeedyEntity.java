@@ -33,4 +33,10 @@ public class SpeedyEntity implements SpeedyValue {
     public ValueType getValueType() {
         return ValueType.OBJECT;
     }
+
+    @Override
+    public boolean isEmpty() {
+        return entityMetadata == null;
+    }
+
 }

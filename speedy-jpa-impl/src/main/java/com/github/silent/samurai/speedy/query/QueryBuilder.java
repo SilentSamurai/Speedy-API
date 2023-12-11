@@ -5,11 +5,16 @@ import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.*;
+import com.github.silent.samurai.speedy.models.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,6 +51,350 @@ public class QueryBuilder {
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
     }
 
+    <T> Expression<T> getPath(BinaryCondition bCondition) {
+        QueryField queryField = bCondition.getField();
+        if (queryField.isAssociated()) {
+            return tableRoot.get(queryField.getFieldMetadata().getClassFieldName())
+                    .get(queryField.getAssociatedFieldMetadata().getClassFieldName());
+        } else {
+            return tableRoot.get(queryField.getFieldMetadata().getClassFieldName());
+        }
+    }
+
+    Predicate equalPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends Comparable<String>> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return criteriaBuilder.equal(path, value.getValue());
+            }
+            case INT: {
+                Expression<? extends Comparable<Integer>> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return criteriaBuilder.equal(path, value.getValue());
+            }
+            case FLOAT: {
+                Expression<? extends Comparable<Double>> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return criteriaBuilder.equal(path, value.getValue());
+            }
+            case DATE: {
+                Expression<? extends Comparable<LocalDate>> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return criteriaBuilder.equal(path, value.getValue());
+            }
+            case TIME: {
+                Expression<? extends Comparable<LocalTime>> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return criteriaBuilder.equal(path, value.getValue());
+            }
+            case DATE_TIME: {
+                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return criteriaBuilder.equal(path, value.getValue());
+            }
+            case OBJECT:
+            case COLLECTION:
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            case NULL: {
+                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
+                return criteriaBuilder.isNull(path);
+            }
+        }
+        return null;
+    }
+
+    Predicate notEqualPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends Comparable<String>> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return criteriaBuilder.notEqual(path, value.getValue());
+            }
+            case INT: {
+                Expression<? extends Comparable<Integer>> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return criteriaBuilder.notEqual(path, value.getValue());
+            }
+            case FLOAT: {
+                Expression<? extends Comparable<Double>> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return criteriaBuilder.notEqual(path, value.getValue());
+            }
+            case DATE: {
+                Expression<? extends Comparable<LocalDate>> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return criteriaBuilder.notEqual(path, value.getValue());
+            }
+            case TIME: {
+                Expression<? extends Comparable<LocalTime>> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return criteriaBuilder.notEqual(path, value.getValue());
+            }
+            case DATE_TIME: {
+                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return criteriaBuilder.notEqual(path, value.getValue());
+            }
+            case OBJECT:
+            case COLLECTION:
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            case NULL: {
+                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
+                return criteriaBuilder.isNotNull(path);
+            }
+        }
+        return null;
+    }
+
+    Predicate lessThanPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends String> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return criteriaBuilder.lessThan(path, value.getValue());
+            }
+            case INT: {
+                Expression<? extends Integer> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return criteriaBuilder.lessThan(path, value.getValue());
+            }
+            case FLOAT: {
+                Expression<? extends Double> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return criteriaBuilder.lessThan(path, value.getValue());
+            }
+            case DATE: {
+                Expression<? extends LocalDate> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return criteriaBuilder.lessThan(path, value.getValue());
+            }
+            case TIME: {
+                Expression<? extends LocalTime> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return criteriaBuilder.lessThan(path, value.getValue());
+            }
+            case DATE_TIME: {
+                Expression<? extends LocalDateTime> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return criteriaBuilder.lessThan(path, value.getValue());
+            }
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        }
+        return null;
+    }
+
+    Predicate greaterThanPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends String> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return criteriaBuilder.greaterThan(path, value.getValue());
+            }
+            case INT: {
+                Expression<? extends Integer> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return criteriaBuilder.greaterThan(path, value.getValue());
+            }
+            case FLOAT: {
+                Expression<? extends Double> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return criteriaBuilder.greaterThan(path, value.getValue());
+            }
+            case DATE: {
+                Expression<? extends LocalDate> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return criteriaBuilder.greaterThan(path, value.getValue());
+            }
+            case TIME: {
+                Expression<? extends LocalTime> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return criteriaBuilder.greaterThan(path, value.getValue());
+            }
+            case DATE_TIME: {
+                Expression<? extends LocalDateTime> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return criteriaBuilder.greaterThan(path, value.getValue());
+            }
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        }
+        return null;
+    }
+
+    Predicate lessThanOrEqualToPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends String> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
+            }
+            case INT: {
+                Expression<? extends Integer> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
+            }
+            case FLOAT: {
+                Expression<? extends Double> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
+            }
+            case DATE: {
+                Expression<? extends LocalDate> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
+            }
+            case TIME: {
+                Expression<? extends LocalTime> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
+            }
+            case DATE_TIME: {
+                Expression<? extends LocalDateTime> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
+            }
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        }
+        return null;
+    }
+
+    Predicate greaterThanOrEqualToPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends String> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
+            }
+            case INT: {
+                Expression<? extends Integer> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
+            }
+            case FLOAT: {
+                Expression<? extends Double> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
+            }
+            case DATE: {
+                Expression<? extends LocalDate> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
+            }
+            case TIME: {
+                Expression<? extends LocalTime> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
+            }
+            case DATE_TIME: {
+                Expression<? extends LocalDateTime> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
+            }
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        }
+        return null;
+    }
+
+    Predicate inPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends String> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return path.in(value.getValue());
+            }
+            case INT: {
+                Expression<? extends Integer> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return path.in(value.getValue());
+            }
+            case FLOAT: {
+                Expression<? extends Double> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return path.in(value.getValue());
+            }
+            case DATE: {
+                Expression<? extends LocalDate> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return path.in(value.getValue());
+            }
+            case TIME: {
+                Expression<? extends LocalTime> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return path.in(value.getValue());
+            }
+            case DATE_TIME: {
+                Expression<? extends LocalDateTime> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return path.in(value.getValue());
+            }
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        }
+        return null;
+    }
+
+    Predicate notInPredicate(BinaryCondition bCondition) throws BadRequestException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        switch (speedyValue.getValueType()) {
+            case TEXT: {
+                Expression<? extends String> path = getPath(bCondition);
+                SpeedyText value = (SpeedyText) speedyValue;
+                return criteriaBuilder.not(path.in(value.getValue()));
+            }
+            case INT: {
+                Expression<? extends Integer> path = getPath(bCondition);
+                SpeedyInt value = (SpeedyInt) speedyValue;
+                return criteriaBuilder.not(path.in(value.getValue()));
+            }
+            case FLOAT: {
+                Expression<? extends Double> path = getPath(bCondition);
+                SpeedyDouble value = (SpeedyDouble) speedyValue;
+                return criteriaBuilder.not(path.in(value.getValue()));
+            }
+            case DATE: {
+                Expression<? extends LocalDate> path = getPath(bCondition);
+                SpeedyDate value = (SpeedyDate) speedyValue;
+                return criteriaBuilder.not(path.in(value.getValue()));
+            }
+            case TIME: {
+                Expression<? extends LocalTime> path = getPath(bCondition);
+                SpeedyTime value = (SpeedyTime) speedyValue;
+                return criteriaBuilder.not(path.in(value.getValue()));
+            }
+            case DATE_TIME: {
+                Expression<? extends LocalDateTime> path = getPath(bCondition);
+                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
+                return criteriaBuilder.not(path.in(value.getValue()));
+            }
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        }
+        return null;
+    }
+
     Predicate conditionToPredicate(Condition condition) throws Exception {
         ConditionOperator operator = condition.getOperator();
         if (operator == ConditionOperator.AND || operator == ConditionOperator.OR) {
@@ -53,36 +402,27 @@ public class QueryBuilder {
         }
 
         BinaryCondition bCondition = (BinaryCondition) condition;
-        QueryField queryField = bCondition.getField();
+
         Expression<? extends Comparable> path;
-        if (queryField.isAssociated()) {
-            path = tableRoot.get(queryField.getFieldMetadata().getClassFieldName())
-                    .get(queryField.getAssociatedFieldMetadata().getClassFieldName());
-        } else {
-            path = tableRoot.get(queryField.getFieldMetadata().getClassFieldName());
-        }
+
 
         switch (condition.getOperator()) {
             case EQ:
-                return criteriaBuilder.equal(path, bCondition.getSpeedyValue().getSingleValue());
+                return equalPredicate(bCondition);
             case NEQ:
-                return criteriaBuilder.notEqual(path, bCondition.getSpeedyValue().getSingleValue());
+                return notEqualPredicate(bCondition);
             case LT:
-                return criteriaBuilder.lessThan(path,
-                        (Comparable) bCondition.getSpeedyValue().getSingleValue());
+                return lessThanPredicate(bCondition);
             case GT:
-                return criteriaBuilder.greaterThan(path,
-                        (Comparable) bCondition.getSpeedyValue().getSingleValue());
+                return greaterThanPredicate(bCondition);
             case LTE:
-                return criteriaBuilder.lessThanOrEqualTo(path,
-                        (Comparable) bCondition.getSpeedyValue().getSingleValue());
+                return lessThanOrEqualToPredicate(bCondition);
             case GTE:
-                return criteriaBuilder.greaterThanOrEqualTo(path,
-                        (Comparable) bCondition.getSpeedyValue().getSingleValue());
+                return greaterThanOrEqualToPredicate(bCondition);
             case IN:
-                return path.in(bCondition.getSpeedyValue().getValues());
+                return inPredicate(bCondition);
             case NOT_IN:
-                return criteriaBuilder.not(path.in(bCondition.getSpeedyValue().getValues()));
+                return notInPredicate(bCondition);
             default:
                 throw new BadRequestException("Unknown Operator");
         }

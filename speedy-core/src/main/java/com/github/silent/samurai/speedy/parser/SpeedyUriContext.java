@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.AntlrParser;
+import com.github.silent.samurai.speedy.deserializer.BasicDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -54,7 +55,7 @@ public class SpeedyUriContext {
         List<String> values = rawQuery.get(name);
         List<T> list = new ArrayList<>();
         for (String str : values) {
-            T t = CommonUtil.quotedStringToPrimitive(str, type);
+            T t = BasicDeserializer.quotedStringToPrimitive(str, type);
             list.add(t);
         }
         return list;
@@ -63,7 +64,7 @@ public class SpeedyUriContext {
     public <T> T getQueryOrDefault(String name, Class<T> type, T defaultValue) throws BadRequestException {
         if (hasQuery(name)) {
             String queryValue = rawQuery.get(name).get(0);
-            return CommonUtil.quotedStringToPrimitive(queryValue, type);
+            return BasicDeserializer.quotedStringToPrimitive(queryValue, type);
         }
         return defaultValue;
     }
