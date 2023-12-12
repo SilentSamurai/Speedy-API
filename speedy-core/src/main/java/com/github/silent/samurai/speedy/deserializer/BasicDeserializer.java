@@ -31,7 +31,8 @@ public class BasicDeserializer {
 
     public static SpeedyValue fromValueTypeQuotedString(ValueType type, String quotedValue) throws BadRequestException {
         switch (type) {
-            case TEXT: {
+            case TEXT:
+            case OBJECT: {
                 String instance = quotedStringToPrimitive(quotedValue, String.class);
                 return fromText(instance);
             }
@@ -55,6 +56,8 @@ public class BasicDeserializer {
                 LocalDateTime instance = quotedStringToPrimitive(quotedValue, LocalDateTime.class);
                 return fromDateTime(instance);
             }
+            case COLLECTION:
+            case NULL:
             default:
                 return SpeedyNull.SPEEDY_NULL;
         }

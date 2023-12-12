@@ -4,6 +4,8 @@ import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.entity.Product;
 import com.github.silent.samurai.speedy.entity.VirtualEntity;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.ProductRepository;
 import org.slf4j.Logger;
@@ -14,7 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-public class VirtualEntityHandler implements SpeedyVirtualEntityHandler<VirtualEntity> {
+public class VirtualEntityHandler implements SpeedyVirtualEntityHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VirtualEntityHandler.class);
 
@@ -42,24 +44,25 @@ public class VirtualEntityHandler implements SpeedyVirtualEntityHandler<VirtualE
     }
 
     @Override
-    public VirtualEntity create(VirtualEntity entity) {
+    public SpeedyEntity create(SpeedyEntity entity) {
         LOGGER.info("VirtualEntity create Event");
-        Product product = new Product();
-        this.saveProduct(entity, product);
+//        Product product = new Product();
+//        this.saveProduct(entity, product);
         return entity;
     }
 
     @Override
-    public VirtualEntity update(VirtualEntity entity) {
-        Optional<Product> byId = productRepository.findById(entity.getId());
-        this.saveProduct(entity, byId.get());
+    public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) {
+//        Optional<Product> byId = productRepository.findById(entity.getId());
+//        this.saveProduct(entity, byId.get());
         return entity;
     }
 
     @Override
-    public VirtualEntity delete(VirtualEntity entity) {
-        productRepository.deleteById(entity.getId());
-        return entity;
+    public SpeedyEntity delete(SpeedyEntityKey pk) {
+//        productRepository.deleteById(entity.getId());
+//        return entity;
+        return null;
     }
 
 }

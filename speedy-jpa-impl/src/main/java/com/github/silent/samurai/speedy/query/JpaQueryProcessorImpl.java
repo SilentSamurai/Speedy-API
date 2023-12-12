@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.util.CommonUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +35,12 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
         QueryBuilder qb = new QueryBuilder(speedyQuery, entityManager);
         Query query = qb.getQuery();
         List<?> resultList = query.getResultList();
-        return resultList.stream().map(e -> CommonUtil.fromJpaEntity(e, speedyQuery.getFrom())).collect(Collectors.toList());
+        List<SpeedyEntity> list = new ArrayList<>();
+        for (Object e : resultList) {
+            SpeedyEntity speedyEntity = CommonUtil.fromJpaEntity(e, speedyQuery.getFrom());
+            list.add(speedyEntity);
+        }
+        return list;
     }
 
     @Override

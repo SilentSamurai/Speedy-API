@@ -5,6 +5,7 @@ import java.time.*;
 import java.util.Collection;
 
 public enum ValueType {
+    BOOL,
     TEXT,
     INT,
     FLOAT,
@@ -18,7 +19,9 @@ public enum ValueType {
     public static ValueType fromClass(Class<?> clazz) {
         if (String.class.isAssignableFrom(clazz)) {
             return TEXT;
-        } else if (Integer.class.isAssignableFrom(clazz) || int.class.isAssignableFrom(clazz)) {
+        }else if (Boolean.class.isAssignableFrom(clazz) || boolean.class.isAssignableFrom(clazz)) {
+            return BOOL;
+        }else if (Integer.class.isAssignableFrom(clazz) || int.class.isAssignableFrom(clazz)) {
             return INT;
         } else if (Float.class.isAssignableFrom(clazz) || float.class.isAssignableFrom(clazz)
                 || Double.class.isAssignableFrom(clazz) || double.class.isAssignableFrom(clazz)) {

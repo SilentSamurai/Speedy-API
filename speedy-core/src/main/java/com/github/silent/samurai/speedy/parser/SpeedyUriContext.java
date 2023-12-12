@@ -11,7 +11,6 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.*;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -158,15 +157,15 @@ public class SpeedyUriContext {
             ConditionFactory conditionFactory = speedyQuery.getConditionFactory();
             for (Filter filter : resourceRequest.getFilters().values()) {
                 if (filter.isMultiple()) {
-                    BinaryCondition binaryCondition = conditionFactory.createBinaryCondition(filter.getField(), filter.getOperator(), filter.getValues());
+                    BinaryCondition binaryCondition = conditionFactory.createBinaryConditionQuotedString(filter.getField(), filter.getOperator(), filter.getValues());
                     speedyQuery.getWhere().addSubCondition(binaryCondition);
                 } else {
                     String value = filter.getValues().get(0);
                     if (filter.isAssociationPresent()) {
-                        BinaryCondition binaryCondition = conditionFactory.createAssociatedCondition(filter.getField(), filter.getAssociationId(), filter.getOperator(), value);
+                        BinaryCondition binaryCondition = conditionFactory.createAssociatedConditionQuotedString(filter.getField(), filter.getAssociationId(), filter.getOperator(), value);
                         speedyQuery.getWhere().addSubCondition(binaryCondition);
                     } else {
-                        BinaryCondition binaryCondition = conditionFactory.createBinaryCondition(filter.getField(), filter.getOperator(), value);
+                        BinaryCondition binaryCondition = conditionFactory.createBinaryConditionQuotedString(filter.getField(), filter.getOperator(), value);
                         speedyQuery.getWhere().addSubCondition(binaryCondition);
                     }
                 }

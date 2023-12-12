@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.deserializer.BasicDeserializer;
-import com.github.silent.samurai.speedy.deserializer.JsonEntityDeserializer;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -12,7 +11,6 @@ import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.models.conditions.*;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -47,7 +45,7 @@ public class ConditionFactory {
         throw new BadRequestException("");
     }
 
-    public BinaryCondition createBinaryCondition(String field, String operatorSymbol, String value) throws SpeedyHttpException {
+    public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, String value) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
         SpeedyValue speedyValue = BasicDeserializer.fromValueTypeQuotedString(fieldMetadata.getValueType(), value);
@@ -55,7 +53,7 @@ public class ConditionFactory {
         return createCondition(normalField, operator, speedyValue);
     }
 
-    public BinaryCondition createBinaryCondition(String field, String operatorSymbol, List<String> values) throws SpeedyHttpException {
+    public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, List<String> values) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
         List<SpeedyValue> instances = new LinkedList<>();
@@ -68,7 +66,7 @@ public class ConditionFactory {
         return createCondition(normalField, operator, speedyValue);
     }
 
-    public BinaryCondition createAssociatedCondition(String field, String associatedField, String operatorSymbol, String value) throws SpeedyHttpException {
+    public BinaryCondition createAssociatedConditionQuotedString(String field, String associatedField, String operatorSymbol, String value) throws SpeedyHttpException {
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         if (!fieldMetadata.isAssociation()) {
