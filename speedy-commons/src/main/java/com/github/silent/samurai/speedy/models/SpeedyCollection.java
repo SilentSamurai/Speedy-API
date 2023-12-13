@@ -24,4 +24,14 @@ public class SpeedyCollection implements SpeedyValue {
     public boolean isEmpty() {
         return value == null || value.isEmpty();
     }
+
+    @Override
+    public boolean isCollection() {
+        return true;
+    }
+
+    @Override
+    public Collection<SpeedyValue> asCollection() {
+        return getValue();
+    }
 }

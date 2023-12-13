@@ -51,7 +51,7 @@ public class PostDataHandler {
         EntityMetadata entityMetadata = context.getEntityMetadata();
 //        EntityTransaction transaction = context.getEntityManager().getTransaction();
 //        transaction.begin();
-        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
+        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor();
         for (SpeedyEntity parsedObject : context.getParsedEntity()) {
             try {
                 // validate entity

@@ -18,6 +18,4 @@ public interface SpeedyQuery {
 
     PageInfo getPageInfo();
 
-    boolean isOnlyIdentifiersPresent();
-
 }

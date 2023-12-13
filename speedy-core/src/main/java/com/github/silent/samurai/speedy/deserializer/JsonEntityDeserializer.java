@@ -53,9 +53,11 @@ public class JsonEntityDeserializer {
     public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            JsonNode fieldObject = jsonNode.get(fieldMetadata.getOutputPropertyName());
-            SpeedyValue speedyValue = fromFieldMetadata(fieldMetadata, fieldObject);
-            speedyEntity.put(fieldMetadata, speedyValue);
+            if (jsonNode.has(fieldMetadata.getOutputPropertyName())) {
+                JsonNode fieldObject = jsonNode.get(fieldMetadata.getOutputPropertyName());
+                SpeedyValue speedyValue = fromFieldMetadata(fieldMetadata, fieldObject);
+                speedyEntity.put(fieldMetadata, speedyValue);
+            }
         }
         return speedyEntity;
     }

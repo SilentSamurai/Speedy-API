@@ -22,4 +22,14 @@ public class SpeedyText implements SpeedyValue {
     public boolean isEmpty() {
         return value == null;
     }
+
+    @Override
+    public boolean isText() {
+        return true;
+    }
+
+    @Override
+    public String asText() {
+        return getValue();
+    }
 }

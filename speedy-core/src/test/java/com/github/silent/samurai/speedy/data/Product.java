@@ -4,18 +4,15 @@ package com.github.silent.samurai.speedy.data;
 import lombok.Data;
 
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
 
 
 @Data
-public class AssociatedEntityTestClass {
+public class Product {
 
     @Id
     String id;
     String name;
     String category;
-
-    @OneToOne
-    AssociationEntity associationEntity;
+    Integer cost;
 
 }

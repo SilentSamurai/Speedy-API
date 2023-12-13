@@ -35,7 +35,7 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 
     @Override
     public boolean isAssociation() {
-        return field.getType().isAssignableFrom(AssociationEntity.class);
+        return field.getType().isAssignableFrom(ProductItem.class);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 
     @Override
     public EntityMetadata getAssociationMetadata() {
-        return StaticEntityMetadata.createEntityMetadata(AssociationEntity.class);
+        return StaticEntityMetadata.createEntityMetadata(ProductItem.class);
     }
 
     @SneakyThrows

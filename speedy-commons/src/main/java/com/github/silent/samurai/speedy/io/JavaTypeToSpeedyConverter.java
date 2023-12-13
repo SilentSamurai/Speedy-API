@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.io;
 
-import com.github.silent.samurai.speedy.interfaces.ThrowingFunction;
+import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 
@@ -14,75 +16,102 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class JavaTypeToSpeedyConverter {
-    private static final Map<Class<?>, ThrowingFunction<Object, SpeedyValue, Exception>> converters = new HashMap<>();
+    private static final Map<String, ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
+
+    public static <T> ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException> get(ValueType valueType, Class<T> clazz) {
+        String key = clazz.getName() + valueType.name();
+        return converters.get(key);
+    }
+
+    public static boolean has(ValueType valueType, Class<?> clazz) {
+        String key = clazz.getName() + valueType.name();
+        return converters.containsKey(key);
+    }
+
+    public static void put(ValueType valueType, Class<?> clazz,
+                           ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException> lambda) {
+        String key = clazz.getName() + valueType.name();
+        converters.put(key, lambda);
+    }
 
     static {
         initConverters();
     }
 
-    public static <T> SpeedyValue convert(Object instance, Class<T> clazz) throws Exception {
-        if (instance == null || !converters.containsKey(clazz)) {
+    public static <T> SpeedyValue convert(Object instance, ValueType valueType, Class<T> clazz) throws SpeedyHttpException {
+        if (instance == null || !has(valueType, clazz)) {
             return SpeedyNull.SPEEDY_NULL;
         }
-        return converters.get(clazz).apply(instance);
+        return get(valueType, clazz).apply(instance, valueType);
     }
 
     private static void initConverters() {
-//        converters.put(null, instance -> new SpeedyNull());
-        converters.put(String.class, instance -> new SpeedyText((String) instance));
-        converters.put(int.class, instance -> {
+        put(ValueType.TEXT, String.class, (instance, valueType) -> {
+            return new SpeedyText((String) instance);
+        });
+        put(ValueType.INT, int.class, (instance, valueType) -> {
             return new SpeedyInt((Integer) instance);
         });
-        converters.put(Integer.class, instance -> {
+        put(ValueType.INT, Integer.class, (instance, valueType) -> {
             return new SpeedyInt((Integer) instance);
         });
-        converters.put(long.class, instance -> {
+        put(ValueType.INT, long.class, (instance, valueType) -> {
             return new SpeedyInt((Integer) instance);
         });
-        converters.put(Long.class, instance -> {
+        put(ValueType.INT, Long.class, (instance, valueType) -> {
             return new SpeedyInt((Integer) instance);
         });
-        converters.put(float.class, instance -> {
+        put(ValueType.FLOAT, float.class, (instance, valueType) -> {
             return new SpeedyDouble((Double) instance);
         });
-        converters.put(Float.class, instance -> {
+        put(ValueType.FLOAT, Float.class, (instance, valueType) -> {
             return new SpeedyDouble((Double) instance);
         });
-        converters.put(double.class, instance -> {
+        put(ValueType.FLOAT, double.class, (instance, valueType) -> {
             return new SpeedyDouble((Double) instance);
         });
-        converters.put(Double.class, instance -> {
+        put(ValueType.FLOAT, Double.class, (instance, valueType) -> {
             return new SpeedyDouble((Double) instance);
         });
-        converters.put(boolean.class, instance -> {
+        put(ValueType.BOOL, boolean.class, (instance, valueType) -> {
             return new SpeedyBoolean((Boolean) instance);
         });
-        converters.put(Boolean.class, instance -> {
+        put(ValueType.BOOL, Boolean.class, (instance, valueType) -> {
             return new SpeedyBoolean((Boolean) instance);
         });
-        converters.put(java.sql.Date.class, instance -> {
+        put(ValueType.DATE, java.sql.Date.class, (instance, valueType) -> {
             java.sql.Date sqlDate = (java.sql.Date) instance;
             return new SpeedyDate(sqlDate.toLocalDate());
         });
-        converters.put(Date.class, instance -> {
+        put(ValueType.DATE, Date.class, (instance, valueType) -> {
             Date kdate = (Date) instance;
             LocalDate localDate = kdate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             return new SpeedyDate(localDate);
         });
-        converters.put(Instant.class, instance -> {
+        put(ValueType.DATE, Instant.class, (instance, valueType) -> {
             Instant kdate = (Instant) instance;
-            LocalDateTime localDate = kdate.atZone(ZoneId.systemDefault()).toLocalDateTime();
-            return new SpeedyDateTime(localDate);
+            LocalDate localDate = kdate.atZone(ZoneId.systemDefault()).toLocalDate();
+            return new SpeedyDate(localDate);
         });
-        converters.put(LocalDate.class, instance -> {
+        put(ValueType.DATE_TIME, Instant.class, (instance, valueType) -> {
+            Instant kdate = (Instant) instance;
+            LocalDateTime localDateTime = kdate.atZone(ZoneId.systemDefault()).toLocalDateTime();
+            return new SpeedyDateTime(localDateTime);
+        });
+//        put(ValueType.TIME, Instant.class, (instance, valueType) -> {
+//            Instant kdate = (Instant) instance;
+//            LocalDateTime localDateTime = kdate.atZone(ZoneId.systemDefault()).toLocalDateTime();
+//            return new SpeedyDateTime(localDateTime);
+//        });
+        put(ValueType.DATE, LocalDate.class, (instance, valueType) -> {
             LocalDate kdate = (LocalDate) instance;
             return new SpeedyDate(kdate);
         });
-        converters.put(LocalDateTime.class, instance -> {
+        put(ValueType.DATE_TIME, LocalDateTime.class, (instance, valueType) -> {
             LocalDateTime kdate = (LocalDateTime) instance;
             return new SpeedyDateTime(kdate);
         });
-        converters.put(Timestamp.class, instance -> {
+        put(ValueType.DATE_TIME, Timestamp.class, (instance, valueType) -> {
             Timestamp kdate = (Timestamp) instance;
             LocalDateTime localDateTime = kdate.toLocalDateTime();
             return new SpeedyDateTime(localDateTime);

@@ -1,11 +1,12 @@
 package com.github.silent.samurai.speedy.io;
 
-import com.github.silent.samurai.speedy.interfaces.ThrowingFunction;
+import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,88 +17,123 @@ import java.util.Map;
 
 public class Speedy2JavaTypeConverter {
 
-    private static final Map<Class<?>, ThrowingFunction<SpeedyValue, Object, Exception>> converters = new HashMap<>();
+    private static final Map<String, ThrowingBiFunction<SpeedyValue, ValueType, Object, SpeedyHttpException>> converters = new HashMap<>();
 
     static {
         initConverters();
     }
 
-    public static <T> T convert(SpeedyValue value, Class<T> clazz) throws Exception {
-        if (!converters.containsKey(clazz) || value instanceof SpeedyNull) {
+    public static <T> T convert(SpeedyValue value, Class<T> clazz) throws SpeedyHttpException {
+        ValueType valueType = value.getValueType();
+        if (!has(valueType, clazz) || value instanceof SpeedyNull) {
             return null;
         }
-        return clazz.cast(converters.get(clazz).apply(value));
+        return clazz.cast(get(valueType, clazz).apply(value, valueType));
+    }
+
+    public static <T> ThrowingBiFunction<SpeedyValue, ValueType, Object, SpeedyHttpException> get(ValueType valueType, Class<T> clazz) {
+        String key = clazz.getName() + valueType.name();
+        return converters.get(key);
+    }
+
+    public static boolean has(ValueType valueType, Class<?> clazz) {
+        String key = clazz.getName() + valueType.name();
+        return converters.containsKey(key);
+    }
+
+    public static void put(ValueType valueType, Class<?> clazz,
+                           ThrowingBiFunction<SpeedyValue, ValueType, Object, SpeedyHttpException> converter) {
+        String key = clazz.getName() + valueType.name();
+        converters.put(key, converter);
     }
 
     private static void initConverters() {
-//        converters.put(null, value -> return null);
-        converters.put(String.class, value -> {
-            return ((SpeedyText) value).getValue();
+
+        put(ValueType.TEXT, String.class, (speedyValue, type) -> {
+            return ((SpeedyText) speedyValue).getValue();
         });
-        converters.put(int.class, Speedy2JavaTypeConverter::toInteger);
-        converters.put(Integer.class, Speedy2JavaTypeConverter::toInteger);
-        converters.put(long.class, Speedy2JavaTypeConverter::toLong);
-        converters.put(Long.class, Speedy2JavaTypeConverter::toLong);
-        converters.put(float.class, Speedy2JavaTypeConverter::toFloat);
-        converters.put(Float.class, Speedy2JavaTypeConverter::toFloat);
-        converters.put(double.class, Speedy2JavaTypeConverter::toDouble);
-        converters.put(Double.class, Speedy2JavaTypeConverter::toDouble);
-        converters.put(boolean.class, Speedy2JavaTypeConverter::toBoolean);
-        converters.put(Boolean.class, Speedy2JavaTypeConverter::toBoolean);
-        converters.put(java.sql.Date.class, speedyValue -> {
+        put(ValueType.INT, int.class, (speedyValue, type) -> {
+            SpeedyInt speedyInt = (SpeedyInt) speedyValue;
+            return speedyInt.getValue();
+        });
+        put(ValueType.INT, Integer.class, (speedyValue, type) -> {
+            SpeedyInt speedyInt = (SpeedyInt) speedyValue;
+            return speedyInt.getValue();
+        });
+        put(ValueType.INT, Integer.class, (speedyValue, type) -> {
+            SpeedyInt speedyInt = (SpeedyInt) speedyValue;
+            return speedyInt.getValue();
+        });
+        put(ValueType.INT, long.class, (speedyValue, type) -> {
+            SpeedyInt speedyInt = (SpeedyInt) speedyValue;
+            return speedyInt.getValue().longValue();
+        });
+        put(ValueType.INT, Long.class, (speedyValue, type) -> {
+            SpeedyInt speedyInt = (SpeedyInt) speedyValue;
+            return speedyInt.getValue().longValue();
+        });
+        put(ValueType.FLOAT, float.class, (speedyValue, type) -> {
+            SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
+            return speedyDouble.getValue().floatValue();
+        });
+        put(ValueType.FLOAT, Float.class, (speedyValue, type) -> {
+            SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
+            return speedyDouble.getValue().floatValue();
+        });
+        put(ValueType.FLOAT, double.class, (speedyValue, type) -> {
+            SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
+            return speedyDouble.getValue();
+        });
+        put(ValueType.FLOAT, Double.class, (speedyValue, type) -> {
+            SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
+            return speedyDouble.getValue();
+        });
+        put(ValueType.BOOL, boolean.class, (speedyValue, type) -> {
+            SpeedyBoolean speedyBoolean = (SpeedyBoolean) speedyValue;
+            return speedyBoolean.getValue();
+        });
+        put(ValueType.BOOL, Boolean.class, (speedyValue, type) -> {
+            SpeedyBoolean speedyBoolean = (SpeedyBoolean) speedyValue;
+            return speedyBoolean.getValue();
+        });
+        put(ValueType.DATE, java.sql.Date.class, (speedyValue, type) -> {
             SpeedyDate speedyDate = (SpeedyDate) speedyValue;
             return java.sql.Date.valueOf(speedyDate.getValue());
         });
-        converters.put(Date.class, speedyValue -> {
-            try {
-                SpeedyDate speedyDate = (SpeedyDate) speedyValue;
-                Instant instant = speedyDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
-                return Date.from(instant);
-            } catch (Exception e) {
-                return null;
-            }
+        put(ValueType.DATE, Date.class, (speedyValue, type) -> {
+            SpeedyDate speedyDate = (SpeedyDate) speedyValue;
+            Instant instant = speedyDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
+            return Date.from(instant);
         });
-        converters.put(Instant.class, speedyValue -> {
+        put(ValueType.DATE, Instant.class, (speedyValue, type) -> {
             SpeedyDate speedyDate = (SpeedyDate) speedyValue;
             return speedyDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
         });
-        converters.put(LocalDate.class, speedyValue -> {
+        put(ValueType.DATE_TIME, Instant.class, (speedyValue, type) -> {
+            SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
+            return speedyDateTime.getValue().atZone(ZoneId.systemDefault()).toInstant();
+        });
+//        put(ValueType.TIME, Instant.class, (speedyValue, type) -> {
+//            SpeedyTime speedyTime = (SpeedyTime) speedyValue;
+//            // convert localTime to Instant object
+//            return speedyTime.getValue();
+//        });
+        put(ValueType.DATE, LocalDate.class, (speedyValue, type) -> {
             SpeedyDate speedyDate = (SpeedyDate) speedyValue;
             return speedyDate.getValue();
         });
-        converters.put(LocalDateTime.class, speedyValue -> {
+        put(ValueType.DATE_TIME, LocalDate.class, (speedyValue, type) -> {
+            SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
+            return speedyDateTime.getValue().toLocalDate();
+        });
+        put(ValueType.DATE_TIME, LocalDateTime.class, (speedyValue, type) -> {
             SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
             return speedyDateTime.getValue();
         });
-        converters.put(Timestamp.class, speedyValue -> {
+        put(ValueType.DATE_TIME, LocalDateTime.class, (speedyValue, type) -> {
             SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
             return Timestamp.valueOf(speedyDateTime.getValue());
         });
-    }
-
-    static Integer toInteger(SpeedyValue speedyValue) {
-        SpeedyInt speedyInt = (SpeedyInt) speedyValue;
-        return speedyInt.getValue();
-    }
-
-    static Long toLong(SpeedyValue speedyValue) {
-        SpeedyInt speedyInt = (SpeedyInt) speedyValue;
-        return speedyInt.getValue().longValue();
-    }
-
-    static Float toFloat(SpeedyValue speedyValue) {
-        SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
-        return speedyDouble.getValue().floatValue();
-    }
-
-    static Double toDouble(SpeedyValue speedyValue) {
-        SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
-        return speedyDouble.getValue();
-    }
-
-    static Boolean toBoolean(SpeedyValue speedyValue) {
-        SpeedyBoolean speedyBoolean = (SpeedyBoolean) speedyValue;
-        return speedyBoolean.getValue();
     }
 
 }

@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.interfaces.query;
 
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
@@ -7,17 +8,17 @@ import java.util.List;
 
 public interface QueryProcessor {
 
-    SpeedyEntity executeOne(SpeedyQuery query) throws Exception;
+    SpeedyEntity executeOne(SpeedyQuery query) throws SpeedyHttpException;
 
-    List<SpeedyEntity> executeMany(SpeedyQuery query) throws Exception;
+    List<SpeedyEntity> executeMany(SpeedyQuery query) throws SpeedyHttpException;
 
-    boolean exists(SpeedyEntityKey entityKey);
+    boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException;
 
-    boolean create(SpeedyEntity entity);
+    boolean create(SpeedyEntity entity) throws SpeedyHttpException;
 
-    boolean update(SpeedyEntityKey pk, SpeedyEntity entity);
+    boolean update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException;
 
-    boolean delete(SpeedyEntityKey entityKey);
+    boolean delete(SpeedyEntityKey entityKey) throws SpeedyHttpException;
 
 
 }

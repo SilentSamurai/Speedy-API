@@ -15,17 +15,13 @@ public class GetDataHandler {
         this.context = context;
     }
 
-    public Optional<SpeedyEntity> processOne() throws Exception {
-        QueryProcessor queryProcessor = context.getMetaModelProcessor()
-                .getQueryProcessor(context.getEntityManager());
+    public Optional<SpeedyEntity> processOne(QueryProcessor queryProcessor) throws Exception {
         SpeedyQuery speedyQuery = context.getSpeedyQuery();
         SpeedyEntity result = queryProcessor.executeOne(speedyQuery);
         return Optional.ofNullable(result);
     }
 
-    public Optional<List<SpeedyEntity>> processMany() throws Exception {
-        QueryProcessor queryProcessor = context.getMetaModelProcessor()
-                .getQueryProcessor(context.getEntityManager());
+    public Optional<List<SpeedyEntity>> processMany(QueryProcessor queryProcessor) throws Exception {
         SpeedyQuery speedyQuery = context.getSpeedyQuery();
         List<SpeedyEntity> result = queryProcessor.executeMany(speedyQuery);
         return Optional.ofNullable(result);

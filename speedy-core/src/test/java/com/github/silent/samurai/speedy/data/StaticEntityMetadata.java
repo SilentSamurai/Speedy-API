@@ -39,7 +39,7 @@ public class StaticEntityMetadata implements EntityMetadata {
 
     @Override
     public String getName() {
-        return entityClass.getName();
+        return entityClass.getSimpleName();
     }
 
     @Override
@@ -111,12 +111,12 @@ public class StaticEntityMetadata implements EntityMetadata {
                 .collect(Collectors.toSet());
     }
 
-    @Override
+    //    @Override
     public Object createNewEntityInstance() throws Exception {
         return entityClass.getConstructor().newInstance();
     }
 
-    @Override
+    //    @Override
     public Object createNewKeyInstance() throws Exception {
         return keyClass.getConstructor().newInstance();
     }

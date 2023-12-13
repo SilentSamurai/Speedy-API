@@ -35,8 +35,13 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     }
 
     @Override
+    public EntityManagerFactory createEntityManagerFactory() {
+        return entityManagerFactory;
+    }
+
+    @Override
     public MetaModelProcessor createMetaModelProcessor() {
-        return new JpaMetaModelProcessor(entityManagerFactory);
+        return new JpaMetaModelProcessor(this);
     }
 
     @Override

@@ -6,7 +6,11 @@ import com.github.silent.samurai.speedy.data.*;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.google.common.collect.Sets;
@@ -42,28 +46,28 @@ class MetadataUtilTest {
 
     @Test
     void isPrimaryKeyComplete() {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         HashSet<String> fields = Sets.newHashSet("id");
         assertTrue(MetadataUtil.isPrimaryKeyComplete(entityMetadata, fields));
     }
 
     @Test
     void hasOnlyPrimaryKeyFields() {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         HashSet<String> fields = Sets.newHashSet("id");
         assertTrue(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
     @Test
     void hasOnlyPrimaryKeyFields1() {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         HashSet<String> fields = Sets.newHashSet("id", "name");
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
     @Test
     void hasOnlyPrimaryKeyFields2() {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         HashSet<String> fields = Sets.newHashSet();
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
@@ -79,51 +83,52 @@ class MetadataUtilTest {
 
     @Test
     void hasOnlyPrimaryKeyFields3() {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
         HashSet<String> fields = Sets.newHashSet("id");
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
     @Test
     void hasOnlyPrimaryKeyFields4() {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
         HashSet<String> fields = Sets.newHashSet("id", "name", "category");
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
     @Test
     void createEntityKeyFromMap() throws Exception {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
-        Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
+        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
+        Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
         SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(id='1234')");
-        speedyUriContext.parse();
-        // TODO:
-//        Object primaryKey = MetadataUtil.createIdentifierFromParser(speedyUriContext);
-//        assertEquals("1234", primaryKey);
+        SpeedyQuery speedyQuery = speedyUriContext.parse();
+        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
+        FieldMetadata id = productMetadata.field("id");
+        assertEquals("1234", primaryKey.get(id).asText());
     }
 
     @Test
     void createEntityKeyFromMap1() throws Exception {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
-        Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
+        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
+        Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
         SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(id='1234', name='na')");
-        speedyUriContext.parse();
-        // TODO:
-//        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.createIdentifierFromParser(speedyUriContext);
-//        assertEquals("1234", primaryKey.getId());
-//        assertEquals("na", primaryKey.getName());
+        SpeedyQuery speedyQuery = speedyUriContext.parse();
+
+        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
+        FieldMetadata id = productMetadata.field("id");
+        FieldMetadata name = productMetadata.field("name");
+        assertEquals("1234", primaryKey.get(id).asText());
+        assertEquals("na", primaryKey.get(name).asText());
     }
 
     @Test
     void createEntityKeyFromMap2() throws Exception {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
-                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
-                    Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
+                    EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
+                    Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
                     SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(name='1234')");
-                    speedyUriContext.parse();
-                    // TODO:
-//                    MetadataUtil.createIdentifierFromParser(speedyUriContext);
+                    SpeedyQuery speedyQuery = speedyUriContext.parse();
+                    MetadataUtil.createIdentifierFromQuery(speedyQuery);
                 }
         );
     }
@@ -132,12 +137,11 @@ class MetadataUtilTest {
     void createEntityKeyFromMap3() throws Exception {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
-                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
+                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
                     Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
                     SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(name='na')");
-                    speedyUriContext.parse();
-                    // TODO:
-//                    MetadataUtil.createIdentifierFromParser(speedyUriContext);
+                    SpeedyQuery speedyQuery = speedyUriContext.parse();
+                    MetadataUtil.createIdentifierFromQuery(speedyQuery);
                 }
         );
     }
@@ -145,26 +149,26 @@ class MetadataUtilTest {
 
     @Test
     void createEntityKeyFromJSON() throws Exception {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'1234', 'name':'na'}");
-        Object primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
-        assertEquals("1234", primaryKey);
+        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        assertEquals("1234", primaryKey.get(entityMetadata.field("id")).asText());
     }
 
     @Test
     void createEntityKeyFromJSON1() throws Exception {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'1234', 'name':'na'}");
-        PrimaryKeyTestClass primaryKey = (PrimaryKeyTestClass) MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
-        assertEquals("1234", primaryKey.getId());
-        assertEquals("na", primaryKey.getName());
+        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        assertEquals("1234", primaryKey.get(entityMetadata.field("id")).asText());
+        assertEquals("na", primaryKey.get(entityMetadata.field("name")).asText());
     }
 
     @Test
     void createEntityKeyFromJSON2() throws Exception {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
-                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
                     JsonNode jsonElement = CommonUtil.json().readTree("{'name':'na'}");
                     MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
                 }
@@ -175,7 +179,7 @@ class MetadataUtilTest {
     void createEntityKeyFromJSON3() throws Exception {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
-                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
+                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
                     JsonNode jsonElement = CommonUtil.json().readTree("{'name':'na'}");
                     MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
                 }
@@ -204,22 +208,22 @@ class MetadataUtilTest {
 
     @Test
     void createEntityObjectFromJSON() throws Exception {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1'}");
-        EntityTestClass entity = (EntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, entityManager);
-        assertEquals("abcd", entity.getId());
-        assertEquals("na", entity.getName());
-        assertEquals("cat-1", entity.getCategory());
+        SpeedyEntity entity = MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        assertEquals("abcd", entity.get(entityMetadata.field("id")).asText());
+        assertEquals("na", entity.get(entityMetadata.field("name")).asText());
+        assertEquals("cat-1", entity.get(entityMetadata.field("category")).asText());
     }
 
     @Test
     void createEntityObjectFromJSON1() throws Exception {
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityCompositeKeyTestClass.class);
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1'}");
-        EntityCompositeKeyTestClass entity = (EntityCompositeKeyTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, entityManager);
-        assertEquals("abcd", entity.getId());
-        assertEquals("na", entity.getName());
-        assertEquals("cat-1", entity.getCategory());
+        SpeedyEntity entity = MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        assertEquals("abcd", entity.get(entityMetadata.field("id")).asText());
+        assertEquals("na", entity.get(entityMetadata.field("name")).asText());
+        assertEquals("cat-1", entity.get(entityMetadata.field("category")).asText());
     }
 
     /*@Test
@@ -239,15 +243,19 @@ class MetadataUtilTest {
 
     @Test
     void createEntityFromJson2() throws Exception {
-        AssociationEntity associationEntity = new AssociationEntity();
-        Mockito.when(entityManager.find(AssociationEntity.class, "abcd")).thenReturn(associationEntity);
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(AssociatedEntityTestClass.class);
-        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1', 'associationEntity':{'id':'abcd'} }");
-        AssociatedEntityTestClass entity = (AssociatedEntityTestClass) MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, entityManager);
-        assertEquals("abcd", entity.getId());
-        assertEquals("na", entity.getName());
-        assertEquals("cat-1", entity.getCategory());
-        assertEquals(associationEntity, entity.getAssociationEntity());
+        ProductItem productItem = new ProductItem();
+        productItem.setId("abcd");
+        productItem.setName("Part - 1");
+        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
+        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1', 'productItem':{'id':'abcd'} }");
+        SpeedyEntity productEntity = MetadataUtil.createEntityFromJSON(productMetadata, (ObjectNode) jsonElement);
+        assertEquals("abcd", productEntity.get(productMetadata.field("id")).asText());
+        assertEquals("na", productEntity.get(productMetadata.field("name")).asText());
+        assertEquals("cat-1", productEntity.get(productMetadata.field("category")).asText());
+        FieldMetadata fieldMetadata = productMetadata.field("productItem");
+        SpeedyEntity productItemEntity = productEntity.get(fieldMetadata).asObject();
+        FieldMetadata id = fieldMetadata.getAssociationMetadata().field("id");
+        assertEquals(productItem.getId(), productItemEntity.get(id).asText());
     }
 
 }

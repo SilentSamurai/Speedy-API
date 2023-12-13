@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.processors;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.metamodel.JpaEntityMetadata;
@@ -10,8 +11,6 @@ import com.github.silent.samurai.speedy.query.JpaQueryProcessorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.metamodel.EntityType;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,11 +23,13 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModelProcessor.class);
 
+    private ISpeedyConfiguration configuration;
     private final Map<String, JpaEntityMetadata> entityMap = new HashMap<>();
     private final Map<Class<?>, JpaEntityMetadata> typeMap = new HashMap<>();
 
-    public JpaMetaModelProcessor(EntityManagerFactory entityManagerFactory) {
-        Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
+    public JpaMetaModelProcessor(ISpeedyConfiguration configuration) {
+        this.configuration = configuration;
+        Set<EntityType<?>> entities = configuration.createEntityManagerFactory().getMetamodel().getEntities();
         for (EntityType<?> entityType : entities) {
             JpaEntityMetadata entityMetadata = JpaEntityProcessor.processEntity(entityType);
             entityMap.put(entityType.getName(), entityMetadata);
@@ -79,8 +80,8 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
     }
 
     @Override
-    public QueryProcessor getQueryProcessor(EntityManager entityManager) {
-        return new JpaQueryProcessorImpl(entityManager);
+    public QueryProcessor getQueryProcessor() {
+        return new JpaQueryProcessorImpl(configuration.createEntityManager());
     }
 
 

@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.PayloadWrapper;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.request.delete.DeleteDataHandler;
@@ -65,15 +66,15 @@ public class SpeedyFactory {
         this.vEntityProcessor.processRegistry();
     }
 
-    public void processGETRequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager)
+    public void processGETRequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor)
             throws Exception {
-        GetRequestContext context = new GetRequestContext(request, response, metaModelProcessor, entityManager);
+        GetRequestContext context = new GetRequestContext(request, response, metaModelProcessor);
         new GetRequestParser(context).process();
         Optional<?> requestedData;
         if (false) {
-            requestedData = new GetDataHandler(context).processOne();
+            requestedData = new GetDataHandler(context).processOne(queryProcessor);
         } else {
-            requestedData = new GetDataHandler(context).processMany();
+            requestedData = new GetDataHandler(context).processMany(queryProcessor);
         }
         if (requestedData.isEmpty()) {
             throw new NotFoundException();
@@ -87,15 +88,15 @@ public class SpeedyFactory {
         jsonSerializer.writeResponse(responseWrapper);
     }
 
-    public void processPOSTRequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
+    public void processPOSTRequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor) throws Exception {
         PostRequestContext context = new PostRequestContext(
                 request,
                 response,
                 metaModelProcessor,
-                entityManager,
                 validationProcessor,
                 eventProcessor,
-                vEntityProcessor);
+                vEntityProcessor,
+                queryProcessor);
         new PostRequestParser(context).processBatch();
         Optional<List<SpeedyEntity>> savedEntities = new PostDataHandler(context).processBatch();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
@@ -105,14 +106,15 @@ public class SpeedyFactory {
         jsonSerializer.writeResponse(responseWrapper);
     }
 
-    public void processPUTRequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
+    public void processPUTRequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor) throws Exception {
         PutRequestContext context = new PutRequestContext(
                 request,
                 response,
                 metaModelProcessor,
-                entityManager,
+                queryProcessor,
                 validationProcessor,
-                eventProcessor, vEntityProcessor);
+                eventProcessor,
+                vEntityProcessor);
         new PutRequestParser(context).process();
         Optional<Object> savedEntity = new UpdateDataHandler(context).process();
         if (savedEntity.isEmpty()) {
@@ -125,8 +127,14 @@ public class SpeedyFactory {
         jsonSerializer.writeResponse(responseWrapper);
     }
 
-    public void processDELETERequests(HttpServletRequest request, HttpServletResponse response, EntityManager entityManager) throws Exception {
-        DeleteRequestContext context = new DeleteRequestContext(request, response, metaModelProcessor, validationProcessor, entityManager, eventProcessor, vEntityProcessor);
+    public void processDELETERequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor) throws Exception {
+        DeleteRequestContext context = new DeleteRequestContext(
+                request, response,
+                metaModelProcessor,
+                validationProcessor,
+                queryProcessor,
+                eventProcessor,
+                vEntityProcessor);
         new DeleteRequestParser(context).process();
         Optional<List<Object>> removedEntities = new DeleteDataHandler(context).process();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
@@ -140,15 +148,15 @@ public class SpeedyFactory {
         EntityManager entityManager = null;
         LOGGER.info("REQ: {} {} ", request.getMethod(), request.getRequestURI());
         try {
-            entityManager = speedyConfiguration.createEntityManager();
+            QueryProcessor queryProcessor = metaModelProcessor.getQueryProcessor();
             if (request.getMethod().equals(HttpMethod.GET.name())) {
-                processGETRequests(request, response, entityManager);
+                processGETRequests(request, response, queryProcessor);
             } else if (request.getMethod().equals(HttpMethod.POST.name())) {
-                processPOSTRequests(request, response, entityManager);
+                processPOSTRequests(request, response, queryProcessor);
             } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
-                processPUTRequests(request, response, entityManager);
+                processPUTRequests(request, response, queryProcessor);
             } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
-                processDELETERequests(request, response, entityManager);
+                processDELETERequests(request, response, queryProcessor);
             } else {
                 response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             }

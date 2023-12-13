@@ -2,14 +2,12 @@ package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
-import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.models.orderby.OrderByImpl;
 import com.github.silent.samurai.speedy.parser.ConditionFactory;
 import lombok.Getter;
@@ -17,8 +15,6 @@ import lombok.Setter;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -62,18 +58,5 @@ public class SpeedyQueryImpl implements SpeedyQuery {
         }
     }
 
-    public boolean isOnlyIdentifiersPresent() {
-        boolean isAllEqualCondition = getWhere().getConditions()
-                .stream()
-                .allMatch(EqCondition.class::isInstance);
-        if (isAllEqualCondition) {
-            Set<String> keywords = getWhere().getConditions().stream()
-                    .map(EqCondition.class::cast)
-                    .map(condition -> condition.getField().getFieldMetadata().getClassFieldName())
-                    .collect(Collectors.toSet());
-            return MetadataUtil.hasOnlyPrimaryKeyFields(from, keywords);
-        }
-        return false;
-    }
 
 }

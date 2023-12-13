@@ -8,8 +8,8 @@ import javax.persistence.IdClass;
 
 
 @Data
-@IdClass(PrimaryKeyTestClass.class)
-public class EntityCompositeKeyTestClass {
+@IdClass(UniqueProductKey.class)
+public class UniqueProduct {
 
 
     @Id

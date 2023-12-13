@@ -31,7 +31,7 @@ public class DeleteRequestParser {
         SpeedyQuery speedyQuery = parser.parse();
         context.setEntityMetadata(speedyQuery.getFrom());
         EntityMetadata resourceMetadata = speedyQuery.getFrom();
-        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
+        QueryProcessor queryProcessor = context.getQueryProcessor();
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());

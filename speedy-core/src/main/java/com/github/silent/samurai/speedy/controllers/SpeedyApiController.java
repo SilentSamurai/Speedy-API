@@ -31,7 +31,7 @@ public class SpeedyApiController {
     SpeedyFactory speedyFactory;
 
     @Hidden
-    @GetMapping(value = "/$metadata")
+    @GetMapping(value = "/$metadata", produces = "application/json")
     public String metadata() throws JsonProcessingException {
         MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
         JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);

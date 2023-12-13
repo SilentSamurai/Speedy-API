@@ -10,7 +10,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityTransaction;
 import java.util.Optional;
 
 public class UpdateDataHandler {
@@ -21,21 +20,6 @@ public class UpdateDataHandler {
 
     public UpdateDataHandler(PutRequestContext context) {
         this.context = context;
-    }
-
-    private Object saveEntity(Object entityInstance, EntityMetadata entityMetadata) throws Exception {
-        EntityTransaction transaction = context.getEntityManager().getTransaction();
-        try {
-            transaction.begin();
-            context.getEntityManager().persist(entityInstance);
-            context.getEntityManager().flush();
-            LOGGER.info("{} saved {}", entityMetadata.getName(), entityInstance);
-            transaction.commit();
-        } catch (Throwable throwable) {
-            transaction.rollback();
-            throw throwable;
-        }
-        return entityInstance;
     }
 
     public Optional<Object> process() throws Exception {
@@ -53,7 +37,7 @@ public class UpdateDataHandler {
                 SpeedyVirtualEntityHandler handler = context.getVEntityProcessor().getHandler(entityMetadata);
                 savedEntity = handler.update(entityKey, entity);
             } else {
-                QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
+                QueryProcessor queryProcessor = context.getQueryProcessor();
 //                savedEntity = saveEntity(entityInstance, entityMetadata);
                 queryProcessor.update(entityKey, entity);
             }

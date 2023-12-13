@@ -1,8 +1,13 @@
 package com.github.silent.samurai.speedy.data;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.Id;
 
-public class AssociationEntity {
+@Getter
+@Setter
+public class ProductItem {
 
     @Id
     String id;

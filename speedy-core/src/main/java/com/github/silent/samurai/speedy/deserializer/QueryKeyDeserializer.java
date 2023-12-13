@@ -23,25 +23,10 @@ public class QueryKeyDeserializer {
     }
 
     public SpeedyEntityKey deserialize() throws Exception {
-        if (entityMetadata.hasCompositeKey()) {
-            return this.getCompositeKey();
+        if (!queryHelper.isIdentifiersPresent()) {
+            throw new BadRequestException("identifiers field not found");
         }
-        return this.getBasicKey();
-    }
-
-    private SpeedyEntityKey getBasicKey() throws Exception {
-        Optional<KeyFieldMetadata> primaryKeyFieldMetadata = entityMetadata.getKeyFields().stream().findAny();
-        if (primaryKeyFieldMetadata.isPresent()) {
-            KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
-            Optional<SpeedyValue> filterValue = this.queryHelper.getFilterValue(keyFieldMetadata);
-            if (filterValue.isPresent()) {
-                SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(entityMetadata);
-                SpeedyValue speedyValue = filterValue.get();
-                speedyEntityKey.put(keyFieldMetadata, speedyValue);
-                return speedyEntityKey;
-            }
-        }
-        throw new BadRequestException("primary key field not found");
+        return this.getCompositeKey();
     }
 
     private SpeedyEntityKey getCompositeKey() throws Exception {

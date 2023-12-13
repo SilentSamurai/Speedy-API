@@ -7,7 +7,6 @@ import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestConte
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import lombok.Data;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,15 +16,13 @@ public class GetRequestContext implements ResponseReturningRequestContext {
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final MetaModelProcessor metaModelProcessor;
-    private final EntityManager entityManager;
 
     private SpeedyQuery speedyQuery;
 
-    public GetRequestContext(HttpServletRequest request, HttpServletResponse response, MetaModelProcessor metaModelProcessor, EntityManager entityManager) {
+    public GetRequestContext(HttpServletRequest request, HttpServletResponse response, MetaModelProcessor metaModelProcessor) {
         this.request = request;
         this.response = response;
         this.metaModelProcessor = metaModelProcessor;
-        this.entityManager = entityManager;
     }
 
     public EntityMetadata getEntityMetadata() {

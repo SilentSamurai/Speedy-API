@@ -40,7 +40,7 @@ public class PostRequestParser {
         }
         ArrayNode batchOfEntities = (ArrayNode) jsonElement;
         EntityMetadata resourceMetadata = speedyQuery.getFrom();
-        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor(null);
+        QueryProcessor queryProcessor = context.getQueryProcessor();
         for (JsonNode element : batchOfEntities) {
             if (element.isObject()) {
                 ObjectNode objectNode = (ObjectNode) element;
