@@ -91,10 +91,10 @@ class SpeedyAssociationTest {
         String query = String.format("(id='%s')", productKey.getId());
         FilteredProductResponse productResponse = productApi.getSomeProduct(query);
         Assertions.assertNotNull(productResponse);
-        List<LightProduct> productList = productResponse.getPayload();
+        List<Product> productList = productResponse.getPayload();
         Assertions.assertNotNull(productList);
         Assertions.assertEquals(1, productList.size());
-        LightProduct product = productList.get(0);
+        Product product = productList.get(0);
         Assertions.assertNotNull(product.getCategory());
         Assertions.assertEquals(getCategory.getId(), product.getCategory().getId());
 

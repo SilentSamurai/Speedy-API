@@ -46,18 +46,18 @@ public class OpenApiGenerator {
     }
 
     private void createSchemas(EntityMetadata entityMetadata, OpenAPI openAPI) {
-        Schema<String> getSchema = OASGenerator.createEntitySchema(
-                entityMetadata,
-                fm -> fm.isSerializable() && ((fm.isCollection() && !fm.isAssociation()) || !fm.isCollection()),
-                OASGenerator.LIGHT_ENTITY_NAME,
-                false
-        );
-        openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata), getSchema);
+//        Schema<String> getSchema = OASGenerator.createEntitySchema(
+//                entityMetadata,
+//                fm -> fm.isSerializable() && ((fm.isCollection() && !fm.isAssociation()) || !fm.isCollection()),
+//                OASGenerator.LIGHT_ENTITY_NAME,
+//                false
+//        );
+//        openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata), getSchema);
 
         Schema<String> light = OASGenerator.createEntitySchema(
                 entityMetadata,
                 FieldMetadata::isSerializable,
-                OASGenerator.LIGHT_ENTITY_NAME,
+                OASGenerator.ENTITY_NAME,
                 false
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata), light);
@@ -161,7 +161,7 @@ public class OpenApiGenerator {
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
-                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata))
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
                 )
         ).description("successful fetch."));
         operation.responses(apiResponses);
@@ -196,7 +196,7 @@ public class OpenApiGenerator {
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
-                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata))
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
                 )
         ).description("successful fetch."));
         operation.responses(apiResponses);
@@ -223,7 +223,7 @@ public class OpenApiGenerator {
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
                 OASGenerator.wrapInArray(
-                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata))
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
                 )
         ).description("successful fetch."));
         operation.responses(apiResponses);

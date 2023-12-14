@@ -104,13 +104,13 @@ class SpeedyDatetimeTest {
         SupplierApi supplierApi = new SupplierApi(defaultClient);
 
         FilteredSupplierResponse supplier = supplierApi.getSupplier(supplierKey.getId());
-        List<LightSupplier> payload = supplier.getPayload();
+        List<Supplier> payload = supplier.getPayload();
 
         LOGGER.info("Supplier {}", payload);
 
         Assertions.assertNotNull(payload);
         Assertions.assertFalse(payload.isEmpty());
-        LightSupplier lightSupplier = payload.get(0);
+        Supplier lightSupplier = payload.get(0);
         Assertions.assertNotNull(lightSupplier);
         String createdAt = lightSupplier.getCreatedAt();
         Assertions.assertNotNull(createdAt);

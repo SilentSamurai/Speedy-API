@@ -74,15 +74,15 @@ class SpeedyCompositeKeyTest {
         return orderKey;
     }
 
-    LightOrder getOrder(OrderKey orderKey) throws Exception {
+    Order getOrder(OrderKey orderKey) throws Exception {
 
         String query = String.format("(productId=\"%s\",supplierId=\"%s\")", orderKey.getProductId(), orderKey.getSupplierId());
         FilteredOrderResponse orderResponse = apiInstance.getSomeOrder(query);
 
         Assertions.assertNotNull(orderResponse);
-        List<LightOrder> orderList = orderResponse.getPayload();
+        List<Order> orderList = orderResponse.getPayload();
         Assertions.assertNotNull(orderList);
-        LightOrder order = orderList.get(0);
+        Order order = orderList.get(0);
         Assertions.assertNotNull(order.getProductId());
         Assertions.assertNotEquals("", order.getProductId());
         Assertions.assertEquals("1", order.getProductId());
@@ -106,10 +106,10 @@ class SpeedyCompositeKeyTest {
         Assertions.assertNotNull(payload);
         Assertions.assertEquals(100.0, payload.getDiscount());
 
-        List<LightOrder> payload1 = apiInstance.getOrder(orderKey.getProductId(), orderKey.getSupplierId()).getPayload();
+        List<Order> payload1 = apiInstance.getOrder(orderKey.getProductId(), orderKey.getSupplierId()).getPayload();
 
         Assertions.assertNotNull(payload1);
-        LightOrder lightOrder = payload1.get(0);
+        Order lightOrder = payload1.get(0);
         Assertions.assertNotNull(lightOrder);
         Assertions.assertEquals(100.0, lightOrder.getDiscount());
     }
@@ -134,7 +134,7 @@ class SpeedyCompositeKeyTest {
     void test() throws Exception {
 
         OrderKey orderKey = createOrder();
-        LightOrder order = getOrder(orderKey);
+        Order order = getOrder(orderKey);
 
         updateOrder(orderKey);
 

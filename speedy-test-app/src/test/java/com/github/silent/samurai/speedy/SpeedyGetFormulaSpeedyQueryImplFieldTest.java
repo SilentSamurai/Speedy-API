@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.InventoryApi;
 import org.openapitools.client.model.FilteredInventoryResponse;
-import org.openapitools.client.model.LightInventory;
+import org.openapitools.client.model.Inventory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +47,8 @@ class SpeedyGetFormulaSpeedyQueryImplFieldTest {
     void getViaPrimaryKey() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("");
-        List<LightInventory> payload = someInventory.getPayload();
-        LightInventory inventory = payload.get(0);
+        List<Inventory> payload = someInventory.getPayload();
+        Inventory inventory = payload.get(0);
         Assertions.assertNotNull(inventory.getProfit());
     }
 

@@ -1,14 +1,12 @@
 package com.github.silent.samurai.speedy;
 
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.PayloadWrapper;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -35,6 +33,7 @@ import org.springframework.http.HttpMethod;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -63,6 +62,26 @@ public class SpeedyFactory {
         this.eventProcessor.processRegistry();
         this.vEntityProcessor = new VirtualEntityProcessor(metaModelProcessor, eventRegistry);
         this.vEntityProcessor.processRegistry();
+        verify(metaModelProcessor);
+    }
+
+    private void verify(MetaModelProcessor metaModelProcessor) {
+        // loop over each entity metadata
+        for (EntityMetadata entityMetadata : metaModelProcessor.getAllEntityMetadata()) {
+            for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+                // check if fieldMetadata get ValueType is a datetime type
+                if (fieldMetadata.getValueType() == ValueType.DATE_TIME) {
+                    if (!fieldMetadata.getFieldType().isAssignableFrom(LocalDateTime.class)) {
+                        String message = String.format("entity field '%s.%s' type is not assignable from LocalDateTime",
+                                entityMetadata.getName(),
+                                fieldMetadata.getOutputPropertyName());
+
+                        throw new IllegalStateException(message);
+
+                    }
+                }
+            }
+        }
     }
 
     public void processGETRequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor)

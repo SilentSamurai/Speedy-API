@@ -65,7 +65,7 @@ class SpeedyEntityTest {
         defaultClient = new ApiClient(restTemplate);
     }
 
-    LightCompany createCompany() {
+    Company createCompany() {
         String datetime = Instant.now().toString();
         CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest();
         createCompanyRequest.name("New Company")
@@ -87,13 +87,13 @@ class SpeedyEntityTest {
 
 
         FilteredCompanyResponse companyResponse = companyApi.getCompany(companyKey.getId());
-        List<LightCompany> company = companyResponse.getPayload();
-        LightCompany lightCompany = company.get(0);
+        List<Company> company = companyResponse.getPayload();
+        Company lightCompany = company.get(0);
         LOGGER.info("company {}", lightCompany);
         return lightCompany;
     }
 
-    LightProduct createProduct() throws Exception {
+    Product createProduct() throws Exception {
         CategoryApi categoryApi = new CategoryApi(defaultClient);
         List<CreateCategoryRequest> postCategories = Arrays.asList(
                 new CreateCategoryRequest().name("New Category ALL")
@@ -122,10 +122,10 @@ class SpeedyEntityTest {
         Assertions.assertNotNull(productKey.getId());
         Assertions.assertNotEquals("", productKey.getId());
 
-        List<LightProduct> payload = productApi.getProduct(productKey.getId()).getPayload();
+        List<Product> payload = productApi.getProduct(productKey.getId()).getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertFalse(payload.isEmpty());
-        LightProduct product = payload.get(0);
+        Product product = payload.get(0);
         Assertions.assertNotNull(product);
         Assertions.assertNotNull(product.getCategory());
         Assertions.assertEquals(getCategory.getId(), product.getCategory().getId());
@@ -135,7 +135,7 @@ class SpeedyEntityTest {
         return product;
     }
 
-    LightSupplier createSupplier() throws Exception {
+    Supplier createSupplier() throws Exception {
 
         String dateTimeInstant = Instant.now().toString();
 
@@ -173,8 +173,8 @@ class SpeedyEntityTest {
 
         SupplierApi supplierApi = new SupplierApi(defaultClient);
 
-        List<LightSupplier> payload = supplierApi.getSupplier(supplierKey.getId()).getPayload();
-        LightSupplier supplier = payload.get(0);
+        List<Supplier> payload = supplierApi.getSupplier(supplierKey.getId()).getPayload();
+        Supplier supplier = payload.get(0);
 
         LOGGER.info("Supplier {}", supplier);
         assert supplier != null;
@@ -188,7 +188,7 @@ class SpeedyEntityTest {
         return supplier;
     }
 
-    LightProcurement createProcurement(LightProduct product, LightSupplier supplier) throws Exception {
+    Procurement createProcurement(Product product, Supplier supplier) throws Exception {
         String dateTimeInstant = Instant.now().toString();
         CreateProcurementRequest createProcurementRequest = new CreateProcurementRequest();
         createProcurementRequest
@@ -206,15 +206,15 @@ class SpeedyEntityTest {
         BulkCreateProcurementResponse bulkCreateProcurement200Response = procurementApi.bulkCreateProcurement(Lists.newArrayList(createProcurementRequest));
         ProcurementKey procurementKey = bulkCreateProcurement200Response.getPayload().get(0);
 
-        List<LightProcurement> payload = procurementApi.getProcurement(procurementKey.getId()).getPayload();
-        LightProcurement lightProcurement = payload.get(0);
+        List<Procurement> payload = procurementApi.getProcurement(procurementKey.getId()).getPayload();
+        Procurement lightProcurement = payload.get(0);
         LOGGER.info(" {} ", lightProcurement);
 
         return lightProcurement;
 
     }
 
-    LightCustomer createCustomer() {
+    Customer createCustomer() {
         CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
         String dateTimeInstant = Instant.now().toString();
         createCustomerRequest.createdAt(dateTimeInstant)
@@ -231,15 +231,15 @@ class SpeedyEntityTest {
 
         CustomerKey customerKey = bulkCreateCustomer200Response.getPayload().get(0);
 
-        List<LightCustomer> payload1 = customerApi.getCustomer(customerKey.getId()).getPayload();
+        List<Customer> payload1 = customerApi.getCustomer(customerKey.getId()).getPayload();
 
-        LightCustomer customer = payload1.get(0);
+        Customer customer = payload1.get(0);
 
         LOGGER.info(" {} ", customer);
         return customer;
     }
 
-    LightInvoice createInvoice(LightCustomer customer) {
+    Invoice createInvoice(Customer customer) {
         String dateTimeInstant = Instant.now().toString();
         CreateInvoiceRequest createInvoiceRequest = new CreateInvoiceRequest();
         createInvoiceRequest.createdAt(dateTimeInstant)
@@ -260,13 +260,13 @@ class SpeedyEntityTest {
 
         InvoiceKey invoiceKey = bulkCreateInvoice200Response.getPayload().get(0);
 
-        List<LightInvoice> payload1 = invoiceApi.getInvoice(invoiceKey.getId()).getPayload();
-        LightInvoice lightInvoice = payload1.get(0);
+        List<Invoice> payload1 = invoiceApi.getInvoice(invoiceKey.getId()).getPayload();
+        Invoice lightInvoice = payload1.get(0);
         LOGGER.info(" {} ", lightInvoice);
         return lightInvoice;
     }
 
-    LightUser createUser(LightCompany company) {
+    User createUser(Company company) {
         String dateTimeInstant = Instant.now().toString();
         CreateUserRequest createUserRequest = new CreateUserRequest();
         createUserRequest.createdAt(dateTimeInstant)
@@ -285,14 +285,14 @@ class SpeedyEntityTest {
 
         UserKey userKey = bulkCreateUser200Response.getPayload().get(0);
 
-        List<LightUser> payload1 = userApi.getUser(userKey.getId()).getPayload();
+        List<User> payload1 = userApi.getUser(userKey.getId()).getPayload();
 
-        LightUser payload = payload1.get(0);
+        User payload = payload1.get(0);
         LOGGER.info(" {} ", payload);
         return payload;
     }
 
-    LightInventory createInventory(LightProcurement procurement, LightProduct product, LightInvoice invoice) {
+    Inventory createInventory(Procurement procurement, Product product, Invoice invoice) {
         CreateInventoryRequest createInventoryRequest = new CreateInventoryRequest();
         createInventoryRequest.cost(230.0)
                 .soldPrice(230.0)
@@ -308,9 +308,9 @@ class SpeedyEntityTest {
 
         InventoryKey userKey = bulkCreateInventory200Response.getPayload().get(0);
 
-        List<LightInventory> payload1 = inventoryApi.getInventory(userKey.getId()).getPayload();
+        List<Inventory> payload1 = inventoryApi.getInventory(userKey.getId()).getPayload();
 
-        LightInventory payload = payload1.get(0);
+        Inventory payload = payload1.get(0);
         LOGGER.info(" {} ", payload);
         return payload;
     }
@@ -319,19 +319,19 @@ class SpeedyEntityTest {
     void normal() throws Exception {
 
 
-        LightCompany company = createCompany();
-        LightProduct product = createProduct();
-        LightSupplier supplier = createSupplier();
+        Company company = createCompany();
+        Product product = createProduct();
+        Supplier supplier = createSupplier();
 
-        LightProcurement procurement = createProcurement(product, supplier);
+        Procurement procurement = createProcurement(product, supplier);
 
-        LightCustomer customer = createCustomer();
+        Customer customer = createCustomer();
 
-        LightInvoice invoice = createInvoice(customer);
+        Invoice invoice = createInvoice(customer);
 
-        LightUser user = createUser(company);
+        User user = createUser(company);
 
-        LightInventory inventory = createInventory(procurement, product, invoice);
+        Inventory inventory = createInventory(procurement, product, invoice);
 
         Assertions.assertNotNull(inventory);
         Assertions.assertFalse(inventory.getId().isBlank());

@@ -57,10 +57,10 @@ class SpeedyGetConditionTest {
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost < 50)");
 
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() < 50);
         }
@@ -74,10 +74,10 @@ class SpeedyGetConditionTest {
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <= 75)");
 
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() <= 75);
         }
@@ -91,10 +91,10 @@ class SpeedyGetConditionTest {
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost > 75)");
 
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() > 75);
         }
@@ -108,10 +108,10 @@ class SpeedyGetConditionTest {
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost >= 75)");
 
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() >= 75);
         }
@@ -125,10 +125,10 @@ class SpeedyGetConditionTest {
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost != 75)");
 
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() != 75);
         }
@@ -140,10 +140,10 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost = 75)");
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertFalse(payload.isEmpty());
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() == 75);
         }
@@ -154,10 +154,10 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost < 75 & cost >= 25)");
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() < 75 && inventory.getCost() >= 25);
         }
@@ -202,11 +202,11 @@ class SpeedyGetConditionTest {
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <> [ 25, 50, 75])");
 
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertFalse(payload.isEmpty());
         Assertions.assertEquals(3, payload.size());
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             HashSet<Double> integers = Sets.newHashSet(25.0, 50.0, 75.0);
             Assertions.assertTrue(integers.contains(inventory.getCost()));
@@ -221,10 +221,10 @@ class SpeedyGetConditionTest {
 
         FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <!> [ 25, 50, 75])");
 
-        List<LightInventory> payload = someInventory.getPayload();
+        List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightInventory inventory : payload) {
+        for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             HashSet<Double> integers = Sets.newHashSet(25.0, 50.0, 75.0);
             Assertions.assertFalse(integers.contains(inventory.getCost()));
@@ -238,10 +238,10 @@ class SpeedyGetConditionTest {
 
         FilteredProductResponse someInventory = productApi.getSomeProduct(" (category.id = '1') ");
 
-        List<LightProduct> payload = someInventory.getPayload();
+        List<Product> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightProduct product : payload) {
+        for (Product product : payload) {
             Assertions.assertNotNull(product.getId());
         }
 
@@ -252,10 +252,10 @@ class SpeedyGetConditionTest {
 
         FilteredProductResponse someInventory = productApi.getSomeProduct("( name = 'Product 1' & category.id = '1')");
 
-        List<LightProduct> payload = someInventory.getPayload();
+        List<Product> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightProduct product : payload) {
+        for (Product product : payload) {
             Assertions.assertNotNull(product.getId());
         }
 
@@ -268,10 +268,10 @@ class SpeedyGetConditionTest {
 
         FilteredProcurementResponse someInventory = procurementApi.getSomeProcurement("( purchaseDate < '2023-05-11T18:13:38.626Z' )");
 
-        List<LightProcurement> payload = someInventory.getPayload();
+        List<Procurement> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
-        for (LightProcurement inventory : payload) {
+        for (Procurement inventory : payload) {
             Assertions.assertNotNull(inventory.getPurchaseDate());
             Instant purchaseDate = LocalDateTime.parse(inventory.getPurchaseDate()).atZone(ZoneId.of("UTC")).toInstant();
             Assertions.assertTrue(purchaseDate.isBefore(Instant.parse("2023-05-11T18:13:38.626Z")));

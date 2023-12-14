@@ -11,262 +11,6 @@
     }
   ],
   "paths": {
-    "/speedy/v1/Procurement": {
-      "post": {
-        "tags": [
-          "Procurement"
-        ],
-        "summary": "Bulk create Procurement",
-        "operationId": "BulkCreateProcurement",
-        "requestBody": {
-          "description": "Fields needed for creation",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/CreateProcurementRequest"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful creation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "BulkCreateProcurementResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/ProcurementKey"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Procurement"
-        ],
-        "summary": "Bulk delete Procurement",
-        "operationId": "BulkDeleteProcurement",
-        "requestBody": {
-          "description": "Fields needed for deletion",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/ProcurementKey"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful deletion.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "BulkDeleteProcurementResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/ProcurementKey"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/speedy/v1/Procurement{query}": {
-      "get": {
-        "tags": [
-          "Procurement"
-        ],
-        "summary": "Filter Procurement",
-        "operationId": "GetSomeProcurement",
-        "parameters": [
-          {
-            "name": "query",
-            "in": "path",
-            "description": "these are queries on the entity",
-            "required": true,
-            "allowEmptyValue": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "(id='1',amount=2)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful fetch.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "FilteredProcurementResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/LightProcurement"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/speedy/v1/Procurement(id=\"{id}\")": {
-      "get": {
-        "tags": [
-          "Procurement"
-        ],
-        "summary": "Get a(n) Procurement",
-        "operationId": "GetProcurement",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "id field value.",
-            "required": true,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful fetch.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "FilteredProcurementResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/LightProcurement"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Procurement"
-        ],
-        "summary": "Update a(n) Procurement",
-        "operationId": "UpdateProcurement",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "id field value.",
-            "required": true,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Fields needed for update",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateProcurementRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful update.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "UpdateProcurementResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "$ref": "#/components/schemas/Procurement"
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/speedy/v1/Order": {
       "post": {
         "tags": [
@@ -399,7 +143,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightOrder"
+                        "$ref": "#/components/schemas/Order"
                       }
                     },
                     "pageCount": {
@@ -418,7 +162,7 @@
         }
       }
     },
-    "/speedy/v1/Order(supplierId=\"{supplierId}\",productId=\"{productId}\")": {
+    "/speedy/v1/Order(productId=\"{productId}\",supplierId=\"{supplierId}\")": {
       "get": {
         "tags": [
           "Order"
@@ -427,9 +171,9 @@
         "operationId": "GetOrder",
         "parameters": [
           {
-            "name": "supplierId",
+            "name": "productId",
             "in": "path",
-            "description": "supplierId field value.",
+            "description": "productId field value.",
             "required": true,
             "allowEmptyValue": false,
             "schema": {
@@ -437,9 +181,9 @@
             }
           },
           {
-            "name": "productId",
+            "name": "supplierId",
             "in": "path",
-            "description": "productId field value.",
+            "description": "supplierId field value.",
             "required": true,
             "allowEmptyValue": false,
             "schema": {
@@ -459,7 +203,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightOrder"
+                        "$ref": "#/components/schemas/Order"
                       }
                     },
                     "pageCount": {
@@ -485,9 +229,9 @@
         "operationId": "UpdateOrder",
         "parameters": [
           {
-            "name": "supplierId",
+            "name": "productId",
             "in": "path",
-            "description": "supplierId field value.",
+            "description": "productId field value.",
             "required": true,
             "allowEmptyValue": false,
             "schema": {
@@ -495,9 +239,9 @@
             }
           },
           {
-            "name": "productId",
+            "name": "supplierId",
             "in": "path",
-            "description": "productId field value.",
+            "description": "supplierId field value.",
             "required": true,
             "allowEmptyValue": false,
             "schema": {
@@ -526,6 +270,262 @@
                   "properties": {
                     "payload": {
                       "$ref": "#/components/schemas/Order"
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speedy/v1/Procurement": {
+      "post": {
+        "tags": [
+          "Procurement"
+        ],
+        "summary": "Bulk create Procurement",
+        "operationId": "BulkCreateProcurement",
+        "requestBody": {
+          "description": "Fields needed for creation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateProcurementRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful creation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "BulkCreateProcurementResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProcurementKey"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Procurement"
+        ],
+        "summary": "Bulk delete Procurement",
+        "operationId": "BulkDeleteProcurement",
+        "requestBody": {
+          "description": "Fields needed for deletion",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ProcurementKey"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful deletion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "BulkDeleteProcurementResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProcurementKey"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speedy/v1/Procurement{query}": {
+      "get": {
+        "tags": [
+          "Procurement"
+        ],
+        "summary": "Filter Procurement",
+        "operationId": "GetSomeProcurement",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "path",
+            "description": "these are queries on the entity",
+            "required": true,
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "(id='1',amount=2)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful fetch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "FilteredProcurementResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Procurement"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speedy/v1/Procurement(id=\"{id}\")": {
+      "get": {
+        "tags": [
+          "Procurement"
+        ],
+        "summary": "Get a(n) Procurement",
+        "operationId": "GetProcurement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id field value.",
+            "required": true,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful fetch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "FilteredProcurementResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Procurement"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Procurement"
+        ],
+        "summary": "Update a(n) Procurement",
+        "operationId": "UpdateProcurement",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id field value.",
+            "required": true,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Fields needed for update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProcurementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "UpdateProcurementResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "$ref": "#/components/schemas/Procurement"
                     },
                     "pageCount": {
                       "type": "integer",
@@ -675,7 +675,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightCompany"
+                        "$ref": "#/components/schemas/Company"
                       }
                     },
                     "pageCount": {
@@ -725,7 +725,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightCompany"
+                        "$ref": "#/components/schemas/Company"
                       }
                     },
                     "pageCount": {
@@ -931,7 +931,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightExchangeRate"
+                        "$ref": "#/components/schemas/ExchangeRate"
                       }
                     },
                     "pageCount": {
@@ -981,7 +981,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightExchangeRate"
+                        "$ref": "#/components/schemas/ExchangeRate"
                       }
                     },
                     "pageCount": {
@@ -1038,262 +1038,6 @@
                   "properties": {
                     "payload": {
                       "$ref": "#/components/schemas/ExchangeRate"
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/speedy/v1/Category": {
-      "post": {
-        "tags": [
-          "Category"
-        ],
-        "summary": "Bulk create Category",
-        "operationId": "BulkCreateCategory",
-        "requestBody": {
-          "description": "Fields needed for creation",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/CreateCategoryRequest"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful creation.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "BulkCreateCategoryResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/CategoryKey"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Category"
-        ],
-        "summary": "Bulk delete Category",
-        "operationId": "BulkDeleteCategory",
-        "requestBody": {
-          "description": "Fields needed for deletion",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/CategoryKey"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful deletion.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "BulkDeleteCategoryResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/CategoryKey"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/speedy/v1/Category{query}": {
-      "get": {
-        "tags": [
-          "Category"
-        ],
-        "summary": "Filter Category",
-        "operationId": "GetSomeCategory",
-        "parameters": [
-          {
-            "name": "query",
-            "in": "path",
-            "description": "these are queries on the entity",
-            "required": true,
-            "allowEmptyValue": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "(id='1',amount=2)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful fetch.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "FilteredCategoryResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/LightCategory"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/speedy/v1/Category(id=\"{id}\")": {
-      "get": {
-        "tags": [
-          "Category"
-        ],
-        "summary": "Get a(n) Category",
-        "operationId": "GetCategory",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "id field value.",
-            "required": true,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful fetch.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "FilteredCategoryResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/LightCategory"
-                      }
-                    },
-                    "pageCount": {
-                      "type": "integer",
-                      "format": "int64"
-                    },
-                    "pageIndex": {
-                      "type": "integer",
-                      "format": "int64"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Category"
-        ],
-        "summary": "Update a(n) Category",
-        "operationId": "UpdateCategory",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "id field value.",
-            "required": true,
-            "allowEmptyValue": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "description": "Fields needed for update",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateCategoryRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "successful update.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "title": "UpdateCategoryResponse",
-                  "type": "object",
-                  "properties": {
-                    "payload": {
-                      "$ref": "#/components/schemas/Category"
                     },
                     "pageCount": {
                       "type": "integer",
@@ -1443,7 +1187,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightInvoice"
+                        "$ref": "#/components/schemas/Invoice"
                       }
                     },
                     "pageCount": {
@@ -1493,7 +1237,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightInvoice"
+                        "$ref": "#/components/schemas/Invoice"
                       }
                     },
                     "pageCount": {
@@ -1699,7 +1443,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightUser"
+                        "$ref": "#/components/schemas/User"
                       }
                     },
                     "pageCount": {
@@ -1749,7 +1493,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightUser"
+                        "$ref": "#/components/schemas/User"
                       }
                     },
                     "pageCount": {
@@ -1806,6 +1550,262 @@
                   "properties": {
                     "payload": {
                       "$ref": "#/components/schemas/User"
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speedy/v1/Category": {
+      "post": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Bulk create Category",
+        "operationId": "BulkCreateCategory",
+        "requestBody": {
+          "description": "Fields needed for creation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CreateCategoryRequest"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful creation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "BulkCreateCategoryResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CategoryKey"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Bulk delete Category",
+        "operationId": "BulkDeleteCategory",
+        "requestBody": {
+          "description": "Fields needed for deletion",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CategoryKey"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful deletion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "BulkDeleteCategoryResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CategoryKey"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speedy/v1/Category{query}": {
+      "get": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Filter Category",
+        "operationId": "GetSomeCategory",
+        "parameters": [
+          {
+            "name": "query",
+            "in": "path",
+            "description": "these are queries on the entity",
+            "required": true,
+            "allowEmptyValue": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "(id='1',amount=2)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful fetch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "FilteredCategoryResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/speedy/v1/Category(id=\"{id}\")": {
+      "get": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Get a(n) Category",
+        "operationId": "GetCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id field value.",
+            "required": true,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful fetch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "FilteredCategoryResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Category"
+                      }
+                    },
+                    "pageCount": {
+                      "type": "integer",
+                      "format": "int64"
+                    },
+                    "pageIndex": {
+                      "type": "integer",
+                      "format": "int64"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Category"
+        ],
+        "summary": "Update a(n) Category",
+        "operationId": "UpdateCategory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id field value.",
+            "required": true,
+            "allowEmptyValue": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Fields needed for update",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCategoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "successful update.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "UpdateCategoryResponse",
+                  "type": "object",
+                  "properties": {
+                    "payload": {
+                      "$ref": "#/components/schemas/Category"
                     },
                     "pageCount": {
                       "type": "integer",
@@ -1955,7 +1955,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightCustomer"
+                        "$ref": "#/components/schemas/Customer"
                       }
                     },
                     "pageCount": {
@@ -2005,7 +2005,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightCustomer"
+                        "$ref": "#/components/schemas/Customer"
                       }
                     },
                     "pageCount": {
@@ -2211,7 +2211,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightProduct"
+                        "$ref": "#/components/schemas/Product"
                       }
                     },
                     "pageCount": {
@@ -2261,7 +2261,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightProduct"
+                        "$ref": "#/components/schemas/Product"
                       }
                     },
                     "pageCount": {
@@ -2467,7 +2467,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightVirtualEntity"
+                        "$ref": "#/components/schemas/VirtualEntity"
                       }
                     },
                     "pageCount": {
@@ -2517,7 +2517,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightVirtualEntity"
+                        "$ref": "#/components/schemas/VirtualEntity"
                       }
                     },
                     "pageCount": {
@@ -2723,7 +2723,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightCurrency"
+                        "$ref": "#/components/schemas/Currency"
                       }
                     },
                     "pageCount": {
@@ -2773,7 +2773,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightCurrency"
+                        "$ref": "#/components/schemas/Currency"
                       }
                     },
                     "pageCount": {
@@ -2979,7 +2979,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightSupplier"
+                        "$ref": "#/components/schemas/Supplier"
                       }
                     },
                     "pageCount": {
@@ -3029,7 +3029,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightSupplier"
+                        "$ref": "#/components/schemas/Supplier"
                       }
                     },
                     "pageCount": {
@@ -3235,7 +3235,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightInventory"
+                        "$ref": "#/components/schemas/Inventory"
                       }
                     },
                     "pageCount": {
@@ -3285,7 +3285,7 @@
                     "payload": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/LightInventory"
+                        "$ref": "#/components/schemas/Inventory"
                       }
                     },
                     "pageCount": {
@@ -3362,53 +3362,94 @@
   },
   "components": {
     "schemas": {
-      "LightProcurement": {
+      "Order": {
         "type": "object",
         "properties": {
-          "product": {
-            "$ref": "#/components/schemas/LightProduct"
-          },
-          "amount": {
-            "type": "number",
-            "format": "double"
-          },
-          "modifiedBy": {
-            "type": "string"
-          },
-          "dueAmount": {
-            "type": "number",
-            "format": "double"
-          },
-          "createdBy": {
-            "type": "string"
-          },
           "supplier": {
-            "$ref": "#/components/schemas/LightSupplier"
+            "$ref": "#/components/schemas/Supplier"
           },
-          "id": {
+          "supplierId": {
             "type": "string"
           },
-          "purchaseDate": {
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderDate": {
             "type": "string"
           },
-          "modifiedAt": {
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "productId": {
+            "type": "string"
+          }
+        }
+      },
+      "OrderKey": {
+        "required": [
+          "supplierId",
+          "productId"
+        ],
+        "type": "object",
+        "properties": {
+          "supplierId": {
             "type": "string"
           },
-          "createdAt": {
+          "productId": {
             "type": "string"
+          }
+        }
+      },
+      "CreateOrderRequest": {
+        "required": [
+          "supplierId",
+          "productId"
+        ],
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderDate": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "productId": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateOrderRequest": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderDate": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
       "Procurement": {
         "type": "object",
         "properties": {
-          "product": {
-            "$ref": "#/components/schemas/LightProduct"
-          },
-          "amount": {
-            "type": "number",
-            "format": "double"
-          },
           "modifiedBy": {
             "type": "string"
           },
@@ -3416,23 +3457,30 @@
             "type": "number",
             "format": "double"
           },
-          "createdBy": {
-            "type": "string"
-          },
-          "supplier": {
-            "$ref": "#/components/schemas/LightSupplier"
-          },
-          "id": {
-            "type": "string"
-          },
           "purchaseDate": {
-            "type": "string"
-          },
-          "modifiedAt": {
             "type": "string"
           },
           "createdAt": {
             "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "id": {
+            "type": "string"
+          },
+          "supplier": {
+            "$ref": "#/components/schemas/Supplier"
           }
         }
       },
@@ -3446,21 +3494,14 @@
       },
       "CreateProcurementRequest": {
         "required": [
+          "dueAmount",
+          "purchaseDate",
           "product",
           "amount",
-          "dueAmount",
-          "supplier",
-          "purchaseDate"
+          "supplier"
         ],
         "type": "object",
         "properties": {
-          "product": {
-            "$ref": "#/components/schemas/ProductKey"
-          },
-          "amount": {
-            "type": "number",
-            "format": "double"
-          },
           "modifiedBy": {
             "type": "string"
           },
@@ -3468,40 +3509,40 @@
             "type": "number",
             "format": "double"
           },
-          "createdBy": {
-            "type": "string"
-          },
-          "supplier": {
-            "$ref": "#/components/schemas/SupplierKey"
-          },
           "purchaseDate": {
-            "type": "string"
-          },
-          "modifiedAt": {
             "type": "string"
           },
           "createdAt": {
             "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "product": {
+            "$ref": "#/components/schemas/ProductKey"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "supplier": {
+            "$ref": "#/components/schemas/SupplierKey"
           }
         }
       },
       "UpdateProcurementRequest": {
         "required": [
+          "dueAmount",
+          "purchaseDate",
           "product",
           "amount",
-          "dueAmount",
-          "supplier",
-          "purchaseDate"
+          "supplier"
         ],
         "type": "object",
         "properties": {
-          "product": {
-            "$ref": "#/components/schemas/ProductKey"
-          },
-          "amount": {
-            "type": "number",
-            "format": "double"
-          },
           "modifiedBy": {
             "type": "string"
           },
@@ -3509,225 +3550,73 @@
             "type": "number",
             "format": "double"
           },
+          "purchaseDate": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
           "createdBy": {
             "type": "string"
           },
-          "supplier": {
-            "$ref": "#/components/schemas/SupplierKey"
-          },
-          "purchaseDate": {
-            "type": "string"
+          "product": {
+            "$ref": "#/components/schemas/ProductKey"
           },
           "modifiedAt": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string"
-          }
-        }
-      },
-      "LightOrder": {
-        "type": "object",
-        "properties": {
-          "price": {
+          "amount": {
             "type": "number",
             "format": "double"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "productId": {
-            "type": "string"
-          },
-          "supplierId": {
-            "type": "string"
-          },
-          "orderDate": {
-            "type": "string"
           },
           "supplier": {
-            "$ref": "#/components/schemas/LightSupplier"
-          },
-          "product": {
-            "$ref": "#/components/schemas/LightProduct"
-          }
-        }
-      },
-      "Order": {
-        "type": "object",
-        "properties": {
-          "price": {
-            "type": "number",
-            "format": "double"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "productId": {
-            "type": "string"
-          },
-          "supplierId": {
-            "type": "string"
-          },
-          "orderDate": {
-            "type": "string"
-          },
-          "supplier": {
-            "$ref": "#/components/schemas/LightSupplier"
-          },
-          "product": {
-            "$ref": "#/components/schemas/LightProduct"
-          }
-        }
-      },
-      "OrderKey": {
-        "required": [
-          "productId",
-          "supplierId"
-        ],
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "string"
-          },
-          "supplierId": {
-            "type": "string"
-          }
-        }
-      },
-      "CreateOrderRequest": {
-        "required": [
-          "productId",
-          "supplierId"
-        ],
-        "type": "object",
-        "properties": {
-          "price": {
-            "type": "number",
-            "format": "double"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "productId": {
-            "type": "string"
-          },
-          "supplierId": {
-            "type": "string"
-          },
-          "orderDate": {
-            "type": "string"
-          }
-        }
-      },
-      "UpdateOrderRequest": {
-        "type": "object",
-        "properties": {
-          "price": {
-            "type": "number",
-            "format": "double"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "orderDate": {
-            "type": "string"
-          }
-        }
-      },
-      "LightCompany": {
-        "type": "object",
-        "properties": {
-          "address": {
-            "type": "string"
-          },
-          "defaultGenerator": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "detailsTop": {
-            "type": "string"
-          },
-          "extra": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "invoiceNo": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "deletedAt": {
-            "type": "string"
-          },
-          "phone": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string"
+            "$ref": "#/components/schemas/SupplierKey"
           }
         }
       },
       "Company": {
         "type": "object",
         "properties": {
-          "address": {
+          "phone": {
             "type": "string"
           },
-          "defaultGenerator": {
-            "type": "integer",
-            "format": "int64"
+          "createdAt": {
+            "type": "string"
           },
           "detailsTop": {
-            "type": "string"
-          },
-          "extra": {
-            "type": "string"
-          },
-          "name": {
             "type": "string"
           },
           "invoiceNo": {
             "type": "integer",
             "format": "int64"
           },
-          "deletedAt": {
+          "currency": {
             "type": "string"
           },
-          "phone": {
-            "type": "string"
-          },
-          "email": {
+          "extra": {
             "type": "string"
           },
           "id": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string"
-          },
           "updatedAt": {
             "type": "string"
           },
-          "currency": {
+          "email": {
             "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "defaultGenerator": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
@@ -3741,132 +3630,113 @@
       },
       "CreateCompanyRequest": {
         "required": [
-          "address",
-          "name",
           "phone",
-          "currency"
+          "currency",
+          "address",
+          "name"
         ],
         "type": "object",
         "properties": {
-          "address": {
+          "phone": {
             "type": "string"
           },
-          "defaultGenerator": {
-            "type": "integer",
-            "format": "int64"
+          "createdAt": {
+            "type": "string"
           },
           "detailsTop": {
-            "type": "string"
-          },
-          "extra": {
-            "type": "string"
-          },
-          "name": {
             "type": "string"
           },
           "invoiceNo": {
             "type": "integer",
             "format": "int64"
           },
-          "deletedAt": {
+          "currency": {
             "type": "string"
           },
-          "phone": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "createdAt": {
+          "extra": {
             "type": "string"
           },
           "updatedAt": {
             "type": "string"
           },
-          "currency": {
+          "email": {
             "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "defaultGenerator": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
       "UpdateCompanyRequest": {
         "required": [
-          "address",
-          "name",
           "phone",
-          "currency"
+          "currency",
+          "address",
+          "name"
         ],
         "type": "object",
         "properties": {
-          "address": {
+          "phone": {
             "type": "string"
           },
-          "defaultGenerator": {
-            "type": "integer",
-            "format": "int64"
+          "createdAt": {
+            "type": "string"
           },
           "detailsTop": {
-            "type": "string"
-          },
-          "extra": {
-            "type": "string"
-          },
-          "name": {
             "type": "string"
           },
           "invoiceNo": {
             "type": "integer",
             "format": "int64"
           },
-          "deletedAt": {
+          "currency": {
             "type": "string"
           },
-          "phone": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "createdAt": {
+          "extra": {
             "type": "string"
           },
           "updatedAt": {
             "type": "string"
           },
-          "currency": {
-            "type": "string"
-          }
-        }
-      },
-      "LightExchangeRate": {
-        "type": "object",
-        "properties": {
-          "foreignCurrency": {
-            "$ref": "#/components/schemas/LightCurrency"
-          },
-          "createdAt": {
+          "email": {
             "type": "string"
           },
-          "exchangeRate": {
-            "type": "number",
-            "format": "double"
-          },
-          "invExchangeRate": {
-            "type": "number",
-            "format": "double"
-          },
-          "id": {
+          "address": {
             "type": "string"
           },
-          "baseCurrency": {
-            "$ref": "#/components/schemas/LightCurrency"
+          "deletedAt": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "defaultGenerator": {
+            "type": "integer",
+            "format": "int64"
           }
         }
       },
       "ExchangeRate": {
         "type": "object",
         "properties": {
+          "baseCurrency": {
+            "$ref": "#/components/schemas/Currency"
+          },
           "foreignCurrency": {
-            "$ref": "#/components/schemas/LightCurrency"
+            "$ref": "#/components/schemas/Currency"
+          },
+          "id": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string"
@@ -3878,12 +3748,6 @@
           "invExchangeRate": {
             "type": "number",
             "format": "double"
-          },
-          "id": {
-            "type": "string"
-          },
-          "baseCurrency": {
-            "$ref": "#/components/schemas/LightCurrency"
           }
         }
       },
@@ -3897,13 +3761,16 @@
       },
       "CreateExchangeRateRequest": {
         "required": [
+          "baseCurrency",
           "foreignCurrency",
           "exchangeRate",
-          "invExchangeRate",
-          "baseCurrency"
+          "invExchangeRate"
         ],
         "type": "object",
         "properties": {
+          "baseCurrency": {
+            "$ref": "#/components/schemas/CurrencyKey"
+          },
           "foreignCurrency": {
             "$ref": "#/components/schemas/CurrencyKey"
           },
@@ -3914,21 +3781,21 @@
           "invExchangeRate": {
             "type": "number",
             "format": "double"
-          },
-          "baseCurrency": {
-            "$ref": "#/components/schemas/CurrencyKey"
           }
         }
       },
       "UpdateExchangeRateRequest": {
         "required": [
+          "baseCurrency",
           "foreignCurrency",
           "exchangeRate",
-          "invExchangeRate",
-          "baseCurrency"
+          "invExchangeRate"
         ],
         "type": "object",
         "properties": {
+          "baseCurrency": {
+            "$ref": "#/components/schemas/CurrencyKey"
+          },
           "foreignCurrency": {
             "$ref": "#/components/schemas/CurrencyKey"
           },
@@ -3939,19 +3806,270 @@
           "invExchangeRate": {
             "type": "number",
             "format": "double"
-          },
-          "baseCurrency": {
-            "$ref": "#/components/schemas/CurrencyKey"
           }
         }
       },
-      "LightCategory": {
+      "Invoice": {
         "type": "object",
         "properties": {
-          "name": {
+          "createdAt": {
+            "type": "string"
+          },
+          "modifiedBy": {
+            "type": "string"
+          },
+          "invoiceDate": {
             "type": "string"
           },
           "id": {
+            "type": "string"
+          },
+          "dueAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paid": {
+            "type": "number",
+            "format": "double"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/Customer"
+          },
+          "adjustment": {
+            "type": "number",
+            "format": "double"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "InvoiceKey": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateInvoiceRequest": {
+        "required": [
+          "invoiceDate",
+          "dueAmount",
+          "discount",
+          "paid",
+          "customer",
+          "adjustment"
+        ],
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "modifiedBy": {
+            "type": "string"
+          },
+          "invoiceDate": {
+            "type": "string"
+          },
+          "dueAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paid": {
+            "type": "number",
+            "format": "double"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerKey"
+          },
+          "adjustment": {
+            "type": "number",
+            "format": "double"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateInvoiceRequest": {
+        "required": [
+          "invoiceDate",
+          "dueAmount",
+          "discount",
+          "paid",
+          "customer",
+          "adjustment"
+        ],
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "modifiedBy": {
+            "type": "string"
+          },
+          "invoiceDate": {
+            "type": "string"
+          },
+          "dueAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "modifiedAt": {
+            "type": "string"
+          },
+          "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "paid": {
+            "type": "number",
+            "format": "double"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerKey"
+          },
+          "adjustment": {
+            "type": "number",
+            "format": "double"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phoneNo": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "company": {
+            "$ref": "#/components/schemas/Company"
+          },
+          "profilePic": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "UserKey": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateUserRequest": {
+        "required": [
+          "name",
+          "phoneNo",
+          "email",
+          "company",
+          "profilePic"
+        ],
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phoneNo": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "company": {
+            "$ref": "#/components/schemas/CompanyKey"
+          },
+          "profilePic": {
+            "type": "string"
+          },
+          "deletedAt": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateUserRequest": {
+        "required": [
+          "name",
+          "phoneNo",
+          "email",
+          "company",
+          "profilePic"
+        ],
+        "type": "object",
+        "properties": {
+          "createdAt": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phoneNo": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "company": {
+            "$ref": "#/components/schemas/CompanyKey"
+          },
+          "profilePic": {
+            "type": "string"
+          },
+          "deletedAt": {
             "type": "string"
           }
         }
@@ -3959,10 +4077,10 @@
       "Category": {
         "type": "object",
         "properties": {
-          "name": {
+          "id": {
             "type": "string"
           },
-          "id": {
+          "name": {
             "type": "string"
           }
         }
@@ -3997,408 +4115,37 @@
           }
         }
       },
-      "LightInvoice": {
-        "type": "object",
-        "properties": {
-          "invoiceDate": {
-            "type": "string"
-          },
-          "adjustment": {
-            "type": "number",
-            "format": "double"
-          },
-          "customer": {
-            "$ref": "#/components/schemas/LightCustomer"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "notes": {
-            "type": "string"
-          },
-          "modifiedBy": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "paid": {
-            "type": "number",
-            "format": "double"
-          },
-          "modifiedAt": {
-            "type": "string"
-          },
-          "dueAmount": {
-            "type": "number",
-            "format": "double"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          }
-        }
-      },
-      "Invoice": {
-        "type": "object",
-        "properties": {
-          "invoiceDate": {
-            "type": "string"
-          },
-          "adjustment": {
-            "type": "number",
-            "format": "double"
-          },
-          "customer": {
-            "$ref": "#/components/schemas/LightCustomer"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "notes": {
-            "type": "string"
-          },
-          "modifiedBy": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "paid": {
-            "type": "number",
-            "format": "double"
-          },
-          "modifiedAt": {
-            "type": "string"
-          },
-          "dueAmount": {
-            "type": "number",
-            "format": "double"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          }
-        }
-      },
-      "InvoiceKey": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        }
-      },
-      "CreateInvoiceRequest": {
-        "required": [
-          "invoiceDate",
-          "adjustment",
-          "customer",
-          "discount",
-          "paid",
-          "dueAmount"
-        ],
-        "type": "object",
-        "properties": {
-          "invoiceDate": {
-            "type": "string"
-          },
-          "adjustment": {
-            "type": "number",
-            "format": "double"
-          },
-          "customer": {
-            "$ref": "#/components/schemas/CustomerKey"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "notes": {
-            "type": "string"
-          },
-          "modifiedBy": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "paid": {
-            "type": "number",
-            "format": "double"
-          },
-          "modifiedAt": {
-            "type": "string"
-          },
-          "dueAmount": {
-            "type": "number",
-            "format": "double"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        }
-      },
-      "UpdateInvoiceRequest": {
-        "required": [
-          "invoiceDate",
-          "adjustment",
-          "customer",
-          "discount",
-          "paid",
-          "dueAmount"
-        ],
-        "type": "object",
-        "properties": {
-          "invoiceDate": {
-            "type": "string"
-          },
-          "adjustment": {
-            "type": "number",
-            "format": "double"
-          },
-          "customer": {
-            "$ref": "#/components/schemas/CustomerKey"
-          },
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "notes": {
-            "type": "string"
-          },
-          "modifiedBy": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "paid": {
-            "type": "number",
-            "format": "double"
-          },
-          "modifiedAt": {
-            "type": "string"
-          },
-          "dueAmount": {
-            "type": "number",
-            "format": "double"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        }
-      },
-      "LightUser": {
-        "type": "object",
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "phoneNo": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "company": {
-            "$ref": "#/components/schemas/LightCompany"
-          },
-          "profilePic": {
-            "type": "string"
-          },
-          "deletedAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        }
-      },
-      "User": {
-        "type": "object",
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "phoneNo": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "company": {
-            "$ref": "#/components/schemas/LightCompany"
-          },
-          "profilePic": {
-            "type": "string"
-          },
-          "deletedAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        }
-      },
-      "UserKey": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        }
-      },
-      "CreateUserRequest": {
-        "required": [
-          "phoneNo",
-          "company",
-          "profilePic",
-          "name",
-          "email"
-        ],
-        "type": "object",
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "phoneNo": {
-            "type": "string"
-          },
-          "company": {
-            "$ref": "#/components/schemas/CompanyKey"
-          },
-          "profilePic": {
-            "type": "string"
-          },
-          "deletedAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        }
-      },
-      "UpdateUserRequest": {
-        "required": [
-          "phoneNo",
-          "company",
-          "profilePic",
-          "name",
-          "email"
-        ],
-        "type": "object",
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "phoneNo": {
-            "type": "string"
-          },
-          "company": {
-            "$ref": "#/components/schemas/CompanyKey"
-          },
-          "profilePic": {
-            "type": "string"
-          },
-          "deletedAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        }
-      },
-      "LightCustomer": {
-        "type": "object",
-        "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "phoneNo": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "altPhoneNo": {
-            "type": "string"
-          },
-          "address": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          }
-        }
-      },
       "Customer": {
         "type": "object",
         "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
           "phoneNo": {
             "type": "string"
           },
-          "id": {
-            "type": "string"
-          },
-          "createdBy": {
+          "altPhoneNo": {
             "type": "string"
           },
           "invoices": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/LightInvoice"
+              "$ref": "#/components/schemas/Invoice"
             }
           },
-          "altPhoneNo": {
+          "name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": "string"
           },
           "address": {
             "type": "string"
           },
           "email": {
+            "type": "string"
+          },
+          "createdBy": {
             "type": "string"
           }
         }
@@ -4413,22 +4160,16 @@
       },
       "CreateCustomerRequest": {
         "required": [
-          "name",
           "phoneNo",
-          "invoices"
+          "invoices",
+          "name"
         ],
         "type": "object",
         "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
           "phoneNo": {
             "type": "string"
           },
-          "createdBy": {
+          "altPhoneNo": {
             "type": "string"
           },
           "invoices": {
@@ -4437,35 +4178,35 @@
               "$ref": "#/components/schemas/InvoiceKey"
             }
           },
-          "altPhoneNo": {
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": "string"
           },
           "address": {
             "type": "string"
           },
           "email": {
+            "type": "string"
+          },
+          "createdBy": {
             "type": "string"
           }
         }
       },
       "UpdateCustomerRequest": {
         "required": [
-          "name",
           "phoneNo",
-          "invoices"
+          "invoices",
+          "name"
         ],
         "type": "object",
         "properties": {
-          "createdAt": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
           "phoneNo": {
             "type": "string"
           },
-          "createdBy": {
+          "altPhoneNo": {
             "type": "string"
           },
           "invoices": {
@@ -4474,7 +4215,10 @@
               "$ref": "#/components/schemas/InvoiceKey"
             }
           },
-          "altPhoneNo": {
+          "name": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": "string"
           },
           "address": {
@@ -4482,22 +4226,8 @@
           },
           "email": {
             "type": "string"
-          }
-        }
-      },
-      "LightProduct": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
-          "category": {
-            "$ref": "#/components/schemas/LightCategory"
-          },
-          "name": {
+          "createdBy": {
             "type": "string"
           }
         }
@@ -4508,13 +4238,13 @@
           "id": {
             "type": "string"
           },
-          "description": {
-            "type": "string"
-          },
           "category": {
-            "$ref": "#/components/schemas/LightCategory"
+            "$ref": "#/components/schemas/Category"
           },
           "name": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         }
@@ -4534,13 +4264,13 @@
         ],
         "type": "object",
         "properties": {
-          "description": {
-            "type": "string"
-          },
           "category": {
             "$ref": "#/components/schemas/CategoryKey"
           },
           "name": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         }
@@ -4552,27 +4282,13 @@
         ],
         "type": "object",
         "properties": {
-          "description": {
-            "type": "string"
-          },
           "category": {
             "$ref": "#/components/schemas/CategoryKey"
           },
           "name": {
             "type": "string"
-          }
-        }
-      },
-      "LightVirtualEntity": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
           },
           "description": {
-            "type": "string"
-          },
-          "id": {
             "type": "string"
           }
         }
@@ -4630,48 +4346,25 @@
           }
         }
       },
-      "LightCurrency": {
-        "type": "object",
-        "properties": {
-          "currencyName": {
-            "type": "string"
-          },
-          "country": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "currencyAbbr": {
-            "type": "string"
-          },
-          "currencySymbol": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          }
-        }
-      },
       "Currency": {
         "type": "object",
         "properties": {
-          "currencyName": {
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": "string"
           },
           "country": {
             "type": "string"
           },
-          "id": {
+          "currencySymbol": {
             "type": "string"
           },
           "currencyAbbr": {
             "type": "string"
           },
-          "currencySymbol": {
-            "type": "string"
-          },
-          "createdAt": {
+          "currencyName": {
             "type": "string"
           }
         }
@@ -4687,16 +4380,16 @@
       "CreateCurrencyRequest": {
         "type": "object",
         "properties": {
-          "currencyName": {
+          "country": {
             "type": "string"
           },
-          "country": {
+          "currencySymbol": {
             "type": "string"
           },
           "currencyAbbr": {
             "type": "string"
           },
-          "currencySymbol": {
+          "currencyName": {
             "type": "string"
           }
         }
@@ -4704,45 +4397,16 @@
       "UpdateCurrencyRequest": {
         "type": "object",
         "properties": {
-          "currencyName": {
+          "country": {
             "type": "string"
           },
-          "country": {
+          "currencySymbol": {
             "type": "string"
           },
           "currencyAbbr": {
             "type": "string"
           },
-          "currencySymbol": {
-            "type": "string"
-          }
-        }
-      },
-      "LightSupplier": {
-        "type": "object",
-        "properties": {
-          "altPhoneNo": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "address": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "phoneNo": {
+          "currencyName": {
             "type": "string"
           }
         }
@@ -4750,25 +4414,25 @@
       "Supplier": {
         "type": "object",
         "properties": {
-          "altPhoneNo": {
-            "type": "string"
-          },
-          "id": {
+          "email": {
             "type": "string"
           },
           "createdBy": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string"
-          },
           "address": {
             "type": "string"
           },
-          "email": {
+          "altPhoneNo": {
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": "string"
           },
           "phoneNo": {
@@ -4792,22 +4456,22 @@
         ],
         "type": "object",
         "properties": {
-          "altPhoneNo": {
+          "email": {
             "type": "string"
           },
           "createdBy": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string"
-          },
           "address": {
             "type": "string"
           },
-          "email": {
+          "altPhoneNo": {
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "createdAt": {
             "type": "string"
           },
           "phoneNo": {
@@ -4823,63 +4487,26 @@
         ],
         "type": "object",
         "properties": {
-          "altPhoneNo": {
+          "email": {
             "type": "string"
           },
           "createdBy": {
             "type": "string"
           },
-          "createdAt": {
-            "type": "string"
-          },
           "address": {
             "type": "string"
           },
-          "email": {
+          "altPhoneNo": {
             "type": "string"
           },
           "name": {
             "type": "string"
           },
+          "createdAt": {
+            "type": "string"
+          },
           "phoneNo": {
             "type": "string"
-          }
-        }
-      },
-      "LightInventory": {
-        "type": "object",
-        "properties": {
-          "discount": {
-            "type": "number",
-            "format": "double"
-          },
-          "product": {
-            "$ref": "#/components/schemas/LightProduct"
-          },
-          "cost": {
-            "type": "number",
-            "format": "double"
-          },
-          "id": {
-            "type": "string"
-          },
-          "procurement": {
-            "$ref": "#/components/schemas/LightProcurement"
-          },
-          "profit": {
-            "type": "number",
-            "format": "double"
-          },
-          "invoice": {
-            "$ref": "#/components/schemas/LightInvoice"
-          },
-          "listingPrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "soldPrice": {
-            "type": "number",
-            "format": "double"
           }
         }
       },
@@ -4890,26 +4517,6 @@
             "type": "number",
             "format": "double"
           },
-          "product": {
-            "$ref": "#/components/schemas/LightProduct"
-          },
-          "cost": {
-            "type": "number",
-            "format": "double"
-          },
-          "id": {
-            "type": "string"
-          },
-          "procurement": {
-            "$ref": "#/components/schemas/LightProcurement"
-          },
-          "profit": {
-            "type": "number",
-            "format": "double"
-          },
-          "invoice": {
-            "$ref": "#/components/schemas/LightInvoice"
-          },
           "listingPrice": {
             "type": "number",
             "format": "double"
@@ -4917,6 +4524,26 @@
           "soldPrice": {
             "type": "number",
             "format": "double"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "profit": {
+            "type": "number",
+            "format": "double"
+          },
+          "cost": {
+            "type": "number",
+            "format": "double"
+          },
+          "procurement": {
+            "$ref": "#/components/schemas/Procurement"
+          },
+          "id": {
+            "type": "string"
+          },
+          "invoice": {
+            "$ref": "#/components/schemas/Invoice"
           }
         }
       },
@@ -4931,16 +4558,24 @@
       "CreateInventoryRequest": {
         "required": [
           "discount",
+          "listingPrice",
+          "soldPrice",
           "product",
           "cost",
           "procurement",
-          "invoice",
-          "listingPrice",
-          "soldPrice"
+          "invoice"
         ],
         "type": "object",
         "properties": {
           "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "listingPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "soldPrice": {
             "type": "number",
             "format": "double"
           },
@@ -4956,30 +4591,30 @@
           },
           "invoice": {
             "$ref": "#/components/schemas/InvoiceKey"
-          },
-          "listingPrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "soldPrice": {
-            "type": "number",
-            "format": "double"
           }
         }
       },
       "UpdateInventoryRequest": {
         "required": [
           "discount",
+          "listingPrice",
+          "soldPrice",
           "product",
           "cost",
           "procurement",
-          "invoice",
-          "listingPrice",
-          "soldPrice"
+          "invoice"
         ],
         "type": "object",
         "properties": {
           "discount": {
+            "type": "number",
+            "format": "double"
+          },
+          "listingPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "soldPrice": {
             "type": "number",
             "format": "double"
           },
@@ -4995,14 +4630,6 @@
           },
           "invoice": {
             "$ref": "#/components/schemas/InvoiceKey"
-          },
-          "listingPrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "soldPrice": {
-            "type": "number",
-            "format": "double"
           }
         }
       }

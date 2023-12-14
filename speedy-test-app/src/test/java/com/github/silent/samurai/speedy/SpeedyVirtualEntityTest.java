@@ -62,14 +62,14 @@ class SpeedyVirtualEntityTest {
         return virtualEntityKey;
     }
 
-    LightVirtualEntity getVirtualEntity(VirtualEntityKey virtualEntityKey) throws Exception {
+    VirtualEntity getVirtualEntity(VirtualEntityKey virtualEntityKey) throws Exception {
         VirtualEntityApi virtualEntityApi = new VirtualEntityApi(defaultClient);
 
-        List<LightVirtualEntity> payload = virtualEntityApi
+        List<VirtualEntity> payload = virtualEntityApi
                 .getVirtualEntity(virtualEntityKey.getId()).getPayload();
 
         Assertions.assertNotNull(payload);
-        LightVirtualEntity virtualEntity = payload.get(0);
+        VirtualEntity virtualEntity = payload.get(0);
         Assertions.assertNotNull(virtualEntity.getId());
         Assertions.assertNotEquals("", virtualEntity.getId());
 
@@ -110,7 +110,7 @@ class SpeedyVirtualEntityTest {
     void normalTest() throws Exception {
         VirtualEntityKey virtualEntityKey = createVirtualEntity();
 
-        LightVirtualEntity virtualEntity = getVirtualEntity(virtualEntityKey);
+        VirtualEntity virtualEntity = getVirtualEntity(virtualEntityKey);
 
         updateVirtualEntity(virtualEntityKey);
 

@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -24,7 +24,7 @@ public class Order implements Serializable {
     private String supplierId;
 
     @Column(name = "order_date")
-    private Instant orderDate;
+    private LocalDateTime orderDate;
 
     @Column(name = "price")
     private Double price;

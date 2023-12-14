@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.entity;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 @Table(name = "users", indexes = {
@@ -29,11 +29,11 @@ public class User extends AbstractBaseEntity {
     private Company company;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private Instant updatedAt;
+    private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
-    private Instant deletedAt;
+    private LocalDateTime deletedAt;
 }
