@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.processors;
+package com.github.silent.samurai.speedy.jpa.impl.processors;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -6,11 +6,12 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.metamodel.JpaEntityMetadata;
-import com.github.silent.samurai.speedy.query.JpaQueryProcessorImpl;
+import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.query.JpaQueryProcessorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.persistence.EntityManager;
 import javax.persistence.metamodel.EntityType;
 import java.util.Collection;
 import java.util.HashMap;
@@ -82,6 +83,15 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
     @Override
     public QueryProcessor getQueryProcessor() {
         return new JpaQueryProcessorImpl(configuration.createEntityManager());
+    }
+
+    @Override
+    public boolean closeQueryProcessor(QueryProcessor queryProcessor) {
+        JpaQueryProcessorImpl jpaQueryProcessor = (JpaQueryProcessorImpl) queryProcessor;
+        EntityManager entityManager = jpaQueryProcessor.getEntityManager();
+        if (entityManager != null)
+            entityManager.close();
+        return true;
     }
 
 

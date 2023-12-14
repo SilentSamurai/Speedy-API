@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.processors;
+package com.github.silent.samurai.speedy.jpa.impl.processors;
 
 import org.junit.jupiter.api.Test;
 

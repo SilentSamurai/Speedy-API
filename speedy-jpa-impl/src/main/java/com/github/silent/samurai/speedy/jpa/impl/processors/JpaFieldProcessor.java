@@ -1,12 +1,12 @@
-package com.github.silent.samurai.speedy.processors;
+package com.github.silent.samurai.speedy.jpa.impl.processors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.metamodel.JpaEntityMetadata;
-import com.github.silent.samurai.speedy.metamodel.JpaFieldMetadata;
-import com.github.silent.samurai.speedy.metamodel.JpaKeyFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaKeyFieldMetadata;
 import org.hibernate.annotations.Formula;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

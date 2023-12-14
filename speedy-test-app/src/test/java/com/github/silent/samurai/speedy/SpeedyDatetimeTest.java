@@ -27,6 +27,10 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,7 +67,7 @@ class SpeedyDatetimeTest {
     @Test
     void CreateSupplier() throws Exception {
 
-        Instant dateTimeInstant = Instant.now();
+        String dateTimeInstant = Instant.now().toString();
 
         CreateSupplierRequest createSupplierRequest = new CreateSupplierRequest();
         createSupplierRequest.name("new Supplier")
@@ -90,7 +94,7 @@ class SpeedyDatetimeTest {
 
         Assertions.assertNotNull(apiResponse);
         Assertions.assertNotNull(apiResponse.getPayload());
-        Assertions.assertTrue(apiResponse.getPayload().size() > 0);
+        Assertions.assertFalse(apiResponse.getPayload().isEmpty());
         Assertions.assertNotNull(apiResponse.getPayload().get(0));
         SupplierKey supplierKey = apiResponse.getPayload().get(0);
 
@@ -99,13 +103,21 @@ class SpeedyDatetimeTest {
 
         SupplierApi supplierApi = new SupplierApi(defaultClient);
 
-        SupplierResponse supplier = supplierApi.getSupplier(supplierKey.getId());
-        Supplier payload = supplier.getPayload();
+        FilteredSupplierResponse supplier = supplierApi.getSupplier(supplierKey.getId());
+        List<LightSupplier> payload = supplier.getPayload();
 
         LOGGER.info("Supplier {}", payload);
-        assert payload != null;
-        Assertions.assertNotNull(payload.getCreatedAt());
-        Assertions.assertTrue(payload.getCreatedAt().toEpochMilli() - dateTimeInstant.toEpochMilli() <= 1000);
+
+        Assertions.assertNotNull(payload);
+        Assertions.assertFalse(payload.isEmpty());
+        LightSupplier lightSupplier = payload.get(0);
+        Assertions.assertNotNull(lightSupplier);
+        String createdAt = lightSupplier.getCreatedAt();
+        Assertions.assertNotNull(createdAt);
+
+        Instant createdat = LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneOffset.UTC);
+
+        Assertions.assertTrue(createdat.toEpochMilli() - Instant.parse(dateTimeInstant).toEpochMilli() <= 1);
     }
 
 

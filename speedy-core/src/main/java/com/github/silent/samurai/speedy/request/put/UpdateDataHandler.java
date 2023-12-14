@@ -22,10 +22,10 @@ public class UpdateDataHandler {
         this.context = context;
     }
 
-    public Optional<Object> process() throws Exception {
+    public Optional<SpeedyEntity> process() throws Exception {
         EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();
-        Object savedEntity = null;
+        SpeedyEntity savedEntity = null;
         SpeedyEntity entity = context.getEntity();
         SpeedyEntityKey entityKey = context.getEntityKey();
         if (entity != null) {
@@ -38,8 +38,7 @@ public class UpdateDataHandler {
                 savedEntity = handler.update(entityKey, entity);
             } else {
                 QueryProcessor queryProcessor = context.getQueryProcessor();
-//                savedEntity = saveEntity(entityInstance, entityMetadata);
-                queryProcessor.update(entityKey, entity);
+                savedEntity = queryProcessor.update(entityKey, entity);
             }
             eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE,
                     entityMetadata, entity);

@@ -49,9 +49,7 @@ public class PostDataHandler {
     private void processPhysical(List<SpeedyEntity> savedObjects) throws Exception {
         EventProcessor eventProcessor = context.getEventProcessor();
         EntityMetadata entityMetadata = context.getEntityMetadata();
-//        EntityTransaction transaction = context.getEntityManager().getTransaction();
-//        transaction.begin();
-        QueryProcessor queryProcessor = context.getMetaModelProcessor().getQueryProcessor();
+        QueryProcessor queryProcessor = context.getQueryProcessor();
         for (SpeedyEntity parsedObject : context.getParsedEntity()) {
             try {
                 // validate entity
@@ -60,33 +58,28 @@ public class PostDataHandler {
                 eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT,
                         entityMetadata, parsedObject);
                 // save the entity
-                boolean b = queryProcessor.create(parsedObject);
-                if (!b) {
+                SpeedyEntity savedEntity = queryProcessor.create(parsedObject);
+                if (savedEntity == null || savedEntity.isEmpty()) {
                     LOGGER.info("{} save failed {}", entityMetadata.getName(), parsedObject);
+                } else {
+                    LOGGER.info("{} saved {}", entityMetadata.getName(), parsedObject);
                 }
 
-                LOGGER.info("{} saved {}", entityMetadata.getName(), parsedObject);
-//                Object savedEntity = context.getEntityManager().merge(parsedObject);
-//                context.getEntityManager().flush();
-
-//                // check if primary key is complete
-//                if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, parsedObject)) {
-//                    throw new BadRequestException("Incomplete Key after save");
-//                }
+                // check if primary key is complete
+                if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
+                    throw new BadRequestException("Incomplete Key after save");
+                }
                 // trigger post insert event
                 eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT,
                         entityMetadata, parsedObject);
                 // add to saved objects
-                savedObjects.add(parsedObject);
+                savedObjects.add(savedEntity);
 
             } catch (Throwable throwable) {
-                // rollback all changes if any exception occurs
-//                transaction.rollback();
                 throw throwable;
             }
         }
-        // commit only if all entities are saved
-//        transaction.commit();
+
     }
 
     public Optional<List<SpeedyEntity>> processBatch() throws Exception {

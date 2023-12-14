@@ -44,7 +44,6 @@ class SpeedyUriContextTest {
 
     @BeforeEach
     void setUp() throws NotFoundException {
-        ;
         Mockito.when(metaModelProcessor.findEntityMetadata("Product")).thenReturn(entityMetadata);
     }
 

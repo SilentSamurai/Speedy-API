@@ -27,6 +27,9 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -62,16 +65,16 @@ class SpeedyEntityTest {
         defaultClient = new ApiClient(restTemplate);
     }
 
-    Company createCompany() {
-        Instant datetime = Instant.now();
+    LightCompany createCompany() {
+        String datetime = Instant.now().toString();
         CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest();
         createCompanyRequest.name("New Company")
                 .address("Address")
-                .defaultGenerator(12)
+                .defaultGenerator(12L)
                 .extra("extra asp")
                 .createdAt(datetime)
                 .deletedAt(datetime)
-                .invoiceNo(12)
+                .invoiceNo(12L)
                 .currency("INR")
                 .phone("0987383762")
                 .detailsTop("asd")
@@ -83,14 +86,14 @@ class SpeedyEntityTest {
         CompanyKey companyKey = bulkCreateCompany.getPayload().get(0);
 
 
-        CompanyResponse company200Response = companyApi.getCompany(companyKey.getId());
-        Company company = company200Response.getPayload();
-
-        LOGGER.info("company {}", company);
-        return company;
+        FilteredCompanyResponse companyResponse = companyApi.getCompany(companyKey.getId());
+        List<LightCompany> company = companyResponse.getPayload();
+        LightCompany lightCompany = company.get(0);
+        LOGGER.info("company {}", lightCompany);
+        return lightCompany;
     }
 
-    Product createProduct() throws Exception {
+    LightProduct createProduct() throws Exception {
         CategoryApi categoryApi = new CategoryApi(defaultClient);
         List<CreateCategoryRequest> postCategories = Arrays.asList(
                 new CreateCategoryRequest().name("New Category ALL")
@@ -114,14 +117,15 @@ class SpeedyEntityTest {
 
         Assertions.assertNotNull(productsResponse);
         Assertions.assertNotNull(productsResponse.getPayload());
-        Assertions.assertTrue(productsResponse.getPayload().size() > 0);
+        Assertions.assertFalse(productsResponse.getPayload().isEmpty());
         ProductKey productKey = productsResponse.getPayload().get(0);
         Assertions.assertNotNull(productKey.getId());
         Assertions.assertNotEquals("", productKey.getId());
 
-        ProductResponse productResponse = productApi.getProduct(productKey.getId());
-        Assertions.assertNotNull(productResponse);
-        Product product = productResponse.getPayload();
+        List<LightProduct> payload = productApi.getProduct(productKey.getId()).getPayload();
+        Assertions.assertNotNull(payload);
+        Assertions.assertFalse(payload.isEmpty());
+        LightProduct product = payload.get(0);
         Assertions.assertNotNull(product);
         Assertions.assertNotNull(product.getCategory());
         Assertions.assertEquals(getCategory.getId(), product.getCategory().getId());
@@ -131,9 +135,9 @@ class SpeedyEntityTest {
         return product;
     }
 
-    Supplier createSupplier() throws Exception {
+    LightSupplier createSupplier() throws Exception {
 
-        Instant dateTimeInstant = Instant.now();
+        String dateTimeInstant = Instant.now().toString();
 
         CreateSupplierRequest createSupplierRequest = new CreateSupplierRequest();
         createSupplierRequest.name("new Supplier")
@@ -160,7 +164,7 @@ class SpeedyEntityTest {
 
         Assertions.assertNotNull(apiResponse);
         Assertions.assertNotNull(apiResponse.getPayload());
-        Assertions.assertTrue(apiResponse.getPayload().size() > 0);
+        Assertions.assertFalse(apiResponse.getPayload().isEmpty());
         Assertions.assertNotNull(apiResponse.getPayload().get(0));
         SupplierKey supplierKey = apiResponse.getPayload().get(0);
 
@@ -169,24 +173,30 @@ class SpeedyEntityTest {
 
         SupplierApi supplierApi = new SupplierApi(defaultClient);
 
-        SupplierResponse supplier200Response = supplierApi.getSupplier(supplierKey.getId());
-        Supplier supplier = supplier200Response.getPayload();
+        List<LightSupplier> payload = supplierApi.getSupplier(supplierKey.getId()).getPayload();
+        LightSupplier supplier = payload.get(0);
 
         LOGGER.info("Supplier {}", supplier);
         assert supplier != null;
         Assertions.assertNotNull(supplier.getCreatedAt());
-        Assertions.assertTrue(supplier.getCreatedAt().toEpochMilli() - dateTimeInstant.toEpochMilli() <= 1000);
+
+        Instant createdat = LocalDateTime.parse(supplier.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneOffset.UTC);
+
+        Assertions.assertTrue(
+                createdat.toEpochMilli() -
+                        Instant.parse(dateTimeInstant).toEpochMilli() <= 1000);
         return supplier;
     }
 
-    Procurement createProcurement(Product product, Supplier supplier) throws Exception {
+    LightProcurement createProcurement(LightProduct product, LightSupplier supplier) throws Exception {
+        String dateTimeInstant = Instant.now().toString();
         CreateProcurementRequest createProcurementRequest = new CreateProcurementRequest();
         createProcurementRequest
-                .purchaseDate(Instant.now())
+                .purchaseDate(dateTimeInstant)
                 .supplier(new SupplierKey().id(supplier.getId()))
                 .dueAmount(3.8)
-                .modifiedAt(Instant.now())
-                .createdAt(Instant.now())
+                .modifiedAt(dateTimeInstant)
+                .createdAt(dateTimeInstant)
                 .modifiedBy("asdads")
                 .createdBy("asfasf")
                 .product(new ProductKey().id(product.getId()))
@@ -196,17 +206,18 @@ class SpeedyEntityTest {
         BulkCreateProcurementResponse bulkCreateProcurement200Response = procurementApi.bulkCreateProcurement(Lists.newArrayList(createProcurementRequest));
         ProcurementKey procurementKey = bulkCreateProcurement200Response.getPayload().get(0);
 
-        ProcurementResponse procurement = procurementApi.getProcurement(procurementKey.getId());
+        List<LightProcurement> payload = procurementApi.getProcurement(procurementKey.getId()).getPayload();
+        LightProcurement lightProcurement = payload.get(0);
+        LOGGER.info(" {} ", lightProcurement);
 
-        LOGGER.info(" {} ", procurement);
-
-        return procurement.getPayload();
+        return lightProcurement;
 
     }
 
-    Customer createCustomer() {
+    LightCustomer createCustomer() {
         CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
-        createCustomerRequest.createdAt(Instant.now())
+        String dateTimeInstant = Instant.now().toString();
+        createCustomerRequest.createdAt(dateTimeInstant)
                 .altPhoneNo("0984738260")
                 .createdBy("asfasf")
                 .phoneNo("0984738269")
@@ -220,25 +231,26 @@ class SpeedyEntityTest {
 
         CustomerKey customerKey = bulkCreateCustomer200Response.getPayload().get(0);
 
-        CustomerResponse getCustomer200Response = customerApi.getCustomer(customerKey.getId());
+        List<LightCustomer> payload1 = customerApi.getCustomer(customerKey.getId()).getPayload();
 
-        Customer payload = getCustomer200Response.getPayload();
+        LightCustomer customer = payload1.get(0);
 
-        LOGGER.info(" {} ", payload);
-        return payload;
+        LOGGER.info(" {} ", customer);
+        return customer;
     }
 
-    Invoice createInvoice(Customer customer) {
+    LightInvoice createInvoice(LightCustomer customer) {
+        String dateTimeInstant = Instant.now().toString();
         CreateInvoiceRequest createInvoiceRequest = new CreateInvoiceRequest();
-        createInvoiceRequest.createdAt(Instant.now())
+        createInvoiceRequest.createdAt(dateTimeInstant)
                 .dueAmount(23.7)
                 .paid(34.0)
                 .notes("asf")
                 .discount(24354.9)
                 .modifiedBy("josng")
                 .customer(new CustomerKey().id(customer.getId()))
-                .modifiedAt(Instant.now())
-                .invoiceDate(Instant.now())
+                .modifiedAt(dateTimeInstant)
+                .invoiceDate(dateTimeInstant)
                 .adjustment(4545.5)
                 .createdBy("ABCD");
 
@@ -248,19 +260,19 @@ class SpeedyEntityTest {
 
         InvoiceKey invoiceKey = bulkCreateInvoice200Response.getPayload().get(0);
 
-        InvoiceResponse invoice200Response = invoiceApi.getInvoice(invoiceKey.getId());
-
-        Invoice payload = invoice200Response.getPayload();
-        LOGGER.info(" {} ", payload);
-        return payload;
+        List<LightInvoice> payload1 = invoiceApi.getInvoice(invoiceKey.getId()).getPayload();
+        LightInvoice lightInvoice = payload1.get(0);
+        LOGGER.info(" {} ", lightInvoice);
+        return lightInvoice;
     }
 
-    User createUser(Company company) {
+    LightUser createUser(LightCompany company) {
+        String dateTimeInstant = Instant.now().toString();
         CreateUserRequest createUserRequest = new CreateUserRequest();
-        createUserRequest.createdAt(Instant.now())
-                .createdAt(Instant.now())
-                .deletedAt(Instant.now())
-                .updatedAt(Instant.now())
+        createUserRequest.createdAt(dateTimeInstant)
+                .createdAt(dateTimeInstant)
+                .deletedAt(dateTimeInstant)
+                .updatedAt(dateTimeInstant)
                 .phoneNo("0984738269")
                 .email("aksmfaksmf@sad.cc")
                 .name("New Customer")
@@ -273,14 +285,14 @@ class SpeedyEntityTest {
 
         UserKey userKey = bulkCreateUser200Response.getPayload().get(0);
 
-        UserResponse getUser200Response = userApi.getUser(userKey.getId());
+        List<LightUser> payload1 = userApi.getUser(userKey.getId()).getPayload();
 
-        User payload = getUser200Response.getPayload();
+        LightUser payload = payload1.get(0);
         LOGGER.info(" {} ", payload);
         return payload;
     }
 
-    Inventory createInventory(Procurement procurement, Product product, Invoice invoice) {
+    LightInventory createInventory(LightProcurement procurement, LightProduct product, LightInvoice invoice) {
         CreateInventoryRequest createInventoryRequest = new CreateInventoryRequest();
         createInventoryRequest.cost(230.0)
                 .soldPrice(230.0)
@@ -296,9 +308,9 @@ class SpeedyEntityTest {
 
         InventoryKey userKey = bulkCreateInventory200Response.getPayload().get(0);
 
-        InventoryResponse getInventory200Response = inventoryApi.getInventory(userKey.getId());
+        List<LightInventory> payload1 = inventoryApi.getInventory(userKey.getId()).getPayload();
 
-        Inventory payload = getInventory200Response.getPayload();
+        LightInventory payload = payload1.get(0);
         LOGGER.info(" {} ", payload);
         return payload;
     }
@@ -307,19 +319,19 @@ class SpeedyEntityTest {
     void normal() throws Exception {
 
 
-        Company company = createCompany();
-        Product product = createProduct();
-        Supplier supplier = createSupplier();
+        LightCompany company = createCompany();
+        LightProduct product = createProduct();
+        LightSupplier supplier = createSupplier();
 
-        Procurement procurement = createProcurement(product, supplier);
+        LightProcurement procurement = createProcurement(product, supplier);
 
-        Customer customer = createCustomer();
+        LightCustomer customer = createCustomer();
 
-        Invoice invoice = createInvoice(customer);
+        LightInvoice invoice = createInvoice(customer);
 
-        User user = createUser(company);
+        LightUser user = createUser(company);
 
-        Inventory inventory = createInventory(procurement, product, invoice);
+        LightInventory inventory = createInventory(procurement, product, invoice);
 
         Assertions.assertNotNull(inventory);
         Assertions.assertFalse(inventory.getId().isBlank());

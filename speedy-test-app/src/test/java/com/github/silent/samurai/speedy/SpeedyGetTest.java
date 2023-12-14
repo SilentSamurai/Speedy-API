@@ -63,8 +63,10 @@ class SpeedyGetTest {
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload.name").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload.name").value("cat-1-1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").value("cat-1-1"))
                 .andReturn();
     }
 
@@ -73,7 +75,9 @@ class SpeedyGetTest {
 
         MvcResult mvcResult = mvc.perform(get(SpeedyConstant.URI + "/Category(id='not-there')")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(0)))
                 .andReturn();
     }
 
@@ -119,8 +123,9 @@ class SpeedyGetTest {
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isMap())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload.name").value("cat-1-1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").value("cat-1-1"))
                 .andReturn();
     }
 
@@ -147,8 +152,10 @@ class SpeedyGetTest {
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload.name").exists())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload.name").value("cat-1-1"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").value("cat-1-1"))
                 .andReturn();
     }
 

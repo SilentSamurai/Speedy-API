@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.io;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.sql.Timestamp;
@@ -85,17 +85,17 @@ public class JavaTypeToSpeedyConverter {
         });
         put(ValueType.DATE, Date.class, (instance, valueType) -> {
             Date kdate = (Date) instance;
-            LocalDate localDate = kdate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate localDate = kdate.toInstant().atZone(ZoneId.of("UTC")).toLocalDate();
             return new SpeedyDate(localDate);
         });
         put(ValueType.DATE, Instant.class, (instance, valueType) -> {
             Instant kdate = (Instant) instance;
-            LocalDate localDate = kdate.atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate localDate = kdate.atZone(ZoneId.of("UTC")).toLocalDate();
             return new SpeedyDate(localDate);
         });
         put(ValueType.DATE_TIME, Instant.class, (instance, valueType) -> {
             Instant kdate = (Instant) instance;
-            LocalDateTime localDateTime = kdate.atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime localDateTime = kdate.atZone(ZoneId.of("UTC")).toLocalDateTime();
             return new SpeedyDateTime(localDateTime);
         });
 //        put(ValueType.TIME, Instant.class, (instance, valueType) -> {

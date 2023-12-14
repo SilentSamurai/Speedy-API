@@ -21,4 +21,6 @@ public interface MetaModelProcessor {
 
     QueryProcessor getQueryProcessor();
 
+    boolean closeQueryProcessor(QueryProcessor queryProcessor);
+
 }

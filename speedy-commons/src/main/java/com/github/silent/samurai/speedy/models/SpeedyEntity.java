@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.models;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -17,11 +17,6 @@ public class SpeedyEntity implements SpeedyValue {
 
     public SpeedyEntity(EntityMetadata entityMetadata) {
         this.entityMetadata = entityMetadata;
-    }
-
-    @Override
-    public String toString() {
-        return fields.toString();
     }
 
     public boolean has(FieldMetadata fieldMetadata) {
@@ -58,5 +53,13 @@ public class SpeedyEntity implements SpeedyValue {
     @Override
     public SpeedyEntity asObject() {
         return this;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyEntity{");
+        sb.append("fields=").append(fields);
+        sb.append('}');
+        return sb.toString();
     }
 }

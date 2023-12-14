@@ -32,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 
-import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -116,7 +115,7 @@ public class SpeedyFactory {
                 eventProcessor,
                 vEntityProcessor);
         new PutRequestParser(context).process();
-        Optional<Object> savedEntity = new UpdateDataHandler(context).process();
+        Optional<SpeedyEntity> savedEntity = new UpdateDataHandler(context).process();
         if (savedEntity.isEmpty()) {
             throw new NotFoundException();
         }
@@ -145,10 +144,9 @@ public class SpeedyFactory {
     }
 
     public void requestResource(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        EntityManager entityManager = null;
         LOGGER.info("REQ: {} {} ", request.getMethod(), request.getRequestURI());
+        QueryProcessor queryProcessor = metaModelProcessor.getQueryProcessor();
         try {
-            QueryProcessor queryProcessor = metaModelProcessor.getQueryProcessor();
             if (request.getMethod().equals(HttpMethod.GET.name())) {
                 processGETRequests(request, response, queryProcessor);
             } else if (request.getMethod().equals(HttpMethod.POST.name())) {
@@ -171,8 +169,7 @@ public class SpeedyFactory {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 //            response.getWriter().write(e.getMessage());
         } finally {
-            if (entityManager != null)
-                entityManager.close();
+            metaModelProcessor.closeQueryProcessor(queryProcessor);
             response.getWriter().flush();
         }
     }

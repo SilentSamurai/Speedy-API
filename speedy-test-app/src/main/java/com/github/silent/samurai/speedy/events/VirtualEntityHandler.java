@@ -2,10 +2,13 @@ package com.github.silent.samurai.speedy.events;
 
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.entity.Product;
-import com.github.silent.samurai.speedy.entity.VirtualEntity;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.ProductRepository;
 import org.slf4j.Logger;
@@ -35,34 +38,47 @@ public class VirtualEntityHandler implements SpeedyVirtualEntityHandler {
         });
     }
 
-    private void saveProduct(VirtualEntity entity, Product product) {
-        product.setDescription(entity.getDescription());
-        product.setName(entity.getName());
+    private void saveProduct(Product product) {
         product.setCategory(getVirtualCategory());
         productRepository.save(product);
-        entity.setId(product.getId());
     }
 
     @Override
-    public SpeedyEntity create(SpeedyEntity entity) {
+    public SpeedyEntity create(SpeedyEntity entity) throws NotFoundException {
         LOGGER.info("VirtualEntity create Event");
-//        Product product = new Product();
-//        this.saveProduct(entity, product);
+        EntityMetadata entityMetadata = entity.getEntityMetadata();
+        FieldMetadata id = entityMetadata.field("id");
+        FieldMetadata name = entityMetadata.field("name");
+        FieldMetadata description = entityMetadata.field("description");
+        Product product = new Product();
+        product.setName(entity.get(name).asText());
+        product.setDescription(entity.get(description).asText());
+        this.saveProduct(product);
+        entity.put(id, SpeedyValueFactory.fromText(product.getId()));
         return entity;
     }
 
     @Override
-    public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) {
-//        Optional<Product> byId = productRepository.findById(entity.getId());
-//        this.saveProduct(entity, byId.get());
+    public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws NotFoundException {
+        EntityMetadata entityMetadata = entity.getEntityMetadata();
+        FieldMetadata id = entityMetadata.field("id");
+        FieldMetadata description = entityMetadata.field("description");
+        String idValue = pk.get(id).asText();
+        Optional<Product> byId = productRepository.findById(idValue);
+        Product product = byId.get();
+        product.setDescription(entity.get(description).asText());
+        this.saveProduct(product);
+        entity.put(id, SpeedyValueFactory.fromText(product.getId()));
         return entity;
     }
 
     @Override
-    public SpeedyEntity delete(SpeedyEntityKey pk) {
-//        productRepository.deleteById(entity.getId());
-//        return entity;
-        return null;
+    public SpeedyEntity delete(SpeedyEntityKey pk) throws NotFoundException {
+        EntityMetadata entityMetadata = pk.getEntityMetadata();
+        FieldMetadata id = entityMetadata.field("id");
+        String idValue = pk.get(id).asText();
+        productRepository.deleteById(idValue);
+        return pk;
     }
 
 }

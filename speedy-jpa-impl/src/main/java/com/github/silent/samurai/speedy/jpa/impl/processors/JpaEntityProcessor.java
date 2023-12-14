@@ -1,7 +1,7 @@
-package com.github.silent.samurai.speedy.processors;
+package com.github.silent.samurai.speedy.jpa.impl.processors;
 
-import com.github.silent.samurai.speedy.metamodel.JpaEntityMetadata;
-import com.github.silent.samurai.speedy.metamodel.JpaFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.persistence.Entity;

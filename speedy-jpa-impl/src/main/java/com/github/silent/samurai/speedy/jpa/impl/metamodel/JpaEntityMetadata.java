@@ -1,9 +1,9 @@
-package com.github.silent.samurai.speedy.metamodel;
+package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Setter
-public class JpaEntityMetadata implements EntityMetadata {
+public class JpaEntityMetadata implements IJpaEntityMetadata {
 
     private String name;
     private String tableName;
@@ -77,11 +77,12 @@ public class JpaEntityMetadata implements EntityMetadata {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-
+    @Override
     public Object createNewEntityInstance() throws Exception {
         return entityClass.getConstructor().newInstance();
     }
 
+    @Override
     public Object createNewKeyInstance() throws Exception {
         return keyClass.getConstructor().newInstance();
     }

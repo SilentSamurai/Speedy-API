@@ -4,15 +4,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -28,7 +30,7 @@ public class JsonEntityDeserializer {
         this.entityMetadata = entityMetadata;
     }
 
-    public static SpeedyValue fromValueTypePrimitive(ValueType type, JsonNode jsonNode) {
+    public static SpeedyValue fromValueTypePrimitive(ValueType type, JsonNode jsonNode) throws BadRequestException {
         switch (type) {
             case TEXT:
                 return fromText(jsonNode.asText());
@@ -37,23 +39,35 @@ public class JsonEntityDeserializer {
             case FLOAT:
                 return fromDouble(jsonNode.asDouble());
             case DATE:
+                if (!jsonNode.isTextual()) {
+                    throw new BadRequestException("Date value must be a string");
+                }
                 String dateValue = jsonNode.asText();
-                return fromDate(LocalDate.parse(dateValue));
+                LocalDate localDate = LocalDate.parse(dateValue, DateTimeFormatter.ISO_DATE);
+                return fromDate(localDate);
             case TIME:
+                if (!jsonNode.isTextual()) {
+                    throw new BadRequestException("Time value must be a string");
+                }
                 String timeValue = jsonNode.asText();
-                return fromTime(LocalTime.parse(timeValue));
+                LocalTime localTime = LocalTime.parse(timeValue, DateTimeFormatter.ISO_TIME);
+                return fromTime(localTime);
             case DATE_TIME:
+                if (!jsonNode.isTextual()) {
+                    throw new BadRequestException("DateTime value must be a string");
+                }
                 String datetimeValue = jsonNode.asText();
-                return fromDateTime(LocalDateTime.parse(datetimeValue));
+                LocalDateTime datetime = LocalDateTime.parse(datetimeValue, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                return fromDateTime(datetime);
             default:
                 return SpeedyNull.SPEEDY_NULL;
         }
     }
 
-    public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) {
+    public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws BadRequestException {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (jsonNode.has(fieldMetadata.getOutputPropertyName())) {
+            if (jsonNode.has(fieldMetadata.getOutputPropertyName()) && !jsonNode.get(fieldMetadata.getOutputPropertyName()).isNull()) {
                 JsonNode fieldObject = jsonNode.get(fieldMetadata.getOutputPropertyName());
                 SpeedyValue speedyValue = fromFieldMetadata(fieldMetadata, fieldObject);
                 speedyEntity.put(fieldMetadata, speedyValue);
@@ -62,7 +76,7 @@ public class JsonEntityDeserializer {
         return speedyEntity;
     }
 
-    public static SpeedyValue fromFieldMetadata(FieldMetadata fieldMetadata, JsonNode jsonNode) {
+    public static SpeedyValue fromFieldMetadata(FieldMetadata fieldMetadata, JsonNode jsonNode) throws BadRequestException {
         if (fieldMetadata.isAssociation()) {
             if (fieldMetadata.isCollection()) {
                 ArrayNode arrayNode = (ArrayNode) jsonNode;

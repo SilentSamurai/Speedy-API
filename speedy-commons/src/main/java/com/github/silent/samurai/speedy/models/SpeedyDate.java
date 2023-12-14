@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
 
 import java.time.LocalDate;
@@ -25,5 +25,13 @@ public class SpeedyDate implements SpeedyValue {
         return value == null;
     }
 
+    @Override
+    public boolean isDate() {
+        return true;
+    }
 
+    @Override
+    public LocalDate asDate() {
+        return getValue();
+    }
 }

@@ -68,7 +68,7 @@ class SpeedyAssociationTest {
 
         Assertions.assertNotNull(categoryResponse);
         Assertions.assertNotNull(categoryResponse.getPayload());
-        Assertions.assertTrue(categoryResponse.getPayload().size() > 0);
+        Assertions.assertFalse(categoryResponse.getPayload().isEmpty());
         CategoryKey getCategory = categoryResponse.getPayload().get(0);
         Assertions.assertNotNull(getCategory.getId());
         Assertions.assertNotEquals("", getCategory.getId());
@@ -83,15 +83,18 @@ class SpeedyAssociationTest {
 
         Assertions.assertNotNull(productsResponse);
         Assertions.assertNotNull(productsResponse.getPayload());
-        Assertions.assertTrue(productsResponse.getPayload().size() > 0);
+        Assertions.assertFalse(productsResponse.getPayload().isEmpty());
         ProductKey productKey = productsResponse.getPayload().get(0);
         Assertions.assertNotNull(productKey.getId());
         Assertions.assertNotEquals("", productKey.getId());
 
-        ProductResponse productResponse = productApi.getProduct(productKey.getId());
+        String query = String.format("(id='%s')", productKey.getId());
+        FilteredProductResponse productResponse = productApi.getSomeProduct(query);
         Assertions.assertNotNull(productResponse);
-        Product product = productResponse.getPayload();
-        Assertions.assertNotNull(product);
+        List<LightProduct> productList = productResponse.getPayload();
+        Assertions.assertNotNull(productList);
+        Assertions.assertEquals(1, productList.size());
+        LightProduct product = productList.get(0);
         Assertions.assertNotNull(product.getCategory());
         Assertions.assertEquals(getCategory.getId(), product.getCategory().getId());
 

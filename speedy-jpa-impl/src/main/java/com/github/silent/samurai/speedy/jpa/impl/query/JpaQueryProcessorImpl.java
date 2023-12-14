@@ -1,14 +1,16 @@
-package com.github.silent.samurai.speedy.query;
+package com.github.silent.samurai.speedy.jpa.impl.query;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.metamodel.JpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.util.CommonUtil;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.util.CommonUtil;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +20,7 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class JpaQueryProcessorImpl implements QueryProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaQueryProcessorImpl.class);
@@ -70,45 +73,67 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
     }
 
     @Override
-    public boolean create(SpeedyEntity speedyEntity) throws SpeedyHttpException {
+    public SpeedyEntity create(SpeedyEntity speedyEntity) throws SpeedyHttpException {
         try {
-            JpaEntityMetadata entityMetadata = (JpaEntityMetadata) speedyEntity.getEntityMetadata();
+            IJpaEntityMetadata entityMetadata = (IJpaEntityMetadata) speedyEntity.getEntityMetadata();
             Object entity = CommonUtil.fromSpeedyEntity(speedyEntity, entityMetadata, entityManager);
-            this.saveEntity(entity, entityMetadata);
-            return true;
+            Object saveEntity = this.saveEntity(entity, entityMetadata);
+            return CommonUtil.fromJpaEntity(saveEntity, entityMetadata);
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
     }
 
     @Override
-    public boolean update(SpeedyEntityKey speedyEntityKey, SpeedyEntity speedyEntity) throws SpeedyHttpException {
+    public SpeedyEntity update(SpeedyEntityKey speedyEntityKey, SpeedyEntity speedyEntity) throws SpeedyHttpException {
         try {
-            JpaEntityMetadata entityMetadata = (JpaEntityMetadata) speedyEntity.getEntityMetadata();
+            IJpaEntityMetadata entityMetadata = (IJpaEntityMetadata) speedyEntity.getEntityMetadata();
             Object pk = CommonUtil.getPKFromSpeedyValue(speedyEntityKey, entityMetadata);
             Object jpaEntity = entityManager.find(entityMetadata.getEntityClass(), pk);
+            if (jpaEntity == null) {
+                throw new BadRequestException("Entity not found");
+            }
             CommonUtil.updateFromSpeedyEntity(speedyEntity, jpaEntity, entityMetadata, entityManager);
-            this.saveEntity(jpaEntity, entityMetadata);
-            return true;
+            Object savedEntity = this.updateEntity(jpaEntity, entityMetadata);
+            return CommonUtil.fromJpaEntity(savedEntity, entityMetadata);
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
     }
 
     @Override
-    public boolean delete(SpeedyEntityKey speedyEntityKey) throws SpeedyHttpException {
+    public SpeedyEntity delete(SpeedyEntityKey speedyEntityKey) throws SpeedyHttpException {
         try {
             JpaEntityMetadata entityMetadata = (JpaEntityMetadata) speedyEntityKey.getEntityMetadata();
             Object pk = CommonUtil.getPKFromSpeedyValue(speedyEntityKey, entityMetadata);
             Object jpaEntity = entityManager.find(entityMetadata.getEntityClass(), pk);
-            this.deleteEntity(jpaEntity, entityMetadata);
-            return true;
+            if (jpaEntity == null) {
+                throw new BadRequestException("Entity not found");
+            }
+            Object deletedEntity = this.deleteEntity(jpaEntity, entityMetadata);
+            return CommonUtil.fromJpaEntity(deletedEntity, entityMetadata);
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
     }
 
     private Object saveEntity(Object entityInstance, EntityMetadata entityMetadata) throws Exception {
+        EntityTransaction transaction = entityManager.getTransaction();
+        Object savedEntity;
+        try {
+            transaction.begin();
+            savedEntity = entityManager.merge(entityInstance);
+            entityManager.flush();
+            LOGGER.info("{} saved {}", entityMetadata.getName(), savedEntity);
+            transaction.commit();
+        } catch (Throwable throwable) {
+            transaction.rollback();
+            throw throwable;
+        }
+        return savedEntity;
+    }
+
+    private Object updateEntity(Object entityInstance, EntityMetadata entityMetadata) throws Exception {
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();

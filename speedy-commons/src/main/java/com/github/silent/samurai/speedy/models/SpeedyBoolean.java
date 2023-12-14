@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
 
 @Getter
@@ -21,5 +21,15 @@ public class SpeedyBoolean implements SpeedyValue {
     @Override
     public boolean isEmpty() {
         return value == null;
+    }
+
+    @Override
+    public boolean isBoolean() {
+        return true;
+    }
+
+    @Override
+    public Boolean asBoolean() {
+        return getValue();
     }
 }

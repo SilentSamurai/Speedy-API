@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.docs;
 
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
@@ -56,16 +57,30 @@ public class OASGenerator {
         PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(UUID.class, new Schema<>().type("string").format("uuid"));
     }
 
-    public static Schema basicSchema(Class<?> clazz) {
-        return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(clazz);
+    public static Schema basicSchema(ValueType valueType) {
+        switch (valueType) {
+            case BOOL:
+                return new Schema<>().type("boolean");
+            case TEXT:
+                return new Schema<>().type("string");
+            case INT:
+                return new Schema<>().type("integer").format("int64");
+            case FLOAT:
+                return new Schema<>().type("number").format("double");
+            case DATE_TIME:
+            case DATE:
+            case TIME:
+                return new Schema<>().type("string");
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+            default:
+                return new Schema<>().type("string");
+        }
     }
 
     public static Schema generateBasicSchema(FieldMetadata fieldMetadata) {
-        if (PRIMITIVE_TYPE_TO_SCHEMA_MAP.containsKey(fieldMetadata.getFieldType())) {
-            return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(fieldMetadata.getFieldType());
-        } else {
-            return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(String.class);
-        }
+        return basicSchema(fieldMetadata.getValueType());
     }
 
     public static String getQueryExample(EntityMetadata entityMetadata, Predicate<FieldMetadata> predicate) {
@@ -130,8 +145,8 @@ public class OASGenerator {
         return new Schema<>()
                 .type("object")
                 .addProperty("payload", ref)
-                .addProperty("pageCount", OASGenerator.basicSchema(long.class))
-                .addProperty("pageIndex", OASGenerator.basicSchema(long.class));
+                .addProperty("pageCount", OASGenerator.basicSchema(ValueType.INT))
+                .addProperty("pageIndex", OASGenerator.basicSchema(ValueType.INT));
     }
 
     public static Schema getSchemaRef(String schemaName) {
@@ -167,7 +182,7 @@ public class OASGenerator {
                         .name("pageNo")
                         .in("query")
                         .required(false)
-                        .schema(OASGenerator.basicSchema(Integer.class))
+                        .schema(OASGenerator.basicSchema(ValueType.INT))
         );
         operation.addParametersItem(
                 new Parameter()
@@ -175,7 +190,7 @@ public class OASGenerator {
                         .name("pageSize")
                         .in("query")
                         .required(false)
-                        .schema(OASGenerator.basicSchema(Integer.class))
+                        .schema(OASGenerator.basicSchema(ValueType.INT))
         );
         operation.addParametersItem(
                 new Parameter()
@@ -183,7 +198,7 @@ public class OASGenerator {
                         .name("orderBy")
                         .in("query")
                         .required(false)
-                        .schema(OASGenerator.basicSchema(String.class))
+                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
         );
         operation.addParametersItem(
                 new Parameter()
@@ -191,7 +206,7 @@ public class OASGenerator {
                         .name("orderByDesc")
                         .in("query")
                         .required(false)
-                        .schema(OASGenerator.basicSchema(String.class))
+                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
         );
     }
 
@@ -204,7 +219,7 @@ public class OASGenerator {
                             .description(keyField.getOutputPropertyName() + " field value.")
                             .in("path")
                             .allowEmptyValue(false)
-                            .schema(OASGenerator.basicSchema(keyField.getFieldType()))
+                            .schema(OASGenerator.generateBasicSchema(keyField))
             );
         }
     }

@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import net.bytebuddy.utility.RandomString;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +15,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.LinkedList;
@@ -53,8 +57,17 @@ class SpeedyPostTest {
                 .content(CommonUtil.toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mvc.perform(mockHttpServletRequest)
-                .andExpect(status().isOk());
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
 
 
         Optional<Category> categoryOptional = categoryRepository.findByName("generated-cat");
@@ -118,8 +131,17 @@ class SpeedyPostTest {
                 .content(CommonUtil.toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mvc.perform(createRequest)
-                .andExpect(status().isOk());
+        MvcResult mvcResult = mvc.perform(createRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(1)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
 
 
         Optional<Category> categoryOptional = categoryRepository.findByName("generated-cat");
@@ -134,8 +156,9 @@ class SpeedyPostTest {
     @Test
     void bulkCreate() throws Exception {
 
+        int creationCount = 10;
         List<Category> categories = new LinkedList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < creationCount; i++) {
             Category category = new Category();
             category.setName("bulk-gen-cat-" + i);
             categories.add(category);
@@ -145,8 +168,17 @@ class SpeedyPostTest {
                 .content(CommonUtil.toJson(categories))
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mvc.perform(mockHttpServletRequest)
-                .andExpect(status().isOk());
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(creationCount)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
 
         for (Category category : categories) {
             Optional<Category> categoryOptional = categoryRepository.findByName(category.getName());

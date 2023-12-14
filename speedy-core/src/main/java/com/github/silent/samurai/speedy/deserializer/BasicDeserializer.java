@@ -1,10 +1,9 @@
 package com.github.silent.samurai.speedy.deserializer;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingFunction;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
@@ -14,12 +13,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.github.silent.samurai.speedy.models.SpeedyValueFactory.*;
-import static com.github.silent.samurai.speedy.models.SpeedyValueFactory.fromDateTime;
 
 public class BasicDeserializer {
 
@@ -119,12 +118,12 @@ public class BasicDeserializer {
         return null;
     }
 
-    public static Object stringToBasic(String value, Class<?> targetType) throws Exception {
+    private static Object stringToBasic(String value, Class<?> targetType) throws Exception {
         return BasicDeserializer.deserialize(value, targetType);
     }
 
 
-    public static Object deserialize(String value, Class<?> clazz) throws Exception {
+    private static Object deserialize(String value, Class<?> clazz) throws Exception {
         if (!converters.containsKey(clazz)) {
             return null;
         }
@@ -132,7 +131,7 @@ public class BasicDeserializer {
     }
 
 
-    public static <T> T convert(String value, Class<T> clazz) throws Exception {
+    private static <T> T convert(String value, Class<T> clazz) throws Exception {
         if (!converters.containsKey(clazz)) {
             return null;
         }
@@ -165,10 +164,13 @@ public class BasicDeserializer {
         });
         converters.put(Instant.class, Instant::parse);
         converters.put(LocalDate.class, value -> {
-            LocalDateTime datetime = LocalDateTime.parse(value);
+            LocalDateTime datetime = LocalDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
             return datetime.toLocalDate();
         });
-        converters.put(LocalDateTime.class, LocalDateTime::parse);
+        converters.put(LocalDateTime.class, value -> {
+            LocalDateTime datetime = LocalDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            return datetime;
+        });
         converters.put(Timestamp.class, Timestamp::valueOf);
         converters.put(char.class, value -> {
             if (value.length() > 0) {

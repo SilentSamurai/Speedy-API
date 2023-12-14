@@ -100,7 +100,8 @@
                             <!--                            <language>spring</language>-->
                             <configOptions>
                                 <java8>true</java8>
-                                <dateLibrary>custom</dateLibrary>
+                                <dateLibrary>java8</dateLibrary>
+                                <useJava8Dates>true</useJava8Dates>
                                 <annotationLibrary>none</annotationLibrary>
                                 <sourceFolder>src/main/java</sourceFolder>
                             </configOptions>

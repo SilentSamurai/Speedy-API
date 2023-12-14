@@ -14,11 +14,11 @@ public interface QueryProcessor {
 
     boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException;
 
-    boolean create(SpeedyEntity entity) throws SpeedyHttpException;
+    SpeedyEntity create(SpeedyEntity entity) throws SpeedyHttpException;
 
-    boolean update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException;
+    SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException;
 
-    boolean delete(SpeedyEntityKey entityKey) throws SpeedyHttpException;
+    SpeedyEntity delete(SpeedyEntityKey entityKey) throws SpeedyHttpException;
 
 
 }

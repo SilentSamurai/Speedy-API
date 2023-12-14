@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.io.JavaTypeToSpeedyConverter;
 import com.github.silent.samurai.speedy.io.Speedy2JavaTypeConverter;
 

@@ -44,7 +44,6 @@ public class DeleteDataHandler {
                     handler.delete(parsedKey);
                 } else {
                     queryProcessor.delete(parsedKey);
-//                    deleteEntity(parsedKey, entityMetadata);
                 }
                 deletedObjects.add(parsedKey);
                 // fire post delete event

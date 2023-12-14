@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
 
 @Getter
@@ -31,5 +31,13 @@ public class SpeedyText implements SpeedyValue {
     @Override
     public String asText() {
         return getValue();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyText{");
+        sb.append("value='").append(value).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

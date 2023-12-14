@@ -47,18 +47,12 @@ public class VirtualEntityProcessor {
     }
 
     public void processRegistry() {
-        for (SpeedyVirtualEntityHandler virtualEntityHandler : eventRegistry.getVirtualEntityHandlers()) {
-            Optional<Type> typeParameters = getTypeParameters(virtualEntityHandler.getClass());
-
-
-            if (typeParameters.isPresent() && metaModelProcessor.hasEntityMetadata((Class<?>) typeParameters.get())) {
-                Class<?> aClass = (Class<?>) typeParameters.get();
-                try {
-                    EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(aClass);
-                    virtualEntityHandlerMap.put(entityMetadata.getName(), virtualEntityHandler);
-                } catch (NotFoundException e) {
-                    LOGGER.error("typeName not found ", e);
-                }
+        for (RegistryImpl.VEHHoldr holdr : eventRegistry.getVirtualEntityHandlers()) {
+            try {
+                EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(holdr.getEntityClass());
+                virtualEntityHandlerMap.put(entityMetadata.getName(), holdr.getHandler());
+            } catch (NotFoundException e) {
+                LOGGER.error("entityMetadata not found ", e);
             }
         }
     }

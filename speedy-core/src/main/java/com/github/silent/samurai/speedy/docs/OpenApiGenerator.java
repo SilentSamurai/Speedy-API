@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.docs;
 
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.google.common.collect.Lists;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -158,8 +159,10 @@ public class OpenApiGenerator {
 
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
-                OASGenerator.getSchemaName("{0}Response", entityMetadata),
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+                OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.LIGHT_ENTITY_NAME, entityMetadata))
+                )
         ).description("successful fetch."));
         operation.responses(apiResponses);
         identifierPathItem.get(operation);
@@ -176,7 +179,7 @@ public class OpenApiGenerator {
                         .name("query")
                         .in("path")
                         .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(String.class))
+                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
                         .example("(id='1',amount=2)")
         );
         operation.addParametersItem(
@@ -185,7 +188,7 @@ public class OpenApiGenerator {
                         .name("association")
                         .in("path")
                         .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(String.class))
+                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
                         .example("Category(id='1')")
         );
         OASGenerator.addPagingAndOrderingInfo(operation);
@@ -211,7 +214,7 @@ public class OpenApiGenerator {
                         .name("query")
                         .in("path")
                         .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(String.class))
+                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
                         .example("(id='1',amount=2)")
         );
 

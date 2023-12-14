@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.io;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.sql.Timestamp;
@@ -102,16 +102,16 @@ public class Speedy2JavaTypeConverter {
         });
         put(ValueType.DATE, Date.class, (speedyValue, type) -> {
             SpeedyDate speedyDate = (SpeedyDate) speedyValue;
-            Instant instant = speedyDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
+            Instant instant = speedyDate.getValue().atStartOfDay(ZoneId.of("UTC")).toInstant();
             return Date.from(instant);
         });
         put(ValueType.DATE, Instant.class, (speedyValue, type) -> {
             SpeedyDate speedyDate = (SpeedyDate) speedyValue;
-            return speedyDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant();
+            return speedyDate.getValue().atStartOfDay(ZoneId.of("UTC")).toInstant();
         });
         put(ValueType.DATE_TIME, Instant.class, (speedyValue, type) -> {
             SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
-            return speedyDateTime.getValue().atZone(ZoneId.systemDefault()).toInstant();
+            return speedyDateTime.getValue().atZone(ZoneId.of("UTC")).toInstant();
         });
 //        put(ValueType.TIME, Instant.class, (speedyValue, type) -> {
 //            SpeedyTime speedyTime = (SpeedyTime) speedyValue;
@@ -130,7 +130,7 @@ public class Speedy2JavaTypeConverter {
             SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
             return speedyDateTime.getValue();
         });
-        put(ValueType.DATE_TIME, LocalDateTime.class, (speedyValue, type) -> {
+        put(ValueType.DATE_TIME, Timestamp.class, (speedyValue, type) -> {
             SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
             return Timestamp.valueOf(speedyDateTime.getValue());
         });

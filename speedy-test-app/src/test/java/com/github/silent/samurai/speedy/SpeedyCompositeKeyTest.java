@@ -53,7 +53,7 @@ class SpeedyCompositeKeyTest {
         CreateOrderRequest createOrderRequest = new CreateOrderRequest();
         createOrderRequest.setProductId("1");
         createOrderRequest.setSupplierId("1");
-        createOrderRequest.setOrderDate(Instant.now());
+        createOrderRequest.setOrderDate(Instant.now().toString());
         createOrderRequest.setDiscount(10.0);
         createOrderRequest.setPrice(90.9);
         BulkCreateOrderResponse bulkCreateOrderResponse = apiInstance
@@ -74,14 +74,15 @@ class SpeedyCompositeKeyTest {
         return orderKey;
     }
 
-    Order getOrder(OrderKey orderKey) throws Exception {
+    LightOrder getOrder(OrderKey orderKey) throws Exception {
 
-        OrderResponse orderResponse = apiInstance
-                .getOrder(orderKey.getProductId(), orderKey.getSupplierId());
+        String query = String.format("(productId=\"%s\",supplierId=\"%s\")", orderKey.getProductId(), orderKey.getSupplierId());
+        FilteredOrderResponse orderResponse = apiInstance.getSomeOrder(query);
 
         Assertions.assertNotNull(orderResponse);
-        Assertions.assertNotNull(orderResponse.getPayload());
-        Order order = orderResponse.getPayload();
+        List<LightOrder> orderList = orderResponse.getPayload();
+        Assertions.assertNotNull(orderList);
+        LightOrder order = orderList.get(0);
         Assertions.assertNotNull(order.getProductId());
         Assertions.assertNotEquals("", order.getProductId());
         Assertions.assertEquals("1", order.getProductId());
@@ -104,6 +105,13 @@ class SpeedyCompositeKeyTest {
         Order payload = response.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertEquals(100.0, payload.getDiscount());
+
+        List<LightOrder> payload1 = apiInstance.getOrder(orderKey.getProductId(), orderKey.getSupplierId()).getPayload();
+
+        Assertions.assertNotNull(payload1);
+        LightOrder lightOrder = payload1.get(0);
+        Assertions.assertNotNull(lightOrder);
+        Assertions.assertEquals(100.0, lightOrder.getDiscount());
     }
 
     void deleteOrder(OrderKey orderKey) throws Exception {
@@ -126,7 +134,7 @@ class SpeedyCompositeKeyTest {
     void test() throws Exception {
 
         OrderKey orderKey = createOrder();
-        Order order = getOrder(orderKey);
+        LightOrder order = getOrder(orderKey);
 
         updateOrder(orderKey);
 

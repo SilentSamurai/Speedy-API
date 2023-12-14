@@ -5,11 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
@@ -32,7 +28,10 @@ public class SelectiveFieldJsonSerializer {
         ObjectNode jsonObject = json.createObjectNode();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
-
+            if (!speedyEntity.has(fieldMetadata)) {
+                jsonObject.putNull(fieldMetadata.getOutputPropertyName());
+                continue;
+            }
             if (fieldMetadata.isAssociation()) {
                 if (level < 1) {
                     if (fieldMetadata.isCollection()) {

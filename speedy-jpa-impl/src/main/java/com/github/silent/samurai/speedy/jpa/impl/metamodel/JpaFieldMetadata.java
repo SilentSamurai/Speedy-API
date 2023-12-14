@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.metamodel;
+package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 
 import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.enums.ValueType;
