@@ -24,11 +24,6 @@ public class SpeedyText implements SpeedyValue {
     }
 
     @Override
-    public boolean isText() {
-        return true;
-    }
-
-    @Override
     public String asText() {
         return getValue();
     }

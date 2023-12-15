@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -33,7 +34,7 @@ public class Supplier extends AbstractBaseEntity {
     private String altPhoneNo;
 
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     @Column(name = "created_by")
     private String createdBy;

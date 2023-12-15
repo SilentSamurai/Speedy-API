@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
@@ -93,22 +94,29 @@ public class BasicDeserializer {
         });
         converters.put(Instant.class, Instant::parse);
         converters.put(LocalDate.class, value -> {
-            LocalDateTime datetime = LocalDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-            return datetime.toLocalDate();
+            LocalDate localDate = LocalDate.parse(value, DateTimeFormatter.ISO_DATE);
+            return localDate;
         });
         converters.put(LocalDateTime.class, value -> {
-            LocalDateTime datetime = LocalDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            LocalDateTime datetime = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME);
             return datetime;
         });
-        converters.put(Timestamp.class, Timestamp::valueOf);
+        converters.put(ZonedDateTime.class, value -> {
+            ZonedDateTime datetime = ZonedDateTime.parse(value, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            return datetime;
+        });
+        converters.put(Timestamp.class, value -> {
+            LocalDateTime datetime = LocalDateTime.parse(value, DateTimeFormatter.ISO_DATE_TIME);
+            return Timestamp.valueOf(datetime);
+        });
         converters.put(char.class, value -> {
-            if (value.length() > 0) {
+            if (!value.isEmpty()) {
                 return value.charAt(0);
             }
             return null;
         });
         converters.put(Character.class, value -> {
-            if (value.length() > 0) {
+            if (!value.isEmpty()) {
                 return value.charAt(0);
             }
             return null;

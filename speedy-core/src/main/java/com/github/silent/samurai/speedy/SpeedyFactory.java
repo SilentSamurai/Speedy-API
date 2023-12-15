@@ -62,26 +62,6 @@ public class SpeedyFactory {
         this.eventProcessor.processRegistry();
         this.vEntityProcessor = new VirtualEntityProcessor(metaModelProcessor, eventRegistry);
         this.vEntityProcessor.processRegistry();
-        verify(metaModelProcessor);
-    }
-
-    private void verify(MetaModelProcessor metaModelProcessor) {
-        // loop over each entity metadata
-        for (EntityMetadata entityMetadata : metaModelProcessor.getAllEntityMetadata()) {
-            for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-                // check if fieldMetadata get ValueType is a datetime type
-                if (fieldMetadata.getValueType() == ValueType.DATE_TIME) {
-                    if (!fieldMetadata.getFieldType().isAssignableFrom(LocalDateTime.class)) {
-                        String message = String.format("entity field '%s.%s' type is not assignable from LocalDateTime",
-                                entityMetadata.getName(),
-                                fieldMetadata.getOutputPropertyName());
-
-                        throw new IllegalStateException(message);
-
-                    }
-                }
-            }
-        }
     }
 
     public void processGETRequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor)

@@ -254,7 +254,7 @@ class SpeedyGetConditionTest {
 
         List<Product> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertTrue(payload.size() > 0);
+        Assertions.assertFalse(payload.isEmpty());
         for (Product product : payload) {
             Assertions.assertNotNull(product.getId());
         }
@@ -270,7 +270,7 @@ class SpeedyGetConditionTest {
 
         List<Procurement> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertTrue(payload.size() > 0);
+        Assertions.assertFalse(payload.isEmpty());
         for (Procurement inventory : payload) {
             Assertions.assertNotNull(inventory.getPurchaseDate());
             Instant purchaseDate = LocalDateTime.parse(inventory.getPurchaseDate()).atZone(ZoneId.of("UTC")).toInstant();

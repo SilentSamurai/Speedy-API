@@ -4,18 +4,21 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
 
+import java.time.ZonedDateTime;
+
 @Getter
-public class SpeedyDouble implements SpeedyValue {
+public class SpeedyZonedDateTime implements SpeedyValue {
 
-    private Double value;
+    private ZonedDateTime value;
 
-    public SpeedyDouble(Double value) {
+    public SpeedyZonedDateTime(ZonedDateTime value) {
         this.value = value;
     }
 
+
     @Override
     public ValueType getValueType() {
-        return ValueType.FLOAT;
+        return ValueType.ZONED_DATE_TIME;
     }
 
     @Override
@@ -24,7 +27,7 @@ public class SpeedyDouble implements SpeedyValue {
     }
 
     @Override
-    public Double asDouble() {
-        return getValue();
+    public ZonedDateTime asZonedDateTime() {
+        return value;
     }
 }

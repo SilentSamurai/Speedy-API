@@ -24,11 +24,6 @@ public class SpeedyBoolean implements SpeedyValue {
     }
 
     @Override
-    public boolean isBoolean() {
-        return true;
-    }
-
-    @Override
     public Boolean asBoolean() {
         return getValue();
     }

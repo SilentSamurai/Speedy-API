@@ -2,12 +2,13 @@ package com.github.silent.samurai.speedy.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.io.BasicDeserializer;
-import com.github.silent.samurai.speedy.io.JavaTypeToSpeedyConverter;
+import com.github.silent.samurai.speedy.io.JavaType2SpeedyValue;
 import com.github.silent.samurai.speedy.io.JsonEntityDeserializer;
 import com.github.silent.samurai.speedy.io.Speedy2JavaTypeConverter;
 import com.github.silent.samurai.speedy.models.*;
@@ -15,6 +16,7 @@ import com.github.silent.samurai.speedy.models.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 
 
@@ -28,7 +30,7 @@ public class SpeedyValueFactory {
         return new SpeedyText(value);
     }
 
-    public static SpeedyInt fromInt(Integer value) {
+    public static SpeedyInt fromInt(Long value) {
         return new SpeedyInt(value);
     }
 
@@ -48,17 +50,25 @@ public class SpeedyValueFactory {
         return new SpeedyDateTime(value);
     }
 
+    public static SpeedyZonedDateTime fromZonedDateTime(ZonedDateTime zonedDateTime) {
+        return new SpeedyZonedDateTime(zonedDateTime);
+    }
+
     public static SpeedyCollection fromCollection(Collection<SpeedyValue> value) {
         return new SpeedyCollection(value);
     }
 
+    public static <T> SpeedyValue fromRaw(Class<T> clazz, ValueType valueType, Object instance) throws SpeedyHttpException {
+        return JavaType2SpeedyValue.convert(clazz, valueType, instance);
+    }
+
     public static SpeedyValue fromJavaTypes(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
-        return JavaTypeToSpeedyConverter.convert(fieldMetadata.getFieldType(), fieldMetadata.getValueType(), instance);
+        return JavaType2SpeedyValue.convert(fieldMetadata.getFieldType(), fieldMetadata.getValueType(), instance);
     }
 
     public static SpeedyValue fromQuotedString(FieldMetadata fieldMetadata, String quotedValue) throws SpeedyHttpException {
         Object instance = BasicDeserializer.quotedStringToPrimitive(quotedValue, fieldMetadata.getFieldType());
-        return JavaTypeToSpeedyConverter.convert(fieldMetadata.getFieldType(), fieldMetadata.getValueType(), instance);
+        return JavaType2SpeedyValue.convert(fieldMetadata.getFieldType(), fieldMetadata.getValueType(), instance);
     }
 
     public static SpeedyValue fromJson(FieldMetadata fieldMetadata, JsonNode jsonNode) throws SpeedyHttpException {

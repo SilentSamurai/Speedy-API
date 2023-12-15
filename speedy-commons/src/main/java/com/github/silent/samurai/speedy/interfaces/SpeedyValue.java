@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 
 public interface SpeedyValue {
@@ -19,8 +20,12 @@ public interface SpeedyValue {
         return !isEmpty();
     }
 
+    default boolean isNull() {
+        return getValueType() == ValueType.NULL;
+    }
+
     default boolean isText() {
-        return false;
+        return getValueType() == ValueType.TEXT;
     }
 
     default String asText() {
@@ -28,15 +33,23 @@ public interface SpeedyValue {
     }
 
     default boolean isInt() {
-        return false;
+        return getValueType() == ValueType.INT;
     }
 
     default Integer asInt() {
         throw new ConversionException("Cannot convert to integer");
     }
 
+    default boolean isLong() {
+        return getValueType() == ValueType.INT;
+    }
+
+    default Long asLong() {
+        throw new ConversionException("Cannot convert to long");
+    }
+
     default boolean isObject() {
-        return false;
+        return getValueType() == ValueType.OBJECT;
     }
 
     default SpeedyEntity asObject() {
@@ -44,7 +57,7 @@ public interface SpeedyValue {
     }
 
     default boolean isCollection() {
-        return false;
+        return getValueType() == ValueType.COLLECTION;
     }
 
     default Collection<SpeedyValue> asCollection() {
@@ -52,7 +65,7 @@ public interface SpeedyValue {
     }
 
     default boolean isDouble() {
-        return false;
+        return getValueType() == ValueType.FLOAT;
     }
 
     default Double asDouble() {
@@ -60,7 +73,7 @@ public interface SpeedyValue {
     }
 
     default boolean isBoolean() {
-        return false;
+        return getValueType() == ValueType.BOOL;
     }
 
     default Boolean asBoolean() {
@@ -68,7 +81,7 @@ public interface SpeedyValue {
     }
 
     default boolean isDate() {
-        return false;
+        return getValueType() == ValueType.DATE;
     }
 
     default LocalDate asDate() {
@@ -76,7 +89,7 @@ public interface SpeedyValue {
     }
 
     default boolean isDateTime() {
-        return false;
+        return getValueType() == ValueType.DATE_TIME;
     }
 
     default LocalDateTime asDateTime() {
@@ -84,10 +97,48 @@ public interface SpeedyValue {
     }
 
     default boolean isTime() {
-        return false;
+        return getValueType() == ValueType.TIME;
     }
 
     default LocalTime asTime() {
         throw new ConversionException("Cannot convert to time");
     }
+
+    default boolean isZonedDateTime() {
+        return getValueType() == ValueType.ZONED_DATE_TIME;
+    }
+
+    default ZonedDateTime asZonedDateTime() {
+        throw new ConversionException("Cannot convert to zoneddatetime");
+    }
+
+    default boolean isValue() {
+        return getValueType() == ValueType.NULL ||
+                getValueType() == ValueType.TEXT ||
+                getValueType() == ValueType.INT ||
+                getValueType() == ValueType.FLOAT ||
+                getValueType() == ValueType.DATE ||
+                getValueType() == ValueType.DATE_TIME ||
+                getValueType() == ValueType.TIME ||
+                getValueType() == ValueType.ZONED_DATE_TIME ||
+                getValueType() == ValueType.BOOL;
+    }
+
+    default boolean isNumber() {
+        return getValueType() == ValueType.INT ||
+                getValueType() == ValueType.FLOAT;
+    }
+
+    default boolean isTemporal() {
+        return getValueType() == ValueType.DATE ||
+                getValueType() == ValueType.DATE_TIME ||
+                getValueType() == ValueType.TIME ||
+                getValueType() == ValueType.ZONED_DATE_TIME;
+    }
+
+    default boolean isContainer() {
+        return getValueType() == ValueType.OBJECT ||
+                getValueType() == ValueType.COLLECTION;
+    }
+
 }

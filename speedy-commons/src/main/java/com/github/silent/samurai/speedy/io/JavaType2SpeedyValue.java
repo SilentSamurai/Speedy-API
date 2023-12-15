@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.io;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -9,14 +8,11 @@ import com.github.silent.samurai.speedy.models.*;
 
 import java.sql.Timestamp;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
-
-public class JavaTypeToSpeedyConverter {
+public class JavaType2SpeedyValue {
     private static final Map<String, ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
 
     public static <T> ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException> get(ValueType valueType, Class<T> clazz) {
@@ -29,10 +25,10 @@ public class JavaTypeToSpeedyConverter {
         return converters.containsKey(key);
     }
 
-    public static void put(ValueType valueType, Class<?> clazz,
-                           ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException> lambda) {
+    public static <T> void put(ValueType valueType, Class<T> clazz,
+                               ThrowingBiFunction<T, ValueType, SpeedyValue, SpeedyHttpException> lambda) {
         String key = clazz.getName() + valueType.name();
-        converters.put(key, lambda);
+        converters.put(key, (ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>) lambda);
     }
 
     static {
@@ -51,22 +47,24 @@ public class JavaTypeToSpeedyConverter {
             return new SpeedyText((String) instance);
         });
         put(ValueType.INT, int.class, (instance, valueType) -> {
-            return new SpeedyInt((Integer) instance);
+            Integer value = (Integer) instance;
+            return new SpeedyInt(value.longValue());
         });
         put(ValueType.INT, Integer.class, (instance, valueType) -> {
-            return new SpeedyInt((Integer) instance);
+            Integer value = (Integer) instance;
+            return new SpeedyInt(value.longValue());
         });
         put(ValueType.INT, long.class, (instance, valueType) -> {
-            return new SpeedyInt((Integer) instance);
+            return new SpeedyInt((Long) instance);
         });
         put(ValueType.INT, Long.class, (instance, valueType) -> {
-            return new SpeedyInt((Integer) instance);
+            return new SpeedyInt((Long) instance);
         });
         put(ValueType.FLOAT, float.class, (instance, valueType) -> {
-            return new SpeedyDouble((Double) instance);
+            return new SpeedyDouble(instance.doubleValue());
         });
         put(ValueType.FLOAT, Float.class, (instance, valueType) -> {
-            return new SpeedyDouble((Double) instance);
+            return new SpeedyDouble(instance.doubleValue());
         });
         put(ValueType.FLOAT, double.class, (instance, valueType) -> {
             return new SpeedyDouble((Double) instance);
@@ -89,10 +87,14 @@ public class JavaTypeToSpeedyConverter {
             LocalDate localDate = kdate.toInstant().atZone(ZoneId.of("UTC")).toLocalDate();
             return new SpeedyDate(localDate);
         });
-        put(ValueType.DATE, Instant.class, (instance, valueType) -> {
+        put(ValueType.ZONED_DATE_TIME, ZonedDateTime.class, (instance, valueType) -> {
+            ZonedDateTime zonedDateTime = instance;
+            return new SpeedyZonedDateTime(zonedDateTime);
+        });
+        put(ValueType.ZONED_DATE_TIME, Instant.class, (instance, valueType) -> {
             Instant kdate = (Instant) instance;
-            LocalDate localDate = kdate.atZone(ZoneId.of("UTC")).toLocalDate();
-            return new SpeedyDate(localDate);
+            ZonedDateTime zonedDateTime = kdate.atZone(ZoneId.of("UTC"));
+            return new SpeedyZonedDateTime(zonedDateTime);
         });
         put(ValueType.DATE_TIME, Instant.class, (instance, valueType) -> {
             Instant kdate = (Instant) instance;
@@ -117,37 +119,8 @@ public class JavaTypeToSpeedyConverter {
             LocalDateTime localDateTime = kdate.toLocalDateTime();
             return new SpeedyDateTime(localDateTime);
         });
-
-        // Json to SpeedyValue
-        put(ValueType.TEXT, JsonNode.class, (instance, valueType) -> {
-            JsonNode jsonNode = (JsonNode) instance;
-            return new SpeedyText(jsonNode.asText());
-        });
-        put(ValueType.INT, JsonNode.class, (instance, valueType) -> {
-            JsonNode jsonNode = (JsonNode) instance;
-            return new SpeedyInt(jsonNode.asInt());
-        });
-        put(ValueType.FLOAT, JsonNode.class, (instance, valueType) -> {
-            JsonNode jsonNode = (JsonNode) instance;
-            return new SpeedyDouble(jsonNode.asDouble());
-        });
-        put(ValueType.DATE, JsonNode.class, (instance, valueType) -> {
-            JsonNode jsonNode = (JsonNode) instance;
-            String dateValue = jsonNode.asText();
-            LocalDate localDate = LocalDate.parse(dateValue, DateTimeFormatter.ISO_DATE);
-            return new SpeedyDate(localDate);
-        });
-        put(ValueType.TIME, JsonNode.class, (instance, valueType) -> {
-            JsonNode jsonNode = (JsonNode) instance;
-            String timeValue = jsonNode.asText();
-            LocalTime localTime = LocalTime.parse(timeValue, DateTimeFormatter.ISO_TIME);
-            return new SpeedyTime(localTime);
-        });
-        put(ValueType.DATE_TIME, JsonNode.class, (instance, valueType) -> {
-            JsonNode jsonNode = (JsonNode) instance;
-            String datetimeValue = jsonNode.asText();
-            LocalDateTime datetime = LocalDateTime.parse(datetimeValue, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-            return new SpeedyDateTime(datetime);
+        put(ValueType.TIME, LocalTime.class, (instance, valueType) -> {
+            return new SpeedyTime(instance);
         });
 
     }

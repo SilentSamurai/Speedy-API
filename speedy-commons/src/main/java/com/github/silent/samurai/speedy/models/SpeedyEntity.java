@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SpeedyEntity implements SpeedyValue {
-
-    @Getter
     private final EntityMetadata entityMetadata;
     private final Map<String, SpeedyValue> fields = new HashMap<>();
 
@@ -26,10 +24,6 @@ public class SpeedyEntity implements SpeedyValue {
     public SpeedyValue get(FieldMetadata fieldMetadata) {
         return fields.get(fieldMetadata.getOutputPropertyName());
     }
-
-//    public SpeedyValue get(String column) {
-//        return fields.get(column);
-//    }
 
     public void put(FieldMetadata fieldMetadata, SpeedyValue value) {
         fields.put(fieldMetadata.getOutputPropertyName(), value);
@@ -46,11 +40,6 @@ public class SpeedyEntity implements SpeedyValue {
     }
 
     @Override
-    public boolean isObject() {
-        return true;
-    }
-
-    @Override
     public SpeedyEntity asObject() {
         return this;
     }
@@ -61,5 +50,9 @@ public class SpeedyEntity implements SpeedyValue {
         sb.append("fields=").append(fields);
         sb.append('}');
         return sb.toString();
+    }
+
+    public EntityMetadata getMetadata() {
+        return entityMetadata;
     }
 }

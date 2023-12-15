@@ -10,6 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import com.google.common.collect.Lists;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -61,393 +62,130 @@ public class QueryBuilder {
         }
     }
 
-    Predicate equalPredicate(BinaryCondition bCondition) throws BadRequestException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case BOOL: {
-                Expression<? extends Comparable<Boolean>> path = getPath(bCondition);
-                return criteriaBuilder.equal(path, speedyValue.asBoolean());
-            }
-            case TEXT: {
-                Expression<? extends Comparable<String>> path = getPath(bCondition);
-                SpeedyText value = (SpeedyText) speedyValue;
-                return criteriaBuilder.equal(path, value.getValue());
-            }
-            case INT: {
-                Expression<? extends Comparable<Integer>> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return criteriaBuilder.equal(path, value.getValue());
-            }
-            case FLOAT: {
-                Expression<? extends Comparable<Double>> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return criteriaBuilder.equal(path, value.getValue());
-            }
-            case DATE: {
-                Expression<? extends Comparable<LocalDate>> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return criteriaBuilder.equal(path, value.getValue());
-            }
-            case TIME: {
-                Expression<? extends Comparable<LocalTime>> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return criteriaBuilder.equal(path, value.getValue());
-            }
-            case DATE_TIME: {
-                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return criteriaBuilder.equal(path, value.getValue());
-            }
-            case OBJECT:
-            case COLLECTION:
-                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
-            case NULL: {
-                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
-                return criteriaBuilder.isNull(path);
-            }
+    Object getRawValue(BinaryCondition bCondition, SpeedyValue speedyValue) throws SpeedyHttpException {
+        QueryField queryField = bCondition.getField();
+        if (queryField.isAssociated()) {
+            return SpeedyValueFactory.toJavaType(queryField.getAssociatedFieldMetadata(), speedyValue);
         }
-        return null;
+        return SpeedyValueFactory.toJavaType(bCondition.getField().getFieldMetadata(), speedyValue);
     }
 
-    Predicate notEqualPredicate(BinaryCondition bCondition) throws BadRequestException {
+    Predicate equalPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case BOOL: {
-                Expression<? extends Comparable<Boolean>> path = getPath(bCondition);
-                return criteriaBuilder.notEqual(path, speedyValue.asBoolean());
-            }
-            case TEXT: {
-                Expression<? extends Comparable<String>> path = getPath(bCondition);
-                SpeedyText value = (SpeedyText) speedyValue;
-                return criteriaBuilder.notEqual(path, value.getValue());
-            }
-            case INT: {
-                Expression<? extends Comparable<Integer>> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return criteriaBuilder.notEqual(path, value.getValue());
-            }
-            case FLOAT: {
-                Expression<? extends Comparable<Double>> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return criteriaBuilder.notEqual(path, value.getValue());
-            }
-            case DATE: {
-                Expression<? extends Comparable<LocalDate>> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return criteriaBuilder.notEqual(path, value.getValue());
-            }
-            case TIME: {
-                Expression<? extends Comparable<LocalTime>> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return criteriaBuilder.notEqual(path, value.getValue());
-            }
-            case DATE_TIME: {
-                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return criteriaBuilder.notEqual(path, value.getValue());
-            }
-            case OBJECT:
-            case COLLECTION:
-                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
-            case NULL: {
-                Expression<? extends Comparable<LocalDateTime>> path = getPath(bCondition);
-                return criteriaBuilder.isNotNull(path);
-            }
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
         }
-        return null;
+        if (speedyValue.isNull()) {
+            Expression<? extends Comparable<?>> path = getPath(bCondition);
+            return criteriaBuilder.isNull(path);
+        } else {
+            Expression<? extends Comparable<?>> path = getPath(bCondition);
+            Object rawValue = getRawValue(bCondition, speedyValue);
+            return criteriaBuilder.equal(path, rawValue);
+        }
     }
 
-    Predicate lessThanPredicate(BinaryCondition bCondition) throws BadRequestException {
+    Predicate notEqualPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case BOOL: {
-                Expression<Boolean> path = getPath(bCondition);
-                return criteriaBuilder.lessThan(path, speedyValue.asBoolean());
-            }
-            case TEXT: {
-                Expression<? extends String> path = getPath(bCondition);
-                SpeedyText value = (SpeedyText) speedyValue;
-                return criteriaBuilder.lessThan(path, value.getValue());
-            }
-            case INT: {
-                Expression<? extends Integer> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return criteriaBuilder.lessThan(path, value.getValue());
-            }
-            case FLOAT: {
-                Expression<? extends Double> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return criteriaBuilder.lessThan(path, value.getValue());
-            }
-            case DATE: {
-                Expression<? extends LocalDate> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return criteriaBuilder.lessThan(path, value.getValue());
-            }
-            case TIME: {
-                Expression<? extends LocalTime> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return criteriaBuilder.lessThan(path, value.getValue());
-            }
-            case DATE_TIME: {
-                Expression<? extends LocalDateTime> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return criteriaBuilder.lessThan(path, value.getValue());
-            }
-            case OBJECT:
-            case COLLECTION:
-            case NULL:
-                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
         }
-        return null;
+        if (speedyValue.isNull()) {
+            Expression<? extends Comparable<?>> path = getPath(bCondition);
+            return criteriaBuilder.isNotNull(path);
+        } else {
+            Expression<? extends Comparable<?>> path = getPath(bCondition);
+            Object rawValue = getRawValue(bCondition, speedyValue);
+            return criteriaBuilder.notEqual(path, rawValue);
+        }
     }
 
-    Predicate greaterThanPredicate(BinaryCondition bCondition) throws BadRequestException {
+    Predicate lessThanPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case BOOL: {
-                Expression<? extends Boolean> path = getPath(bCondition);
-                return criteriaBuilder.greaterThan(path, speedyValue.asBoolean());
-            }
-            case TEXT: {
-                Expression<? extends String> path = getPath(bCondition);
-                SpeedyText value = (SpeedyText) speedyValue;
-                return criteriaBuilder.greaterThan(path, value.getValue());
-            }
-            case INT: {
-                Expression<? extends Integer> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return criteriaBuilder.greaterThan(path, value.getValue());
-            }
-            case FLOAT: {
-                Expression<? extends Double> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return criteriaBuilder.greaterThan(path, value.getValue());
-            }
-            case DATE: {
-                Expression<? extends LocalDate> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return criteriaBuilder.greaterThan(path, value.getValue());
-            }
-            case TIME: {
-                Expression<? extends LocalTime> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return criteriaBuilder.greaterThan(path, value.getValue());
-            }
-            case DATE_TIME: {
-                Expression<? extends LocalDateTime> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return criteriaBuilder.greaterThan(path, value.getValue());
-            }
-            case OBJECT:
-            case COLLECTION:
-            case NULL:
-                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
         }
-        return null;
+        Expression<? extends Comparable<Object>> path = getPath(bCondition);
+        Object rawValue = getRawValue(bCondition, speedyValue);
+        return criteriaBuilder.lessThan(path, (Comparable<Object>) rawValue);
     }
 
-    Predicate lessThanOrEqualToPredicate(BinaryCondition bCondition) throws BadRequestException {
+    Predicate greaterThanPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case BOOL: {
-                Expression<? extends Boolean> path = getPath(bCondition);
-                return criteriaBuilder.lessThanOrEqualTo(path, speedyValue.asBoolean());
-            }
-            case TEXT: {
-                Expression<? extends String> path = getPath(bCondition);
-                return criteriaBuilder.lessThanOrEqualTo(path, speedyValue.asText());
-            }
-            case INT: {
-                Expression<? extends Integer> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
-            }
-            case FLOAT: {
-                Expression<? extends Double> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
-            }
-            case DATE: {
-                Expression<? extends LocalDate> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
-            }
-            case TIME: {
-                Expression<? extends LocalTime> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
-            }
-            case DATE_TIME: {
-                Expression<? extends LocalDateTime> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return criteriaBuilder.lessThanOrEqualTo(path, value.getValue());
-            }
-            case OBJECT:
-            case COLLECTION:
-            case NULL:
-                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
         }
-        return null;
+        Expression<? extends Comparable<Object>> path = getPath(bCondition);
+        Object rawValue = getRawValue(bCondition, speedyValue);
+        return criteriaBuilder.greaterThan(path, (Comparable<Object>) rawValue);
     }
 
-    Predicate greaterThanOrEqualToPredicate(BinaryCondition bCondition) throws BadRequestException {
+    Predicate lessThanOrEqualToPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case BOOL: {
-                Expression<? extends Boolean> path = getPath(bCondition);
-                Boolean aBoolean = speedyValue.asBoolean();
-                return criteriaBuilder.greaterThanOrEqualTo(path, aBoolean);
-            }
-            case TEXT: {
-                Expression<? extends String> path = getPath(bCondition);
-                SpeedyText value = (SpeedyText) speedyValue;
-                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
-            }
-            case INT: {
-                Expression<? extends Integer> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
-            }
-            case FLOAT: {
-                Expression<? extends Double> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
-            }
-            case DATE: {
-                Expression<? extends LocalDate> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
-            }
-            case TIME: {
-                Expression<? extends LocalTime> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
-            }
-            case DATE_TIME: {
-                Expression<? extends LocalDateTime> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return criteriaBuilder.greaterThanOrEqualTo(path, value.getValue());
-            }
-            case OBJECT:
-            case COLLECTION:
-            case NULL:
-            default:
-                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
         }
+        Expression<? extends Comparable<Object>> path = getPath(bCondition);
+        Object rawValue = getRawValue(bCondition, speedyValue);
+        return criteriaBuilder.lessThanOrEqualTo(path, (Comparable<Object>) rawValue);
+    }
+
+    Predicate greaterThanOrEqualToPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+        }
+        Expression<? extends Comparable<Object>> path = getPath(bCondition);
+        Object rawValue = getRawValue(bCondition, speedyValue);
+        return criteriaBuilder.greaterThanOrEqualTo(path, (Comparable<Object>) rawValue);
     }
 
     Predicate inPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case BOOL: {
-                Expression<? extends String> path = getPath(bCondition);
-                Boolean aBoolean = speedyValue.asBoolean();
-                return path.in(aBoolean);
-            }
-            case TEXT: {
-                Expression<? extends String> path = getPath(bCondition);
-                SpeedyText value = (SpeedyText) speedyValue;
-                return path.in(value.getValue());
-            }
-            case INT: {
-                Expression<? extends Integer> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return path.in(value.getValue());
-            }
-            case FLOAT: {
-                Expression<? extends Double> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return path.in(value.getValue());
-            }
-            case DATE: {
-                Expression<? extends LocalDate> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return path.in(value.getValue());
-            }
-            case TIME: {
-                Expression<? extends LocalTime> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return path.in(value.getValue());
-            }
-            case DATE_TIME: {
-                Expression<? extends LocalDateTime> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return path.in(value.getValue());
-            }
-            case COLLECTION: {
-                FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
-                if (!fieldMetadata.isAssociation()) {
-                    Expression<? extends Comparable> path = getPath(bCondition);
-                    Collection<SpeedyValue> collection = speedyValue.asCollection();
-                    Collection<Object> objects = new ArrayList<>(collection.size());
-                    for (SpeedyValue sv : collection) {
-                        Object rawValue = SpeedyValueFactory.toJavaType(fieldMetadata, sv);
-                        objects.add(rawValue);
-                    }
-                    return path.in(objects);
+        if (speedyValue.isCollection()) {
+            FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
+            if (!fieldMetadata.isAssociation()) {
+                Expression<? extends Comparable> path = getPath(bCondition);
+                Collection<SpeedyValue> collection = speedyValue.asCollection();
+                Collection<Object> objects = new ArrayList<>(collection.size());
+                for (SpeedyValue sv : collection) {
+                    Object rawValue = getRawValue(bCondition, sv);
+                    objects.add(rawValue);
                 }
-                throw new BadRequestException("COLLECTION of Association Operation not supported");
+                return path.in(objects);
             }
-            case OBJECT:
-            case NULL:
-            default:
-                throw new BadRequestException("NULL, OBJECT Operation not supported");
+            throw new BadRequestException("COLLECTION of Association Operation not supported");
         }
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT Operation not supported");
+        }
+        Expression<? extends Comparable<?>> path = getPath(bCondition);
+        Object rawValue = getRawValue(bCondition, speedyValue);
+        return path.in(rawValue);
     }
 
     Predicate notInPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        switch (speedyValue.getValueType()) {
-            case TEXT: {
-                Expression<? extends String> path = getPath(bCondition);
-                SpeedyText value = (SpeedyText) speedyValue;
-                return criteriaBuilder.not(path.in(value.getValue()));
-            }
-            case INT: {
-                Expression<? extends Integer> path = getPath(bCondition);
-                SpeedyInt value = (SpeedyInt) speedyValue;
-                return criteriaBuilder.not(path.in(value.getValue()));
-            }
-            case FLOAT: {
-                Expression<? extends Double> path = getPath(bCondition);
-                SpeedyDouble value = (SpeedyDouble) speedyValue;
-                return criteriaBuilder.not(path.in(value.getValue()));
-            }
-            case DATE: {
-                Expression<? extends LocalDate> path = getPath(bCondition);
-                SpeedyDate value = (SpeedyDate) speedyValue;
-                return criteriaBuilder.not(path.in(value.getValue()));
-            }
-            case TIME: {
-                Expression<? extends LocalTime> path = getPath(bCondition);
-                SpeedyTime value = (SpeedyTime) speedyValue;
-                return criteriaBuilder.not(path.in(value.getValue()));
-            }
-            case DATE_TIME: {
-                Expression<? extends LocalDateTime> path = getPath(bCondition);
-                SpeedyDateTime value = (SpeedyDateTime) speedyValue;
-                return criteriaBuilder.not(path.in(value.getValue()));
-            }
-            case COLLECTION: {
-                FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
-                if (!fieldMetadata.isAssociation()) {
-                    Expression<? extends Comparable> path = getPath(bCondition);
-                    Collection<SpeedyValue> collection = speedyValue.asCollection();
-                    Collection<Object> objects = new ArrayList<>(collection.size());
-                    for (SpeedyValue sv : collection) {
-                        Object rawValue = SpeedyValueFactory.toJavaType(fieldMetadata, sv);
-                        objects.add(rawValue);
-                    }
-                    return criteriaBuilder.not(path.in(objects));
+        if (speedyValue.isCollection()) {
+            FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
+            if (!fieldMetadata.isAssociation()) {
+                Expression<? extends Comparable> path = getPath(bCondition);
+                Collection<SpeedyValue> collection = speedyValue.asCollection();
+                Collection<Object> objects = new ArrayList<>(collection.size());
+                for (SpeedyValue sv : collection) {
+                    Object rawValue = getRawValue(bCondition, sv);
+                    objects.add(rawValue);
                 }
-                throw new BadRequestException("COLLECTION of Association Operation not supported");
+                return criteriaBuilder.not(path.in(objects));
             }
-            case OBJECT:
-            case NULL:
-                throw new BadRequestException("NULL, OBJECT & COLLECTION Operation not supported");
+            throw new BadRequestException("COLLECTION of Association Operation not supported");
         }
-        return null;
+        if (!speedyValue.isValue()) {
+            throw new BadRequestException("OBJECT Operation not supported");
+        }
+        Expression<? extends Comparable<?>> path = getPath(bCondition);
+        Object rawValue = getRawValue(bCondition, speedyValue);
+        return criteriaBuilder.not(path.in(List.of(rawValue)));
     }
 
     Predicate conditionToPredicate(Condition condition) throws Exception {

@@ -25,8 +25,8 @@ create table companies
 create table currencies
 (
     id              varchar(255) not null,
-    country         varchar(10),
-    created_at      date,
+    country         varchar(32),
+    created_at      timestamp default CURRENT_TIMESTAMP,
     currency_abbr   varchar(10)  not null,
     currency_name   varchar(64)  not null,
     currency_symbol varchar(10)  not null,
@@ -49,9 +49,9 @@ create table customers
 create table exchange_rates
 (
     id                  varchar(255) not null,
-    created_at          date,
-    exchange_rate       double       not null,
-    inv_exchange_rate   double       not null,
+    created_at          timestamp,
+    exchange_rate double not null,
+    inv_exchange_rate double not null,
     base_currency_id    varchar(255) not null,
     foreign_currency_id varchar(255) not null,
     primary key (id)
@@ -60,10 +60,10 @@ create table exchange_rates
 create table inventory
 (
     id             varchar(255) not null,
-    cost           double       not null,
-    discount       double       not null,
-    listing_price  double       not null,
-    sold_price     double       not null,
+    cost double not null,
+    discount double not null,
+    listing_price double not null,
+    sold_price double not null,
     invoice_id     varchar(255) not null,
     procurement_id varchar(255) not null,
     product_id     varchar(255) not null,
@@ -73,16 +73,16 @@ create table inventory
 create table invoices
 (
     id           varchar(255) not null,
-    adjustment   double       not null,
+    adjustment double not null,
     created_at   timestamp,
     created_by   varchar(255),
-    discount     double       not null,
-    due_amount   double       not null,
+    discount double not null,
+    due_amount double not null,
     invoice_date timestamp    not null,
     modified_at  timestamp,
     modified_by  varchar(255),
     notes        varchar(1024),
-    paid         double       not null,
+    paid double not null,
     customer_id  varchar(255) not null,
     primary key (id)
 );
@@ -91,19 +91,19 @@ create table orders
 (
     product_id  varchar(250) not null,
     supplier_id varchar(250) not null,
-    discount    double,
+    discount double,
     order_date  timestamp,
-    price       double,
+    price double,
     primary key (product_id, supplier_id)
 );
 
 create table procurements
 (
     id            varchar(255) not null,
-    amount        double       not null,
+    amount double not null,
     created_at    timestamp,
     created_by    varchar(255),
-    due_amount    double       not null,
+    due_amount double not null,
     modified_at   timestamp,
     modified_by   varchar(255),
     purchase_date timestamp    not null,
@@ -148,6 +148,17 @@ create table users
     updated_at  timestamp,
     company_id  varchar(255) not null,
     primary key (id)
+);
+
+CREATE TABLE value_test_table
+(
+    id              VARCHAR(255) NOT NULL,
+    local_date_time datetime NULL,
+    local_date      date NULL,
+    local_time      time NULL,
+    instant_time    datetime NULL,
+    zoned_date_time TIMESTAMP WITH TIME ZONE NULL,
+    CONSTRAINT pk_value_test_table PRIMARY KEY (id)
 );
 
 alter table categories
@@ -314,6 +325,21 @@ VALUES ('1', '1', 50.00, 80.00, 100.00, 0.00, '1', '1'),
        ('8', '3', 45.00, 160.00, 200.00, 0.00, '3', '3'),
        ('9', '3', 15.00, 160.00, 200.00, 0.00, '3', '3'),
        ('10', '4', 25.00, 40.00, 50.00, 0.00, '4', '4');
+
+INSERT into currencies (id, country, currency_abbr, currency_name, currency_symbol)
+values ('1', 'United States', 'USD', 'US Dollar', '$'),
+       ('2', 'United Kingdom', 'GBP', 'British Pound', '£'),
+       ('3', 'Canada', 'CAD', 'Canadian Dollar', '$'),
+       ('4', 'Australia', 'AUD', 'Australian Dollar', '$'),
+       ('5', 'Japan', 'JPY', 'Japanese Yen', '¥'),
+       ('6', 'India', 'INR', 'Indian Rupee', '₹'),
+       ('7', 'China', 'CNY', 'Chinese Yuan', '¥'),
+       ('8', 'Russia', 'RUB', 'Russian Ruble', '₽'),
+       ('9', 'South Korea', 'KRW', 'South Korean Won', '₩'),
+       ('10', 'Mexico', 'MXN', 'Mexican Peso', '$'),
+       ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$'),
+       ('12', 'South Africa', 'ZAR', 'South African Rand', 'R'),
+       ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', '$');
 
 
 

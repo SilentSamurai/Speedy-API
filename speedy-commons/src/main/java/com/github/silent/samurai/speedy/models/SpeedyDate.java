@@ -26,11 +26,6 @@ public class SpeedyDate implements SpeedyValue {
     }
 
     @Override
-    public boolean isDate() {
-        return true;
-    }
-
-    @Override
     public LocalDate asDate() {
         return getValue();
     }

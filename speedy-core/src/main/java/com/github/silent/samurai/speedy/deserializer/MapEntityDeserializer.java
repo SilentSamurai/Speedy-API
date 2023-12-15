@@ -33,7 +33,7 @@ public class MapEntityDeserializer {
             case TEXT:
                 return fromText(valueAsString);
             case INT:
-                Integer intValue = BasicDeserializer.stringToPrimitive(valueAsString, Integer.class);
+                Long intValue = BasicDeserializer.stringToPrimitive(valueAsString, Long.class);
                 return fromInt(intValue);
             case FLOAT:
                 Double aDouble = BasicDeserializer.stringToPrimitive(valueAsString, Double.class);

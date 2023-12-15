@@ -26,11 +26,6 @@ public class SpeedyCollection implements SpeedyValue {
     }
 
     @Override
-    public boolean isCollection() {
-        return true;
-    }
-
-    @Override
     public Collection<SpeedyValue> asCollection() {
         return getValue();
     }

@@ -25,11 +25,6 @@ public class SpeedyTime implements SpeedyValue {
     }
 
     @Override
-    public boolean isTime() {
-        return true;
-    }
-
-    @Override
     public LocalTime asTime() {
         return getValue();
     }

@@ -64,7 +64,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
     @Override
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
-            JpaEntityMetadata entityMetadata = (JpaEntityMetadata) entityKey.getEntityMetadata();
+            JpaEntityMetadata entityMetadata = (JpaEntityMetadata) entityKey.getMetadata();
             Object pk = CommonUtil.getPKFromSpeedyValue(entityKey, entityMetadata);
             return entityManager.find(entityMetadata.getEntityClass(), pk) != null;
         } catch (Exception e) {
@@ -75,7 +75,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity create(SpeedyEntity speedyEntity) throws SpeedyHttpException {
         try {
-            IJpaEntityMetadata entityMetadata = (IJpaEntityMetadata) speedyEntity.getEntityMetadata();
+            IJpaEntityMetadata entityMetadata = (IJpaEntityMetadata) speedyEntity.getMetadata();
             Object entity = CommonUtil.fromSpeedyEntity(speedyEntity, entityMetadata, entityManager);
             Object saveEntity = this.saveEntity(entity, entityMetadata);
             return CommonUtil.fromJpaEntity(saveEntity, entityMetadata);
@@ -87,7 +87,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity update(SpeedyEntityKey speedyEntityKey, SpeedyEntity speedyEntity) throws SpeedyHttpException {
         try {
-            IJpaEntityMetadata entityMetadata = (IJpaEntityMetadata) speedyEntity.getEntityMetadata();
+            IJpaEntityMetadata entityMetadata = (IJpaEntityMetadata) speedyEntity.getMetadata();
             Object pk = CommonUtil.getPKFromSpeedyValue(speedyEntityKey, entityMetadata);
             Object jpaEntity = entityManager.find(entityMetadata.getEntityClass(), pk);
             if (jpaEntity == null) {
@@ -104,7 +104,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity delete(SpeedyEntityKey speedyEntityKey) throws SpeedyHttpException {
         try {
-            JpaEntityMetadata entityMetadata = (JpaEntityMetadata) speedyEntityKey.getEntityMetadata();
+            JpaEntityMetadata entityMetadata = (JpaEntityMetadata) speedyEntityKey.getMetadata();
             Object pk = CommonUtil.getPKFromSpeedyValue(speedyEntityKey, entityMetadata);
             Object jpaEntity = entityManager.find(entityMetadata.getEntityClass(), pk);
             if (jpaEntity == null) {

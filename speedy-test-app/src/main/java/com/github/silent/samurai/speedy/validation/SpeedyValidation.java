@@ -15,7 +15,7 @@ public class SpeedyValidation implements ISpeedyCustomValidation {
 
     @SpeedyValidator(value = Category.class, requests = SpeedyRequestType.CREATE)
     public boolean validateCategory(SpeedyEntity category) throws Exception {
-        EntityMetadata entityMetadata = category.getEntityMetadata();
+        EntityMetadata entityMetadata = category.getMetadata();
         FieldMetadata name = entityMetadata.field("name");
         String nameValue = category.get(name).asText();
         return nameValue.length() > 0;

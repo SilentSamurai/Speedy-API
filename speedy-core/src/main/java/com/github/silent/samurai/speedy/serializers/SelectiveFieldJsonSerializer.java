@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -112,16 +114,13 @@ public class SelectiveFieldJsonSerializer {
     public void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
         switch (fieldMetadata.getValueType()) {
             case TEXT:
-                SpeedyText speedyText = (SpeedyText) speedyValue;
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyText.getValue());
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asText());
                 break;
             case INT:
-                SpeedyInt speedyInt = (SpeedyInt) speedyValue;
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyInt.getValue());
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asLong());
                 break;
             case FLOAT:
-                SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyDouble.getValue());
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asDouble());
                 break;
             case DATE:
                 SpeedyDate speedyDate = (SpeedyDate) speedyValue;

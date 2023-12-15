@@ -7,9 +7,9 @@ import lombok.Getter;
 @Getter
 public class SpeedyInt implements SpeedyValue {
 
-    private Integer value;
+    private Long value;
 
-    public SpeedyInt(Integer value) {
+    public SpeedyInt(Long value) {
         this.value = value;
     }
 
@@ -32,12 +32,12 @@ public class SpeedyInt implements SpeedyValue {
     }
 
     @Override
-    public boolean isInt() {
-        return true;
+    public Integer asInt() {
+        return getValue().intValue();
     }
 
     @Override
-    public Integer asInt() {
+    public Long asLong() {
         return getValue();
     }
 }

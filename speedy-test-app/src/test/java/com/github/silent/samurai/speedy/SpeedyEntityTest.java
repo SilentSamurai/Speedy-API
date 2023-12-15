@@ -65,7 +65,7 @@ class SpeedyEntityTest {
         defaultClient = new ApiClient(restTemplate);
     }
 
-    Company createCompany() {
+    Company crudCompany() {
         String datetime = Instant.now().toString();
         CreateCompanyRequest createCompanyRequest = new CreateCompanyRequest();
         createCompanyRequest.name("New Company")
@@ -83,6 +83,10 @@ class SpeedyEntityTest {
         CompanyApi companyApi = new CompanyApi(defaultClient);
         BulkCreateCompanyResponse bulkCreateCompany = companyApi.bulkCreateCompany(Lists.newArrayList(createCompanyRequest));
 
+        // assert payload has at least one element
+        Assertions.assertNotNull(bulkCreateCompany.getPayload());
+        Assertions.assertFalse(bulkCreateCompany.getPayload().isEmpty());
+
         CompanyKey companyKey = bulkCreateCompany.getPayload().get(0);
 
 
@@ -93,7 +97,7 @@ class SpeedyEntityTest {
         return lightCompany;
     }
 
-    Product createProduct() throws Exception {
+    Product crudProduct() throws Exception {
         CategoryApi categoryApi = new CategoryApi(defaultClient);
         List<CreateCategoryRequest> postCategories = Arrays.asList(
                 new CreateCategoryRequest().name("New Category ALL")
@@ -102,8 +106,9 @@ class SpeedyEntityTest {
 
         Assertions.assertNotNull(categoryResponse);
         Assertions.assertNotNull(categoryResponse.getPayload());
-        Assertions.assertTrue(categoryResponse.getPayload().size() > 0);
+        Assertions.assertFalse(categoryResponse.getPayload().isEmpty());
         CategoryKey getCategory = categoryResponse.getPayload().get(0);
+
         Assertions.assertNotNull(getCategory.getId());
         Assertions.assertNotEquals("", getCategory.getId());
 
@@ -135,7 +140,7 @@ class SpeedyEntityTest {
         return product;
     }
 
-    Supplier createSupplier() throws Exception {
+    Supplier crudSupplier() throws Exception {
 
         String dateTimeInstant = Instant.now().toString();
 
@@ -188,7 +193,7 @@ class SpeedyEntityTest {
         return supplier;
     }
 
-    Procurement createProcurement(Product product, Supplier supplier) throws Exception {
+    Procurement crudProcurement(Product product, Supplier supplier) throws Exception {
         String dateTimeInstant = Instant.now().toString();
         CreateProcurementRequest createProcurementRequest = new CreateProcurementRequest();
         createProcurementRequest
@@ -214,7 +219,7 @@ class SpeedyEntityTest {
 
     }
 
-    Customer createCustomer() {
+    Customer crudCustomer() {
         CreateCustomerRequest createCustomerRequest = new CreateCustomerRequest();
         String dateTimeInstant = Instant.now().toString();
         createCustomerRequest.createdAt(dateTimeInstant)
@@ -239,7 +244,7 @@ class SpeedyEntityTest {
         return customer;
     }
 
-    Invoice createInvoice(Customer customer) {
+    Invoice crudInvoice(Customer customer) {
         String dateTimeInstant = Instant.now().toString();
         CreateInvoiceRequest createInvoiceRequest = new CreateInvoiceRequest();
         createInvoiceRequest.createdAt(dateTimeInstant)
@@ -266,7 +271,7 @@ class SpeedyEntityTest {
         return lightInvoice;
     }
 
-    User createUser(Company company) {
+    User crudUser(Company company) {
         String dateTimeInstant = Instant.now().toString();
         CreateUserRequest createUserRequest = new CreateUserRequest();
         createUserRequest.createdAt(dateTimeInstant)
@@ -292,7 +297,7 @@ class SpeedyEntityTest {
         return payload;
     }
 
-    Inventory createInventory(Procurement procurement, Product product, Invoice invoice) {
+    Inventory crudInventory(Procurement procurement, Product product, Invoice invoice) {
         CreateInventoryRequest createInventoryRequest = new CreateInventoryRequest();
         createInventoryRequest.cost(230.0)
                 .soldPrice(230.0)
@@ -315,27 +320,187 @@ class SpeedyEntityTest {
         return payload;
     }
 
+    void crudCurrency() {
+        CurrencyApi currencyApi = new CurrencyApi(defaultClient);
+        CreateCurrencyRequest createCurrencyRequest = new CreateCurrencyRequest();
+        createCurrencyRequest.currencyAbbr("INR")
+                .currencyName("Indian Rupee")
+                .currencySymbol("₹")
+                .country("India");
+
+        BulkCreateCurrencyResponse bulkCreateCurrency200Response = currencyApi
+                .bulkCreateCurrency(Lists.newArrayList(createCurrencyRequest));
+
+        Assertions.assertNotNull(bulkCreateCurrency200Response);
+        Assertions.assertNotNull(bulkCreateCurrency200Response.getPayload());
+        Assertions.assertFalse(bulkCreateCurrency200Response.getPayload().isEmpty());
+        Assertions.assertNotNull(bulkCreateCurrency200Response.getPayload().get(0));
+
+        CurrencyKey currencyKey = bulkCreateCurrency200Response.getPayload().get(0);
+
+        Assertions.assertNotNull(currencyKey.getId());
+        Assertions.assertFalse(currencyKey.getId().isBlank());
+
+        FilteredCurrencyResponse filteredCurrencyResponse = currencyApi.getCurrency(currencyKey.getId());
+
+        Assertions.assertNotNull(filteredCurrencyResponse);
+        Assertions.assertNotNull(filteredCurrencyResponse.getPayload());
+        Assertions.assertFalse(filteredCurrencyResponse.getPayload().isEmpty());
+        Assertions.assertNotNull(filteredCurrencyResponse.getPayload().get(0));
+
+        Currency currency = filteredCurrencyResponse.getPayload().get(0);
+
+        Assertions.assertNotNull(currency);
+        Assertions.assertNotNull(currency.getCreatedAt());
+        Assertions.assertNotNull(currency.getCountry());
+        Assertions.assertNotNull(currency.getCurrencyAbbr());
+        Assertions.assertNotNull(currency.getCurrencyName());
+        Assertions.assertNotNull(currency.getCurrencySymbol());
+        Assertions.assertNotNull(currency.getId());
+
+        Assertions.assertEquals("INR", currency.getCurrencyAbbr());
+        Assertions.assertEquals("Indian Rupee", currency.getCurrencyName());
+        Assertions.assertFalse(currency.getCurrencySymbol().isBlank());
+        Assertions.assertEquals("India", currency.getCountry());
+
+        LOGGER.info("filteredCurrencyResponse {}", currency);
+
+        UpdateCurrencyRequest updateCurrencyRequest = new UpdateCurrencyRequest();
+        updateCurrencyRequest.country("INDIA");
+
+        UpdateCurrencyResponse updateCurrency200Response = currencyApi
+                .updateCurrency(currencyKey.getId(), updateCurrencyRequest);
+
+        Assertions.assertNotNull(updateCurrency200Response);
+        Assertions.assertNotNull(updateCurrency200Response.getPayload());
+        Currency updatedCurrency = updateCurrency200Response.getPayload();
+
+        Assertions.assertNotNull(updatedCurrency);
+        Assertions.assertNotNull(updatedCurrency.getCountry());
+        Assertions.assertEquals("INDIA", updatedCurrency.getCountry());
+
+
+        filteredCurrencyResponse = currencyApi.getCurrency(currencyKey.getId());
+
+        Assertions.assertNotNull(filteredCurrencyResponse);
+        Assertions.assertNotNull(filteredCurrencyResponse.getPayload());
+        Assertions.assertFalse(filteredCurrencyResponse.getPayload().isEmpty());
+        currency = filteredCurrencyResponse.getPayload().get(0);
+
+        Assertions.assertNotNull(currency);
+        Assertions.assertNotNull(currency.getCountry());
+        Assertions.assertEquals("INDIA", updatedCurrency.getCountry());
+
+        BulkDeleteCurrencyResponse bulkDeleteCurrencyResponse = currencyApi.bulkDeleteCurrency(Lists.newArrayList(currencyKey));
+
+        Assertions.assertNotNull(bulkDeleteCurrencyResponse);
+        Assertions.assertNotNull(bulkDeleteCurrencyResponse.getPayload());
+        Assertions.assertFalse(bulkDeleteCurrencyResponse.getPayload().isEmpty());
+        Assertions.assertNotNull(bulkDeleteCurrencyResponse.getPayload().get(0));
+
+        CurrencyKey deletedCurrencyKey = bulkDeleteCurrencyResponse.getPayload().get(0);
+        Assertions.assertEquals(currencyKey.getId(), deletedCurrencyKey.getId());
+
+        FilteredCurrencyResponse someCurrency = currencyApi.getSomeCurrency("(currencyAbbr='NZD')");
+
+        Assertions.assertNotNull(someCurrency);
+        Assertions.assertNotNull(someCurrency.getPayload());
+        Assertions.assertFalse(someCurrency.getPayload().isEmpty());
+
+        someCurrency.getPayload().forEach(currency1 -> {
+            Assertions.assertNotNull(currency1);
+            Assertions.assertNotNull(currency1.getCountry());
+            Assertions.assertEquals("New Zealand", currency1.getCountry());
+        });
+    }
+
+    void crudExchangeRates() {
+        CurrencyApi currencyApi = new CurrencyApi(defaultClient);
+
+        FilteredCurrencyResponse someCurrency = currencyApi.getSomeCurrency("(currencyAbbr='NZD')");
+
+        Assertions.assertNotNull(someCurrency);
+        Assertions.assertNotNull(someCurrency.getPayload());
+        Assertions.assertFalse(someCurrency.getPayload().isEmpty());
+        Assertions.assertNotNull(someCurrency.getPayload().get(0));
+
+        Currency baseCurrency = someCurrency.getPayload().get(0);
+
+        someCurrency = currencyApi.getSomeCurrency("(currencyAbbr='NZD')");
+        Assertions.assertNotNull(someCurrency);
+        Assertions.assertNotNull(someCurrency.getPayload());
+        Assertions.assertFalse(someCurrency.getPayload().isEmpty());
+        Assertions.assertNotNull(someCurrency.getPayload().get(0));
+
+        Currency forgeinCurrency = someCurrency.getPayload().get(0);
+
+        ExchangeRateApi exchangeRateApi = new ExchangeRateApi(defaultClient);
+        CreateExchangeRateRequest createExchangeRateRequest = new CreateExchangeRateRequest();
+        createExchangeRateRequest.baseCurrency(new CurrencyKey().id(baseCurrency.getId()))
+                .foreignCurrency(new CurrencyKey().id(forgeinCurrency.getId()))
+                .exchangeRate(1.0)
+                .invExchangeRate(1.0);
+
+        BulkCreateExchangeRateResponse bulkCreateExchangeRate200Response = exchangeRateApi.bulkCreateExchangeRate(Lists.newArrayList(createExchangeRateRequest));
+
+        Assertions.assertNotNull(bulkCreateExchangeRate200Response);
+        Assertions.assertNotNull(bulkCreateExchangeRate200Response.getPayload());
+        Assertions.assertFalse(bulkCreateExchangeRate200Response.getPayload().isEmpty());
+        Assertions.assertNotNull(bulkCreateExchangeRate200Response.getPayload().get(0));
+
+        ExchangeRateKey exchangeRateKey = bulkCreateExchangeRate200Response.getPayload().get(0);
+
+        FilteredExchangeRateResponse filteredExchangeRateResponse = exchangeRateApi.getExchangeRate(exchangeRateKey.getId());
+
+        Assertions.assertNotNull(filteredExchangeRateResponse);
+        Assertions.assertNotNull(filteredExchangeRateResponse.getPayload());
+        Assertions.assertFalse(filteredExchangeRateResponse.getPayload().isEmpty());
+        Assertions.assertNotNull(filteredExchangeRateResponse.getPayload().get(0));
+
+        ExchangeRate exchangeRate = filteredExchangeRateResponse.getPayload().get(0);
+
+        Assertions.assertNotNull(exchangeRate);
+        Assertions.assertNotNull(exchangeRate.getBaseCurrency());
+        Assertions.assertNotNull(exchangeRate.getForeignCurrency());
+        Assertions.assertNotNull(exchangeRate.getExchangeRate());
+        Assertions.assertNotNull(exchangeRate.getInvExchangeRate());
+        Assertions.assertNotNull(exchangeRate.getId());
+
+        Assertions.assertEquals(baseCurrency.getId(), exchangeRate.getBaseCurrency().getId());
+        Assertions.assertEquals(forgeinCurrency.getId(), exchangeRate.getForeignCurrency().getId());
+        Assertions.assertEquals(1.0, exchangeRate.getExchangeRate());
+        Assertions.assertEquals(1.0, exchangeRate.getInvExchangeRate());
+
+        LOGGER.info("exchangeRate {}", exchangeRate);
+
+
+    }
+
     @Test
     void normal() throws Exception {
 
 
-        Company company = createCompany();
-        Product product = createProduct();
-        Supplier supplier = createSupplier();
+        Company company = crudCompany();
+        Product product = crudProduct();
+        Supplier supplier = crudSupplier();
 
-        Procurement procurement = createProcurement(product, supplier);
+        Procurement procurement = crudProcurement(product, supplier);
 
-        Customer customer = createCustomer();
+        Customer customer = crudCustomer();
 
-        Invoice invoice = createInvoice(customer);
+        Invoice invoice = crudInvoice(customer);
 
-        User user = createUser(company);
+        User user = crudUser(company);
 
-        Inventory inventory = createInventory(procurement, product, invoice);
+        Inventory inventory = crudInventory(procurement, product, invoice);
 
         Assertions.assertNotNull(inventory);
+        Assertions.assertNotNull(inventory.getId());
         Assertions.assertFalse(inventory.getId().isBlank());
 
+        crudCurrency();
+
+        crudExchangeRates();
 
     }
 

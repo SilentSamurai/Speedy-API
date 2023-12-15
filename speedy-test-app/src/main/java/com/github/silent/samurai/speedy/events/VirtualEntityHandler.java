@@ -46,7 +46,7 @@ public class VirtualEntityHandler implements SpeedyVirtualEntityHandler {
     @Override
     public SpeedyEntity create(SpeedyEntity entity) throws NotFoundException {
         LOGGER.info("VirtualEntity create Event");
-        EntityMetadata entityMetadata = entity.getEntityMetadata();
+        EntityMetadata entityMetadata = entity.getMetadata();
         FieldMetadata id = entityMetadata.field("id");
         FieldMetadata name = entityMetadata.field("name");
         FieldMetadata description = entityMetadata.field("description");
@@ -60,7 +60,7 @@ public class VirtualEntityHandler implements SpeedyVirtualEntityHandler {
 
     @Override
     public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws NotFoundException {
-        EntityMetadata entityMetadata = entity.getEntityMetadata();
+        EntityMetadata entityMetadata = entity.getMetadata();
         FieldMetadata id = entityMetadata.field("id");
         FieldMetadata description = entityMetadata.field("description");
         String idValue = pk.get(id).asText();
@@ -74,7 +74,7 @@ public class VirtualEntityHandler implements SpeedyVirtualEntityHandler {
 
     @Override
     public SpeedyEntity delete(SpeedyEntityKey pk) throws NotFoundException {
-        EntityMetadata entityMetadata = pk.getEntityMetadata();
+        EntityMetadata entityMetadata = pk.getMetadata();
         FieldMetadata id = entityMetadata.field("id");
         String idValue = pk.get(id).asText();
         productRepository.deleteById(idValue);
