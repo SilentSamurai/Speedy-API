@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -381,7 +382,7 @@ public class QueryBuilder {
                     Collection<SpeedyValue> collection = speedyValue.asCollection();
                     Collection<Object> objects = new ArrayList<>(collection.size());
                     for (SpeedyValue sv : collection) {
-                        Object rawValue = SpeedyValueFactory.speedyValueToJavaType(sv, fieldMetadata.getFieldType());
+                        Object rawValue = SpeedyValueFactory.toJavaType(fieldMetadata, sv);
                         objects.add(rawValue);
                     }
                     return path.in(objects);
@@ -435,7 +436,7 @@ public class QueryBuilder {
                     Collection<SpeedyValue> collection = speedyValue.asCollection();
                     Collection<Object> objects = new ArrayList<>(collection.size());
                     for (SpeedyValue sv : collection) {
-                        Object rawValue = SpeedyValueFactory.speedyValueToJavaType(sv, fieldMetadata.getFieldType());
+                        Object rawValue = SpeedyValueFactory.toJavaType(fieldMetadata, sv);
                         objects.add(rawValue);
                     }
                     return criteriaBuilder.not(path.in(objects));

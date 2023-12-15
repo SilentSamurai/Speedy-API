@@ -12,6 +12,7 @@ public enum ValueType {
     DATE,
     TIME,
     DATE_TIME,
+    ZONED_DATE_TIME,
     OBJECT,
     COLLECTION,
     NULL;

@@ -1,10 +1,7 @@
-package com.github.silent.samurai.speedy.deserializer;
+package com.github.silent.samurai.speedy.io;
 
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingFunction;
-import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.sql.Timestamp;
@@ -12,13 +9,10 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.github.silent.samurai.speedy.models.SpeedyValueFactory.*;
 
 public class BasicDeserializer {
 
@@ -26,71 +20,6 @@ public class BasicDeserializer {
 
     static {
         initConverters();
-    }
-
-    public static SpeedyValue fromValueTypeQuotedString(ValueType type, String quotedValue) throws BadRequestException {
-        switch (type) {
-            case TEXT:
-            case OBJECT: {
-                String instance = quotedStringToPrimitive(quotedValue, String.class);
-                return fromText(instance);
-            }
-            case INT: {
-                Integer instance = quotedStringToPrimitive(quotedValue, Integer.class);
-                return fromInt(instance);
-            }
-            case FLOAT: {
-                Double instance = quotedStringToPrimitive(quotedValue, Double.class);
-                return fromDouble(instance);
-            }
-            case DATE: {
-                LocalDate instance = quotedStringToPrimitive(quotedValue, LocalDate.class);
-                return fromDate(instance);
-            }
-            case TIME: {
-                LocalTime instance = quotedStringToPrimitive(quotedValue, LocalTime.class);
-                return fromTime(instance);
-            }
-            case DATE_TIME: {
-                LocalDateTime instance = quotedStringToPrimitive(quotedValue, LocalDateTime.class);
-                return fromDateTime(instance);
-            }
-            case COLLECTION:
-            case NULL:
-            default:
-                return SpeedyNull.SPEEDY_NULL;
-        }
-    }
-
-    public static SpeedyValue fromValueType(ValueType type, String stringValue) throws BadRequestException {
-        switch (type) {
-            case TEXT: {
-                String instance = stringToPrimitive(stringValue, String.class);
-                return fromText(instance);
-            }
-            case INT: {
-                Integer instance = stringToPrimitive(stringValue, Integer.class);
-                return fromInt(instance);
-            }
-            case FLOAT: {
-                Double instance = stringToPrimitive(stringValue, Double.class);
-                return fromDouble(instance);
-            }
-            case DATE: {
-                LocalDate instance = stringToPrimitive(stringValue, LocalDate.class);
-                return fromDate(instance);
-            }
-            case TIME: {
-                LocalTime instance = stringToPrimitive(stringValue, LocalTime.class);
-                return fromTime(instance);
-            }
-            case DATE_TIME: {
-                LocalDateTime instance = stringToPrimitive(stringValue, LocalDateTime.class);
-                return fromDateTime(instance);
-            }
-            default:
-                return SpeedyNull.SPEEDY_NULL;
-        }
     }
 
     public static <T> T quotedStringToPrimitive(String value, Class<T> type) throws BadRequestException {

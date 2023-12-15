@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.models;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.io.JavaTypeToSpeedyConverter;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -17,7 +18,7 @@ class SpeedyValueFactoryTest {
 
     @Test
     void basicToSpeedyText() throws SpeedyHttpException {
-        SpeedyValue test = SpeedyValueFactory.basicToSpeedyValue(String.class, ValueType.TEXT, "test");
+        SpeedyValue test = JavaTypeToSpeedyConverter.convert(String.class, ValueType.TEXT, "test");
         // check if test is of SpeedyText type
         assertTrue(test instanceof SpeedyText);
         assertTrue(test.isText());
@@ -26,13 +27,13 @@ class SpeedyValueFactoryTest {
 
     @Test
     void basicToSpeedyBoolean() throws SpeedyHttpException {
-        SpeedyValue test = SpeedyValueFactory.basicToSpeedyValue(Boolean.class, ValueType.BOOL, true);
+        SpeedyValue test = JavaTypeToSpeedyConverter.convert(Boolean.class, ValueType.BOOL, true);
         // check if test is of SpeedyBoolean type
         assertTrue(test instanceof SpeedyBoolean);
         assertTrue(test.isBoolean());
         assertTrue(test.asBoolean());
 
-        SpeedyValue test1 = SpeedyValueFactory.basicToSpeedyValue(Boolean.class, ValueType.BOOL, false);
+        SpeedyValue test1 = JavaTypeToSpeedyConverter.convert(Boolean.class, ValueType.BOOL, false);
         // check if test is of SpeedyBoolean type
         assertTrue(test1 instanceof SpeedyBoolean);
         assertTrue(test1.isBoolean());
@@ -41,7 +42,7 @@ class SpeedyValueFactoryTest {
 
     @Test
     void basicToSpeedyInt() throws SpeedyHttpException {
-        SpeedyValue test = SpeedyValueFactory.basicToSpeedyValue(Integer.class, ValueType.INT, 1234);
+        SpeedyValue test = JavaTypeToSpeedyConverter.convert(Integer.class, ValueType.INT, 1234);
 
         assertTrue(test instanceof SpeedyInt);
         assertTrue(test.isInt());
@@ -50,7 +51,7 @@ class SpeedyValueFactoryTest {
 
     @Test
     void basicToSpeedyDouble() throws SpeedyHttpException {
-        SpeedyValue test = SpeedyValueFactory.basicToSpeedyValue(Double.class, ValueType.FLOAT, 1234.099);
+        SpeedyValue test = JavaTypeToSpeedyConverter.convert(Double.class, ValueType.FLOAT, 1234.099);
 
         assertTrue(test instanceof SpeedyDouble);
         assertTrue(test.isDouble());
@@ -61,7 +62,7 @@ class SpeedyValueFactoryTest {
     void basicToSpeedyDate() throws SpeedyHttpException {
         // create an object of Date class
         Date date = Date.from(Instant.now());
-        SpeedyValue test = SpeedyValueFactory.basicToSpeedyValue(Date.class, ValueType.DATE, date);
+        SpeedyValue test = JavaTypeToSpeedyConverter.convert(Date.class, ValueType.DATE, date);
         // check if test is of SpeedyText type
         assertTrue(test instanceof SpeedyDate);
         assertTrue(test.isDate());
@@ -75,7 +76,7 @@ class SpeedyValueFactoryTest {
     void basicToSpeedyDateTime() throws SpeedyHttpException {
         // create an object of Date class
         Instant datetime = Instant.now();
-        SpeedyValue test = SpeedyValueFactory.basicToSpeedyValue(Instant.class, ValueType.DATE_TIME, datetime);
+        SpeedyValue test = JavaTypeToSpeedyConverter.convert(Instant.class, ValueType.DATE_TIME, datetime);
         // check if test is of SpeedyText type
         assertTrue(test instanceof SpeedyDateTime);
         assertTrue(test.isDateTime());

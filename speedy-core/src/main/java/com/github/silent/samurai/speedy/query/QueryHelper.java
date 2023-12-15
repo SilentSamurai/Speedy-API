@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 
 import java.util.HashMap;
@@ -74,7 +74,7 @@ public class QueryHelper {
 
     public <T> T getRawValueOfValue(FieldMetadata fieldMetadata, Class<T> clazz) throws Exception {
         Optional<SpeedyValue> filterValue = getFilterValue(fieldMetadata);
-        return SpeedyValueFactory.speedyValueToJavaType(filterValue.get(), clazz);
+        return SpeedyValueFactory.toJavaType(fieldMetadata, filterValue.get());
     }
 
 }

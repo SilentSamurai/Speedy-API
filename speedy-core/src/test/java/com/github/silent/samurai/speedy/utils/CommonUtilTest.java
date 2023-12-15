@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.github.silent.samurai.speedy.deserializer.BasicDeserializer;
+import com.github.silent.samurai.speedy.io.BasicDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

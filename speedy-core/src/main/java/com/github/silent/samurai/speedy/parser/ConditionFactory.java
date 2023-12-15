@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.parser;
 
-import com.github.silent.samurai.speedy.deserializer.BasicDeserializer;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -9,7 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
-import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.models.conditions.*;
 
 import java.util.LinkedList;
@@ -48,7 +47,7 @@ public class ConditionFactory {
     public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, String value) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
-        SpeedyValue speedyValue = BasicDeserializer.fromValueTypeQuotedString(fieldMetadata.getValueType(), value);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(fieldMetadata, value);
         QueryField normalField = new NormalField(fieldMetadata);
         return createCondition(normalField, operator, speedyValue);
     }
@@ -58,7 +57,7 @@ public class ConditionFactory {
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);
         List<SpeedyValue> instances = new LinkedList<>();
         for (String value : values) {
-            SpeedyValue speedyValue = BasicDeserializer.fromValueTypeQuotedString(fieldMetadata.getValueType(), value);
+            SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(fieldMetadata, value);
             instances.add(speedyValue);
         }
         SpeedyValue speedyValue = SpeedyValueFactory.fromCollection(instances);
@@ -75,7 +74,7 @@ public class ConditionFactory {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
         QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
-        SpeedyValue speedyValue = BasicDeserializer.fromValueTypeQuotedString(fieldMetadata.getValueType(), value);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(associatedFieldMetadata, value);
         return createCondition(queryField, operator, speedyValue);
     }
 

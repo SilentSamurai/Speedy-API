@@ -1,8 +1,6 @@
 package com.github.silent.samurai.speedy.helpers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.deserializer.JsonEntityDeserializer;
-import com.github.silent.samurai.speedy.deserializer.JsonIdentityDeserializer;
 import com.github.silent.samurai.speedy.deserializer.QueryKeyDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -12,6 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.google.common.collect.Sets;
 
 import java.util.Set;
@@ -40,10 +39,9 @@ public class MetadataUtil {
         }
     }
 
-    public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode asJsonObject) throws Exception {
+    public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject) throws Exception {
         try {
-            JsonEntityDeserializer deserializer = new JsonEntityDeserializer(asJsonObject, entityMetadata);
-            return deserializer.deserialize();
+            return SpeedyValueFactory.fromJson(entityMetadata, jsonObject);
         } catch (Exception e) {
             throw new BadRequestException("failed to parse body", e);
         }
@@ -51,8 +49,7 @@ public class MetadataUtil {
 
     public static SpeedyEntityKey createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson) throws Exception {
         try {
-            JsonIdentityDeserializer deserializer = new JsonIdentityDeserializer(entityMetadata, keyJson);
-            return deserializer.deserialize();
+            return SpeedyValueFactory.fromPkJson(entityMetadata, keyJson);
         } catch (Exception e) {
             throw new BadRequestException("failed to parse body", e);
         }

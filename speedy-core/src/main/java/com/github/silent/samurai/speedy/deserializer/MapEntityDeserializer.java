@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.io.BasicDeserializer;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Map;
 
-import static com.github.silent.samurai.speedy.models.SpeedyValueFactory.*;
+import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 
 public class MapEntityDeserializer {
 

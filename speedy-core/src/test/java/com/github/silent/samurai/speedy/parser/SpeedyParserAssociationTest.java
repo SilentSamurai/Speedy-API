@@ -4,10 +4,11 @@ package com.github.silent.samurai.speedy.parser;
 import com.github.silent.samurai.speedy.data.ComposedProduct;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.query.QueryHelper;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,8 @@ public class SpeedyParserAssociationTest {
 
         assertEquals("ComposedProduct", speedyQuery.getFrom().getName());
         EqCondition condition = (EqCondition) speedyQuery.getWhere().getConditions().get(0);
-        String condValue = SpeedyValueFactory.speedyValueToJavaType(condition.getSpeedyValue(), String.class);
+        FieldMetadata fieldMetadata = condition.getField().getAssociatedFieldMetadata();
+        String condValue = SpeedyValueFactory.toJavaType(fieldMetadata, condition.getSpeedyValue());
         assertEquals("1", condValue);
         assertFalse(queryHelper.isOnlyIdentifiersPresent());
     }

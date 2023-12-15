@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.io;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -7,13 +8,13 @@ import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 
 public class JavaTypeToSpeedyConverter {
     private static final Map<String, ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
@@ -38,7 +39,7 @@ public class JavaTypeToSpeedyConverter {
         initConverters();
     }
 
-    public static <T> SpeedyValue convert(Object instance, ValueType valueType, Class<T> clazz) throws SpeedyHttpException {
+    public static <T> SpeedyValue convert(Class<T> clazz, ValueType valueType, Object instance) throws SpeedyHttpException {
         if (instance == null || !has(valueType, clazz)) {
             return SpeedyNull.SPEEDY_NULL;
         }
@@ -115,6 +116,38 @@ public class JavaTypeToSpeedyConverter {
             Timestamp kdate = (Timestamp) instance;
             LocalDateTime localDateTime = kdate.toLocalDateTime();
             return new SpeedyDateTime(localDateTime);
+        });
+
+        // Json to SpeedyValue
+        put(ValueType.TEXT, JsonNode.class, (instance, valueType) -> {
+            JsonNode jsonNode = (JsonNode) instance;
+            return new SpeedyText(jsonNode.asText());
+        });
+        put(ValueType.INT, JsonNode.class, (instance, valueType) -> {
+            JsonNode jsonNode = (JsonNode) instance;
+            return new SpeedyInt(jsonNode.asInt());
+        });
+        put(ValueType.FLOAT, JsonNode.class, (instance, valueType) -> {
+            JsonNode jsonNode = (JsonNode) instance;
+            return new SpeedyDouble(jsonNode.asDouble());
+        });
+        put(ValueType.DATE, JsonNode.class, (instance, valueType) -> {
+            JsonNode jsonNode = (JsonNode) instance;
+            String dateValue = jsonNode.asText();
+            LocalDate localDate = LocalDate.parse(dateValue, DateTimeFormatter.ISO_DATE);
+            return new SpeedyDate(localDate);
+        });
+        put(ValueType.TIME, JsonNode.class, (instance, valueType) -> {
+            JsonNode jsonNode = (JsonNode) instance;
+            String timeValue = jsonNode.asText();
+            LocalTime localTime = LocalTime.parse(timeValue, DateTimeFormatter.ISO_TIME);
+            return new SpeedyTime(localTime);
+        });
+        put(ValueType.DATE_TIME, JsonNode.class, (instance, valueType) -> {
+            JsonNode jsonNode = (JsonNode) instance;
+            String datetimeValue = jsonNode.asText();
+            LocalDateTime datetime = LocalDateTime.parse(datetimeValue, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            return new SpeedyDateTime(datetime);
         });
 
     }

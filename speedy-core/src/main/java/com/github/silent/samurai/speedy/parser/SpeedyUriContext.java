@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.AntlrParser;
-import com.github.silent.samurai.speedy.deserializer.BasicDeserializer;
+import com.github.silent.samurai.speedy.io.BasicDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;

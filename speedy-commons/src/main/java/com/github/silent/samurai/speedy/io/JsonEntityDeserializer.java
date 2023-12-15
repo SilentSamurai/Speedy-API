@@ -1,14 +1,16 @@
-package com.github.silent.samurai.speedy.deserializer;
+package com.github.silent.samurai.speedy.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 
 import java.time.LocalDate;
@@ -18,20 +20,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import static com.github.silent.samurai.speedy.models.SpeedyValueFactory.*;
+import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 
 public class JsonEntityDeserializer {
-
-    private final ObjectNode entityJson;
-    private final EntityMetadata entityMetadata;
-
-    public JsonEntityDeserializer(ObjectNode entityJson, EntityMetadata entityMetadata) {
-        this.entityJson = entityJson;
-        this.entityMetadata = entityMetadata;
-    }
-
-    public static SpeedyValue fromValueTypePrimitive(ValueType type, JsonNode jsonNode) throws BadRequestException {
-        switch (type) {
+    public static SpeedyValue fromValueTypePrimitive(FieldMetadata fieldMetadata, JsonNode jsonNode) throws BadRequestException {
+        switch (fieldMetadata.getValueType()) {
             case TEXT:
                 return fromText(jsonNode.asText());
             case INT:
@@ -64,7 +57,7 @@ public class JsonEntityDeserializer {
         }
     }
 
-    public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws BadRequestException {
+    public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (jsonNode.has(fieldMetadata.getOutputPropertyName()) && !jsonNode.get(fieldMetadata.getOutputPropertyName()).isNull()) {
@@ -76,7 +69,7 @@ public class JsonEntityDeserializer {
         return speedyEntity;
     }
 
-    public static SpeedyValue fromFieldMetadata(FieldMetadata fieldMetadata, JsonNode jsonNode) throws BadRequestException {
+    public static SpeedyValue fromFieldMetadata(FieldMetadata fieldMetadata, JsonNode jsonNode) throws SpeedyHttpException {
         if (fieldMetadata.isAssociation()) {
             if (fieldMetadata.isCollection()) {
                 ArrayNode arrayNode = (ArrayNode) jsonNode;
@@ -94,19 +87,31 @@ public class JsonEntityDeserializer {
                 ArrayNode arrayNode = (ArrayNode) jsonNode;
                 Collection<SpeedyValue> collection = new LinkedList<>();
                 for (JsonNode item : arrayNode) {
-                    SpeedyValue speedyValue = fromValueTypePrimitive(fieldMetadata.getValueType(), item);
+                    SpeedyValue speedyValue = JavaTypeToSpeedyConverter.convert(JsonNode.class, fieldMetadata.getValueType(), item);
                     collection.add(speedyValue);
                 }
                 return fromCollection(collection);
             } else {
-                return fromValueTypePrimitive(fieldMetadata.getValueType(), jsonNode);
+                return JavaTypeToSpeedyConverter.convert(JsonNode.class, fieldMetadata.getValueType(), jsonNode);
             }
         }
     }
 
-    public SpeedyEntity deserialize() throws Exception {
-        return fromEntityMetadata(entityMetadata, entityJson);
-    }
 
+    public static SpeedyEntityKey fromPkJson(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
+        SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(entityMetadata);
+        for (FieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
+            String propertyName = fieldMetadata.getOutputPropertyName();
+            if (jsonNode.has(propertyName)
+                    && !jsonNode.get(propertyName).isNull()) {
+                JsonNode fieldObject = jsonNode.get(fieldMetadata.getOutputPropertyName());
+                SpeedyValue speedyValue = fromFieldMetadata(fieldMetadata, fieldObject);
+                speedyEntityKey.put(fieldMetadata, speedyValue);
+            } else{
+                throw new BadRequestException("Missing key field: " + propertyName);
+            }
+        }
+        return speedyEntityKey;
+    }
 
 }
