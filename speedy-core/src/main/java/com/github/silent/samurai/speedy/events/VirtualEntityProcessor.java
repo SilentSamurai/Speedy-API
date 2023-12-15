@@ -7,11 +7,8 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class VirtualEntityProcessor {
 
@@ -26,24 +23,6 @@ public class VirtualEntityProcessor {
     public VirtualEntityProcessor(MetaModelProcessor metaModelProcessor, RegistryImpl eventRegistry) {
         this.metaModelProcessor = metaModelProcessor;
         this.eventRegistry = eventRegistry;
-    }
-
-    public static Optional<Type> getTypeParameters(Class<?> clazz) {
-        Type[] genericSuperclass = clazz.getGenericInterfaces();
-
-        Optional<Type> typeOptional = Optional.empty();
-        for (Type inf : genericSuperclass) {
-            if (inf instanceof ParameterizedType) {
-                ParameterizedType type = (ParameterizedType) inf;
-                if (SpeedyVirtualEntityHandler.class.isAssignableFrom((Class<?>) type.getRawType())) {
-                    Type[] actualTypeArguments = type.getActualTypeArguments();
-                    typeOptional = Optional.of(actualTypeArguments[0]);
-                    break;
-                }
-            }
-        }
-        // If the class is not a parameterized type, return an empty array
-        return typeOptional;
     }
 
     public void processRegistry() {

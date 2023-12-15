@@ -12,13 +12,18 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MetadataUtil {
 
-    public static boolean isPrimaryKeyComplete(EntityMetadata entityMetadata, Set<String> fields) {
-        Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFieldNames(), fields);
+    public static boolean isPrimaryKeyComplete(EntityMetadata entityMetadata, ObjectNode objectNode) {
+        Set<String> validFieldnames = Streams.stream(objectNode.fieldNames())
+                .filter(field -> !objectNode.get(field).isNull())
+                .collect(Collectors.toSet());
+        Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFieldNames(), validFieldnames);
         return difference.size() == entityMetadata.getKeyFields().size();
     }
 

@@ -31,9 +31,6 @@ public class GetRequestContext implements ResponseReturningRequestContext {
 
     @Override
     public int getSerializationType() {
-//        if (parser.getPrimaryResource().isOnlyIdentifiersPresent()) {
-//            return IResponseSerializer.SINGLE_ENTITY;
-//        }
         return IResponseSerializer.MULTIPLE_ENTITY;
     }
 }

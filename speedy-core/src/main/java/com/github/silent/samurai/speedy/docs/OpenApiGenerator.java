@@ -218,7 +218,7 @@ public class OpenApiGenerator {
                         .example("(id='1',amount=2)")
         );
 
-//        OASGenerator.addPagingAndOrderingInfo(operation);
+        OASGenerator.addPagingAndOrderingInfo(operation);
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),

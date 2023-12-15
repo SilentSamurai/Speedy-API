@@ -5,14 +5,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,5 +148,23 @@ public class CommonUtil {
             return Double.class;
         }
         return null;
+    }
+
+    public static Optional<Type> getTypeParameters(Class<?> clazz) {
+        Type[] genericSuperclass = clazz.getGenericInterfaces();
+
+        Optional<Type> typeOptional = Optional.empty();
+        for (Type inf : genericSuperclass) {
+            if (inf instanceof ParameterizedType) {
+                ParameterizedType type = (ParameterizedType) inf;
+                if (SpeedyVirtualEntityHandler.class.isAssignableFrom((Class<?>) type.getRawType())) {
+                    Type[] actualTypeArguments = type.getActualTypeArguments();
+                    typeOptional = Optional.of(actualTypeArguments[0]);
+                    break;
+                }
+            }
+        }
+        // If the class is not a parameterized type, return an empty array
+        return typeOptional;
     }
 }

@@ -88,12 +88,7 @@ public class SpeedyFactory {
             throws Exception {
         GetRequestContext context = new GetRequestContext(request, response, metaModelProcessor);
         new GetRequestParser(context).process();
-        Optional<?> requestedData;
-        if (false) {
-            requestedData = new GetDataHandler(context).processOne(queryProcessor);
-        } else {
-            requestedData = new GetDataHandler(context).processMany(queryProcessor);
-        }
+        Optional<List<SpeedyEntity>> requestedData = new GetDataHandler(context).processMany(queryProcessor);
         if (requestedData.isEmpty()) {
             throw new NotFoundException();
         }

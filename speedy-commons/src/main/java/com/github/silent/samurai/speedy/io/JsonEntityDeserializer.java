@@ -3,7 +3,6 @@ package com.github.silent.samurai.speedy.io;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -11,51 +10,46 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.models.SpeedyNull;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
+import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.fromCollection;
 
 public class JsonEntityDeserializer {
-    public static SpeedyValue fromValueTypePrimitive(FieldMetadata fieldMetadata, JsonNode jsonNode) throws BadRequestException {
-        switch (fieldMetadata.getValueType()) {
-            case TEXT:
-                return fromText(jsonNode.asText());
-            case INT:
-                return fromInt(jsonNode.asInt());
-            case FLOAT:
-                return fromDouble(jsonNode.asDouble());
-            case DATE:
-                if (!jsonNode.isTextual()) {
-                    throw new BadRequestException("Date value must be a string");
-                }
-                String dateValue = jsonNode.asText();
-                LocalDate localDate = LocalDate.parse(dateValue, DateTimeFormatter.ISO_DATE);
-                return fromDate(localDate);
-            case TIME:
-                if (!jsonNode.isTextual()) {
-                    throw new BadRequestException("Time value must be a string");
-                }
-                String timeValue = jsonNode.asText();
-                LocalTime localTime = LocalTime.parse(timeValue, DateTimeFormatter.ISO_TIME);
-                return fromTime(localTime);
-            case DATE_TIME:
-                if (!jsonNode.isTextual()) {
-                    throw new BadRequestException("DateTime value must be a string");
-                }
-                String datetimeValue = jsonNode.asText();
-                LocalDateTime datetime = LocalDateTime.parse(datetimeValue, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-                return fromDateTime(datetime);
-            default:
-                return SpeedyNull.SPEEDY_NULL;
-        }
-    }
+//    public static SpeedyValue fromValueTypePrimitive(FieldMetadata fieldMetadata, JsonNode jsonNode) throws BadRequestException {
+//        switch (fieldMetadata.getValueType()) {
+//            case TEXT:
+//                return fromText(jsonNode.asText());
+//            case INT:
+//                return fromInt(jsonNode.asInt());
+//            case FLOAT:
+//                return fromDouble(jsonNode.asDouble());
+//            case DATE:
+//                if (!jsonNode.isTextual()) {
+//                    throw new BadRequestException("Date value must be a string");
+//                }
+//                String dateValue = jsonNode.asText();
+//                LocalDate localDate = LocalDate.parse(dateValue, DateTimeFormatter.ISO_DATE);
+//                return fromDate(localDate);
+//            case TIME:
+//                if (!jsonNode.isTextual()) {
+//                    throw new BadRequestException("Time value must be a string");
+//                }
+//                String timeValue = jsonNode.asText();
+//                LocalTime localTime = LocalTime.parse(timeValue, DateTimeFormatter.ISO_TIME);
+//                return fromTime(localTime);
+//            case DATE_TIME:
+//                if (!jsonNode.isTextual()) {
+//                    throw new BadRequestException("DateTime value must be a string");
+//                }
+//                String datetimeValue = jsonNode.asText();
+//                LocalDateTime datetime = LocalDateTime.parse(datetimeValue, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+//                return fromDateTime(datetime);
+//            default:
+//                return SpeedyNull.SPEEDY_NULL;
+//        }
+//    }
 
     public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);

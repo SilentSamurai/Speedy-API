@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -48,7 +49,18 @@ class MetadataUtilTest {
     void isPrimaryKeyComplete() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         HashSet<String> fields = Sets.newHashSet("id");
-        assertTrue(MetadataUtil.isPrimaryKeyComplete(entityMetadata, fields));
+        ObjectNode objectNode = CommonUtil.json().createObjectNode();
+        objectNode.put("id", "pol-pol-ois");
+        assertTrue(MetadataUtil.isPrimaryKeyComplete(entityMetadata, objectNode));
+    }
+
+    @Test
+    void isNullPrimaryKeyComplete() {
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
+        HashSet<String> fields = Sets.newHashSet("id");
+        ObjectNode objectNode = CommonUtil.json().createObjectNode();
+        objectNode.putNull("id");
+        assertFalse(MetadataUtil.isPrimaryKeyComplete(entityMetadata, objectNode));
     }
 
     @Test
@@ -258,4 +270,24 @@ class MetadataUtilTest {
         assertEquals(productItem.getId(), productItemEntity.get(id).asText());
     }
 
+    @Test
+    void createEntityFromJsonNegativeTest() throws Exception {
+        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
+        JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1', 'productItem': null }");
+        SpeedyEntity productEntity = MetadataUtil.createEntityFromJSON(productMetadata, (ObjectNode) jsonElement);
+        // assert productEntity is not null
+        assertNotNull(productEntity);
+        // assert id is not null
+        SpeedyValue id = productEntity.get(productMetadata.field("id"));
+        assertNotNull(id);
+        // assert id is abcd
+        assertEquals("abcd", id.asText());
+        // assert name is not null
+        SpeedyValue name = productEntity.get(productMetadata.field("name"));
+        assertNotNull(name);
+        // assert name is na
+        assertEquals("na", name.asText());
+        // assert productItem is null
+        assertNull(productEntity.get(productMetadata.field("productItem")));
+    }
 }

@@ -12,7 +12,6 @@ import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ public class DeleteRequestParser {
         ArrayNode batchOfEntities = (ArrayNode) jsonElement;
         for (JsonNode element : batchOfEntities) {
             if (element.isObject()) {
-                if (!MetadataUtil.isPrimaryKeyComplete(resourceMetadata, Sets.newHashSet(element.fieldNames()))) {
+                if (!MetadataUtil.isPrimaryKeyComplete(resourceMetadata, (ObjectNode) element)) {
                     throw new BadRequestException("Primary Key Incomplete ");
                 }
                 SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(resourceMetadata, (ObjectNode) element);

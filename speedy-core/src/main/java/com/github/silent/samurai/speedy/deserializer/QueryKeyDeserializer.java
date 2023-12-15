@@ -24,12 +24,12 @@ public class QueryKeyDeserializer {
 
     public SpeedyEntityKey deserialize() throws Exception {
         if (!queryHelper.isIdentifiersPresent()) {
-            throw new BadRequestException("identifiers field not found");
+            throw new BadRequestException("identifiers field not present in query");
         }
         return this.getCompositeKey();
     }
 
-    private SpeedyEntityKey getCompositeKey() throws Exception {
+    private SpeedyEntityKey getCompositeKey() {
         SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(entityMetadata);
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             Optional<SpeedyValue> filterValue = this.queryHelper.getFilterValue(keyFieldMetadata);

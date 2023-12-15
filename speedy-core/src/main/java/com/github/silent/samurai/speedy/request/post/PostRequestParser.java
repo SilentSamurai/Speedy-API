@@ -14,7 +14,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,15 +43,12 @@ public class PostRequestParser {
         for (JsonNode element : batchOfEntities) {
             if (element.isObject()) {
                 ObjectNode objectNode = (ObjectNode) element;
-
-                if (MetadataUtil.isPrimaryKeyComplete(resourceMetadata, Sets.newHashSet(objectNode.fieldNames()))) {
+                if (MetadataUtil.isPrimaryKeyComplete(resourceMetadata, objectNode)) {
                     SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(
                             resourceMetadata,
                             objectNode);
-                    if (pk != null) {
-                        if (queryProcessor.exists(pk)) {
-                            throw new BadRequestException("Entity already present.");
-                        }
+                    if (queryProcessor.exists(pk)) {
+                        throw new BadRequestException("Entity already present.");
                     }
                 }
 
