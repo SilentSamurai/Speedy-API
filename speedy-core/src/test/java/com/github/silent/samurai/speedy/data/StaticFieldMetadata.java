@@ -28,11 +28,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return ValueTypeUtil.fromClass(field.getType());
     }
 
-    @SneakyThrows
-    @Override
-    public Object getEntityFieldValue(Object entity) {
-        return field.get(entity);
-    }
+//    @SneakyThrows
+//    @Override
+//    public Object getEntityFieldValue(Object entity) {
+//        return field.get(entity);
+//    }
 
     @Override
     public boolean isAssociation() {
@@ -79,10 +79,10 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return true;
     }
 
-    @Override
-    public String getClassFieldName() {
-        return field.getName();
-    }
+//    @Override
+//    public String getClassFieldName() {
+//        return field.getName();
+//    }
 
     @Override
     public String getDbColumnName() {
@@ -99,18 +99,18 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return field.getAnnotation(Id.class) != null;
     }
 
-    @SneakyThrows
-    @Override
-    public boolean setIdFieldWithValue(Object idInstance, Object value) {
-        field.set(idInstance, value);
-        return false;
-    }
+//    @SneakyThrows
+//    @Override
+//    public boolean setIdFieldWithValue(Object idInstance, Object value) {
+//        field.set(idInstance, value);
+//        return false;
+//    }
 
-    @SneakyThrows
-    @Override
-    public Object getIdFieldValue(Object idInstance) {
-        return field.get(idInstance);
-    }
+//    @SneakyThrows
+//    @Override
+//    public Object getIdFieldValue(Object idInstance) {
+//        return field.get(idInstance);
+//    }
 
     @Override
     public IgnoreType getIgnoreProperty() {
@@ -132,10 +132,10 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return StaticEntityMetadata.createEntityMetadata(ProductItem.class);
     }
 
-    @SneakyThrows
-    @Override
-    public boolean setEntityFieldWithValue(Object entity, Object value) {
-        field.set(entity, value);
-        return false;
-    }
+//    @SneakyThrows
+//    @Override
+//    public boolean setEntityFieldWithValue(Object entity, Object value) {
+//        field.set(entity, value);
+//        return false;
+//    }
 }

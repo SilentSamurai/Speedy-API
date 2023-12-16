@@ -67,7 +67,7 @@ class SpeedyGetMetadataTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].keyFields").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].fields").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].fields").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[*].fields[*].className").exists())
+//                .andExpect(MockMvcResultMatchers.jsonPath("$[*].fields[*].className").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].fields[*].outputProperty").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].fields[*].dbColumn").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$[*].fields[*].fieldType").exists())

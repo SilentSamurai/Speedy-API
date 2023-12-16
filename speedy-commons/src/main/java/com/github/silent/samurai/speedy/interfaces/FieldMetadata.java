@@ -7,8 +7,6 @@ public interface FieldMetadata {
 
     ValueType getValueType();
 
-    Object getEntityFieldValue(Object entity);
-
     boolean isAssociation();
 
     boolean isCollection();
@@ -27,8 +25,6 @@ public interface FieldMetadata {
 
     boolean isDeserializable();
 
-    String getClassFieldName();
-
     String getDbColumnName();
 
     String getOutputPropertyName();
@@ -41,5 +37,5 @@ public interface FieldMetadata {
 
     EntityMetadata getAssociationMetadata();
 
-    boolean setEntityFieldWithValue(Object entity, Object value);
+
 }

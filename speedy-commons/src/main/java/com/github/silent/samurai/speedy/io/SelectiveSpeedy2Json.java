@@ -43,13 +43,13 @@ public class SelectiveSpeedy2Json {
                         Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
                         if (value != null) {
                             ArrayNode childArray = formCollection(value, fieldMetadata.getAssociationMetadata());
-                            jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
+                            jsonObject.set(fieldMetadata.getOutputPropertyName(), childArray);
                         }
                     } else {
                         SpeedyEntity value = (SpeedyEntity) speedyEntity.get(fieldMetadata);
                         if (value != null) {
                             ObjectNode childObject = fromSpeedyEntity(value, fieldMetadata.getAssociationMetadata());
-                            jsonObject.set(fieldMetadata.getClassFieldName(), childObject);
+                            jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
                         }
                     }
                 } else {
@@ -57,13 +57,13 @@ public class SelectiveSpeedy2Json {
                         Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
                         if (!value.isEmpty()) {
                             ArrayNode childArray = onlyKeyCollection(value, fieldMetadata.getAssociationMetadata());
-                            jsonObject.set(fieldMetadata.getClassFieldName(), childArray);
+                            jsonObject.set(fieldMetadata.getOutputPropertyName(), childArray);
                         }
                     } else {
                         SpeedyEntity value = (SpeedyEntity) speedyEntity.get(fieldMetadata);
                         if (!value.isEmpty()) {
                             ObjectNode childObject = onlyKeys(value, fieldMetadata.getAssociationMetadata());
-                            jsonObject.set(fieldMetadata.getClassFieldName(), childObject);
+                            jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
                         }
                     }
                 }
@@ -72,7 +72,7 @@ public class SelectiveSpeedy2Json {
                 if (!speedyValue.isEmpty()) {
                     Collection<SpeedyValue> value = speedyValue.getValue();
                     ArrayNode jsonArray = formCollectionOfBasics(fieldMetadata, value);
-                    jsonObject.set(fieldMetadata.getClassFieldName(), jsonArray);
+                    jsonObject.set(fieldMetadata.getOutputPropertyName(), jsonArray);
                 }
             } else {
                 SpeedyValue value = speedyEntity.get(fieldMetadata);

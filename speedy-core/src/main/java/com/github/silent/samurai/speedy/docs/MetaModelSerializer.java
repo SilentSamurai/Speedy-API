@@ -38,15 +38,15 @@ public class MetaModelSerializer {
                 .forEach(keyArray::add);
         jsonMetadata.set("keyFields", keyArray);
         jsonMetadata.put("hasCompositeKey", entityMetadata.hasCompositeKey());
-        jsonMetadata.put("entityType", entityMetadata.getEntityClass().getName());
-        jsonMetadata.put("keyType", entityMetadata.getKeyClass().getName());
+        jsonMetadata.put("entityType", entityMetadata.getName());
+        jsonMetadata.put("keyType", entityMetadata.getName());
         return jsonMetadata;
     }
 
 
     public static JsonNode serializeFieldMetadata(FieldMetadata fieldMetadata) {
         ObjectNode fieldMetadataJson = CommonUtil.json().createObjectNode();
-        fieldMetadataJson.put("className", fieldMetadata.getClassFieldName());
+//        fieldMetadataJson.put("className", fieldMetadata.getClassFieldName());
         fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
         fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
         fieldMetadataJson.put("fieldType", fieldMetadata.getFieldType().getName());

@@ -4,6 +4,8 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -51,7 +53,7 @@ public class JpaEntityMetadata implements IJpaEntityMetadata {
     @Override
     public Set<String> getAllFieldNames() {
         return fieldMap.values().stream()
-                .map(FieldMetadata::getClassFieldName)
+                .map(IJpaFieldMetadata::getClassFieldName)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -71,9 +73,9 @@ public class JpaEntityMetadata implements IJpaEntityMetadata {
     @Override
     public Set<String> getKeyFieldNames() {
         return fieldMap.values().stream()
-                .filter(KeyFieldMetadata.class::isInstance)
-                .map(KeyFieldMetadata.class::cast)
-                .map(FieldMetadata::getClassFieldName)
+                .filter(IJpaKeyFieldMetadata.class::isInstance)
+                .map(IJpaKeyFieldMetadata.class::cast)
+                .map(IJpaFieldMetadata::getClassFieldName)
                 .collect(Collectors.toUnmodifiableSet());
     }
 

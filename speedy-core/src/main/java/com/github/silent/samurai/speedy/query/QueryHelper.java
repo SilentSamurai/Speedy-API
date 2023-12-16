@@ -60,7 +60,7 @@ public class QueryHelper {
         if (isAllEqualCondition) {
             Set<String> keywords = speedyQuery.getWhere().getConditions().stream()
                     .map(EqCondition.class::cast)
-                    .map(condition -> condition.getField().getFieldMetadata().getClassFieldName())
+                    .map(condition -> condition.getField().getFieldMetadata().getOutputPropertyName())
                     .collect(Collectors.toSet());
             return MetadataUtil.hasOnlyPrimaryKeyFields(speedyQuery.getFrom(), keywords);
         }

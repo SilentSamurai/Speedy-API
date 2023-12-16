@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import lombok.Data;
 import lombok.SneakyThrows;
 
@@ -71,7 +72,8 @@ public class StaticEntityMetadata implements IJpaEntityMetadata {
     @Override
     public Set<String> getAllFieldNames() {
         return getAllFields().stream()
-                .map(FieldMetadata::getClassFieldName)
+                .map(IJpaFieldMetadata.class::cast)
+                .map(IJpaFieldMetadata::getClassFieldName)
                 .collect(Collectors.toSet());
     }
 
@@ -108,7 +110,8 @@ public class StaticEntityMetadata implements IJpaEntityMetadata {
     @Override
     public Set<String> getKeyFieldNames() {
         return getKeyFields().stream()
-                .map(FieldMetadata::getClassFieldName)
+                .map(IJpaFieldMetadata.class::cast)
+                .map(IJpaFieldMetadata::getClassFieldName)
                 .collect(Collectors.toSet());
     }
 

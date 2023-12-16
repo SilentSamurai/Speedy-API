@@ -70,23 +70,13 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public Set<String> getAllFieldNames() {
         return getAllFields().stream()
-                .map(FieldMetadata::getClassFieldName)
+                .map(FieldMetadata::getOutputPropertyName)
                 .collect(Collectors.toSet());
     }
 
     @Override
     public boolean hasCompositeKey() {
         return entityClass.getAnnotation(IdClass.class) != null;
-    }
-
-    @Override
-    public Class<?> getEntityClass() {
-        return entityClass;
-    }
-
-    @Override
-    public Class<?> getKeyClass() {
-        return keyClass;
     }
 
     @Override
@@ -107,7 +97,7 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public Set<String> getKeyFieldNames() {
         return getKeyFields().stream()
-                .map(FieldMetadata::getClassFieldName)
+                .map(FieldMetadata::getOutputPropertyName)
                 .collect(Collectors.toSet());
     }
 

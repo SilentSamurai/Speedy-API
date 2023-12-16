@@ -21,10 +21,6 @@ public interface EntityMetadata {
 
     boolean hasCompositeKey();
 
-    Class<?> getEntityClass();
-
-    Class<?> getKeyClass();
-
     Set<KeyFieldMetadata> getKeyFields();
 
     Set<String> getKeyFieldNames();

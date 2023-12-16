@@ -8,6 +8,8 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.google.common.collect.Lists;
@@ -24,7 +26,7 @@ import java.util.*;
 public class QueryBuilder {
 
     private final SpeedyQuery speedyQuery;
-    private final EntityMetadata entityMetadata;
+    private final IJpaEntityMetadata entityMetadata;
     private final EntityManager entityManager;
     private final CriteriaBuilder criteriaBuilder;
     private final CriteriaQuery<?> query;
@@ -32,7 +34,7 @@ public class QueryBuilder {
 
     public QueryBuilder(SpeedyQuery speedyQuery, EntityManager entityManager) {
         this.speedyQuery = speedyQuery;
-        this.entityMetadata = speedyQuery.getFrom();
+        this.entityMetadata = (IJpaEntityMetadata) speedyQuery.getFrom();
         this.entityManager = entityManager;
         Objects.requireNonNull(entityMetadata, "Entity Not Found ");
         criteriaBuilder = entityManager.getCriteriaBuilder();
@@ -55,10 +57,13 @@ public class QueryBuilder {
     <T> Expression<T> getPath(BinaryCondition bCondition) {
         QueryField queryField = bCondition.getField();
         if (queryField.isAssociated()) {
-            return tableRoot.get(queryField.getFieldMetadata().getClassFieldName())
-                    .get(queryField.getAssociatedFieldMetadata().getClassFieldName());
+            IJpaFieldMetadata fieldMetadata = (IJpaFieldMetadata) queryField.getFieldMetadata();
+            IJpaFieldMetadata associatedMetadata = (IJpaFieldMetadata) queryField.getAssociatedFieldMetadata();
+            return tableRoot.get(fieldMetadata.getClassFieldName())
+                    .get(associatedMetadata.getClassFieldName());
         } else {
-            return tableRoot.get(queryField.getFieldMetadata().getClassFieldName());
+            IJpaFieldMetadata fieldMetadata = (IJpaFieldMetadata) queryField.getFieldMetadata();
+            return tableRoot.get(fieldMetadata.getClassFieldName());
         }
     }
 
@@ -221,7 +226,8 @@ public class QueryBuilder {
     List<Order> captureOrderBy() {
         List<Order> orderList = new LinkedList<>();
         for (OrderBy orderBy : speedyQuery.getOrderByList()) {
-            String classFieldName = orderBy.getFieldMetadata().getClassFieldName();
+            IJpaFieldMetadata fieldMetadata = (IJpaFieldMetadata) orderBy.getFieldMetadata();
+            String classFieldName = fieldMetadata.getClassFieldName();
             OrderByOperator operator = orderBy.getOperator();
             if (operator == OrderByOperator.ASC) {
                 orderList.add(criteriaBuilder.asc(tableRoot.get(classFieldName)));

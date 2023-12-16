@@ -6,6 +6,8 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
@@ -26,7 +28,8 @@ public class CommonUtil {
 
     private static SpeedyEntity fromJpaEntityInner(Object entity, EntityMetadata entityMetadata, boolean goDeep) throws Exception {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
-        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+        for (FieldMetadata simpleMetadata : entityMetadata.getAllFields()) {
+            IJpaFieldMetadata fieldMetadata = (IJpaFieldMetadata) simpleMetadata;
             Object fieldValue = fieldMetadata.getEntityFieldValue(entity);
             if (fieldValue == null) {
                 speedyEntity.put(fieldMetadata, SpeedyValueFactory.fromNull());
@@ -83,7 +86,8 @@ public class CommonUtil {
                                               Object jpaEntityInstance,
                                               EntityMetadata entityMetadata,
                                               EntityManager entityManager) throws Exception {
-        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+        for (FieldMetadata simpleMetadata : entityMetadata.getAllFields()) {
+            IJpaFieldMetadata fieldMetadata = (IJpaFieldMetadata) simpleMetadata;
             if (!speedyEntity.has(fieldMetadata)) continue;
             SpeedyValue speedyValue = speedyEntity.get(fieldMetadata);
             if (fieldMetadata.isAssociation()) {
@@ -91,9 +95,9 @@ public class CommonUtil {
                     Collection<SpeedyValue> collection = speedyValue.asCollection();
                     // TODO complete collection os association
                 } else {
-                    EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+                    IJpaEntityMetadata associationMetadata = (IJpaEntityMetadata) fieldMetadata.getAssociationMetadata();
                     SpeedyEntity valueObject = speedyValue.asObject();
-                    Object pk = getPKFromSpeedyValue(valueObject, (IJpaEntityMetadata) associationMetadata);
+                    Object pk = getPKFromSpeedyValue(valueObject, associationMetadata);
                     Object associatedEntity = entityManager.find(associationMetadata.getEntityClass(), pk);
                     fieldMetadata.setEntityFieldWithValue(jpaEntityInstance, associatedEntity);
                 }
@@ -121,7 +125,8 @@ public class CommonUtil {
     public static Object getPKFromSpeedyValue(SpeedyEntity speedyEntity, IJpaEntityMetadata entityMetadata) throws Exception {
         if (entityMetadata.hasCompositeKey()) {
             Object newKeyInstance = entityMetadata.createNewKeyInstance();
-            for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
+            for (KeyFieldMetadata simpleMetadata : entityMetadata.getKeyFields()) {
+                IJpaKeyFieldMetadata fieldMetadata = (IJpaKeyFieldMetadata) simpleMetadata;
                 if (speedyEntity.has(fieldMetadata)) {
                     SpeedyValue speedyValue = speedyEntity.get(fieldMetadata);
                     Object fieldValue = SpeedyValueFactory.toJavaType(fieldMetadata, speedyValue);
@@ -133,7 +138,6 @@ public class CommonUtil {
             Optional<KeyFieldMetadata> primaryKeyFieldMetadata = entityMetadata.getKeyFields().stream().findAny();
             if (primaryKeyFieldMetadata.isPresent()) {
                 KeyFieldMetadata keyFieldMetadata = primaryKeyFieldMetadata.get();
-                String propertyName = keyFieldMetadata.getOutputPropertyName();
                 if (speedyEntity.has(keyFieldMetadata)) {
                     SpeedyValue speedyValue = speedyEntity.get(keyFieldMetadata);
                     Object fieldValue = SpeedyValueFactory.toJavaType(keyFieldMetadata, speedyValue);

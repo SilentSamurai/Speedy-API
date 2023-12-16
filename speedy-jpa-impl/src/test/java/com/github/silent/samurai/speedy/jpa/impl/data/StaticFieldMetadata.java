@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -12,7 +13,7 @@ import javax.persistence.Id;
 import java.lang.reflect.Field;
 
 @Data
-public class StaticFieldMetadata implements KeyFieldMetadata {
+public class StaticFieldMetadata implements IJpaKeyFieldMetadata {
 
     private Field field;
 

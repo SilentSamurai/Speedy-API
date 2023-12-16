@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -12,7 +13,7 @@ import java.lang.reflect.Method;
 
 @Getter
 @Setter
-public class JpaKeyFieldMetadata extends JpaFieldMetadata implements KeyFieldMetadata {
+public class JpaKeyFieldMetadata extends JpaFieldMetadata implements IJpaKeyFieldMetadata {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaKeyFieldMetadata.class);
 

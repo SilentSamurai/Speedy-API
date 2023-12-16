@@ -3,7 +3,8 @@ package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ import java.lang.reflect.Method;
 
 @Getter
 @Setter
-public class JpaFieldMetadata implements FieldMetadata {
+public class JpaFieldMetadata implements IJpaFieldMetadata {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaFieldMetadata.class);
 
@@ -37,8 +38,8 @@ public class JpaFieldMetadata implements FieldMetadata {
     private boolean isRequired;
     private boolean isSerializable;
     private boolean isDeserializable;
-    private EntityMetadata entityMetadata;
-    private EntityMetadata associationMetadata;
+    private IJpaEntityMetadata entityMetadata;
+    private IJpaEntityMetadata associationMetadata;
 
     public boolean isAssociation() {
         return jpaAttribute.isAssociation();
