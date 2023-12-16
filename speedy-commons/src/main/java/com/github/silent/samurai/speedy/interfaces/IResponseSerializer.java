@@ -9,5 +9,8 @@ public interface IResponseSerializer {
 
     ResponseReturningRequestContext getContext();
 
-    void writeResponse(IBaseResponsePayload requestedPayload) throws Exception;
+    void writeResponse(SinglePayload singlePayload) throws Exception;
+
+    void writeResponse(MultiPayload multiPayload) throws Exception;
+
 }

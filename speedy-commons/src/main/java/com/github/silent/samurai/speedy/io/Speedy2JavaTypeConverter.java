@@ -99,17 +99,9 @@ public class Speedy2JavaTypeConverter {
             Instant instant = speedyDate.getValue().atStartOfDay(ZoneId.of("UTC")).toInstant();
             return Date.from(instant);
         });
-        put(ValueType.ZONED_DATE_TIME, Instant.class, (speedyValue, type) -> {
-            SpeedyZonedDateTime speedyDateTime = (SpeedyZonedDateTime) speedyValue;
-            return speedyDateTime.asZonedDateTime().toInstant();
-        });
-        put(ValueType.DATE_TIME, Instant.class, (speedyValue, type) -> {
-            SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
-            return speedyDateTime.getValue().atZone(ZoneId.of("UTC")).toInstant();
-        });
-        put(ValueType.ZONED_DATE_TIME, ZonedDateTime.class, (speedyValue, type) -> {
-            SpeedyZonedDateTime speedyDateTime = (SpeedyZonedDateTime) speedyValue;
-            return speedyDateTime.asZonedDateTime();
+        put(ValueType.DATE, LocalDate.class, (speedyValue, type) -> {
+            SpeedyDate speedyDate = (SpeedyDate) speedyValue;
+            return speedyDate.asDate();
         });
         put(ValueType.TIME, LocalTime.class, (speedyValue, type) -> {
             SpeedyTime speedyTime = (SpeedyTime) speedyValue;
@@ -120,9 +112,9 @@ public class Speedy2JavaTypeConverter {
 //            // convert localTime to Instant object
 //            return speedyTime.getValue();
 //        });
-        put(ValueType.DATE, LocalDate.class, (speedyValue, type) -> {
-            SpeedyDate speedyDate = (SpeedyDate) speedyValue;
-            return speedyDate.asDate();
+        put(ValueType.DATE_TIME, Instant.class, (speedyValue, type) -> {
+            SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
+            return speedyDateTime.getValue().atZone(ZoneId.of("UTC")).toInstant();
         });
         put(ValueType.DATE_TIME, LocalDate.class, (speedyValue, type) -> {
             SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
@@ -135,6 +127,15 @@ public class Speedy2JavaTypeConverter {
         put(ValueType.DATE_TIME, Timestamp.class, (speedyValue, type) -> {
             SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
             return Timestamp.valueOf(speedyDateTime.getValue());
+        });
+        put(ValueType.ZONED_DATE_TIME, ZonedDateTime.class, (speedyValue, type) -> {
+            SpeedyZonedDateTime speedyDateTime = (SpeedyZonedDateTime) speedyValue;
+            return speedyDateTime.asZonedDateTime();
+        });
+
+        put(ValueType.ZONED_DATE_TIME, Instant.class, (speedyValue, type) -> {
+            SpeedyZonedDateTime speedyDateTime = (SpeedyZonedDateTime) speedyValue;
+            return speedyDateTime.asZonedDateTime().toInstant();
         });
     }
 

@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,9 @@ public class DeleteDataHandler {
         this.context = context;
     }
 
-    public Optional<List<Object>> process() throws Exception {
+    public Optional<List<SpeedyEntity>> process() throws Exception {
 
-        List<Object> deletedObjects = new LinkedList<>();
+        List<SpeedyEntity> deletedObjects = new LinkedList<>();
         EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();
         QueryProcessor queryProcessor = context.getQueryProcessor();
@@ -41,11 +42,13 @@ public class DeleteDataHandler {
                 // handle delete request
                 if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
                     SpeedyVirtualEntityHandler handler = context.getVEntityProcessor().getHandler(entityMetadata);
-                    handler.delete(parsedKey);
+                    SpeedyEntity deletedEntity = handler.delete(parsedKey);
+                    deletedObjects.add(deletedEntity);
                 } else {
-                    queryProcessor.delete(parsedKey);
+                    SpeedyEntity deletedEntity = queryProcessor.delete(parsedKey);
+                    deletedObjects.add(deletedEntity);
                 }
-                deletedObjects.add(parsedKey);
+
                 // fire post delete event
                 eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE,
                         entityMetadata, parsedKey);

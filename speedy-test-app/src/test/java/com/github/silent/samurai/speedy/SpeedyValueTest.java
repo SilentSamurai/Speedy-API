@@ -19,8 +19,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
+import java.time.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -53,12 +55,18 @@ class SpeedyValueTest {
     void normalTest() throws Exception {
         ValueTestEntityApi apiInstance = new ValueTestEntityApi(defaultClient);
 
+        ZonedDateTime asiaTokyoTime = ZonedDateTime.parse("2021-01-01T00:00+09:00");
+        LocalDateTime localDateTime = LocalDateTime.parse("2021-01-01T00:00:00");
+        LocalDate localDate = LocalDate.parse("2021-01-01");
+        LocalTime localTime = LocalTime.parse("00:00:00");
+        Instant instantDateTime = Instant.parse("2021-01-01T00:00:00Z");
+
         CreateValueTestEntityRequest createValueTestEntityRequest = new CreateValueTestEntityRequest();
         createValueTestEntityRequest.setLocalDateTime("2021-01-01T00:00:00");
         createValueTestEntityRequest.setLocalDate("2021-01-01");
         createValueTestEntityRequest.setLocalTime("00:00:00");
         createValueTestEntityRequest.setInstantTime("2021-01-01T00:00:00Z");
-        createValueTestEntityRequest.setZonedDateTime("2021-01-01T00:00:00+09:00[Asia/Tokyo]");
+        createValueTestEntityRequest.setZonedDateTime("2021-01-01T00:00+09:00");
 
         BulkCreateValueTestEntityResponse bulkCreateValueTestEntityResponse = apiInstance
                 .bulkCreateValueTestEntity(List.of(createValueTestEntityRequest));
@@ -68,19 +76,23 @@ class SpeedyValueTest {
         ValueTestEntityKey valueTestEntityKey = payload.get(0);
 
 
-        valueTestRepository.findById(valueTestEntityKey.getId()).ifPresent(valueTestEntity -> {
-            LOGGER.info("valueTestEntity from db {}", valueTestEntity);
-            Assertions.assertNotNull(valueTestEntity.getLocalDateTime());
-            Assertions.assertEquals("2021-01-01T00:00", valueTestEntity.getLocalDateTime().toString());
-            Assertions.assertNotNull(valueTestEntity.getLocalDate());
-            Assertions.assertEquals("2021-01-01", valueTestEntity.getLocalDate().toString());
-            Assertions.assertNotNull(valueTestEntity.getLocalTime());
-            Assertions.assertEquals("00:00", valueTestEntity.getLocalTime().toString());
-            Assertions.assertNotNull(valueTestEntity.getInstantTime());
-            Assertions.assertEquals("2021-01-01T00:00:00Z", valueTestEntity.getInstantTime().toString());
-            Assertions.assertNotNull(valueTestEntity.getZonedDateTime());
-            Assertions.assertEquals("2021-01-01T00:00+09:00[Asia/Tokyo]", valueTestEntity.getZonedDateTime().toString());
-        });
+        Optional<com.github.silent.samurai.speedy.entity.ValueTestEntity> optionalValueTestEntity =
+                valueTestRepository.findById(valueTestEntityKey.getId());
+
+        Assertions.assertTrue(optionalValueTestEntity.isPresent());
+        com.github.silent.samurai.speedy.entity.ValueTestEntity jpaEntity = optionalValueTestEntity.get();
+
+        LOGGER.info("jpaEntity from db {}", jpaEntity);
+        Assertions.assertNotNull(jpaEntity.getLocalDateTime());
+        Assertions.assertEquals(localDateTime, jpaEntity.getLocalDateTime());
+        Assertions.assertNotNull(jpaEntity.getLocalDate());
+        Assertions.assertEquals(localDate, jpaEntity.getLocalDate());
+        Assertions.assertNotNull(jpaEntity.getLocalTime());
+        Assertions.assertEquals(localTime, jpaEntity.getLocalTime());
+        Assertions.assertNotNull(jpaEntity.getInstantTime());
+        Assertions.assertEquals(instantDateTime, jpaEntity.getInstantTime());
+        Assertions.assertNotNull(jpaEntity.getZonedDateTime());
+        Assertions.assertEquals(asiaTokyoTime, jpaEntity.getZonedDateTime().withZoneSameInstant(asiaTokyoTime.getZone()));
 
 
         FilteredValueTestEntityResponse filteredValueTestEntityResponse = apiInstance.getValueTestEntity(valueTestEntityKey.getId());
@@ -90,15 +102,17 @@ class SpeedyValueTest {
 
         Assertions.assertEquals(1, valueTestEntities.size());
 
-        ValueTestEntity valueTestEntity = valueTestEntities.get(0);
+        ValueTestEntity valueTestEntity2 = valueTestEntities.get(0);
 
-        LOGGER.info("valueTestEntity {}", valueTestEntity);
+        LOGGER.info("jpaEntity {}", valueTestEntity2);
 
-        Assertions.assertEquals("2021-01-01T00:00:00", valueTestEntity.getLocalDateTime());
-        Assertions.assertEquals("2021-01-01", valueTestEntity.getLocalDate());
-        Assertions.assertEquals("00:00:00", valueTestEntity.getLocalTime());
-        Assertions.assertEquals("2021-01-01T00:00:00Z", valueTestEntity.getInstantTime());
-        Assertions.assertEquals("2021-01-01T00:00:00+09:00[Asia/Tokyo]", valueTestEntity.getZonedDateTime());
+        Assertions.assertEquals("2021-01-01T00:00:00", valueTestEntity2.getLocalDateTime());
+        Assertions.assertEquals("2021-01-01", valueTestEntity2.getLocalDate());
+        Assertions.assertEquals("00:00:00", valueTestEntity2.getLocalTime());
+        Assertions.assertEquals("2021-01-01T00:00:00Z", valueTestEntity2.getInstantTime());
+        Assertions.assertNotNull(valueTestEntity2.getZonedDateTime());
+        ZonedDateTime szoneddatetime = ZonedDateTime.parse(valueTestEntity2.getZonedDateTime());
+        Assertions.assertEquals(asiaTokyoTime, szoneddatetime.withZoneSameInstant(asiaTokyoTime.getZone()));
 
 
     }

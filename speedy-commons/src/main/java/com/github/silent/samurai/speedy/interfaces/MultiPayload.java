@@ -1,8 +1,10 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-public interface IBaseResponsePayload {
+import java.util.List;
 
-    Object getPayload();
+public interface MultiPayload {
+
+    List<? extends SpeedyValue> getPayload();
 
     int getPageCount();
 

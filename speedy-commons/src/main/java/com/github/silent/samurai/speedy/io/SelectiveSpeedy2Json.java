@@ -1,23 +1,22 @@
-package com.github.silent.samurai.speedy.serializers;
+package com.github.silent.samurai.speedy.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.lang.reflect.InvocationTargetException;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class SelectiveFieldJsonSerializer {
+public class SelectiveSpeedy2Json {
 
     private final MetaModelProcessor metaModelProcessor;
     private final Predicate<FieldMetadata> fieldPredicate;
@@ -25,7 +24,7 @@ public class SelectiveFieldJsonSerializer {
 
     private final Set<String> expand = new HashSet<>();
 
-    public SelectiveFieldJsonSerializer(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
+    public SelectiveSpeedy2Json(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
         this.metaModelProcessor = metaModelProcessor;
         this.fieldPredicate = fieldPredicate;
     }
@@ -113,6 +112,9 @@ public class SelectiveFieldJsonSerializer {
 
     public void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
         switch (fieldMetadata.getValueType()) {
+            case BOOL:
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asBoolean());
+                break;
             case TEXT:
                 jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asText());
                 break;
@@ -122,24 +124,31 @@ public class SelectiveFieldJsonSerializer {
             case FLOAT:
                 jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asDouble());
                 break;
-            case DATE:
-                SpeedyDate speedyDate = (SpeedyDate) speedyValue;
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyDate.getValue().toString());
+            case DATE: {
+                String stringValue = speedyValue.asDate().format(DateTimeFormatter.ISO_DATE);
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
                 break;
-            case TIME:
-                SpeedyTime speedyTime = (SpeedyTime) speedyValue;
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyTime.getValue().toString());
+            }
+            case TIME: {
+                String stringValue = speedyValue.asTime().format(DateTimeFormatter.ISO_TIME);
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
                 break;
-            case DATE_TIME:
-                SpeedyDateTime speedyDateTime = (SpeedyDateTime) speedyValue;
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyDateTime.getValue().toString());
+            }
+            case DATE_TIME: {
+                String stringValue = speedyValue.asDateTime().format(DateTimeFormatter.ISO_DATE_TIME);
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
                 break;
+            }
+            case ZONED_DATE_TIME: {
+                String stringValue = speedyValue.asZonedDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
+                break;
+            }
             case NULL:
                 jsonObject.putNull(fieldMetadata.getOutputPropertyName());
                 break;
             case OBJECT:
             case COLLECTION:
-            default:
                 break;
 
         }
@@ -155,7 +164,7 @@ public class SelectiveFieldJsonSerializer {
         return jsonArray;
     }
 
-    public ArrayNode formCollection(Collection<SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ArrayNode formCollection(Collection<? extends SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue object : collection) {
             SpeedyEntity speedyEntity = (SpeedyEntity) object;

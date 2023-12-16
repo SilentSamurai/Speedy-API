@@ -323,10 +323,10 @@ class SpeedyEntityTest {
     void crudCurrency() {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
         CreateCurrencyRequest createCurrencyRequest = new CreateCurrencyRequest();
-        createCurrencyRequest.currencyAbbr("INR")
-                .currencyName("Indian Rupee")
-                .currencySymbol("₹")
-                .country("India");
+        createCurrencyRequest.currencyAbbr("CED")
+                .currencyName("Core Demo Currency")
+                .currencySymbol("yhd")
+                .country("Earth");
 
         BulkCreateCurrencyResponse bulkCreateCurrency200Response = currencyApi
                 .bulkCreateCurrency(Lists.newArrayList(createCurrencyRequest));
@@ -358,15 +358,15 @@ class SpeedyEntityTest {
         Assertions.assertNotNull(currency.getCurrencySymbol());
         Assertions.assertNotNull(currency.getId());
 
-        Assertions.assertEquals("INR", currency.getCurrencyAbbr());
-        Assertions.assertEquals("Indian Rupee", currency.getCurrencyName());
+        Assertions.assertEquals("CED", currency.getCurrencyAbbr());
+        Assertions.assertEquals("Core Demo Currency", currency.getCurrencyName());
         Assertions.assertFalse(currency.getCurrencySymbol().isBlank());
-        Assertions.assertEquals("India", currency.getCountry());
+        Assertions.assertEquals("Earth", currency.getCountry());
 
         LOGGER.info("filteredCurrencyResponse {}", currency);
 
         UpdateCurrencyRequest updateCurrencyRequest = new UpdateCurrencyRequest();
-        updateCurrencyRequest.country("INDIA");
+        updateCurrencyRequest.country("Earth2");
 
         UpdateCurrencyResponse updateCurrency200Response = currencyApi
                 .updateCurrency(currencyKey.getId(), updateCurrencyRequest);
@@ -377,7 +377,7 @@ class SpeedyEntityTest {
 
         Assertions.assertNotNull(updatedCurrency);
         Assertions.assertNotNull(updatedCurrency.getCountry());
-        Assertions.assertEquals("INDIA", updatedCurrency.getCountry());
+        Assertions.assertEquals("Earth2", updatedCurrency.getCountry());
 
 
         filteredCurrencyResponse = currencyApi.getCurrency(currencyKey.getId());
@@ -389,7 +389,7 @@ class SpeedyEntityTest {
 
         Assertions.assertNotNull(currency);
         Assertions.assertNotNull(currency.getCountry());
-        Assertions.assertEquals("INDIA", updatedCurrency.getCountry());
+        Assertions.assertEquals("Earth2", updatedCurrency.getCountry());
 
         BulkDeleteCurrencyResponse bulkDeleteCurrencyResponse = currencyApi.bulkDeleteCurrency(Lists.newArrayList(currencyKey));
 
@@ -458,7 +458,6 @@ class SpeedyEntityTest {
         Assertions.assertNotNull(filteredExchangeRateResponse.getPayload().get(0));
 
         ExchangeRate exchangeRate = filteredExchangeRateResponse.getPayload().get(0);
-
         Assertions.assertNotNull(exchangeRate);
         Assertions.assertNotNull(exchangeRate.getBaseCurrency());
         Assertions.assertNotNull(exchangeRate.getForeignCurrency());

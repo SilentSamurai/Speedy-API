@@ -11,7 +11,6 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.models.SpeedyNull;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,9 +22,11 @@ import java.util.LinkedList;
 
 import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 
-public class JsonEntityDeserializer {
+public class Json2Speedy {
     public static SpeedyValue fromValueNode(FieldMetadata fieldMetadata, ValueNode jsonNode) throws BadRequestException {
         switch (fieldMetadata.getValueType()) {
+            case BOOL:
+                return fromBool(jsonNode.asBoolean());
             case TEXT:
                 return fromText(jsonNode.asText());
             case INT:
@@ -58,11 +59,15 @@ public class JsonEntityDeserializer {
                     throw new BadRequestException("ZonedDateTime value must be a string");
                 }
                 String zonedDateTimeValue = jsonNode.asText();
-                ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonedDateTimeValue, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonedDateTimeValue, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                 return fromZonedDateTime(zonedDateTime);
-            default:
+            case NULL:
                 return fromNull();
+            case OBJECT:
+            case COLLECTION:
+                throw new BadRequestException("Field " + fieldMetadata.getOutputPropertyName() + " must be a value");
         }
+        throw new BadRequestException("Field " + fieldMetadata.getOutputPropertyName() + " must be a value");
     }
 
     public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {

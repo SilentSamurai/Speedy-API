@@ -22,6 +22,7 @@ import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 
@@ -273,7 +274,7 @@ class SpeedyGetConditionTest {
         Assertions.assertFalse(payload.isEmpty());
         for (Procurement inventory : payload) {
             Assertions.assertNotNull(inventory.getPurchaseDate());
-            Instant purchaseDate = LocalDateTime.parse(inventory.getPurchaseDate()).atZone(ZoneId.of("UTC")).toInstant();
+            Instant purchaseDate = ZonedDateTime.parse(inventory.getPurchaseDate()).toInstant();
             Assertions.assertTrue(purchaseDate.isBefore(Instant.parse("2023-05-11T18:13:38.626Z")));
         }
 

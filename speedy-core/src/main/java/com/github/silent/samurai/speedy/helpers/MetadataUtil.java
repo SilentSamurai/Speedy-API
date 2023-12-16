@@ -46,7 +46,7 @@ public class MetadataUtil {
 
     public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject) throws Exception {
         try {
-            return SpeedyValueFactory.fromJson(entityMetadata, jsonObject);
+            return SpeedyValueFactory.fromJsonObject(entityMetadata, jsonObject);
         } catch (Exception e) {
             throw new BadRequestException("failed to parse body", e);
         }

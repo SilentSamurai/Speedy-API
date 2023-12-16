@@ -1,14 +1,15 @@
-package com.github.silent.samurai.speedy.serializers.json;
+package com.github.silent.samurai.speedy.serializers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.serializers.SelectiveFieldJsonSerializer;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.http.MediaType;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -37,22 +38,29 @@ public class JSONSerializer implements IResponseSerializer {
         return context;
     }
 
-    public void writeResponse(IBaseResponsePayload requestedPayload) throws Exception {
-        JsonNode jsonElement;
-        SelectiveFieldJsonSerializer selectiveFieldJsonSerializer = new SelectiveFieldJsonSerializer(context.getMetaModelProcessor(), fieldPredicate);
-        if (context.getSerializationType() == IResponseSerializer.MULTIPLE_ENTITY) {
-            List<SpeedyValue> resultList = (List<SpeedyValue>) requestedPayload.getPayload();
-            jsonElement = selectiveFieldJsonSerializer.formCollection(resultList, context.getEntityMetadata());
-        } else {
-            SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
-            jsonElement = selectiveFieldJsonSerializer.fromSpeedyEntity(payload, context.getEntityMetadata());
-        }
+    public void writeResponse(SinglePayload requestedPayload) throws Exception {
+        SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
+                context.getMetaModelProcessor(), fieldPredicate);
+        SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
+        JsonNode jsonElement = selectiveSpeedy2Json.fromSpeedyEntity(payload, context.getEntityMetadata());
+        commonCode(jsonElement, requestedPayload.getPageIndex(), requestedPayload.getPageCount());
+    }
+
+    private void commonCode(JsonNode jsonElement, int pageIndex, int pageCount) throws IOException {
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();
         basePayload.set("payload", jsonElement);
-        basePayload.put("pageIndex", requestedPayload.getPageIndex());
-        basePayload.put("pageCount", requestedPayload.getPageCount());
+        basePayload.put("pageIndex", pageIndex);
+        basePayload.put("pageCount", pageCount);
         json.writeValue(context.getResponse().getWriter(), basePayload);
+    }
+
+    @Override
+    public void writeResponse(MultiPayload multiPayload) throws Exception {
+        SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(context.getMetaModelProcessor(), fieldPredicate);
+        List<? extends SpeedyValue> resultList = multiPayload.getPayload();
+        JsonNode jsonElement = selectiveSpeedy2Json.formCollection(resultList, context.getEntityMetadata());
+        commonCode(jsonElement, multiPayload.getPageIndex(), multiPayload.getPageCount());
     }
 
 
