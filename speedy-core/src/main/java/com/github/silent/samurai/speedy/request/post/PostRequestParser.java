@@ -30,7 +30,7 @@ public class PostRequestParser {
     public void processBatch() throws Exception {
         SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
         SpeedyQuery speedyQuery = parser.parse();
-        context.setEntityMetadata(speedyQuery.getFrom());
+        context.setSpeedyQuery(speedyQuery);
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());

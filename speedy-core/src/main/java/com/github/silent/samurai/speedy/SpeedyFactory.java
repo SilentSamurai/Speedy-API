@@ -71,13 +71,9 @@ public class SpeedyFactory {
         if (requestedData.isEmpty()) {
             throw new NotFoundException();
         }
+        List<SpeedyEntity> speedyEntities = requestedData.get();
         IResponseSerializer jsonSerializer = new JSONSerializer(context);
-        MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(requestedData.get());
-        int pageNumber = context.getSpeedyQuery().getPageInfo().getPageNo();
-        responseWrapper.setPageIndex(pageNumber);
-        response.setContentType(jsonSerializer.getContentType());
-        response.setStatus(HttpServletResponse.SC_OK);
-        jsonSerializer.writeResponse(responseWrapper);
+        jsonSerializer.write(speedyEntities);
     }
 
     public void processPOSTRequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor) throws Exception {
@@ -92,10 +88,7 @@ public class SpeedyFactory {
         new PostRequestParser(context).processBatch();
         Optional<List<SpeedyEntity>> savedEntities = new PostDataHandler(context).processBatch();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
-        MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(savedEntities.orElse(Collections.emptyList()));
-        response.setContentType(jsonSerializer.getContentType());
-        response.setStatus(HttpServletResponse.SC_OK);
-        jsonSerializer.writeResponse(responseWrapper);
+        jsonSerializer.write(savedEntities.orElse(Collections.emptyList()));
     }
 
     public void processPUTRequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor) throws Exception {
@@ -113,10 +106,8 @@ public class SpeedyFactory {
             throw new NotFoundException();
         }
         IResponseSerializer jsonSerializer = new JSONSerializer(context);
-        SinglePayloadWrapper responseWrapper = SinglePayloadWrapper.wrapperInResponse(savedEntity.get());
-        response.setContentType(jsonSerializer.getContentType());
-        response.setStatus(HttpServletResponse.SC_OK);
-        jsonSerializer.writeResponse(responseWrapper);
+        SpeedyEntity speedyEntity = savedEntity.get();
+        jsonSerializer.write(speedyEntity);
     }
 
     public void processDELETERequests(HttpServletRequest request, HttpServletResponse response, QueryProcessor queryProcessor) throws Exception {
@@ -130,10 +121,8 @@ public class SpeedyFactory {
         new DeleteRequestParser(context).process();
         Optional<List<SpeedyEntity>> removedEntities = new DeleteDataHandler(context).process();
         IResponseSerializer jsonSerializer = new JSONSerializer(context, KeyFieldMetadata.class::isInstance);
-        MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(removedEntities.orElse(Collections.emptyList()));
-        response.setContentType(jsonSerializer.getContentType());
-        response.setStatus(HttpServletResponse.SC_OK);
-        jsonSerializer.writeResponse(responseWrapper);
+        List<SpeedyEntity> speedyEntities = removedEntities.get();
+        jsonSerializer.write(speedyEntities);
     }
 
     public void requestResource(HttpServletRequest request, HttpServletResponse response) throws IOException {

@@ -1,60 +1,92 @@
 package com.github.silent.samurai.speedy.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ValueNode;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
+
+import java.util.Iterator;
+
 public class JsonQueryBuilder {
 
-//    final CriteriaBuilder criteriaBuilder;
-//    final CriteriaQuery<?> criteriaQuery;
-//    final Root<?> root;
-//
-//    public JsonQueryBuilder(EntityManager entityManager, EntityMetadata entityMetadata) {
-//        this.criteriaBuilder = entityManager.getCriteriaBuilder();
-//        this.criteriaQuery = criteriaBuilder.createQuery(entityMetadata.getEntityClass());
-//        this.root = criteriaQuery.from(entityMetadata.getEntityClass());
-//    }
-//
-//    private Predicate[] buildPredicate(ArrayNode arrayNode) throws BadRequestException {
-//        Iterator<JsonNode> elements = arrayNode.elements();
-//        Predicate[] predicates = new Predicate[arrayNode.size()];
-//        int i = 0;
-//        while (elements.hasNext()) {
-//            JsonNode jsonNode = elements.next();
-//            predicates[i++] = buildPredicate(jsonNode);
-//        }
-//        return predicates;
-//    }
-//
-//
-//    private Predicate buildPredicate(JsonNode node) throws BadRequestException {
-//
-//        PredicateFactory predicateFactory = new PredicateFactory(criteriaBuilder, root);
-//        if (node.isArray()) {
-//            ArrayNode arrayNode = (ArrayNode) node;
-//            Predicate[] predicates = buildPredicate(arrayNode);
-//            return criteriaBuilder.and(predicates);
-//        } else if (node.isObject()) {
-//            ObjectNode objectNode = (ObjectNode) node;
-//            if (objectNode.has("operator") && objectNode.has("field") && objectNode.has("value")) {
-//                ConditionOperator conditionOperator = ConditionOperator.fromSymbol(objectNode.get("operator").asText());
-//                String field = objectNode.get("field").asText();
-//                JsonNode valueNode = objectNode.get("value");
-//                if (valueNode.isArray()) {
-//                    return predicateFactory.create(operator, field, valueNode.elements().next().asText());
-//                } else {
-//                    return predicateFactory.create(operator, field, valueNode.asText());
-//                }
-//            } else if (objectNode.has("operator") && objectNode.has("conditions")) {
-//                ConditionOperator conditionOperator = ConditionOperator.fromSymbol(objectNode.get("operator").asText());
-//                JsonNode conditionsNode = objectNode.get("conditions");
-//                Predicate[] predicates = buildPredicate((ArrayNode) conditionsNode.elements());
-//                return operator == ConditionOperator.AND ? criteriaBuilder.and(predicates) : criteriaBuilder.or(predicates);
-//            } else if (objectNode.has("operator") && objectNode.has("field") && objectNode.has("value") && objectNode.get("operator").asText().equals("dateBetween")) {
-//                String field = objectNode.get("field").asText();
-//                Date start = Date.from(Instant.parse(objectNode.get("value").get("start").asText().replace("Date(", "").replace(")", "")));
-//                Date end = Date.from(Instant.parse(objectNode.get("value").get("end").asText().replace("Date(", "").replace(")", "")));
-//                return predicateFactory.createBetween(field, start, end);
-//            }
-//        }
-//        throw new IllegalArgumentException("Invalid JSON input");
-//    }
+    final MetaModelProcessor metaModelProcessor;
+    final JsonNode rootNode;
+    final SpeedyQueryImpl speedyQuery;
 
+    public JsonQueryBuilder(MetaModelProcessor metaModelProcessor, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModelProcessor = metaModelProcessor;
+        this.rootNode = rootNode;
+        this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(getFrom()));
+    }
+
+    String getFrom() throws BadRequestException {
+        rootNode.has("from");
+        if (rootNode.has("from")) {
+            JsonNode jsonNode = rootNode.get("from");
+            if (jsonNode.isTextual()) {
+                return jsonNode.asText();
+            }
+        }
+        throw new BadRequestException("from must be a string");
+    }
+
+    BinaryCondition createBinaryCondition(String fieldName, String operator, ValueNode fieldNode) throws SpeedyHttpException {
+        String associatedField = null;
+        if (fieldName.contains(".")) {
+            String[] parts = fieldName.split("\\.");
+            if (parts.length == 2) {
+                fieldName = parts[0];
+                associatedField = parts[1];
+            }
+        }
+        if (associatedField != null) {
+            return speedyQuery.getConditionFactory()
+                    .createAssociatedCondition(fieldName, associatedField, operator, fieldNode);
+        }
+        return speedyQuery.getConditionFactory()
+                .createBinaryCondition(fieldName, operator, fieldNode);
+    }
+
+    BinaryCondition captureBinaryQuery(String fieldName, JsonNode fieldNode) throws SpeedyHttpException {
+        if (fieldNode.isValueNode()) {
+            return createBinaryCondition(fieldName, "=", (ValueNode) fieldNode);
+        }
+        if (fieldNode.isObject()) {
+            for (Iterator<String> it2 = fieldNode.fieldNames(); it2.hasNext(); ) {
+                String operatorSymbol = it2.next();
+                JsonNode valueNode = fieldNode.get(operatorSymbol);
+                if (valueNode.isValueNode()) {
+                    return createBinaryCondition(fieldName, operatorSymbol, (ValueNode) valueNode);
+                }
+            }
+        }
+        throw new BadRequestException("Invalid query");
+    }
+
+    void buildWhere() throws SpeedyHttpException {
+        if (rootNode.has("where")) {
+            JsonNode jsonNode = rootNode.get("where");
+            if (jsonNode.isObject()) {
+                BooleanCondition where = speedyQuery.getWhere();
+                for (Iterator<String> it = jsonNode.fieldNames(); it.hasNext(); ) {
+                    String fieldName = it.next();
+                    // filter node
+                    JsonNode fieldNode = jsonNode.get(fieldName);
+                    BinaryCondition binaryCondition = captureBinaryQuery(fieldName, fieldNode);
+                    where.addSubCondition(binaryCondition);
+                }
+            }
+        }
+    }
+
+    public SpeedyQuery build() throws SpeedyHttpException {
+        buildWhere();
+        return speedyQuery;
+    }
 }

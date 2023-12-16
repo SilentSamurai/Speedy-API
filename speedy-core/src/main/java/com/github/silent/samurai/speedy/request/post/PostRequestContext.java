@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class PostRequestContext implements ResponseReturningRequestContext {
     private final List<SpeedyEntity> parsedEntity = new LinkedList<>();
     private final QueryProcessor queryProcessor;
 
-    EntityMetadata entityMetadata;
+    SpeedyQuery speedyQuery;
 
     public PostRequestContext(HttpServletRequest request,
                               HttpServletResponse response,
@@ -53,4 +54,13 @@ public class PostRequestContext implements ResponseReturningRequestContext {
         return IResponseSerializer.MULTIPLE_ENTITY;
     }
 
+    @Override
+    public SpeedyQuery getQuery() {
+        return speedyQuery;
+    }
+
+    @Override
+    public EntityMetadata getEntityMetadata() {
+        return speedyQuery.getFrom();
+    }
 }

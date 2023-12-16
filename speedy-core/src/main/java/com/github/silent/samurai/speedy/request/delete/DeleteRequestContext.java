@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.ResponseReturningRequestContext;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Data;
@@ -28,7 +29,7 @@ public class DeleteRequestContext implements ResponseReturningRequestContext {
     private final VirtualEntityProcessor vEntityProcessor;
     private final List<SpeedyEntityKey> keysToBeRemoved = new LinkedList<>();
 
-    private EntityMetadata entityMetadata;
+    private SpeedyQuery speedyQuery;
 
     public DeleteRequestContext(HttpServletRequest request,
                                 HttpServletResponse response,
@@ -49,5 +50,15 @@ public class DeleteRequestContext implements ResponseReturningRequestContext {
     @Override
     public int getSerializationType() {
         return IResponseSerializer.MULTIPLE_ENTITY;
+    }
+
+    @Override
+    public SpeedyQuery getQuery() {
+        return speedyQuery;
+    }
+
+    @Override
+    public EntityMetadata getEntityMetadata() {
+        return speedyQuery.getFrom();
     }
 }

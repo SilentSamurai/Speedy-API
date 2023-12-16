@@ -25,7 +25,6 @@ public class DeleteDataHandler {
     }
 
     public Optional<List<SpeedyEntity>> process() throws Exception {
-
         List<SpeedyEntity> deletedObjects = new LinkedList<>();
         EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();

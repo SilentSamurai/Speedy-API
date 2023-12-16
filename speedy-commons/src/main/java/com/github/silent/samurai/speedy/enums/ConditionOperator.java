@@ -10,25 +10,25 @@ public enum ConditionOperator {
     }
 
     public static ConditionOperator fromSymbol(String symbol) throws BadRequestException {
-        if (symbol.equals("=") || symbol.equals("==")) {
+        if (symbol.equals("=") || symbol.equals("==") || symbol.equals("$eq")) {
             return EQ;
-        } else if (symbol.equals("!=")) {
+        } else if (symbol.equals("!=") || symbol.equals("$neq")) {
             return NEQ;
-        } else if (symbol.equals("<")) {
+        } else if (symbol.equals("<") || symbol.equals("$lt")) {
             return LT;
-        } else if (symbol.equals("<=")) {
+        } else if (symbol.equals("<=") || symbol.equals("$lte")) {
             return LTE;
-        } else if (symbol.equals(">")) {
+        } else if (symbol.equals(">") || symbol.equals("$gt")) {
             return GT;
-        } else if (symbol.equals(">=")) {
+        } else if (symbol.equals(">=") || symbol.equals("$gte")) {
             return GTE;
-        } else if (symbol.equals("<>")) {
+        } else if (symbol.equals("<>") || symbol.equals("$in")) {
             return IN;
-        } else if (symbol.equals("<!>")) {
+        } else if (symbol.equals("<!>") || symbol.equals("$nin")) {
             return NOT_IN;
-        } else if (symbol.equals("&") || symbol.equals(",")) {
+        } else if (symbol.equals("&") || symbol.equals(",") || symbol.equals("&&") || symbol.equals("$and")) {
             return AND;
-        } else if (symbol.equals("|")) {
+        } else if (symbol.equals("|") || symbol.equals("||") || symbol.equals("$or")) {
             return OR;
         } else {
             throw new BadRequestException("");

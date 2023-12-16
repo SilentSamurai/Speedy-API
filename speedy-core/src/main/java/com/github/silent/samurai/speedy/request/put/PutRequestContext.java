@@ -54,6 +54,11 @@ public class PutRequestContext implements ResponseReturningRequestContext {
         return IResponseSerializer.SINGLE_ENTITY;
     }
 
+    @Override
+    public SpeedyQuery getQuery() {
+        return speedyQuery;
+    }
+
     public EntityMetadata getEntityMetadata() {
         return speedyQuery.getFrom();
     }

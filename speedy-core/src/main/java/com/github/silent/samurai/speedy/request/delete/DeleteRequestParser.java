@@ -28,7 +28,7 @@ public class DeleteRequestParser {
     public void process() throws Exception {
         SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
         SpeedyQuery speedyQuery = parser.parse();
-        context.setEntityMetadata(speedyQuery.getFrom());
+        context.setSpeedyQuery(speedyQuery);
         EntityMetadata resourceMetadata = speedyQuery.getFrom();
         QueryProcessor queryProcessor = context.getQueryProcessor();
 

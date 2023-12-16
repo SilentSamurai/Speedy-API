@@ -91,44 +91,38 @@ Accept: application/json
 
 ###
 
-POST http://localhost:8080/speedy/v2/$speedyQueryImpl
+POST http://localhost:8080/speedy/v1/$query
 Accept: application/json
 Content-Type: application/json
 
 {
-    "where": {
-        "$and": [
-            {
-                "id": {
-                    "$eq": "abcd"
-                },
-                "name": "acs"
-            },
-            {
-                "category.product.name": "P1"
-            }
-        ]
-    },
-    "select": [
-        "id",
-        "name",
-        "desc"
-    ],
-    "orderBy": [
-        {
-            "name": "desc"
-        },
-        {
-            "id": "asc"
-        }
-    ],
-    "expand": [
-        "product"
-    ],
-    "page": {
-        "index": 0,
-        "size": 100
+  "from": "Procurement",
+  "where": {
+    "product.id": "3",
+    "amount": {
+      "$gt": 0
     }
+  },
+  "select": [
+    "id",
+    "name",
+    "desc"
+  ],
+  "orderBy": [
+    {
+      "name": "desc"
+    },
+    {
+      "id": "asc"
+    }
+  ],
+  "expand": [
+    "product"
+  ],
+  "page": {
+    "index": 0,
+    "size": 100
+  }
 }
 
 

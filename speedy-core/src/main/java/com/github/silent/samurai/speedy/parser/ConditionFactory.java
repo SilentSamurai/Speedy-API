@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.parser;
 
+import com.fasterxml.jackson.databind.node.ValueNode;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -42,6 +43,27 @@ public class ConditionFactory {
                 return new NotInCondition(field, instance);
         }
         throw new BadRequestException("");
+    }
+
+    public BinaryCondition createBinaryCondition(String field, String operatorSymbol, ValueNode value) throws SpeedyHttpException {
+        ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(fieldMetadata, value);
+        QueryField normalField = new NormalField(fieldMetadata);
+        return createCondition(normalField, operator, speedyValue);
+    }
+
+    public BinaryCondition createAssociatedCondition(String field, String associatedField, String operatorSymbol, ValueNode value) throws SpeedyHttpException {
+        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+        if (!fieldMetadata.isAssociation()) {
+            throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
+        }
+        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+        FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
+        QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(associatedFieldMetadata, value);
+        return createCondition(queryField, operator, speedyValue);
     }
 
     public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, String value) throws SpeedyHttpException {

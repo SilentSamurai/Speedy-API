@@ -33,4 +33,9 @@ public class GetRequestContext implements ResponseReturningRequestContext {
     public int getSerializationType() {
         return IResponseSerializer.MULTIPLE_ENTITY;
     }
+
+    @Override
+    public SpeedyQuery getQuery() {
+        return speedyQuery;
+    }
 }
