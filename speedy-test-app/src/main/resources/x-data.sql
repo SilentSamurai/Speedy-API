@@ -27,7 +27,7 @@ create table currencies
     id              varchar(255) not null,
     country         varchar(32),
     created_at      timestamp default CURRENT_TIMESTAMP,
-    currency_abbr   varchar(10)  not null,
+    currency_abbr varchar(10) not null unique,
     currency_name   varchar(64)  not null,
     currency_symbol varchar(10)  not null,
     primary key (id)
@@ -327,19 +327,20 @@ VALUES ('1', '1', 50.00, 80.00, 100.00, 0.00, '1', '1'),
        ('10', '4', 25.00, 40.00, 50.00, 0.00, '4', '4');
 
 INSERT into currencies (id, country, currency_abbr, currency_name, currency_symbol)
-values ('1', 'United States', 'USD', 'US Dollar', '$'),
+values ('1', 'United States', 'USD', 'US Dollar', 'U$'),
        ('2', 'United Kingdom', 'GBP', 'British Pound', '£'),
-       ('3', 'Canada', 'CAD', 'Canadian Dollar', '$'),
-       ('4', 'Australia', 'AUD', 'Australian Dollar', '$'),
+       ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$'),
+       ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$'),
        ('5', 'Japan', 'JPY', 'Japanese Yen', '¥'),
        ('6', 'India', 'INR', 'Indian Rupee', '₹'),
        ('7', 'China', 'CNY', 'Chinese Yuan', '¥'),
        ('8', 'Russia', 'RUB', 'Russian Ruble', '₽'),
        ('9', 'South Korea', 'KRW', 'South Korean Won', '₩'),
-       ('10', 'Mexico', 'MXN', 'Mexican Peso', '$'),
+       ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$'),
        ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$'),
        ('12', 'South Africa', 'ZAR', 'South African Rand', 'R'),
-       ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', '$');
+       ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$'),
+       ('14', 'Singapore', 'SGD', 'Singapore', 'S$');
 
 
 

@@ -12,7 +12,7 @@ public enum ConditionOperator {
     public static ConditionOperator fromSymbol(String symbol) throws BadRequestException {
         if (symbol.equals("=") || symbol.equals("==") || symbol.equals("$eq")) {
             return EQ;
-        } else if (symbol.equals("!=") || symbol.equals("$neq")) {
+        } else if (symbol.equals("!=") || symbol.equals("$neq") || symbol.equals("$ne")) {
             return NEQ;
         } else if (symbol.equals("<") || symbol.equals("$lt")) {
             return LT;
@@ -31,7 +31,7 @@ public enum ConditionOperator {
         } else if (symbol.equals("|") || symbol.equals("||") || symbol.equals("$or")) {
             return OR;
         } else {
-            throw new BadRequestException("");
+            throw new BadRequestException("Operator not recognized: " + symbol);
         }
     }
 }
