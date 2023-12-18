@@ -8,13 +8,20 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
+import com.github.silent.samurai.speedy.parser.ConditionFactory;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class JsonQueryBuilder {
 
@@ -22,14 +29,16 @@ public class JsonQueryBuilder {
     final JsonNode rootNode;
     final SpeedyQueryImpl speedyQuery;
 
+    final ConditionFactory conditionFactory;
+
     public JsonQueryBuilder(MetaModelProcessor metaModelProcessor, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModelProcessor = metaModelProcessor;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(getFrom()));
+        this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
     String getFrom() throws BadRequestException {
-        rootNode.has("from");
         if (rootNode.has("from")) {
             JsonNode jsonNode = rootNode.get("from");
             if (jsonNode.isTextual()) {
@@ -39,33 +48,35 @@ public class JsonQueryBuilder {
         throw new BadRequestException("from must be a string");
     }
 
-    BinaryCondition createBinaryCondition(String fieldName, String operator, ValueNode fieldNode) throws SpeedyHttpException {
-        String associatedField = null;
-        if (fieldName.contains(".")) {
-            String[] parts = fieldName.split("\\.");
-            if (parts.length == 2) {
-                fieldName = parts[0];
-                associatedField = parts[1];
-            }
-        }
-        if (associatedField != null) {
-            return speedyQuery.getConditionFactory()
-                    .createAssociatedCondition(fieldName, associatedField, operator, fieldNode);
-        }
-        return speedyQuery.getConditionFactory()
-                .createBinaryCondition(fieldName, operator, fieldNode);
-    }
-
     BinaryCondition captureSingleBinaryQuery(String fieldName, JsonNode fieldNode) throws SpeedyHttpException {
+        QueryField queryField = speedyQuery.getConditionFactory().createQueryField(fieldName);
+        // if equals short-handed a : b
         if (fieldNode.isValueNode()) {
-            return createBinaryCondition(fieldName, "=", (ValueNode) fieldNode);
+            SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) fieldNode);
+            return conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, speedyValue);
         }
+        // if operator is provided a : { $eq : b }
         if (fieldNode.isObject()) {
             for (Iterator<String> it2 = fieldNode.fieldNames(); it2.hasNext(); ) {
                 String operatorSymbol = it2.next();
                 JsonNode valueNode = fieldNode.get(operatorSymbol);
+                ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+                // if operator is $in or $nin and value is an array, a : { $in : [b, c] }
+                if (operator.doesAcceptMultipleValues() && valueNode.isArray()) {
+                    List<SpeedyValue> speedyValueList = new LinkedList<>();
+                    for (JsonNode node : valueNode) {
+                        if (node.isValueNode()) {
+                            SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) node);
+                            speedyValueList.add(speedyValue);
+                        }
+                    }
+                    SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
+                    return conditionFactory.createBiCondition(queryField, operator, fieldValue);
+                }
+                // if operator is $eq $lte etc , a : { $eq : b }
                 if (valueNode.isValueNode()) {
-                    return createBinaryCondition(fieldName, operatorSymbol, (ValueNode) valueNode);
+                    SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) valueNode);
+                    return conditionFactory.createBiCondition(queryField, operator, speedyValue);
                 }
             }
         }
@@ -73,6 +84,7 @@ public class JsonQueryBuilder {
     }
 
     BooleanCondition createAndCondition(ObjectNode objectNode) throws SpeedyHttpException {
+        // create and condtion from object: { a : { $eq : b }, c : d }
         BooleanCondition booleanCondition = new BooleanConditionImpl(ConditionOperator.AND);
         for (Iterator<String> it2 = objectNode.fieldNames(); it2.hasNext(); ) {
             String fieldName = it2.next();
@@ -131,8 +143,45 @@ public class JsonQueryBuilder {
         }
     }
 
+    void buildOrderBy() throws NotFoundException, BadRequestException {
+        if (rootNode.has("orderBy")) {
+            JsonNode jsonNode = rootNode.get("orderBy");
+            if (jsonNode.isObject()) {
+                for (Iterator<String> it2 = jsonNode.fieldNames(); it2.hasNext(); ) {
+                    String fieldName = it2.next();
+                    JsonNode fieldNode = jsonNode.get(fieldName);
+                    if (fieldNode.isTextual()) {
+                        if (fieldNode.asText().equalsIgnoreCase("asc")) {
+                            speedyQuery.orderByAsc(fieldName);
+                        } else if (fieldNode.asText().equalsIgnoreCase("desc")) {
+                            speedyQuery.orderByDesc(fieldName);
+                        }
+                    } else {
+                        throw new BadRequestException("order by should be fieldname: asc|desc");
+                    }
+                }
+            }
+        }
+    }
+
+    void buildPaging() {
+        if (rootNode.has("page")) {
+            JsonNode jsonNode = rootNode.get("page");
+            if (jsonNode.isObject()) {
+                if (jsonNode.hasNonNull("index")) {
+                    speedyQuery.addPageNo(jsonNode.get("index").asInt());
+                }
+                if (jsonNode.hasNonNull("size")) {
+                    speedyQuery.addPageSize(jsonNode.get("size").asInt());
+                }
+            }
+        }
+    }
+
     public SpeedyQuery build() throws SpeedyHttpException {
         buildWhere();
+        buildOrderBy();
+        buildPaging();
         return speedyQuery;
     }
 }

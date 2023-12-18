@@ -17,6 +17,11 @@ public class NormalField implements QueryField {
 
     @Override
     public FieldMetadata getAssociatedFieldMetadata() {
-        return null;
+        throw new RuntimeException("NormalField does not have associated field");
+    }
+
+    @Override
+    public FieldMetadata getMetadataForParsing() {
+        return getFieldMetadata();
     }
 }

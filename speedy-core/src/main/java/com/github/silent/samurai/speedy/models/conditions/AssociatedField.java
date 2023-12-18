@@ -17,4 +17,8 @@ public class AssociatedField implements QueryField {
         this.associated = true;
     }
 
+    @Override
+    public FieldMetadata getMetadataForParsing() {
+        return getAssociatedFieldMetadata();
+    }
 }

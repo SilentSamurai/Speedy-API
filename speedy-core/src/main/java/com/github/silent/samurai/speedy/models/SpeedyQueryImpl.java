@@ -28,6 +28,8 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private BooleanCondition having;
     private List<OrderBy> orderByList = new LinkedList<>();
     private PageInfoImpl pageInfo = new PageInfoImpl();
+    private List<String> expand = new LinkedList<>();
+    private List<String> select = new LinkedList<>();
 
     public SpeedyQueryImpl(EntityMetadata from) {
         this.from = from;
@@ -56,6 +58,14 @@ public class SpeedyQueryImpl implements SpeedyQuery {
         if (pageSize > 0) {
             pageInfo.setPageSize(pageSize);
         }
+    }
+
+    public void addExpand(String expand) {
+        this.expand.add(expand);
+    }
+
+    public void addSelect(String select) {
+        this.select.add(select);
     }
 
 

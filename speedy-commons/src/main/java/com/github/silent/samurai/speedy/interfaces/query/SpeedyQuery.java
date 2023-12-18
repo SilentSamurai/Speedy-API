@@ -18,4 +18,8 @@ public interface SpeedyQuery {
 
     PageInfo getPageInfo();
 
+    List<String> getExpand();
+
+    List<String> getSelect();
+
 }

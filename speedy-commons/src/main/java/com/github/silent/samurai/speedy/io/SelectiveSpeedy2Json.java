@@ -78,6 +78,8 @@ public class SelectiveSpeedy2Json {
                 SpeedyValue value = speedyEntity.get(fieldMetadata);
                 if (!value.isEmpty()) {
                     fromBasic(fieldMetadata, value, jsonObject);
+                } else {
+                    jsonObject.putNull(fieldMetadata.getOutputPropertyName());
                 }
             }
         }
@@ -103,9 +105,7 @@ public class SelectiveSpeedy2Json {
                 continue;
             }
             SpeedyValue value = speedyEntity.get(fieldMetadata);
-            if (!value.isEmpty()) {
-                fromBasic(fieldMetadata, value, jsonObject);
-            }
+            fromBasic(fieldMetadata, value, jsonObject);
         }
         return jsonObject;
     }
@@ -150,7 +150,6 @@ public class SelectiveSpeedy2Json {
             case OBJECT:
             case COLLECTION:
                 break;
-
         }
     }
 

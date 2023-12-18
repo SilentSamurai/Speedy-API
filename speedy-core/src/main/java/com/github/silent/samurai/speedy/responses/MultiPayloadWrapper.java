@@ -12,11 +12,13 @@ import java.util.List;
 public class MultiPayloadWrapper implements MultiPayload {
 
     private final List<? extends SpeedyValue> payload;
-    private int pageIndex = 0;
-    private int pageCount = 1;
+    private long pageIndex = 0;
+    private long pageSize;
+    private long totalPageCount = 1;
 
     public MultiPayloadWrapper(List<? extends SpeedyValue> payload) {
         this.payload = payload;
+        this.pageSize = payload.size();
     }
 
     public static MultiPayloadWrapper wrapperInResponse(List<? extends SpeedyValue> payload) {

@@ -10,8 +10,9 @@ import lombok.Setter;
 public class SinglePayloadWrapper implements SinglePayload {
 
     private final SpeedyEntity payload;
-    private int pageIndex = 0;
-    private int pageCount = 1;
+    private long pageIndex = 0;
+    private long pageSize = 1;
+    private long totalPageCount = 1;
 
     public SinglePayloadWrapper(SpeedyEntity payload) {
         this.payload = payload;

@@ -45,6 +45,40 @@ public class ConditionFactory {
         throw new BadRequestException("");
     }
 
+    public QueryField createQueryField(String fieldName) throws SpeedyHttpException {
+        String associatedField = null;
+        if (fieldName.contains(".")) {
+            String[] parts = fieldName.split("\\.");
+            if (parts.length == 2) {
+                fieldName = parts[0];
+                associatedField = parts[1];
+            }
+        }
+        if (associatedField != null) {
+            return createAssociatedField(fieldName, associatedField);
+        }
+        return createNormalField(fieldName);
+    }
+
+    public QueryField createNormalField(String field) throws SpeedyHttpException {
+        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        return new NormalField(fieldMetadata);
+    }
+
+    public QueryField createAssociatedField(String field, String associatedField) throws SpeedyHttpException {
+        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        if (!fieldMetadata.isAssociation()) {
+            throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
+        }
+        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+        FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
+        return new AssociatedField(fieldMetadata, associatedFieldMetadata);
+    }
+
+    public BinaryCondition createBiCondition(QueryField normalField, ConditionOperator operator, SpeedyValue speedyValue) throws SpeedyHttpException {
+        return createCondition(normalField, operator, speedyValue);
+    }
+
     public BinaryCondition createBinaryCondition(String field, String operatorSymbol, ValueNode value) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         FieldMetadata fieldMetadata = this.entityMetadata.field(field);

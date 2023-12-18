@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Matchers;
+import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -659,6 +660,160 @@ public class SpeedyV2WhereClauseTest {
                                         Matchers.equalTo("cat-12-12")
                                 )
                         )))
+                .andReturn();
+
+    }
+
+    /*
+       {
+           "from": "Procurement",
+           "where": {
+                "modifiedAt": null
+           }
+       }
+       */
+    @Test
+    void testQuery16() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("from", "Procurement");
+        body.putObject("where")
+                .putNull("modifiedAt");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].modifiedAt").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].modifiedAt").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].modifiedAt", Matchers.allOf(
+                        Matchers.everyItem(
+                                Matchers.is(IsNull.nullValue())
+                        )
+                )))
+                .andReturn();
+
+    }
+
+
+    /*
+       {
+           "from": "Procurement",
+           "where": {
+                "createdAt": { $neq: null }
+           }
+       }
+       */
+    @Test
+    void testQuery17() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("from", "Procurement");
+        body.putObject("where")
+                .putObject("createdAt")
+                .putNull("$neq");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdAt").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdAt",
+                        Matchers.everyItem(
+                                Matchers.is(IsNull.notNullValue())
+                        )
+                ))
+                .andReturn();
+
+    }
+
+    /*
+       {
+           "from": "Procurement",
+           "where": {
+           }
+       }
+       */
+    @Test
+    void testQuery18() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("from", "Procurement");
+        body.putObject("where");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
+
+    }
+
+
+    /*
+       {
+           "from": "Procurement"
+       }
+       */
+    @Test
+    void testQuery19() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("from", "Procurement");
+//        body.putObject("where");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
                 .andReturn();
 
     }

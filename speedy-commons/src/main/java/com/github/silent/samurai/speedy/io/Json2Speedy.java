@@ -24,6 +24,9 @@ import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 
 public class Json2Speedy {
     public static SpeedyValue fromValueNode(FieldMetadata fieldMetadata, ValueNode jsonNode) throws BadRequestException {
+        if (jsonNode.isNull()) {
+            return fromNull();
+        }
         switch (fieldMetadata.getValueType()) {
             case BOOL:
                 return fromBool(jsonNode.asBoolean());

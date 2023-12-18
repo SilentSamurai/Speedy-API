@@ -6,8 +6,10 @@ public interface MultiPayload {
 
     List<? extends SpeedyValue> getPayload();
 
-    int getPageCount();
+    long getPageSize();
 
-    int getPageIndex();
+    long getPageIndex();
+
+    long getTotalPageCount();
 
 }

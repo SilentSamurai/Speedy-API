@@ -1,12 +1,11 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-
 public interface SinglePayload {
 
     SpeedyValue getPayload();
-    int getPageCount();
+    long getPageSize();
+    long getPageIndex();
 
-    int getPageIndex();
+    long getTotalPageCount();
 
 }

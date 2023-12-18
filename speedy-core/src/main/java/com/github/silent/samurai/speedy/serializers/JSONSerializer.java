@@ -46,15 +46,16 @@ public class JSONSerializer implements IResponseSerializer {
                 context.getMetaModelProcessor(), fieldPredicate);
         SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
         JsonNode jsonElement = selectiveSpeedy2Json.fromSpeedyEntity(payload, context.getEntityMetadata());
-        commonCode(jsonElement, requestedPayload.getPageIndex(), requestedPayload.getPageCount());
+        commonCode(jsonElement, requestedPayload.getPageIndex(), requestedPayload.getPageSize(), requestedPayload.getTotalPageCount());
     }
 
-    private void commonCode(JsonNode jsonElement, int pageIndex, int pageCount) throws IOException {
+    private void commonCode(JsonNode jsonElement, long pageIndex, long pageSize, long totalPageCount) throws IOException {
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();
         basePayload.set("payload", jsonElement);
         basePayload.put("pageIndex", pageIndex);
-        basePayload.put("pageCount", pageCount);
+        basePayload.put("pageSize", pageSize);
+        basePayload.put("totalPageCount", totalPageCount);
         json.writeValue(context.getResponse().getWriter(), basePayload);
     }
 
@@ -62,7 +63,7 @@ public class JSONSerializer implements IResponseSerializer {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(context.getMetaModelProcessor(), fieldPredicate);
         List<? extends SpeedyValue> resultList = multiPayload.getPayload();
         JsonNode jsonElement = selectiveSpeedy2Json.formCollection(resultList, context.getEntityMetadata());
-        commonCode(jsonElement, multiPayload.getPageIndex(), multiPayload.getPageCount());
+        commonCode(jsonElement, multiPayload.getPageIndex(), multiPayload.getPageSize(), multiPayload.getTotalPageCount());
     }
 
     @Override

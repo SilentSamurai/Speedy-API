@@ -9,4 +9,7 @@ public interface QueryField {
     boolean isAssociated();
 
     FieldMetadata getAssociatedFieldMetadata();
+
+
+    FieldMetadata getMetadataForParsing();
 }
