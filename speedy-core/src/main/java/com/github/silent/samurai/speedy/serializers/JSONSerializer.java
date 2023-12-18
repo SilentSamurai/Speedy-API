@@ -44,6 +44,8 @@ public class JSONSerializer implements IResponseSerializer {
     public void writeResponse(SinglePayload requestedPayload) throws Exception {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
                 context.getMetaModelProcessor(), fieldPredicate);
+        selectiveSpeedy2Json.addExpand(context.getQuery().getExpand());
+
         SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
         JsonNode jsonElement = selectiveSpeedy2Json.fromSpeedyEntity(payload, context.getEntityMetadata());
         commonCode(jsonElement, requestedPayload.getPageIndex(), requestedPayload.getPageSize(), requestedPayload.getTotalPageCount());
@@ -61,6 +63,7 @@ public class JSONSerializer implements IResponseSerializer {
 
     public void writeResponse(MultiPayload multiPayload) throws Exception {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(context.getMetaModelProcessor(), fieldPredicate);
+        selectiveSpeedy2Json.addExpand(context.getQuery().getExpand());
         List<? extends SpeedyValue> resultList = multiPayload.getPayload();
         JsonNode jsonElement = selectiveSpeedy2Json.formCollection(resultList, context.getEntityMetadata());
         commonCode(jsonElement, multiPayload.getPageIndex(), multiPayload.getPageSize(), multiPayload.getTotalPageCount());
@@ -71,16 +74,18 @@ public class JSONSerializer implements IResponseSerializer {
         MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(speedyEntities);
         int pageNumber = getContext().getQuery().getPageInfo().getPageNo();
         responseWrapper.setPageIndex(pageNumber);
-        getContext().getResponse().setContentType(this.getContentType());
-        getContext().getResponse().setStatus(HttpServletResponse.SC_OK);
+        HttpServletResponse response = getContext().getResponse();
+        response.setContentType(this.getContentType());
+        response.setStatus(HttpServletResponse.SC_OK);
         this.writeResponse(responseWrapper);
     }
 
     @Override
     public void write(SpeedyEntity speedyEntity) throws Exception {
         SinglePayloadWrapper responseWrapper = SinglePayloadWrapper.wrapperInResponse(speedyEntity);
-        getContext().getResponse().setContentType(this.getContentType());
-        getContext().getResponse().setStatus(HttpServletResponse.SC_OK);
+        HttpServletResponse response = getContext().getResponse();
+        response.setContentType(this.getContentType());
+        response.setStatus(HttpServletResponse.SC_OK);
         this.writeResponse(responseWrapper);
     }
 

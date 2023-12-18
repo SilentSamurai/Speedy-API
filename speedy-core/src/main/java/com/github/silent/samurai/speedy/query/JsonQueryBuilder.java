@@ -178,10 +178,24 @@ public class JsonQueryBuilder {
         }
     }
 
+    void buildExpand() {
+        if (rootNode.has("expand")) {
+            JsonNode jsonNode = rootNode.get("expand");
+            if (jsonNode.isArray()) {
+                for (JsonNode node : jsonNode) {
+                    if (node.isTextual()) {
+                        speedyQuery.addExpand(node.asText());
+                    }
+                }
+            }
+        }
+    }
+
     public SpeedyQuery build() throws SpeedyHttpException {
         buildWhere();
         buildOrderBy();
         buildPaging();
+        buildExpand();
         return speedyQuery;
     }
 }

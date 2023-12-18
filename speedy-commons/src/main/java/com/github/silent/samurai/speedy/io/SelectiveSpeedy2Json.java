@@ -13,6 +13,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -171,5 +172,9 @@ public class SelectiveSpeedy2Json {
             jsonArray.add(jsonObject);
         }
         return jsonArray;
+    }
+
+    public void addExpand(List<String> associationName) {
+        this.expand.addAll(associationName);
     }
 }
