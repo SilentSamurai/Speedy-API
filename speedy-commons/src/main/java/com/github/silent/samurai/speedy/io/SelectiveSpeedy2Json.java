@@ -101,7 +101,7 @@ public class SelectiveSpeedy2Json {
         ObjectNode jsonObject = json.createObjectNode();
         for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
             if (!fieldMetadata.isSerializable()) continue;
-            if (!speedyEntity.has(fieldMetadata)) {
+            if (!speedyEntity.has(fieldMetadata) || speedyEntity.get(fieldMetadata).isEmpty()) {
                 jsonObject.putNull(fieldMetadata.getOutputPropertyName());
                 continue;
             }
@@ -174,7 +174,7 @@ public class SelectiveSpeedy2Json {
         return jsonArray;
     }
 
-    public void addExpand(List<String> associationName) {
+    public void addExpand(Set<String> associationName) {
         this.expand.addAll(associationName);
     }
 }

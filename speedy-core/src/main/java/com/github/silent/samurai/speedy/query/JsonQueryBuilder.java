@@ -39,13 +39,13 @@ public class JsonQueryBuilder {
     }
 
     String getFrom() throws BadRequestException {
-        if (rootNode.has("from")) {
-            JsonNode jsonNode = rootNode.get("from");
+        if (rootNode.has("$from")) {
+            JsonNode jsonNode = rootNode.get("$from");
             if (jsonNode.isTextual()) {
                 return jsonNode.asText();
             }
         }
-        throw new BadRequestException("from must be a string");
+        throw new BadRequestException("$from must be a string");
     }
 
     BinaryCondition captureSingleBinaryQuery(String fieldName, JsonNode fieldNode) throws SpeedyHttpException {
@@ -133,8 +133,8 @@ public class JsonQueryBuilder {
     }
 
     void buildWhere() throws SpeedyHttpException {
-        if (rootNode.has("where")) {
-            JsonNode jsonNode = rootNode.get("where");
+        if (rootNode.has("$where")) {
+            JsonNode jsonNode = rootNode.get("$where");
             if (jsonNode.isObject()) {
                 speedyQuery.setWhere(createBooleanCondition((ObjectNode) jsonNode));
                 return;
@@ -144,16 +144,16 @@ public class JsonQueryBuilder {
     }
 
     void buildOrderBy() throws NotFoundException, BadRequestException {
-        if (rootNode.has("orderBy")) {
-            JsonNode jsonNode = rootNode.get("orderBy");
+        if (rootNode.has("$orderBy")) {
+            JsonNode jsonNode = rootNode.get("$orderBy");
             if (jsonNode.isObject()) {
                 for (Iterator<String> it2 = jsonNode.fieldNames(); it2.hasNext(); ) {
                     String fieldName = it2.next();
                     JsonNode fieldNode = jsonNode.get(fieldName);
                     if (fieldNode.isTextual()) {
-                        if (fieldNode.asText().equalsIgnoreCase("asc")) {
+                        if (fieldNode.asText().equalsIgnoreCase("ASC")) {
                             speedyQuery.orderByAsc(fieldName);
-                        } else if (fieldNode.asText().equalsIgnoreCase("desc")) {
+                        } else if (fieldNode.asText().equalsIgnoreCase("DESC")) {
                             speedyQuery.orderByDesc(fieldName);
                         }
                     } else {
@@ -165,22 +165,22 @@ public class JsonQueryBuilder {
     }
 
     void buildPaging() {
-        if (rootNode.has("page")) {
-            JsonNode jsonNode = rootNode.get("page");
+        if (rootNode.has("$page")) {
+            JsonNode jsonNode = rootNode.get("$page");
             if (jsonNode.isObject()) {
-                if (jsonNode.hasNonNull("index")) {
-                    speedyQuery.addPageNo(jsonNode.get("index").asInt());
+                if (jsonNode.hasNonNull("$index")) {
+                    speedyQuery.addPageNo(jsonNode.get("$index").asInt());
                 }
-                if (jsonNode.hasNonNull("size")) {
-                    speedyQuery.addPageSize(jsonNode.get("size").asInt());
+                if (jsonNode.hasNonNull("$size")) {
+                    speedyQuery.addPageSize(jsonNode.get("$size").asInt());
                 }
             }
         }
     }
 
     void buildExpand() {
-        if (rootNode.has("expand")) {
-            JsonNode jsonNode = rootNode.get("expand");
+        if (rootNode.has("$expand")) {
+            JsonNode jsonNode = rootNode.get("$expand");
             if (jsonNode.isArray()) {
                 for (JsonNode node : jsonNode) {
                     if (node.isTextual()) {

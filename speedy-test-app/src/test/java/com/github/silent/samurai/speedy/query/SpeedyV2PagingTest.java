@@ -27,9 +27,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class SpeedyV2PaggingTest {
+public class SpeedyV2PagingTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyV2PaggingTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyV2PagingTest.class);
 
     @Autowired
     EntityManagerFactory entityManagerFactory;
@@ -55,10 +55,10 @@ public class SpeedyV2PaggingTest {
     @Test
     void testQuery1() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("page")
-                .put("index", 0)
-                .put("size", 2);
+        body.put("$from", "Category");
+        body.putObject("$page")
+                .put("$index", 0)
+                .put("$size", 2);
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -103,10 +103,10 @@ public class SpeedyV2PaggingTest {
     @Test
     void testQuery2() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("page")
-                .put("index", 1)
-                .put("size", 2);
+        body.put("$from", "Category");
+        body.putObject("$page")
+                .put("$index", 1)
+                .put("$size", 2);
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(body))

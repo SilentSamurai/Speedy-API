@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 
 import java.util.List;
+import java.util.Set;
 
 public interface SpeedyQuery {
 
@@ -18,8 +19,8 @@ public interface SpeedyQuery {
 
     PageInfo getPageInfo();
 
-    List<String> getExpand();
+    Set<String> getExpand();
 
-    List<String> getSelect();
+    Set<String> getSelect();
 
 }

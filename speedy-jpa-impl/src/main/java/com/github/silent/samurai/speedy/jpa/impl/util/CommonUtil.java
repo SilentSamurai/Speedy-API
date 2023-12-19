@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.jpa.impl.util;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
@@ -10,24 +12,22 @@ import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import javax.persistence.EntityManager;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CommonUtil {
 
 
-    public static SpeedyEntity fromJpaEntity(Object entity, EntityMetadata entityMetadata) throws Exception {
-        return fromJpaEntityInner(entity, entityMetadata, true);
+    public static SpeedyEntity fromJpaEntity(Object entity, EntityMetadata entityMetadata, Set<String> expands) throws Exception {
+        return fromJpaEntityInner(entity, entityMetadata, expands);
     }
 
-    private static SpeedyEntity fromJpaEntityInner(Object entity, EntityMetadata entityMetadata, boolean goDeep) throws Exception {
-        SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
+    private static SpeedyEntity fromJpaEntityInner(Object entity, EntityMetadata entityMetadata, Set<String> expands) throws Exception {
+        SpeedyEntity speedyEntity = SpeedyValueFactory.fromEntityMetadata(entityMetadata);
         for (FieldMetadata simpleMetadata : entityMetadata.getAllFields()) {
             IJpaFieldMetadata fieldMetadata = (IJpaFieldMetadata) simpleMetadata;
             Object fieldValue = fieldMetadata.getEntityFieldValue(entity);
@@ -37,23 +37,37 @@ public class CommonUtil {
             }
 
             if (fieldMetadata.isAssociation()) {
-                if (goDeep) {
+                if (expands.contains(fieldMetadata.getAssociationMetadata().getName())) {
                     if (fieldMetadata.isCollection()) {
                         Collection<?> collection = (Collection<?>) fieldValue;
-                        Collection<SpeedyValue> collect = collection.stream().map(item -> {
+                        Collection<SpeedyValue> collect = new LinkedList<>();
+                        for (Object item : collection) {
                             EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-                            try {
-                                return fromJpaEntityInner(fieldValue, associationMetadata, false);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        }).collect(Collectors.toList());
+                            SpeedyEntity associatedEntity = fromJpaEntityInner(item, associationMetadata, expands);
+                            collect.add(associatedEntity);
+                        }
                         SpeedyCollection speedyCollection = SpeedyValueFactory.fromCollection(collect);
                         speedyEntity.put(fieldMetadata, speedyCollection);
                     } else {
                         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-                        SpeedyEntity ae = fromJpaEntityInner(fieldValue, associationMetadata, false);
-                        speedyEntity.put(fieldMetadata, ae);
+                        SpeedyEntity associatedEntity = fromJpaEntityInner(fieldValue, associationMetadata, expands);
+                        speedyEntity.put(fieldMetadata, associatedEntity);
+                    }
+                } else {
+                    if (fieldMetadata.isCollection()) {
+                        Collection<?> collection = (Collection<?>) fieldValue;
+                        Collection<SpeedyValue> collect = new LinkedList<>();
+                        for (Object item : collection) {
+                            EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+                            SpeedyEntity associatedEntity = fromKey(item, associationMetadata);
+                            collect.add(associatedEntity);
+                        }
+                        SpeedyCollection speedyCollection = SpeedyValueFactory.fromCollection(collect);
+                        speedyEntity.put(fieldMetadata, speedyCollection);
+                    } else {
+                        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+                        SpeedyEntityKey associatedEntity = fromKey(fieldValue, associationMetadata);
+                        speedyEntity.put(fieldMetadata, associatedEntity);
                     }
                 }
             } else {
@@ -73,6 +87,28 @@ public class CommonUtil {
             }
         }
         return speedyEntity;
+    }
+
+
+    public static SpeedyEntityKey fromKey(Object entity, EntityMetadata entityMetadata) throws SpeedyHttpException {
+        SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(entityMetadata);
+        for (KeyFieldMetadata simpleMetadata : entityMetadata.getKeyFields()) {
+            IJpaKeyFieldMetadata keyFieldMetadata = (IJpaKeyFieldMetadata) simpleMetadata;
+            Object fieldValue;
+            if (entityMetadata.hasCompositeKey()) {
+                fieldValue = keyFieldMetadata.getEntityFieldValue(entity);
+            } else {
+                fieldValue = keyFieldMetadata.getEntityFieldValue(entity);
+            }
+
+            if (fieldValue == null) {
+                speedyEntityKey.put(keyFieldMetadata, SpeedyValueFactory.fromNull());
+                continue;
+            }
+            SpeedyValue speedyValue = SpeedyValueFactory.fromJavaTypes(keyFieldMetadata, fieldValue);
+            speedyEntityKey.put(keyFieldMetadata, speedyValue);
+        }
+        return speedyEntityKey;
     }
 
 

@@ -96,32 +96,32 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "from": "Procurement",
-  "where": {
+  "$from": "Procurement",
+  "$where": {
     "product.id": "3",
     "amount": {
       "$gt": 0
     }
   },
-  "select": [
+  "$select": [
     "id",
     "name",
     "desc"
   ],
-  "orderBy": [
+  "$orderBy": [
     {
-      "name": "desc"
+      "name": "DESC"
     },
     {
-      "id": "asc"
+      "id": "ASC"
     }
   ],
-  "expand": [
+  "$expand": [
     "product"
   ],
-  "page": {
-    "index": 0,
-    "size": 100
+  "$page": {
+    "$index": 0,
+    "$size": 100
   }
 }
 

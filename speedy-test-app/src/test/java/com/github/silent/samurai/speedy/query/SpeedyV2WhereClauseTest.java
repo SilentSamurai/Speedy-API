@@ -56,8 +56,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery1() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("where")
+        body.put("$from", "Category");
+        body.putObject("$where")
                 .put("name", "cat-1-1");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
@@ -96,8 +96,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery2() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("where")
+        body.put("$from", "Category");
+        body.putObject("$where")
                 .put("id", "2");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
@@ -138,8 +138,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery3() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Currency");
-        body.putObject("where")
+        body.put("$from", "Currency");
+        body.putObject("$where")
                 .put("currencyAbbr", "INR");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
@@ -180,8 +180,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery5() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        body.putObject("where")
+        body.put("$from", "Inventory");
+        body.putObject("$where")
                 .putObject("cost")
                 .put("$eq", 15);
 
@@ -221,8 +221,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery6() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        body.putObject("where")
+        body.put("$from", "Inventory");
+        body.putObject("$where")
                 .putObject("cost")
                 .put("$eq", 15);
 
@@ -262,8 +262,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery7() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("where")
+        body.put("$from", "Category");
+        body.putObject("$where")
                 .putObject("name")
                 .put("$ne", "Cat-12-12");
 
@@ -303,8 +303,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery8() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        body.putObject("where")
+        body.put("$from", "Inventory");
+        body.putObject("$where")
                 .putObject("cost")
                 .put("$gte", 10);
 
@@ -344,8 +344,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery9() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        body.putObject("where")
+        body.put("$from", "Inventory");
+        body.putObject("$where")
                 .putObject("cost")
                 .put("$gt", 15);
 
@@ -385,8 +385,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery10() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        body.putObject("where")
+        body.put("$from", "Inventory");
+        body.putObject("$where")
                 .putObject("cost")
                 .put("$lt", 50);
 
@@ -426,8 +426,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery11() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        body.putObject("where")
+        body.put("$from", "Inventory");
+        body.putObject("$where")
                 .putObject("cost")
                 .put("$lte", 15);
 
@@ -467,8 +467,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery12() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        body.putObject("where")
+        body.put("$from", "Inventory");
+        body.putObject("$where")
                 .putObject("cost")
                 .put("$lte", 15);
 
@@ -511,8 +511,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery13() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        ArrayNode jsonNodes = body.putObject("where")
+        body.put("$from", "Inventory");
+        ArrayNode jsonNodes = body.putObject("$where")
                 .putArray("$or");
         jsonNodes.addObject()
                 .putObject("cost")
@@ -567,8 +567,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery14() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Inventory");
-        ArrayNode jsonNodes = body.putObject("where")
+        body.put("$from", "Inventory");
+        ArrayNode jsonNodes = body.putObject("$where")
                 .putArray("$and");
         jsonNodes.addObject()
                 .putObject("cost")
@@ -623,8 +623,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery15() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        ArrayNode jsonNodes = body.putObject("where")
+        body.put("$from", "Category");
+        ArrayNode jsonNodes = body.putObject("$where")
                 .putArray("$or");
         jsonNodes.addObject()
                 .putObject("$and")
@@ -675,8 +675,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery16() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Procurement");
-        body.putObject("where")
+        body.put("$from", "Procurement");
+        body.putObject("$where")
                 .putNull("modifiedAt");
 
 
@@ -719,8 +719,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery17() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Procurement");
-        body.putObject("where")
+        body.put("$from", "Procurement");
+        body.putObject("$where")
                 .putObject("createdAt")
                 .putNull("$neq");
 
@@ -761,8 +761,8 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery18() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Procurement");
-        body.putObject("where");
+        body.put("$from", "Procurement");
+        body.putObject("$where");
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
@@ -794,7 +794,7 @@ public class SpeedyV2WhereClauseTest {
     @Test
     void testQuery19() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Procurement");
+        body.put("$from", "Procurement");
 //        body.putObject("where");
 
 

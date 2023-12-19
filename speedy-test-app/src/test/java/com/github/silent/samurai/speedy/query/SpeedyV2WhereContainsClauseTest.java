@@ -55,8 +55,8 @@ public class SpeedyV2WhereContainsClauseTest {
     @Test
     void testQuery1() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("where")
+        body.put("$from", "Category");
+        body.putObject("$where")
                 .putObject("name")
                 .putArray("$in")
                 .add("cat-1-1")
@@ -103,8 +103,8 @@ public class SpeedyV2WhereContainsClauseTest {
     @Test
     void testQuery2() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("where")
+        body.put("$from", "Category");
+        body.putObject("$where")
                 .putObject("name")
                 .putArray("$nin")
                 .add("cat-1-1")
@@ -161,8 +161,8 @@ public class SpeedyV2WhereContainsClauseTest {
     @Test
     void testQuery3() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        ObjectNode where = body.putObject("where");
+        body.put("$from", "Category");
+        ObjectNode where = body.putObject("$where");
         ArrayNode $and = where.putArray("$and");
         $and.addObject()
                 .putObject("name")
@@ -208,8 +208,8 @@ public class SpeedyV2WhereContainsClauseTest {
     @Test
     void testQuery4() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        ObjectNode where = body.putObject("where");
+        body.put("$from", "Category");
+        ObjectNode where = body.putObject("$where");
         ArrayNode $or = where.putArray("$or");
         $or.addObject()
                 .putObject("name")

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.internal.util.collections.Sets;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
+import java.util.Collections;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -52,7 +54,7 @@ class CommonUtilTest {
         product.setCost(0);
         product.setCategory("cat-1");
 
-        SpeedyEntity entity = CommonUtil.fromJpaEntity(product, entityMetadata);
+        SpeedyEntity entity = CommonUtil.fromJpaEntity(product, entityMetadata, Collections.emptySet());
 
         LOGGER.info("Speedy Entity: {}", entity);
 
@@ -82,7 +84,7 @@ class CommonUtilTest {
         product.setProductItem(productItem);
         product.setCategory("cat-1");
 
-        SpeedyEntity entity = CommonUtil.fromJpaEntity(product, entityMetadata);
+        SpeedyEntity entity = CommonUtil.fromJpaEntity(product, entityMetadata, Sets.newSet("ProductItem"));
 
         LOGGER.info("Speedy Entity: {}", entity);
 

@@ -56,9 +56,9 @@ public class SpeedyV2OrderByTest {
     @Test
     void testQuery1() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("orderBy")
-                .put("name", "desc");
+        body.put("$from", "Category");
+        body.putObject("$orderBy")
+                .put("name", "DESC");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -95,9 +95,9 @@ public class SpeedyV2OrderByTest {
     @Test
     void testQuery2() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("orderBy")
-                .put("name", "asc");
+        body.put("$from", "Category");
+        body.putObject("$orderBy")
+                .put("name", "ASC");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(body))

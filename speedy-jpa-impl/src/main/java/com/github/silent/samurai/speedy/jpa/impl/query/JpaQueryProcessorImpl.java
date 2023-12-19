@@ -18,6 +18,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -38,7 +39,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
             Query query = qb.getQuery();
             List<?> resultList = query.getResultList();
             Object reqObj = resultList.get(0);
-            return CommonUtil.fromJpaEntity(reqObj, speedyQuery.getFrom());
+            return CommonUtil.fromJpaEntity(reqObj, speedyQuery.getFrom(), speedyQuery.getExpand());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -52,7 +53,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
             List<?> resultList = query.getResultList();
             List<SpeedyEntity> list = new ArrayList<>();
             for (Object e : resultList) {
-                SpeedyEntity speedyEntity = CommonUtil.fromJpaEntity(e, speedyQuery.getFrom());
+                SpeedyEntity speedyEntity = CommonUtil.fromJpaEntity(e, speedyQuery.getFrom(), speedyQuery.getExpand());
                 list.add(speedyEntity);
             }
             return list;
@@ -78,7 +79,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
             IJpaEntityMetadata entityMetadata = (IJpaEntityMetadata) speedyEntity.getMetadata();
             Object entity = CommonUtil.fromSpeedyEntity(speedyEntity, entityMetadata, entityManager);
             Object saveEntity = this.saveEntity(entity, entityMetadata);
-            return CommonUtil.fromJpaEntity(saveEntity, entityMetadata);
+            return CommonUtil.fromJpaEntity(saveEntity, entityMetadata, Collections.emptySet());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -95,7 +96,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
             }
             CommonUtil.updateFromSpeedyEntity(speedyEntity, jpaEntity, entityMetadata, entityManager);
             Object savedEntity = this.updateEntity(jpaEntity, entityMetadata);
-            return CommonUtil.fromJpaEntity(savedEntity, entityMetadata);
+            return CommonUtil.fromJpaEntity(savedEntity, entityMetadata, Collections.emptySet());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -111,7 +112,7 @@ public class JpaQueryProcessorImpl implements QueryProcessor {
                 throw new BadRequestException("Entity not found");
             }
             Object deletedEntity = this.deleteEntity(jpaEntity, entityMetadata);
-            return CommonUtil.fromJpaEntity(deletedEntity, entityMetadata);
+            return CommonUtil.fromJpaEntity(deletedEntity, entityMetadata, Collections.emptySet());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }

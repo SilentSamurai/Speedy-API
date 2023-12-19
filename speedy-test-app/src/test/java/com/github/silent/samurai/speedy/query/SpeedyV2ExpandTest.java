@@ -52,8 +52,8 @@ public class SpeedyV2ExpandTest {
     @Test
     void testQuery1() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Product");
-        body.putArray("expand")
+        body.put("$from", "Product");
+        body.putArray("$expand")
                 .add("Category");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
@@ -102,10 +102,10 @@ public class SpeedyV2ExpandTest {
     @Test
     void testQuery2() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("from", "Category");
-        body.putObject("page")
-                .put("index", 1)
-                .put("size", 2);
+        body.put("$from", "Category");
+        body.putObject("$page")
+                .put("$index", 1)
+                .put("$size", 2);
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(body))

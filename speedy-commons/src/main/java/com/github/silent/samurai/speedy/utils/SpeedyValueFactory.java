@@ -63,6 +63,10 @@ public class SpeedyValueFactory {
         return new SpeedyCollection(value);
     }
 
+    public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata) {
+        return new SpeedyEntity(entityMetadata);
+    }
+
     public static <T> SpeedyValue fromJavaTypes(Class<T> clazz, ValueType valueType, Object instance) throws SpeedyHttpException {
         return JavaType2SpeedyValue.convert(clazz, valueType, instance);
     }
@@ -99,5 +103,6 @@ public class SpeedyValueFactory {
     public static <T> T toJavaType(FieldMetadata fieldMetadata, SpeedyValue speedyValue) throws SpeedyHttpException {
         return (T) Speedy2JavaTypeConverter.convert(speedyValue, fieldMetadata.getFieldType());
     }
+
 
 }
