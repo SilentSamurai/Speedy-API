@@ -342,5 +342,8 @@ values ('1', 'United States', 'USD', 'US Dollar', 'U$'),
        ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$'),
        ('14', 'Singapore', 'SGD', 'Singapore', 'S$');
 
+INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time)
+VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00');
+
 
 

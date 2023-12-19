@@ -96,12 +96,9 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "$from": "Procurement",
+  "$from": "ValueTestEntity",
   "$where": {
-    "product.id": "3",
-    "amount": {
-      "$gt": 0
-    }
+    "localTime": { "$lt": "09:00:00" }
   },
   "$select": [
     "id",
