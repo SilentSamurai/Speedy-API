@@ -1,5 +1,7 @@
-package com.github.silent.samurai.speedy;
+package com.github.silent.samurai.speedy.url;
 
+import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
@@ -16,14 +18,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.persistence.EntityManagerFactory;
+import java.util.Optional;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class SpeedyDeleteTest {
+public class SpeedyPutTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyDeleteTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyPutTest.class);
 
     @Autowired
     EntityManagerFactory entityManagerFactory;
@@ -38,48 +41,30 @@ public class SpeedyDeleteTest {
     private MockMvc mvc;
 
     @Test
-    void deleteCategory() throws Exception {
+    void updateCategory() throws Exception {
 
         Category category = new Category();
-        category.setName("generated-category-delete");
+        category.setName("generated-category-update");
         categoryRepository.save(category);
 
         Assertions.assertNotNull(category.getId());
 
-        long count = categoryRepository.count();
-
-
-        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
-                .content("[{'id':'" + category.getId() + "'}]")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstant.URI + "/Category(id='" + category.getId() + "')")
+                .content("{'name':'generated-category-update-modified'}")
                 .contentType(MediaType.APPLICATION_JSON);
 
-        mvc.perform(deleteRequest)
+        mvc.perform(updateRequest)
                 .andExpect(status().isOk());
 
-        Assertions.assertEquals(count - 1, categoryRepository.count());
-
+        Optional<Category> categoryOptional = categoryRepository.findById(category.getId());
+        Assertions.assertTrue(categoryOptional.isPresent());
+        Assertions.assertEquals("generated-category-update-modified", categoryOptional.get().getName());
     }
 
     @Test
     void incompleteKey() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
-                .content("[{'name':'1'}]")
-                .contentType(MediaType.APPLICATION_JSON);
-
-        mvc.perform(updateRequest)
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void emptyContent() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
-                .contentType(MediaType.APPLICATION_JSON);
-
-        mvc.perform(updateRequest)
-                .andExpect(status().isBadRequest());
-
-        updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
-                .content("")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstant.URI + "/Category(name='not-there')")
+                .content("{'name':'generated-cat'}")
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(updateRequest)

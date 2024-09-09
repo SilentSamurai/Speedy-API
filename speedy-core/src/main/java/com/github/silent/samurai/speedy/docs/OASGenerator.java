@@ -28,6 +28,7 @@ public class OASGenerator {
     public static final String CREATE_REQUEST_NAME = "Create{0}Request";
     public static final String UPDATE_REQUEST_NAME = "Update{0}Request";
     public static final String GET_REQUEST_NAME = "Get{0}Request";
+    public static final String QUERY_REQUEST_NAME = "Query{0}Request";
 
 
     private static final Map<Class<?>, Schema<?>> PRIMITIVE_TYPE_TO_SCHEMA_MAP = new HashMap<>();
@@ -137,6 +138,50 @@ public class OASGenerator {
         return schema;
     }
 
+    public static Schema<?> createQueryRequest(EntityMetadata entityMetadata) {
+        Schema<String> schema = new Schema<>();
+        schema.type("object");
+
+        schema.addProperty("$from", basicSchema(ValueType.TEXT));
+
+        Schema orderBySchema = new Schema<>().type("object");
+        Schema whereSchema = new Schema<>().type("object");
+
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            String outputPropertyName = fieldMetadata.getOutputPropertyName();
+            orderBySchema.addProperty(outputPropertyName, basicSchema(ValueType.TEXT).example("ASC|DESC"));
+
+            whereSchema.addProperty(outputPropertyName, new Schema<>().anyOf(
+                    List.of(
+                            new Schema<>().type("object")
+                                    .addProperty("$eq", basicSchema(ValueType.TEXT)),
+                            basicSchema(ValueType.TEXT)
+                    )
+            ));
+
+        }
+
+
+        String expandExample = entityMetadata
+                .getAssociatedFields()
+                .stream()
+                .map(FieldMetadata::getOutputPropertyName)
+                .reduce((a, b) -> a + "|" + b).orElse("");
+
+        schema.addProperty("$orderBy", orderBySchema);
+        schema.addProperty("$where", whereSchema);
+
+        Schema<?> expandSchema = new Schema<String>().type("array")
+                .items(basicSchema(ValueType.TEXT).example(expandExample));
+        schema.addProperty("$expand", expandSchema);
+
+        Schema pageSchema = new Schema<>().type("object");
+        pageSchema.addProperty("$index", basicSchema(ValueType.INT));
+        pageSchema.addProperty("$size", basicSchema(ValueType.INT));
+        schema.addProperty("$page", pageSchema);
+        return schema;
+    }
+
     public static Schema wrapInArray(Schema ref) {
         return new Schema<>().type("array").items(ref);
     }
@@ -173,41 +218,6 @@ public class OASGenerator {
                                 .schema(wrapInPayload(schema).name(name).title(name))
                         )
                 );
-    }
-
-    public static void addPagingAndOrderingInfo(Operation operation) {
-        operation.addParametersItem(
-                new Parameter()
-                        .description("the no of the current page you want to request")
-                        .name("pageNo")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(ValueType.INT))
-        );
-        operation.addParametersItem(
-                new Parameter()
-                        .description("amount of data in a single page")
-                        .name("pageSize")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(ValueType.INT))
-        );
-        operation.addParametersItem(
-                new Parameter()
-                        .description("sort the result in ascending order by this column")
-                        .name("orderBy")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
-        );
-        operation.addParametersItem(
-                new Parameter()
-                        .description("sort the result in descending order by this column")
-                        .name("orderByDesc")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
-        );
     }
 
 

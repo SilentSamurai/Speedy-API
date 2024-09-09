@@ -1,5 +1,7 @@
-package com.github.silent.samurai.speedy;
+package com.github.silent.samurai.speedy.url;
 
+import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.TestApplication;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,8 +22,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;

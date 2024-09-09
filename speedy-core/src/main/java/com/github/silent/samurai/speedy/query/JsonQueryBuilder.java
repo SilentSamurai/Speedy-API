@@ -31,6 +31,13 @@ public class JsonQueryBuilder {
 
     final ConditionFactory conditionFactory;
 
+    public JsonQueryBuilder(MetaModelProcessor metaModelProcessor, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModelProcessor = metaModelProcessor;
+        this.rootNode = rootNode;
+        this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(from));
+        this.conditionFactory = speedyQuery.getConditionFactory();
+    }
+
     public JsonQueryBuilder(MetaModelProcessor metaModelProcessor, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModelProcessor = metaModelProcessor;
         this.rootNode = rootNode;

@@ -1,5 +1,7 @@
-package com.github.silent.samurai.speedy;
+package com.github.silent.samurai.speedy.url;
 
+import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.entity.Customer;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;

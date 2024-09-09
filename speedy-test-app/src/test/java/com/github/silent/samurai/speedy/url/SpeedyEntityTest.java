@@ -1,6 +1,8 @@
-package com.github.silent.samurai.speedy;
+package com.github.silent.samurai.speedy.url;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.assertj.core.util.Lists;

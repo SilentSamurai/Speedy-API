@@ -91,7 +91,7 @@ Accept: application/json
 
 ###
 
-POST http://localhost:8080/speedy/v1/$query
+POST http://localhost:8080/speedy/v1/ValueTestEntity/$query
 Accept: application/json
 Content-Type: application/json
 
@@ -100,19 +100,9 @@ Content-Type: application/json
   "$where": {
     "localTime": { "$lt": "09:00:00" }
   },
-  "$select": [
-    "id",
-    "name",
-    "desc"
-  ],
-  "$orderBy": [
-    {
-      "name": "DESC"
-    },
-    {
+  "$orderBy": {
       "id": "ASC"
-    }
-  ],
+  },
   "$expand": [
     "product"
   ],

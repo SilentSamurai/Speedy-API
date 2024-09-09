@@ -1,5 +1,7 @@
-package com.github.silent.samurai.speedy;
+package com.github.silent.samurai.speedy.url;
 
+import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;

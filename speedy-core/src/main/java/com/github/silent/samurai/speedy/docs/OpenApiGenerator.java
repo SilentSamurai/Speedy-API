@@ -33,14 +33,18 @@ public class OpenApiGenerator {
             putOperation(entityMetadata, identifierPathItem);
             deleteOperation(entityMetadata, basePathItem);
             getWithPrimaryFields(entityMetadata, identifierPathItem);
-            getOperation(entityMetadata, queryPathItem);
-//            getWithFieldQuery(entityMetadata, queryPathItem);
+//            getOperation(entityMetadata, queryPathItem);
+            getWithFieldQuery(entityMetadata, queryPathItem);
 
 
             createSchemas(entityMetadata, openApi);
 
-            openApi.path(getBasePath(entityMetadata), basePathItem);
-            openApi.path(getParameterPath(entityMetadata, "query"), queryPathItem);
+            String basePath = String.format("%s/%s", SpeedyConstant.URI, entityMetadata.getName());
+            openApi.path(basePath, basePathItem);
+
+            String querypath = String.format("%s/%s/$query", SpeedyConstant.URI, entityMetadata.getName());
+            openApi.path(querypath, queryPathItem);
+
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
         }
     }
@@ -85,6 +89,11 @@ public class OpenApiGenerator {
                 true
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata), updateSchema);
+
+        Schema<?> querySchema = OASGenerator.createQueryRequest(
+                entityMetadata
+        );
+        openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.QUERY_REQUEST_NAME, entityMetadata), querySchema);
     }
 
     private void postOperation(EntityMetadata entityMetadata, PathItem pathItem) {
@@ -170,28 +179,13 @@ public class OpenApiGenerator {
 
     private void getWithFieldQuery(EntityMetadata entityMetadata, PathItem queryPathItem) {
         Operation operation = new Operation();
-        operation.operationId("GetSome" + entityMetadata.getName());
+        operation.operationId("Query" + entityMetadata.getName());
         operation.summary("Filter " + entityMetadata.getName());
         operation.tags(Lists.newArrayList(entityMetadata.getName()));
-        operation.addParametersItem(
-                new Parameter()
-                        .description("these are queries on the entity")
-                        .name("query")
-                        .in("path")
-                        .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
-                        .example("(id='1',amount=2)")
-        );
-        operation.addParametersItem(
-                new Parameter()
-                        .description("these are queries on the entity")
-                        .name("association")
-                        .in("path")
-                        .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
-                        .example("Category(id='1')")
-        );
 //        OASGenerator.addPagingAndOrderingInfo(operation);
+        operation.requestBody(OASGenerator.getJsonBody(
+                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.QUERY_REQUEST_NAME, entityMetadata))
+        ).description("Fields needed for creation"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
@@ -200,48 +194,7 @@ public class OpenApiGenerator {
                 )
         ).description("successful fetch."));
         operation.responses(apiResponses);
-        queryPathItem.get(operation);
-    }
-
-    private void getOperation(EntityMetadata entityMetadata, PathItem pathItem) {
-        Operation operation = new Operation();
-        operation.operationId("GetSome" + entityMetadata.getName());
-        operation.summary("Filter " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
-        operation.addParametersItem(
-                new Parameter()
-                        .description("these are queries on the entity")
-                        .name("query")
-                        .in("path")
-                        .allowEmptyValue(true)
-                        .schema(OASGenerator.basicSchema(ValueType.TEXT))
-                        .example("(id='1',amount=2)")
-        );
-
-//        OASGenerator.addPagingAndOrderingInfo(operation);
-        ApiResponses apiResponses = new ApiResponses();
-        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
-                OASGenerator.getSchemaName("Filtered{0}Response", entityMetadata),
-                OASGenerator.wrapInArray(
-                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
-                )
-        ).description("successful fetch."));
-        operation.responses(apiResponses);
-        pathItem.get(operation);
-    }
-
-    private String getBasePath(EntityMetadata entityMetadata) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
-        return sb.toString();
-    }
-
-    private String getParameterPath(EntityMetadata entityMetadata, String parameterName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
-        sb.append("{").append(parameterName).append("}");
-//        sb.append("/").append("{association}");
-        return sb.toString();
+        queryPathItem.post(operation);
     }
 
     private String getIdentifierPath(EntityMetadata entityMetadata) {

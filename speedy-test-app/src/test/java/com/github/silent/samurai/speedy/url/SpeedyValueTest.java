@@ -1,13 +1,13 @@
-package com.github.silent.samurai.speedy;
+package com.github.silent.samurai.speedy.url;
 
-import com.github.silent.samurai.speedy.repositories.CategoryRepository;
+import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.ValueTestEntityApi;
-import org.openapitools.client.api.VirtualEntityApi;
 import org.openapitools.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 

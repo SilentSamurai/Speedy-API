@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Optional;
 
 @Hidden
 @RestController
@@ -49,14 +50,24 @@ public class SpeedyApiController {
         return CommonUtil.json().writeValueAsString(jsonElement);
     }
 
-    @PostMapping(value = "/$query")
-    public void query(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+    private void queryRequest(HttpServletRequest request,
+                              HttpServletResponse response,
+                              Optional<String> from) throws Exception {
         MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
         QueryProcessor queryProcessor = metaModelProcessor.getQueryProcessor();
         try {
+
             JsonNode jsonQuery = CommonUtil.json().readTree(request.getReader());
 
-            JsonQueryBuilder jsonQueryBuilder = new JsonQueryBuilder(metaModelProcessor, jsonQuery);
+            JsonQueryBuilder jsonQueryBuilder;
+
+            if (from.isPresent()) {
+                jsonQueryBuilder = new JsonQueryBuilder(metaModelProcessor, from.get(), jsonQuery);
+            } else {
+                jsonQueryBuilder = new JsonQueryBuilder(metaModelProcessor, jsonQuery);
+            }
+
             SpeedyQuery speedyQuery = jsonQueryBuilder.build();
 
             GetRequestContext context = new GetRequestContext(request, response, metaModelProcessor);
@@ -79,6 +90,16 @@ public class SpeedyApiController {
             response.getWriter().flush();
             metaModelProcessor.closeQueryProcessor(queryProcessor);
         }
+    }
+
+    @PostMapping(value = "/{from}/$query")
+    public void query(HttpServletRequest request, HttpServletResponse response, @PathVariable("from") String from) throws Exception {
+        queryRequest(request, response, Optional.of(from));
+    }
+
+    @PostMapping(value = "/$query")
+    public void query(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        queryRequest(request, response, Optional.empty());
     }
 
     @Hidden
