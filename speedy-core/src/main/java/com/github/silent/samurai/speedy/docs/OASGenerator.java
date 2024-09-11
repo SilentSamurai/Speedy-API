@@ -28,7 +28,8 @@ public class OASGenerator {
     public static final String CREATE_REQUEST_NAME = "Create{0}Request";
     public static final String UPDATE_REQUEST_NAME = "Update{0}Request";
     public static final String GET_REQUEST_NAME = "Get{0}Request";
-    public static final String QUERY_REQUEST_NAME = "Query{0}Request";
+    public static final String QUERY_REQUEST_NAME = "QueryRequest";
+    public static final String QUERY_REQUEST_WHERE_NAME = "QueryRequestWhere";
 
 
     private static final Map<Class<?>, Schema<?>> PRIMITIVE_TYPE_TO_SCHEMA_MAP = new HashMap<>();
@@ -138,41 +139,84 @@ public class OASGenerator {
         return schema;
     }
 
-    public static Schema<?> createQueryRequest(EntityMetadata entityMetadata) {
+    public static Schema<?> createWhereQuerySchema() {
+        Schema whereSchema = new Schema<>().type("object");
+
+        Schema conditions = new Schema<>().type("object")
+                .addProperty("$eq", new Schema<>())
+//                                .addProperty("=", new Schema<>())
+//                                .addProperty("==", new Schema<>())
+                .addProperty("$neq", new Schema<>())
+                .addProperty("$ne", new Schema<>())
+//                                .addProperty("!=", new Schema<>())
+                .addProperty("$lt", new Schema<>())
+//                                .addProperty("<", new Schema<>())
+                .addProperty("$lte", new Schema<>())
+//                                .addProperty("<=", new Schema<>())
+                .addProperty("$gt", new Schema<>())
+//                                .addProperty(">", new Schema<>())
+                .addProperty("$gte", new Schema<>())
+//                                .addProperty(">=", new Schema<>())
+                .addProperty("$in", new Schema<>())
+//                                .addProperty("<>", new Schema<>())
+                .addProperty("$nin", new Schema<>())
+//                                .addProperty("<!>", new Schema<>())
+                .addProperty("$and", new Schema().type("array").items(getSchemaRef(QUERY_REQUEST_WHERE_NAME)))
+                .addProperty("$or", new Schema().type("array").items(getSchemaRef(QUERY_REQUEST_WHERE_NAME)));
+
+        whereSchema.additionalProperties(new Schema<>().anyOf(
+                        List.of(
+                                basicSchema(ValueType.TEXT),
+                                conditions)
+                )
+        );
+
+        whereSchema
+                .addProperty("$and", new Schema().type("array").items(getSchemaRef(QUERY_REQUEST_WHERE_NAME)))
+                .addProperty("$or", new Schema().type("array").items(getSchemaRef(QUERY_REQUEST_WHERE_NAME)));
+
+        return whereSchema;
+    }
+
+    public static Schema<?> createQueryRequest() {
         Schema<String> schema = new Schema<>();
         schema.type("object");
 
-        schema.addProperty("$from", basicSchema(ValueType.TEXT));
+//        schema.addProperty("$from", basicSchema(ValueType.TEXT));
 
         Schema orderBySchema = new Schema<>().type("object");
-        Schema whereSchema = new Schema<>().type("object");
-
-        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            String outputPropertyName = fieldMetadata.getOutputPropertyName();
-            orderBySchema.addProperty(outputPropertyName, basicSchema(ValueType.TEXT).example("ASC|DESC"));
-
-            whereSchema.addProperty(outputPropertyName, new Schema<>().anyOf(
-                    List.of(
-                            new Schema<>().type("object")
-                                    .addProperty("$eq", basicSchema(ValueType.TEXT)),
-                            basicSchema(ValueType.TEXT)
-                    )
-            ));
-
-        }
 
 
-        String expandExample = entityMetadata
-                .getAssociatedFields()
-                .stream()
-                .map(FieldMetadata::getOutputPropertyName)
-                .reduce((a, b) -> a + "|" + b).orElse("");
+        orderBySchema.additionalProperties(basicSchema(ValueType.TEXT).example("ASC|DESC"));
+
+
+//        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+//            String outputPropertyName = fieldMetadata.getOutputPropertyName();
+//
+////            orderBySchema.addPatternProperty("^[A-Za-z][A-Za-z0-9_]$", basicSchema(ValueType.TEXT).example("ASC|DESC"));
+//            orderBySchema.addProperty(outputPropertyName, basicSchema(ValueType.TEXT).example("ASC|DESC"));
+//            whereSchema.addProperty(outputPropertyName, new Schema<>().anyOf(
+//                    List.of(
+//                            new Schema<>().type("object")
+//                                    .addProperty("$eq", basicSchema(ValueType.TEXT)),
+//                            basicSchema(ValueType.TEXT)
+//                    )
+//            ));
+//
+//        }
+
+//
+//        String expandExample = entityMetadata
+//                .getAssociatedFields()
+//                .stream()
+//                .map(FieldMetadata::getOutputPropertyName)
+//                .reduce((a, b) -> a + "|" + b).orElse("");
 
         schema.addProperty("$orderBy", orderBySchema);
-        schema.addProperty("$where", whereSchema);
+        schema.addProperty("$where", getSchemaRef(QUERY_REQUEST_WHERE_NAME));
 
-        Schema<?> expandSchema = new Schema<String>().type("array")
-                .items(basicSchema(ValueType.TEXT).example(expandExample));
+        Schema<?> expandSchema = new Schema<>().type("array")
+                .items(basicSchema(ValueType.TEXT).example("field names"));
         schema.addProperty("$expand", expandSchema);
 
         Schema pageSchema = new Schema<>().type("object");

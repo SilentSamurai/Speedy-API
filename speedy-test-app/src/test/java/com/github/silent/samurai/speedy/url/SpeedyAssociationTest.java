@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.helper.SpdyQ;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,8 +91,10 @@ class SpeedyAssociationTest {
         Assertions.assertNotNull(productKey.getId());
         Assertions.assertNotEquals("", productKey.getId());
 
-        String query = String.format("(id='%s')", productKey.getId());
-        FilteredProductResponse productResponse = productApi.getSomeProduct(query);
+//        String query = String.format("(id='%s')", productKey.getId());
+        FilteredProductResponse productResponse = productApi.queryProduct(
+                SpdyQ.whereEq("id", productKey.getId())
+        );
         Assertions.assertNotNull(productResponse);
         List<Product> productList = productResponse.getPayload();
         Assertions.assertNotNull(productList);

@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.helper.SpdyQ;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,12 +56,14 @@ class SpeedyGetConditionTest {
     void lessThanCondition() throws Exception {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost < 50)");
+//        "(cost < 50)"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$lt(50))
+        );
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertTrue(payload.size() > 0);
+        Assertions.assertFalse(payload.isEmpty());
         for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() < 50);
@@ -72,12 +75,14 @@ class SpeedyGetConditionTest {
     void lessThanEquals() throws Exception {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <= 75)");
+        // "(cost <= 75)"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$lte(75))
+        );
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertTrue(payload.size() > 0);
+        Assertions.assertFalse(payload.isEmpty());
         for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() <= 75);
@@ -89,12 +94,14 @@ class SpeedyGetConditionTest {
     void greaterThan() throws Exception {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost > 75)");
+        // "(cost > 75)"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$gt(75))
+        );
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertTrue(payload.size() > 0);
+        Assertions.assertFalse(payload.isEmpty());
         for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() > 75);
@@ -106,8 +113,10 @@ class SpeedyGetConditionTest {
     void greaterThanEquals() throws Exception {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost >= 75)");
+        // "(cost >= 75)"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$gte(75))
+        );
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -124,7 +133,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost != 75)");
+        //"(cost != 75)"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$ne(75))
+        );
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -139,8 +151,10 @@ class SpeedyGetConditionTest {
     @Test
     void equals() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost = 75)");
+        // "(cost = 75)"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$eq(75))
+        );
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertFalse(payload.isEmpty());
@@ -153,8 +167,17 @@ class SpeedyGetConditionTest {
     @Test
     void multiple1() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost < 75 & cost >= 25)");
+        // "(cost < 75 & cost >= 25)"
+        QueryRequestWhere where = SpdyQ.where();
+        where.add$AndItem(
+                SpdyQ.where("cost", SpdyQ.$lt(75)).get$Where()
+        );
+        where.add$AndItem(
+                SpdyQ.where("cost", SpdyQ.$gte(25)).get$Where()
+        );
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                new QueryRequest().$where(where)
+        );
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertTrue(payload.size() > 0);
@@ -201,7 +224,10 @@ class SpeedyGetConditionTest {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <> [ 25, 50, 75])");
+        // "(cost <> [ 25, 50, 75])"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$in(List.of(25, 50, 75)))
+        );
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -219,8 +245,10 @@ class SpeedyGetConditionTest {
     void notin() throws Exception {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("(cost <!> [ 25, 50, 75])");
+        // "(cost <!> [ 25, 50, 75])"
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.where("cost", SpdyQ.$nin(List.of(25, 50, 75)))
+        );
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -237,7 +265,10 @@ class SpeedyGetConditionTest {
     @Test
     void associationTest() throws Exception {
 
-        FilteredProductResponse someInventory = productApi.getSomeProduct(" (category.id = '1') ");
+        // " (category.id = '1') "
+        FilteredProductResponse someInventory = productApi.queryProduct(
+                SpdyQ.whereEq("category.id", "1")
+        );
 
         List<Product> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -251,7 +282,17 @@ class SpeedyGetConditionTest {
     @Test
     void association1Test() throws Exception {
 
-        FilteredProductResponse someInventory = productApi.getSomeProduct("( name = 'Product 1' & category.id = '1')");
+        // "( name = 'Product 1' & category.id = '1')"
+        QueryRequestWhere where = SpdyQ.where();
+        where.add$AndItem(
+                SpdyQ.whereEq("name", "Product 1").get$Where()
+        );
+        where.add$AndItem(
+                SpdyQ.whereEq("category.id", "1").get$Where()
+        );
+        FilteredProductResponse someInventory = productApi.queryProduct(
+                SpdyQ.qry().$where(where)
+        );
 
         List<Product> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
@@ -267,7 +308,10 @@ class SpeedyGetConditionTest {
 
         ProcurementApi procurementApi = new ProcurementApi(defaultClient);
 
-        FilteredProcurementResponse someInventory = procurementApi.getSomeProcurement("( purchaseDate < '2023-05-11T18:13:38.626Z' )");
+        // "( purchaseDate < '2023-05-11T18:13:38.626Z' )"
+        FilteredProcurementResponse someInventory = procurementApi.queryProcurement(
+                SpdyQ.where("purchaseDate", SpdyQ.$lt("2023-05-11T18:13:38.626Z"))
+        );
 
         List<Procurement> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);

@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.helper.SpdyQ;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,9 @@ class SpeedyGetFormulaSpeedyQueryImplFieldTest {
     @Test
     void getViaPrimaryKey() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
-        FilteredInventoryResponse someInventory = inventoryApi.getSomeInventory("");
+        FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
+                SpdyQ.qry()
+        );
         List<Inventory> payload = someInventory.getPayload();
         Inventory inventory = payload.get(0);
         Assertions.assertNotNull(inventory.getProfit());

@@ -1,13 +1,11 @@
 package com.github.silent.samurai.speedy.docs;
 
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.google.common.collect.Lists;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 
 import java.util.Collection;
@@ -23,6 +21,13 @@ public class OpenApiGenerator {
 
     public void generate(OpenAPI openApi) {
         Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
+
+        Schema<?> querySchema = OASGenerator.createQueryRequest();
+        openApi.getComponents().addSchemas(OASGenerator.QUERY_REQUEST_NAME, querySchema);
+
+        Schema<?> whereSchema = OASGenerator.createWhereQuerySchema();
+        openApi.getComponents().addSchemas(OASGenerator.QUERY_REQUEST_WHERE_NAME, whereSchema);
+
         for (EntityMetadata entityMetadata : allEntityMetadata) {
 
             PathItem basePathItem = new PathItem();
@@ -89,11 +94,6 @@ public class OpenApiGenerator {
                 true
         );
         openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata), updateSchema);
-
-        Schema<?> querySchema = OASGenerator.createQueryRequest(
-                entityMetadata
-        );
-        openAPI.getComponents().addSchemas(OASGenerator.getSchemaName(OASGenerator.QUERY_REQUEST_NAME, entityMetadata), querySchema);
     }
 
     private void postOperation(EntityMetadata entityMetadata, PathItem pathItem) {
@@ -184,7 +184,7 @@ public class OpenApiGenerator {
         operation.tags(Lists.newArrayList(entityMetadata.getName()));
 //        OASGenerator.addPagingAndOrderingInfo(operation);
         operation.requestBody(OASGenerator.getJsonBody(
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.QUERY_REQUEST_NAME, entityMetadata))
+                OASGenerator.getSchemaRef(OASGenerator.QUERY_REQUEST_NAME)
         ).description("Fields needed for creation"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(

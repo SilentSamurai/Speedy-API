@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.url;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.helper.SpdyQ;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.assertj.core.util.Lists;
@@ -403,7 +404,9 @@ class SpeedyEntityTest {
         CurrencyKey deletedCurrencyKey = bulkDeleteCurrencyResponse.getPayload().get(0);
         Assertions.assertEquals(currencyKey.getId(), deletedCurrencyKey.getId());
 
-        FilteredCurrencyResponse someCurrency = currencyApi.getSomeCurrency("(currencyAbbr='NZD')");
+        FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
+                SpdyQ.whereEq("currencyAbbr", "NZD")
+        );
 
         Assertions.assertNotNull(someCurrency);
         Assertions.assertNotNull(someCurrency.getPayload());
@@ -419,7 +422,9 @@ class SpeedyEntityTest {
     void crudExchangeRates() {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
 
-        FilteredCurrencyResponse someCurrency = currencyApi.getSomeCurrency("(currencyAbbr='NZD')");
+        FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
+                SpdyQ.whereEq("currencyAbbr", "NZD")
+        );
 
         Assertions.assertNotNull(someCurrency);
         Assertions.assertNotNull(someCurrency.getPayload());
@@ -428,7 +433,9 @@ class SpeedyEntityTest {
 
         Currency baseCurrency = someCurrency.getPayload().get(0);
 
-        someCurrency = currencyApi.getSomeCurrency("(currencyAbbr='NZD')");
+        someCurrency = currencyApi.queryCurrency(
+                SpdyQ.whereEq("currencyAbbr", "NZD")
+        );
         Assertions.assertNotNull(someCurrency);
         Assertions.assertNotNull(someCurrency.getPayload());
         Assertions.assertFalse(someCurrency.getPayload().isEmpty());
