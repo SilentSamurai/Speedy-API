@@ -22,12 +22,6 @@ public class OpenApiGenerator {
     public void generate(OpenAPI openApi) {
         Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
 
-        Schema<?> querySchema = OASGenerator.createQueryRequest();
-        openApi.getComponents().addSchemas(OASGenerator.QUERY_REQUEST_NAME, querySchema);
-
-        Schema<?> whereSchema = OASGenerator.createWhereQuerySchema();
-        openApi.getComponents().addSchemas(OASGenerator.QUERY_REQUEST_WHERE_NAME, whereSchema);
-
         for (EntityMetadata entityMetadata : allEntityMetadata) {
 
             PathItem basePathItem = new PathItem();
@@ -182,9 +176,8 @@ public class OpenApiGenerator {
         operation.operationId("Query" + entityMetadata.getName());
         operation.summary("Filter " + entityMetadata.getName());
         operation.tags(Lists.newArrayList(entityMetadata.getName()));
-//        OASGenerator.addPagingAndOrderingInfo(operation);
         operation.requestBody(OASGenerator.getJsonBody(
-                OASGenerator.getSchemaRef(OASGenerator.QUERY_REQUEST_NAME)
+                new Schema<>().example(QUERY_EXAMPLE)
         ).description("Fields needed for creation"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
@@ -217,5 +210,53 @@ public class OpenApiGenerator {
         return sb.toString();
     }
 
+    final String QUERY_EXAMPLE = "{\n" +
+            "    \"$from\": \"Resource\",\n" +
+            "    \"$where\": {\n" +
+            "        \"id\": \"abcd-efgh\",\n" +
+            "        \"cost\": {\n" +
+            "            \"$eq\": \"0\",\n" +
+            "            \"$ne\": \"0\",\n" +
+            "            \"$lt\": \"0\",\n" +
+            "            \"$gt\": \"0\",\n" +
+            "            \"$in\": [\n" +
+            "                0,\n" +
+            "                2,\n" +
+            "                1\n" +
+            "            ],\n" +
+            "            \"$nin\": [\n" +
+            "                0,\n" +
+            "                1\n" +
+            "            ]\n" +
+            "        },\n" +
+            "        \"$and\": [\n" +
+            "            {\n" +
+            "                \"id\": \"1\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"desc\": \"desc1\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"$or\": [\n" +
+            "            {\n" +
+            "                \"id\": \"1\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"desc\": \"desc1\"\n" +
+            "            }\n" +
+            "        ]\n" +
+            "    },\n" +
+            "    \"$orderBy\": {\n" +
+            "        \"id\": \"ASC\"\n" +
+            "    },\n" +
+            "    \"$expand\": [\n" +
+            "        \"relation\"\n" +
+            "    ],\n" +
+            "    \"$page\": {\n" +
+            "        \"$index\": 0,\n" +
+            "        \"$size\": 100\n" +
+            "    }\n" +
+            "}";
 
 }
+

@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.url;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.helper.SpdyQ;
+import com.github.silent.samurai.speedy.helper.SpdyQBuilder;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,11 +81,12 @@ class SpeedyCompositeKeyTest {
     Order getOrder(OrderKey orderKey) throws Exception {
 
 //        String query = String.format("(productId=\"%s\",supplierId=\"%s\")", orderKey.getProductId(), orderKey.getSupplierId());
-        QueryRequestWhere where = SpdyQ.where();
-        where.put("productId", SpdyQ.$eq(orderKey.getProductId()));
-        where.put("supplierId", SpdyQ.$eq(orderKey.getSupplierId()));
+
         FilteredOrderResponse orderResponse = apiInstance.queryOrder(
-                SpdyQ.qry().$where(where)
+                SpdyQ.builder()
+                        .$where("productId", SpdyQBuilder.$eq(orderKey.getProductId()))
+                        .$where("supplierId", SpdyQBuilder.$eq(orderKey.getSupplierId()))
+                        .build()
         );
 
         Assertions.assertNotNull(orderResponse);

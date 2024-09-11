@@ -50,7 +50,7 @@ class SpeedyGetFormulaSpeedyQueryImplFieldTest {
     void getViaPrimaryKey() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpdyQ.qry()
+                SpdyQ.builder().build()
         );
         List<Inventory> payload = someInventory.getPayload();
         Inventory inventory = payload.get(0);

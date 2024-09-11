@@ -68,7 +68,7 @@ public class SpeedyApiController {
                 jsonQueryBuilder = new JsonQueryBuilder(metaModelProcessor, jsonQuery);
             }
 
-            SpeedyQuery speedyQuery = jsonQueryBuilder.build();
+              SpeedyQuery speedyQuery = jsonQueryBuilder.build();
 
             GetRequestContext context = new GetRequestContext(request, response, metaModelProcessor);
 
