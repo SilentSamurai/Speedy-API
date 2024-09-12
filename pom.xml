@@ -37,6 +37,7 @@
         <module>speedy-commons</module>
         <module>speedy-jpa-impl</module>
         <module>speedy-java-client</module>
+        <module>speedy-static-impl</module>
     </modules>
 
     <developers>

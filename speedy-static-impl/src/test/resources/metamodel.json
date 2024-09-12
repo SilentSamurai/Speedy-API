@@ -1,0 +1,1444 @@
+[
+    {
+        "name": "Procurement",
+        "fields": [
+            {
+                "name": "createdBy",
+                "outputProperty": "createdBy",
+                "dbColumn": "created_by",
+                "type": "TEXT",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false,
+                "isUpdatable" : true,
+                "isInsertable": true,
+                "isRequired": true
+            },
+            {
+                "outputProperty": "modifiedBy",
+                "dbColumn": "modified_by",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "supplier",
+                "dbColumn": "supplier_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Supplier",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "amount",
+                "dbColumn": "amount",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "product",
+                "dbColumn": "product_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Product",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "name": "id",
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false,
+                "isKeyField": true
+            },
+            {
+                "outputProperty": "modifiedAt",
+                "dbColumn": "modified_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "dueAmount",
+                "dbColumn": "due_amount",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "purchaseDate",
+                "dbColumn": "purchase_date",
+                "fieldType": "java.time.Instant",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Procurement",
+        "keyType": "Procurement"
+    },
+    {
+        "name": "Order",
+        "fields": [
+            {
+                "outputProperty": "discount",
+                "dbColumn": "discount",
+                "fieldType": "java.lang.Double",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "product",
+                "dbColumn": "product_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Product",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "supplierId",
+                "dbColumn": "supplier_id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "price",
+                "dbColumn": "price",
+                "fieldType": "java.lang.Double",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "supplier",
+                "dbColumn": "supplier_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Supplier",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "productId",
+                "dbColumn": "product_id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "orderDate",
+                "dbColumn": "order_date",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "productId",
+                "dbColumn": "product_id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "supplierId",
+                "dbColumn": "supplier_id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": true,
+        "entityType": "Order",
+        "keyType": "Order"
+    },
+    {
+        "name": "ValueTestEntity",
+        "fields": [
+            {
+                "outputProperty": "localDateTime",
+                "dbColumn": "local_date_time",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "localDate",
+                "dbColumn": "local_date",
+                "fieldType": "java.time.LocalDate",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "zonedDateTime",
+                "dbColumn": "zoned_date_time",
+                "fieldType": "java.time.ZonedDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "localTime",
+                "dbColumn": "local_time",
+                "fieldType": "java.time.LocalTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "instantTime",
+                "dbColumn": "instant_time",
+                "fieldType": "java.time.Instant",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "ValueTestEntity",
+        "keyType": "ValueTestEntity"
+    },
+    {
+        "name": "ExchangeRate",
+        "fields": [
+            {
+                "outputProperty": "invExchangeRate",
+                "dbColumn": "inv_exchange_rate",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "exchangeRate",
+                "dbColumn": "exchange_rate",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "foreignCurrency",
+                "dbColumn": "foreign_currency_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Currency",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "baseCurrency",
+                "dbColumn": "base_currency_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Currency",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "ExchangeRate",
+        "keyType": "ExchangeRate"
+    },
+    {
+        "name": "Company",
+        "fields": [
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "detailsTop",
+                "dbColumn": "details_top",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "name",
+                "dbColumn": "name",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "invoiceNo",
+                "dbColumn": "invoice_no",
+                "fieldType": "java.lang.Integer",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "defaultGenerator",
+                "dbColumn": "default_generator",
+                "fieldType": "java.lang.Integer",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "extra",
+                "dbColumn": "extra",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "deletedAt",
+                "dbColumn": "deleted_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "phone",
+                "dbColumn": "phone",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "updatedAt",
+                "dbColumn": "updated_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "email",
+                "dbColumn": "email",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "currency",
+                "dbColumn": "currency",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "address",
+                "dbColumn": "address",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Company",
+        "keyType": "Company"
+    },
+    {
+        "name": "Invoice",
+        "fields": [
+            {
+                "outputProperty": "modifiedAt",
+                "dbColumn": "modified_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "adjustment",
+                "dbColumn": "adjustment",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "invoiceDate",
+                "dbColumn": "invoice_date",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdBy",
+                "dbColumn": "created_by",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "dueAmount",
+                "dbColumn": "due_amount",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "customer",
+                "dbColumn": "customer_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Customer",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "paid",
+                "dbColumn": "paid",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "notes",
+                "dbColumn": "notes",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "discount",
+                "dbColumn": "discount",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "modifiedBy",
+                "dbColumn": "modified_by",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Invoice",
+        "keyType": "Invoice"
+    },
+    {
+        "name": "Category",
+        "fields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "name",
+                "dbColumn": "name",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Category",
+        "keyType": "Category"
+    },
+    {
+        "name": "User",
+        "fields": [
+            {
+                "outputProperty": "phoneNo",
+                "dbColumn": "phone_no",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "profilePic",
+                "dbColumn": "profile_pic",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "email",
+                "dbColumn": "email",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "company",
+                "dbColumn": "company_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Company",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "name",
+                "dbColumn": "name",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "deletedAt",
+                "dbColumn": "deleted_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "updatedAt",
+                "dbColumn": "updated_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "User",
+        "keyType": "User"
+    },
+    {
+        "name": "Customer",
+        "fields": [
+            {
+                "outputProperty": "name",
+                "dbColumn": "name",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "email",
+                "dbColumn": "email",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "phoneNo",
+                "dbColumn": "phone_no",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "address",
+                "dbColumn": "address",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "invoices",
+                "dbColumn": null,
+                "fieldType": "java.util.List",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": true,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdBy",
+                "dbColumn": "created_by",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "altPhoneNo",
+                "dbColumn": "alt_phone_no",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Customer",
+        "keyType": "Customer"
+    },
+    {
+        "name": "Product",
+        "fields": [
+            {
+                "outputProperty": "name",
+                "dbColumn": "name",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": true
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "category",
+                "dbColumn": "category_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Category",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "description",
+                "dbColumn": "description",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Product",
+        "keyType": "Product"
+    },
+    {
+        "name": "VirtualEntity",
+        "fields": [
+            {
+                "outputProperty": "description",
+                "dbColumn": "description",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "name",
+                "dbColumn": "name",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": true
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "VirtualEntity",
+        "keyType": "VirtualEntity"
+    },
+    {
+        "name": "Currency",
+        "fields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "currencyAbbr",
+                "dbColumn": "currency_abbr",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "currencySymbol",
+                "dbColumn": "currency_symbol",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.LocalDateTime",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "currencyName",
+                "dbColumn": "currency_name",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "country",
+                "dbColumn": "country",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Currency",
+        "keyType": "Currency"
+    },
+    {
+        "name": "Supplier",
+        "fields": [
+            {
+                "outputProperty": "phoneNo",
+                "dbColumn": "phone_no",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdBy",
+                "dbColumn": "created_by",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "address",
+                "dbColumn": "address",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "createdAt",
+                "dbColumn": "created_at",
+                "fieldType": "java.time.Instant",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "name",
+                "dbColumn": "name",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "altPhoneNo",
+                "dbColumn": "alt_phone_no",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "email",
+                "dbColumn": "email",
+                "fieldType": "java.lang.String",
+                "isNullable": true,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Supplier",
+        "keyType": "Supplier"
+    },
+    {
+        "name": "Inventory",
+        "fields": [
+            {
+                "outputProperty": "listingPrice",
+                "dbColumn": "listing_price",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "product",
+                "dbColumn": "product_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Product",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "soldPrice",
+                "dbColumn": "sold_price",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "cost",
+                "dbColumn": "cost",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "discount",
+                "dbColumn": "discount",
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "invoice",
+                "dbColumn": "invoice_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Invoice",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "profit",
+                "dbColumn": null,
+                "fieldType": "java.lang.Double",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            },
+            {
+                "outputProperty": "procurement",
+                "dbColumn": "procurement_id",
+                "fieldType": "com.github.silent.samurai.speedy.entity.Procurement",
+                "isNullable": false,
+                "isAssociation": true,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": true,
+                "isUnique": false
+            }
+        ],
+        "keyFields": [
+            {
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "java.lang.String",
+                "isNullable": false,
+                "isAssociation": false,
+                "isCollection": false,
+                "isSerializable": true,
+                "isDeserializable": false,
+                "isUnique": false
+            }
+        ],
+        "hasCompositeKey": false,
+        "entityType": "Inventory",
+        "keyType": "Inventory"
+    }
+]
