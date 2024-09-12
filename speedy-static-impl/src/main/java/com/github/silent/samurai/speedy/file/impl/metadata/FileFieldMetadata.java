@@ -13,14 +13,11 @@ import java.util.Objects;
 
 @Getter
 @Setter
-public class FileFieldMetadata implements KeyFieldMetadata {
+public class FileFieldMetadata implements FieldMetadata {
 
     private String name;
-    @JsonProperty("type")
     private ValueType valueType;
-    @JsonProperty("outputProperty")
     private String outputPropertyName;
-    @JsonProperty("dbColumn")
     private String dbColumnName;
     private boolean isNullable;
     private boolean isAssociation;
@@ -31,7 +28,9 @@ public class FileFieldMetadata implements KeyFieldMetadata {
     private boolean isInsertable = true;
     private boolean isUpdatable = true;
     private boolean isRequired = true;
-    private boolean isKeyField = false;
+    private String type;
+    private FileEntityMetadata entityMetadata;
+    private FileEntityMetadata associationMetadata;
 
 
     @Override
@@ -41,16 +40,6 @@ public class FileFieldMetadata implements KeyFieldMetadata {
 
     @Override
     public Class<?> getFieldType() {
-        return null;
-    }
-
-    @Override
-    public EntityMetadata getEntityMetadata() {
-        return null;
-    }
-
-    @Override
-    public EntityMetadata getAssociationMetadata() {
         return null;
     }
 

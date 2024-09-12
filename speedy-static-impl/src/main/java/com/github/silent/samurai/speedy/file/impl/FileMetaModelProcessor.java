@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileEntityMetadata;
+import com.github.silent.samurai.speedy.file.impl.processor.FileProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
@@ -37,15 +38,7 @@ class FileMetaModelProcessor implements MetaModelProcessor {
         this.metaModelFile = fileName;
         File file = ResourceUtils.getFile("classpath:" + metaModelFile);
         try (InputStream in = new FileInputStream(file)) {
-            process(in);
-        }
-    }
-
-    private void process(InputStream in) throws IOException {
-        List<FileEntityMetadata> entityMetadata = CommonUtil.json().readValue(in, new TypeReference<List<FileEntityMetadata>>() {
-        });
-        for (FileEntityMetadata fileEntityMetadata : entityMetadata) {
-            entityMap.put(fileEntityMetadata.getName(), fileEntityMetadata);
+            FileProcessor.process(in, entityMap);
         }
     }
 
@@ -71,12 +64,16 @@ class FileMetaModelProcessor implements MetaModelProcessor {
 
     @Override
     public EntityMetadata findEntityMetadata(String entityName) throws NotFoundException {
-        return null;
+        if (!entityMap.containsKey(entityName)) {
+            throw new NotFoundException(entityName);
+        }
+        return entityMap.get(entityName);
     }
 
     @Override
     public FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException {
-        return null;
+        EntityMetadata entityMetadata = findEntityMetadata(entityName);
+        return entityMetadata.field(fieldName);
     }
 
     @Override

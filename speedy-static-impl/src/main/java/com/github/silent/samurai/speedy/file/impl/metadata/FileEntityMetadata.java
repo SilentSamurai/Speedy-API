@@ -9,8 +9,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -21,15 +23,13 @@ import java.util.Set;
 public class FileEntityMetadata implements EntityMetadata {
 
     private String name;
-    private Set<FileFieldMetadata> fields;
     private Map<String, FileFieldMetadata> fieldMap = new HashMap<>();
     private boolean hasCompositeKey;
     private String entityType;
     private String keyType;
 
-    public void setFields(Set<FileFieldMetadata> fields) {
-        this.fields = fields;
-        fields.forEach(field -> fieldMap.put(field.getName(), field));
+    public Set<FileFieldMetadata> getFields() {
+        return new HashSet<>(fieldMap.values());
     }
 
     @Override
@@ -39,36 +39,47 @@ public class FileEntityMetadata implements EntityMetadata {
 
     @Override
     public FieldMetadata field(String fieldName) throws NotFoundException {
+        if (!fieldMap.containsKey(fieldName)) {
+            throw new NotFoundException("Field " + fieldName + " not found");
+        }
         return fieldMap.get(fieldName);
     }
 
     @Override
     public Set<FieldMetadata> getAllFields() {
-        return Set.of();
+        return getFields().stream().map(ffm -> (FieldMetadata) ffm).collect(Collectors.toSet());
     }
 
     @Override
     public Set<String> getAllFieldNames() {
-        return Set.of();
+        return fieldMap.keySet();
     }
 
     @Override
     public boolean hasCompositeKey() {
-        return false;
+        return hasCompositeKey;
     }
 
     @Override
     public Set<KeyFieldMetadata> getKeyFields() {
-        return Set.of();
+        return getFields().stream()
+                .filter(ffm -> ffm instanceof KeyFieldMetadata)
+                .map(ffm -> (KeyFieldMetadata) ffm)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
     public Set<String> getKeyFieldNames() {
-        return Set.of();
+        return getFields().stream()
+                .filter(ffm -> ffm instanceof KeyFieldMetadata)
+                .map(FileFieldMetadata::getName)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override
     public Set<FieldMetadata> getAssociatedFields() {
-        return Set.of();
+        return getFields().stream()
+                .filter(FileFieldMetadata::isAssociation)
+                .collect(Collectors.toUnmodifiableSet());
     }
 }
