@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.Encoding;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -18,6 +19,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 public class OASGenerator {
@@ -162,7 +164,7 @@ public class OASGenerator {
     public static RequestBody getJsonBody(Schema schema) {
         return new RequestBody()
                 .content(new Content()
-                        .addMediaType(APPLICATION_JSON_VALUE, new MediaType()
+                        .addMediaType(APPLICATION_JSON_UTF8_VALUE, new MediaType()
                                 .schema(schema)
                         )
                 );
@@ -171,7 +173,7 @@ public class OASGenerator {
     public static ApiResponse getJsonResponse(String name, Schema schema) {
         return new ApiResponse()
                 .content(new Content()
-                        .addMediaType(APPLICATION_JSON_VALUE, new MediaType()
+                        .addMediaType(APPLICATION_JSON_UTF8_VALUE, new MediaType()
                                 .schema(wrapInPayload(schema).name(name).title(name))
                         )
                 );

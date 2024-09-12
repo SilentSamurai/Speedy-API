@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.helper.SpdyQ;
-import com.github.silent.samurai.speedy.helper.SpdyQBuilder;
+import com.github.silent.samurai.speedy.SpdyQ;
+import com.github.silent.samurai.speedy.SpdyQBuilder;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,8 +84,8 @@ class SpeedyCompositeKeyTest {
 
         FilteredOrderResponse orderResponse = apiInstance.queryOrder(
                 SpdyQ.builder()
-                        .$where("productId", SpdyQBuilder.$eq(orderKey.getProductId()))
-                        .$where("supplierId", SpdyQBuilder.$eq(orderKey.getSupplierId()))
+                        .$whereCondition("productId", SpdyQBuilder.$eq(orderKey.getProductId()))
+                        .$whereCondition("supplierId", SpdyQBuilder.$eq(orderKey.getSupplierId()))
                         .build()
         );
 

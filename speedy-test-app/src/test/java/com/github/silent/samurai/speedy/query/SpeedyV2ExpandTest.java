@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.SpdyQ;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
@@ -51,14 +52,17 @@ public class SpeedyV2ExpandTest {
        * */
     @Test
     void testQuery1() throws Exception {
-        ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("$from", "Product");
-        body.putArray("$expand")
-                .add("Category");
+
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
-                .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .content(CommonUtil.json().writeValueAsString(
+                        SpdyQ.builder()
+                                .$from("Product")
+                                .$expand("Category")
+                                .prettyPrint()
+                                .build()
+                ))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)

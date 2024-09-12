@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.helper.SpdyQ;
+import com.github.silent.samurai.speedy.SpdyQ;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.assertj.core.util.Lists;
@@ -406,7 +406,7 @@ class SpeedyEntityTest {
         Assertions.assertEquals(currencyKey.getId(), deletedCurrencyKey.getId());
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpdyQ.whereEq("currencyAbbr", "NZD").build()
+                SpdyQ.whereEq("currencyAbbr", "NZD")
         );
 
         Assertions.assertNotNull(someCurrency);
@@ -424,7 +424,7 @@ class SpeedyEntityTest {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpdyQ.whereEq("currencyAbbr", "NZD").build()
+                SpdyQ.whereEq("currencyAbbr", "NZD")
         );
 
         Assertions.assertNotNull(someCurrency);
@@ -435,7 +435,7 @@ class SpeedyEntityTest {
         Currency baseCurrency = someCurrency.getPayload().get(0);
 
         someCurrency = currencyApi.queryCurrency(
-                SpdyQ.whereEq("currencyAbbr", "NZD").build()
+                SpdyQ.whereEq("currencyAbbr", "NZD")
         );
         Assertions.assertNotNull(someCurrency);
         Assertions.assertNotNull(someCurrency.getPayload());
