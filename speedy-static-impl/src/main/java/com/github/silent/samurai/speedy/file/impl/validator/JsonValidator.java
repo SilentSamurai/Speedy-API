@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.file.impl.validator;
 
-import com.github.silent.samurai.speedy.file.impl.model.JsonField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -28,7 +28,7 @@ public class VirtualEntityProcessor {
     public void processRegistry() {
         for (RegistryImpl.VEHHoldr holdr : eventRegistry.getVirtualEntityHandlers()) {
             try {
-                EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(holdr.getEntityClass());
+                EntityMetadata entityMetadata = metaModelProcessor.findEntityMetadata(holdr.getEntityClass().getSimpleName());
                 virtualEntityHandlerMap.put(entityMetadata.getName(), holdr.getHandler());
             } catch (NotFoundException e) {
                 LOGGER.error("entityMetadata not found ", e);

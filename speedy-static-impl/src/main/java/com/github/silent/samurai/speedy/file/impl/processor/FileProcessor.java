@@ -5,8 +5,8 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileEntityMetadata;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileFieldMetadata;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileKeyFieldMetadata;
-import com.github.silent.samurai.speedy.file.impl.model.JsonEntity;
-import com.github.silent.samurai.speedy.file.impl.model.JsonField;
+import com.github.silent.samurai.speedy.file.impl.models.JsonEntity;
+import com.github.silent.samurai.speedy.file.impl.models.JsonField;
 import com.github.silent.samurai.speedy.file.impl.validator.JsonValidator;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 

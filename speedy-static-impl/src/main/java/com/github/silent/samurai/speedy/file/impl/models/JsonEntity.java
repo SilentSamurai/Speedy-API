@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.file.impl.model;
+package com.github.silent.samurai.speedy.file.impl.models;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
