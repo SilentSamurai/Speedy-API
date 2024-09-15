@@ -37,18 +37,8 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     DataSource dataSource;
 
     @Override
-    public EntityManager createEntityManager() {
-        return entityManagerFactory.createEntityManager();
-    }
-
-    @Override
-    public EntityManagerFactory createEntityManagerFactory() {
-        return entityManagerFactory;
-    }
-
-    @Override
     public MetaModelProcessor createMetaModelProcessor() {
-        return new FileMetaModelProcessor("metamodel.json", dataSource, SQLDialect.H2);
+        return new JpaMetaModelProcessor(this, entityManagerFactory);
     }
 
     @Override
@@ -58,7 +48,17 @@ public class SpeedyConfig implements ISpeedyConfiguration {
 
     @Override
     public void register(ISpeedyRegistry registry) {
-//        registry.registerEventHandler(entityEvents);
-//        registry.registerVirtualEntityHandler(virtualEntityHandler, VirtualEntity.class);
+        registry.registerEventHandler(entityEvents);
+        registry.registerVirtualEntityHandler(virtualEntityHandler, VirtualEntity.class);
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    @Override
+    public String getDialect() {
+        return SQLDialect.H2.getName();
     }
 }

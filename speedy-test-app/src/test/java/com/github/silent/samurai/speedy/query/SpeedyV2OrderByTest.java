@@ -39,7 +39,7 @@ public class SpeedyV2OrderByTest {
     @Autowired
     SpeedyFactory speedyFactory;
 
-    @Autowired
+     @Autowired
     CategoryRepository categoryRepository;
 
     @Autowired

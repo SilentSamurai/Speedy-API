@@ -29,4 +29,12 @@ public class SpeedyCollection implements SpeedyValue {
     public Collection<SpeedyValue> asCollection() {
         return getValue();
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyCollection{");
+        sb.append("value=").append(value);
+        sb.append('}');
+        return sb.toString();
+    }
 }

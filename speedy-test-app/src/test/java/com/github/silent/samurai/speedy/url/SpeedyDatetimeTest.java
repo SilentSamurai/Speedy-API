@@ -31,6 +31,7 @@ import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -117,7 +118,7 @@ class SpeedyDatetimeTest {
         String createdAt = lightSupplier.getCreatedAt();
         Assertions.assertNotNull(createdAt);
 
-        Instant createdat = LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneOffset.UTC);
+        Instant createdat = Instant.parse(createdAt);
 
         Assertions.assertTrue(createdat.toEpochMilli() - Instant.parse(dateTimeInstant).toEpochMilli() <= 1);
     }

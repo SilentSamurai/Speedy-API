@@ -33,8 +33,8 @@ public class Inventory extends AbstractBaseEntity {
     @JoinColumn(name = "invoice_id", nullable = false)
     private Invoice invoice;
 
-    @GeneratedValue
-    @Formula("sold_price - cost")
-    private Double profit;
+//    @GeneratedValue
+//    @Formula("sold_price - cost")
+//    private Double profit;
 
 }

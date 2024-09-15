@@ -105,4 +105,9 @@ public class SpeedyValueFactory {
     }
 
 
+    public static <T> T toJavaTypeOnlyViaValueType(ValueType valueType, SpeedyValue speedyValue) throws SpeedyHttpException {
+        return Speedy2JavaTypeConverter.convert(speedyValue, valueType);
+    }
+
+
 }

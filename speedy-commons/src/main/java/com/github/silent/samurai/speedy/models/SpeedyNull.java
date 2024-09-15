@@ -16,4 +16,11 @@ public class SpeedyNull implements SpeedyValue {
     public boolean isEmpty() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyNull{");
+        sb.append('}');
+        return sb.toString();
+    }
 }

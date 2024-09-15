@@ -53,10 +53,9 @@ class SpeedyAssociationTest {
     @Test
     void createCategory() throws Exception {
         CategoryApi apiInstance = new CategoryApi(defaultClient);
-        Function<String, CreateCategoryRequest> createPostCategory = (String name) -> new CreateCategoryRequest().name(name);
         List<CreateCategoryRequest> postCategories = Arrays.asList(
-                createPostCategory.apply("new-cat-1"),
-                createPostCategory.apply("new-cat-2")
+                new CreateCategoryRequest().name("new-cat-1"),
+                new CreateCategoryRequest().name("new-cat-2")
         ); // List<PostCategory> | Fields needed for creation
         apiInstance.bulkCreateCategory(postCategories);
     }

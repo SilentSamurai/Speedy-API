@@ -72,7 +72,7 @@ public class EventProcessor {
 
     public Object triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
-        if (eventEntityMap.containsKey(entityMetadata.getName())) {
+        if (eventEntityMap != null && eventEntityMap.containsKey(entityMetadata.getName())) {
             EventHandlerMetadata metadata = eventEntityMap.get(entityMetadata.getName());
             return metadata.invokeEventHandler(entity);
         }
@@ -81,7 +81,7 @@ public class EventProcessor {
 
     public boolean isEventPresent(SpeedyEventType eventType, EntityMetadata entityMetadata) {
         Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
-        return eventEntityMap.containsKey(entityMetadata.getName());
+        return eventEntityMap != null && eventEntityMap.containsKey(entityMetadata.getName());
     }
 
     static class EventHandlerMetadata {

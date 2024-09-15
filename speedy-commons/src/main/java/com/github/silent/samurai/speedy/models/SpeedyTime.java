@@ -28,4 +28,12 @@ public class SpeedyTime implements SpeedyValue {
     public LocalTime asTime() {
         return getValue();
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyTime{");
+        sb.append("value=").append(value);
+        sb.append('}');
+        return sb.toString();
+    }
 }

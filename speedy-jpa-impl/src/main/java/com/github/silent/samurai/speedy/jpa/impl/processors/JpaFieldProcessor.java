@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaKeyFieldMetadata;
@@ -15,12 +17,14 @@ import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class JpaFieldProcessor {
 
@@ -75,8 +79,17 @@ public class JpaFieldProcessor {
             if (fieldMetadata.isCollection()) {
                 fieldType = resolveGenericFieldType(fieldMetadata.getField());
             }
+
             if (typeMap.containsKey(fieldType)) {
-                fieldMetadata.setAssociationMetadata(typeMap.get(fieldType));
+                JpaEntityMetadata jpaEntityMetadata = typeMap.get(fieldType);
+                fieldMetadata.setAssociationMetadata(jpaEntityMetadata);
+
+                IJpaFieldMetadata keyFieldMetadata = (IJpaFieldMetadata) jpaEntityMetadata
+                        .getKeyFields()
+                        .stream()
+                        .findAny()
+                        .orElse(null);
+                fieldMetadata.setAssociatedFieldMetadata(keyFieldMetadata);
             } else {
                 throw new RuntimeException("Entity not found " + fieldType);
             }
@@ -149,6 +162,11 @@ public class JpaFieldProcessor {
 
         GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), GeneratedValue.class);
         if (generatedValueAnnotation != null) {
+            if (fieldMetadata instanceof KeyFieldMetadata &&
+                    generatedValueAnnotation.generator().toUpperCase().contains("UUID")) {
+                JpaKeyFieldMetadata keyFieldMetadata = (JpaKeyFieldMetadata) fieldMetadata;
+                keyFieldMetadata.setGenerateIdKeys(true);
+            }
             fieldMetadata.setInsertable(false);
             fieldMetadata.setUpdatable(false);
             fieldMetadata.setNullable(false);

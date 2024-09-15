@@ -29,4 +29,12 @@ public class SpeedyDateTime implements SpeedyValue {
     public LocalDateTime asDateTime() {
         return getValue();
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyDateTime{");
+        sb.append("value=").append(value);
+        sb.append('}');
+        return sb.toString();
+    }
 }

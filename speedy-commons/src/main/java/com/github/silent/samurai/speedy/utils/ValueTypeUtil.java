@@ -39,4 +39,30 @@ public class ValueTypeUtil {
         return CLASS_TO_VALUE_TYPE_MAP.getOrDefault(clazz, ValueType.OBJECT);
     }
 
+    public static Class<?> toClass(ValueType valueType) {
+        switch (valueType) {
+            case BOOL:
+                return Boolean.class;
+            case TEXT:
+                return String.class;
+            case INT:
+                return Long.class;
+            case FLOAT:
+                return Double.class;
+            case DATE:
+                return LocalDate.class;
+            case TIME:
+                return LocalTime.class;
+            case DATE_TIME:
+                return LocalDateTime.class;
+            case ZONED_DATE_TIME:
+                return ZonedDateTime.class;
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+            default:
+                throw new IllegalArgumentException("Unsupported value type: " + valueType);
+        }
+    }
+
 }

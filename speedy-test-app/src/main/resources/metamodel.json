@@ -21,7 +21,8 @@
                 "outputProperty": "supplier",
                 "dbColumn": "supplier_id",
                 "fieldType": "Supplier",
-                "isAssociation": true
+                "isAssociation": true,
+                "associatedColumn": "id"
             },
             {
                 "name": "amount",
@@ -34,7 +35,8 @@
                 "outputProperty": "product",
                 "dbColumn": "product_id",
                 "fieldType": "Product",
-                "isAssociation": true
+                "isAssociation": true,
+                "associatedColumn": "id"
             },
             {
                 "name": "id",
@@ -69,7 +71,7 @@
             }
         ],
         "hasCompositeKey": false,
-        "entityType": "Procurement",
+        "entityType": "procurements",
         "keyType": "Procurement"
     },
     {
@@ -87,6 +89,7 @@
                 "dbColumn": "product_id",
                 "fieldType": "Product",
                 "isAssociation": true,
+                "associatedColumn": "id",
                 "isKeyField": true
             },
             {
@@ -95,6 +98,7 @@
                 "dbColumn": "supplier_id",
                 "fieldType": "Supplier",
                 "isAssociation": true,
+                "associatedColumn": "id",
                 "isKeyField": true
             },
             {
@@ -123,7 +127,7 @@
             }
         ],
         "hasCompositeKey": true,
-        "entityType": "Order",
+        "dbTable": "orders",
         "keyType": "Order"
     },
     {
@@ -168,7 +172,7 @@
             }
         ],
         "hasCompositeKey": false,
-        "entityType": "ValueTestEntity",
+        "dbTable": "value_test_table",
         "keyType": "ValueTestEntity"
     },
     {
@@ -189,7 +193,7 @@
             }
         ],
         "hasCompositeKey": false,
-        "entityType": "Category",
+        "dbTable": "categories",
         "keyType": "Category"
     },
     {
@@ -213,7 +217,8 @@
                 "outputProperty": "category",
                 "dbColumn": "category_id",
                 "fieldType": "Category",
-                "isAssociation": true
+                "isAssociation": true,
+                "associatedColumn": "id"
             },
             {
                 "name": "description",
@@ -223,7 +228,7 @@
             }
         ],
         "hasCompositeKey": false,
-        "entityType": "Product",
+        "dbTable": "products",
         "keyType": "Product"
     },
     {
@@ -280,7 +285,27 @@
             }
         ],
         "hasCompositeKey": false,
-        "entityType": "Supplier",
+        "dbTable": "suppliers",
         "keyType": "Supplier"
+    },
+    {
+        "name": "Inventory",
+        "hasCompositeKey": false,
+        "dbTable": "inventory",
+        "fields": [
+            {
+                "name": "id",
+                "outputProperty": "id",
+                "dbColumn": "id",
+                "fieldType": "TEXT",
+                "isKeyField": true
+            },
+            {
+                "name": "product",
+                "outputProperty": "product",
+                "dbColumn": "product_id",
+                "fieldType": "Product"
+            }
+        ]
     }
 ]

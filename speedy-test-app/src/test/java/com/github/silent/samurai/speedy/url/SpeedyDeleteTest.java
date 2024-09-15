@@ -19,6 +19,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import javax.persistence.EntityManagerFactory;
 
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -44,6 +46,7 @@ public class SpeedyDeleteTest {
 
         Category category = new Category();
         category.setName("generated-category-delete");
+//        category.setId(UUID.randomUUID().toString());
         categoryRepository.save(category);
 
         Assertions.assertNotNull(category.getId());

@@ -27,4 +27,12 @@ public class SpeedyBoolean implements SpeedyValue {
     public Boolean asBoolean() {
         return getValue();
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyBoolean{");
+        sb.append("value=").append(value);
+        sb.append('}');
+        return sb.toString();
+    }
 }

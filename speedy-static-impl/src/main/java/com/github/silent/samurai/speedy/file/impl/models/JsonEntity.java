@@ -13,7 +13,7 @@ public class JsonEntity {
     @NotNull
     public boolean hasCompositeKey;
 
-    public String entityType;
+    public String dbTable;
     public String keyType;
 
 }

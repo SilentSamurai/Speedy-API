@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.file.impl.processor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileEntityMetadata;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileFieldMetadata;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileKeyFieldMetadata;
@@ -19,7 +20,7 @@ import java.util.Map;
 
 public class FileProcessor {
 
-    public static void process(InputStream in, Map<String, FileEntityMetadata> entityMap) throws IOException {
+    public static void process(InputStream in, Map<String, FileEntityMetadata> entityMap) throws NotFoundException, IOException {
         List<JsonEntity> entityMetadata = CommonUtil.json().readValue(in, new TypeReference<List<JsonEntity>>() {
         });
 
@@ -37,7 +38,7 @@ public class FileProcessor {
         FileEntityMetadata entityMetadata = new FileEntityMetadata();
         entityMetadata.setName(jsonEntity.name);
         entityMetadata.setHasCompositeKey(jsonEntity.hasCompositeKey);
-        entityMetadata.setEntityType(jsonEntity.entityType);
+        entityMetadata.setDbTableName(jsonEntity.dbTable);
         entityMetadata.setKeyType(jsonEntity.keyType);
 
         Map<String, FileFieldMetadata> fieldMap = new HashMap<>();
@@ -52,7 +53,7 @@ public class FileProcessor {
         return entityMetadata;
     }
 
-    public static void processAssociation(Map<String, FileEntityMetadata> entityMap) throws IOException {
+    public static void processAssociation(Map<String, FileEntityMetadata> entityMap) throws NotFoundException {
         for (Map.Entry<String, FileEntityMetadata> entry : entityMap.entrySet()) {
             FileEntityMetadata entityMetadata = entry.getValue();
             for (FileFieldMetadata fieldMetadata : entityMetadata.getFields()) {
@@ -60,10 +61,14 @@ public class FileProcessor {
                 if (fieldMetadata.isAssociation()) {
                     FileEntityMetadata associatedMetadata = entityMap.getOrDefault(fieldMetadata.getType(), null);
                     if (associatedMetadata == null) {
-                        throw new IOException("Associated Entity not found " + fieldMetadata.getType());
+                        throw new NotFoundException("Associated Entity not found " + fieldMetadata.getType());
                     }
                     fieldMetadata.setAssociationMetadata(associatedMetadata);
                     fieldMetadata.setValueType(ValueType.OBJECT);
+                    FileFieldMetadata fileFieldMetadata = (FileFieldMetadata) associatedMetadata
+                            .field(fieldMetadata.getAssociatedColumn());
+
+                    fieldMetadata.setAssociatedFieldMetadata(fileFieldMetadata);
                 }
             }
         }
@@ -89,6 +94,7 @@ public class FileProcessor {
         fieldMetadata.setOutputPropertyName(jsonField.outputProperty);
         fieldMetadata.setDbColumnName(jsonField.dbColumn);
         fieldMetadata.setType(jsonField.fieldType);
+        fieldMetadata.setAssociatedColumn(jsonField.associatedColumn);
 
         if (!jsonField.isAssociation) {
             fieldMetadata.setValueType(ValueType.valueOf(jsonField.fieldType));

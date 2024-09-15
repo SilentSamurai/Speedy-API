@@ -6,4 +6,6 @@ public interface KeyFieldMetadata extends FieldMetadata {
 
     boolean isKeyField();
 
+    boolean shouldGenerateKey();
+
 }

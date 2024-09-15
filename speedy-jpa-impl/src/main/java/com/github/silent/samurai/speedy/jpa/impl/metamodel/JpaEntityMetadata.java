@@ -95,4 +95,9 @@ public class JpaEntityMetadata implements IJpaEntityMetadata {
                 .filter(FieldMetadata::isAssociation)
                 .collect(Collectors.toUnmodifiableSet());
     }
+
+    @Override
+    public String getDbTableName() {
+        return tableName;
+    }
 }

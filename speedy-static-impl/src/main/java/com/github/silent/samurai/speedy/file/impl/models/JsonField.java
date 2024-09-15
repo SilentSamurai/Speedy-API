@@ -3,6 +3,8 @@ package com.github.silent.samurai.speedy.file.impl.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JsonField {
 
@@ -32,5 +34,7 @@ public class JsonField {
     public boolean isInsertable = true;
     public boolean isRequired = false;
     public boolean isKeyField = false;
+
+    public String associatedColumn;
 
 }

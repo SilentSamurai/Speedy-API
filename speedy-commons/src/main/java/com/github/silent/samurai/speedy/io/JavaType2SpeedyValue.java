@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
 
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.*;
 import java.util.Date;
@@ -87,6 +88,10 @@ public class JavaType2SpeedyValue {
             LocalDate localDate = kdate.toInstant().atZone(ZoneId.of("UTC")).toLocalDate();
             return new SpeedyDate(localDate);
         });
+        put(ValueType.ZONED_DATE_TIME, OffsetDateTime.class, (instance, valueType) -> {
+            OffsetDateTime offsetDateTime = instance;
+            return new SpeedyZonedDateTime(offsetDateTime.toZonedDateTime());
+        });
         put(ValueType.ZONED_DATE_TIME, ZonedDateTime.class, (instance, valueType) -> {
             ZonedDateTime zonedDateTime = instance;
             return new SpeedyZonedDateTime(zonedDateTime);
@@ -121,6 +126,15 @@ public class JavaType2SpeedyValue {
         });
         put(ValueType.TIME, LocalTime.class, (instance, valueType) -> {
             return new SpeedyTime(instance);
+        });
+        put(ValueType.TIME, Time.class, (instance, valueType) -> {
+            return new SpeedyTime(instance.toLocalTime());
+        });
+        put(ValueType.ZONED_DATE_TIME, Timestamp.class, (instance, valueType) -> {
+            Timestamp kdate = (Timestamp) instance;
+            ZonedDateTime zonedDateTime = kdate.toLocalDateTime()
+                    .atZone(ZoneId.systemDefault());
+            return new SpeedyZonedDateTime(zonedDateTime);
         });
 
     }

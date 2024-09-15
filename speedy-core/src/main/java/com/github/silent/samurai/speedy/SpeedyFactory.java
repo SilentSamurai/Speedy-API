@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.impl.query.QueryProcessorImpl;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.responses.MultiPayloadWrapper;
@@ -24,14 +25,17 @@ import com.github.silent.samurai.speedy.request.put.PutRequestParser;
 import com.github.silent.samurai.speedy.request.put.UpdateDataHandler;
 import com.github.silent.samurai.speedy.serializers.JSONSerializer;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
+import com.github.silent.samurai.speedy.validation.MetaModelVerifier;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Getter;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +56,7 @@ public class SpeedyFactory {
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) {
         this.speedyConfiguration = speedyConfiguration;
         this.metaModelProcessor = speedyConfiguration.createMetaModelProcessor();
+        new MetaModelVerifier(metaModelProcessor).verify();
         this.validationProcessor = new ValidationProcessor(speedyConfiguration.getCustomValidator(), metaModelProcessor);
         this.validationProcessor.process();
         // events
@@ -127,7 +132,11 @@ public class SpeedyFactory {
 
     public void requestResource(HttpServletRequest request, HttpServletResponse response) throws IOException {
         LOGGER.info("REQ: {} {} ", request.getMethod(), request.getRequestURI());
-        QueryProcessor queryProcessor = metaModelProcessor.getQueryProcessor();
+
+        DataSource dataSource = speedyConfiguration.getDataSource();
+        String dialect = speedyConfiguration.getDialect();
+        QueryProcessor queryProcessor = new QueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));
+
         try {
             if (request.getMethod().equals(HttpMethod.GET.name())) {
                 processGETRequests(request, response, queryProcessor);

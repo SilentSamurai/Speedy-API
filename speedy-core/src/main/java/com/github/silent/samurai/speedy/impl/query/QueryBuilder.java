@@ -1,12 +1,12 @@
-package com.github.silent.samurai.speedy.file.impl.query;
+package com.github.silent.samurai.speedy.impl.query;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.file.impl.metadata.FileEntityMetadata;
-import com.github.silent.samurai.speedy.file.impl.metadata.FileFieldMetadata;
-import com.github.silent.samurai.speedy.file.impl.util.JooqUtil;
+import com.github.silent.samurai.speedy.impl.jooq.JooqSqlToSpeedy;
+import com.github.silent.samurai.speedy.impl.jooq.JooqUtil;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
@@ -15,39 +15,56 @@ import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.sql.DataSource;
 import java.util.*;
 
 
 public class QueryBuilder {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueryBuilder.class);
+
     private final SpeedyQuery speedyQuery;
-    private final FileEntityMetadata entityMetadata;
+    private final EntityMetadata entityMetadata;
     private final DSLContext dslContext;
-    private final List<FileEntityMetadata> joins = new LinkedList<>();
+    private final List<FieldMetadata> joins = new LinkedList<>();
     private final SelectJoinStep<org.jooq.Record> query;
 
-    public QueryBuilder(SpeedyQuery speedyQuery, DataSource dataSource, SQLDialect dialect) {
+    public QueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
         this.speedyQuery = speedyQuery;
-        this.entityMetadata = (FileEntityMetadata) speedyQuery.getFrom();
-        this.dslContext = DSL.using(dataSource, dialect);
-        this.query = dslContext.select()
-                .from(DSL.table(entityMetadata.getName()));
+        this.entityMetadata = speedyQuery.getFrom();
+        this.dslContext = dslContext;
+        this.query = this.dslContext.select()
+                .from(DSL.table(entityMetadata.getDbTableName()));
     }
 
     Field<Object> getPath(BinaryCondition bCondition) {
         QueryField queryField = bCondition.getField();
         if (queryField.isAssociated()) {
-//            FileFieldMetadata fieldMetadata = (FileFieldMetadata) queryField.getFieldMetadata();
-            FileFieldMetadata associatedMetadata = (FileFieldMetadata) queryField.getAssociatedFieldMetadata();
-            joins.add(associatedMetadata.getEntityMetadata());
+            FieldMetadata associatedMetadata = queryField.getAssociatedFieldMetadata();
+            joins.add(queryField.getFieldMetadata());
+
+            EntityMetadata associationMetadata = associatedMetadata.getEntityMetadata();
             DataType<?> sqlDataType = JooqUtil.getSQLDataType(associatedMetadata.getValueType());
-            return (Field<Object>) DSL.field(associatedMetadata.getDbColumnName(), sqlDataType);
+
+            Name columnName = DSL.name(
+                    associationMetadata.getDbTableName().toUpperCase(),
+                    associatedMetadata.getDbColumnName().toUpperCase()
+            );
+
+            Field<Object> field = (Field<Object>) DSL.field(columnName, sqlDataType);
+            return field;
         } else {
-            FileFieldMetadata fieldMetadata = (FileFieldMetadata) queryField.getFieldMetadata();
+            FieldMetadata fieldMetadata = queryField.getFieldMetadata();
+
+            Name columnName = DSL.name(
+                    fieldMetadata.getEntityMetadata().getDbTableName().toUpperCase(),
+                    fieldMetadata.getDbColumnName().toUpperCase()
+            );
+
             DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
-            return (Field<Object>) DSL.field(fieldMetadata.getDbColumnName(), sqlDataType);
+            return (Field<Object>) DSL.field(columnName, sqlDataType);
         }
     }
 
@@ -68,10 +85,10 @@ public class QueryBuilder {
 
         if (condition.getOperator() == ConditionOperator.OR) {
             return predicates.stream()
-                    .reduce(DSL.trueCondition(), org.jooq.Condition::or);
+                    .reduce(DSL.noCondition(), org.jooq.Condition::or);
         }
         return predicates.stream()
-                .reduce(DSL.trueCondition(), org.jooq.Condition::and);
+                .reduce(DSL.noCondition(), org.jooq.Condition::and);
     }
 
     org.jooq.Condition equalPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
@@ -224,7 +241,7 @@ public class QueryBuilder {
 
     void captureOrderBy() {
         for (OrderBy orderBy : speedyQuery.getOrderByList()) {
-            FileFieldMetadata fieldMetadata = (FileFieldMetadata) orderBy.getFieldMetadata();
+            FieldMetadata fieldMetadata = orderBy.getFieldMetadata();
             DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
             Field<Object> field = (Field<Object>) DSL.field(
                     fieldMetadata.getDbColumnName(),
@@ -250,12 +267,23 @@ public class QueryBuilder {
     }
 
     private void joins() {
-        for (FileEntityMetadata join : joins) {
-            query.join(join.getEntityType());
+        for (FieldMetadata join : joins) {
+            Name tableName = DSL.name(join.getAssociationMetadata().getDbTableName().toUpperCase());
+            Name joinField = DSL.name(
+                    join.getAssociationMetadata().getDbTableName().toUpperCase(),
+                    join.getAssociatedFieldMetadata().getDbColumnName().toUpperCase()
+            );
+            Name fromField = DSL.name(join.getDbColumnName().toUpperCase());
+            try (var a = query.join(tableName)
+                    .on(
+                            DSL.field(fromField)
+                                    .eq(DSL.field(joinField))
+                    )) {
+            }
         }
     }
 
-    public SelectJoinStep<Record> getQuery() throws Exception {
+    public Result<Record> executeQuery() throws Exception {
         if (Objects.nonNull(speedyQuery.getWhere())) {
             org.jooq.Condition whereCondition = conditionToPredicate(this.speedyQuery.getWhere());
             query.where(whereCondition);
@@ -263,7 +291,9 @@ public class QueryBuilder {
         captureOrderBy();
         addPageInfo();
         joins();
-        return query;
+
+        LOGGER.info("query sql: {} ", query.toString());
+        return query.fetch();
     }
 
 

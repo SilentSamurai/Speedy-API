@@ -30,4 +30,12 @@ public class SpeedyZonedDateTime implements SpeedyValue {
     public ZonedDateTime asZonedDateTime() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("SpeedyZonedDateTime{");
+        sb.append("value=").append(value);
+        sb.append('}');
+        return sb.toString();
+    }
 }

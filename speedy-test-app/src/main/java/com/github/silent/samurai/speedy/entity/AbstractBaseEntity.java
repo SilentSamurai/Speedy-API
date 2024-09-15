@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.entity;
 
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;

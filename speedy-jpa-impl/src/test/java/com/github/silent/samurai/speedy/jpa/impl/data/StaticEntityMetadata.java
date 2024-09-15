@@ -134,4 +134,9 @@ public class StaticEntityMetadata implements IJpaEntityMetadata {
     public Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {
         return Optional.empty();
     }
+
+    @Override
+    public String getDbTableName() {
+        return "";
+    }
 }

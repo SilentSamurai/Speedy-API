@@ -10,4 +10,8 @@ public class FileKeyFieldMetadata extends FileFieldMetadata implements KeyFieldM
 
     boolean isKeyField = true;
 
+    @Override
+    public boolean shouldGenerateKey() {
+        return true;
+    }
 }

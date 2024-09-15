@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.io;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.ConversionException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
@@ -20,13 +22,6 @@ public class Speedy2JavaTypeConverter {
         initConverters();
     }
 
-    public static <T> T convert(SpeedyValue value, Class<T> clazz) throws SpeedyHttpException {
-        ValueType valueType = value.getValueType();
-        if (!has(valueType, clazz) || value instanceof SpeedyNull) {
-            return null;
-        }
-        return clazz.cast(get(valueType, clazz).apply(value, valueType));
-    }
 
     public static <T> ThrowingBiFunction<SpeedyValue, ValueType, Object, SpeedyHttpException> get(ValueType valueType, Class<T> clazz) {
         String key = clazz.getName() + valueType.name();
@@ -139,4 +134,38 @@ public class Speedy2JavaTypeConverter {
         });
     }
 
+    public static <T> T convert(SpeedyValue value, Class<T> clazz) throws SpeedyHttpException {
+        ValueType valueType = value.getValueType();
+        if (!has(valueType, clazz) || value instanceof SpeedyNull) {
+            return null;
+        }
+        return clazz.cast(get(valueType, clazz).apply(value, valueType));
+    }
+
+    public static <T> T convert(SpeedyValue speedyValue, ValueType valueType) {
+        switch (valueType) {
+            case NULL:
+                return null;
+            case BOOL:
+                return (T) speedyValue.asBoolean();
+            case TEXT:
+                return (T) speedyValue.asText();
+            case INT:
+                return (T) speedyValue.asInt();
+            case FLOAT:
+                return (T) speedyValue.asDouble();
+            case DATE:
+                return (T) speedyValue.asDate();
+            case TIME:
+                return (T) speedyValue.asTime();
+            case DATE_TIME:
+                return (T) speedyValue.asDateTime();
+            case ZONED_DATE_TIME:
+                return (T) speedyValue.asZonedDateTime();
+            case OBJECT:
+            case COLLECTION:
+            default:
+                throw new ConversionException("not supported value: " + valueType);
+        }
+    }
 }

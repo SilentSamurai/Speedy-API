@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.docs.MetaModelSerializer;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.impl.query.QueryProcessorImpl;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
@@ -20,6 +21,7 @@ import com.github.silent.samurai.speedy.serializers.JSONSerializer;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import io.swagger.v3.oas.annotations.Hidden;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -55,7 +58,10 @@ public class SpeedyApiController {
                               HttpServletResponse response,
                               Optional<String> from) throws Exception {
         MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
-        QueryProcessor queryProcessor = metaModelProcessor.getQueryProcessor();
+
+        DataSource dataSource = speedyFactory.getSpeedyConfiguration().getDataSource();
+        String dialect = speedyFactory.getSpeedyConfiguration().getDialect();
+        QueryProcessor queryProcessor = new QueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));
         try {
 
             JsonNode jsonQuery = CommonUtil.json().readTree(request.getReader());

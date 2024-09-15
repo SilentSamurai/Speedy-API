@@ -1,8 +1,6 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
 import java.util.Optional;
 import java.util.Set;
@@ -32,4 +30,6 @@ public interface EntityMetadata {
                 .filter(fld -> fld.getAssociationMetadata() == secondaryResource)
                 .findAny();
     }
+
+    String getDbTableName();
 }

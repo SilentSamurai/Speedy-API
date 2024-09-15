@@ -3,6 +3,8 @@ package com.github.silent.samurai.speedy.interfaces;
 import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 
+import java.util.Map;
+
 public interface FieldMetadata {
 
     ValueType getValueType();
@@ -37,5 +39,9 @@ public interface FieldMetadata {
 
     EntityMetadata getAssociationMetadata();
 
+    FieldMetadata getAssociatedFieldMetadata();
 
+//    // foreign_key -> primary_key
+//    // entity_field -> associated_key
+//    Map<String, String> getAssociatedFields();
 }

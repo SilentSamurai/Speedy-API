@@ -25,7 +25,7 @@ public class FileEntityMetadata implements EntityMetadata {
     private String name;
     private Map<String, FileFieldMetadata> fieldMap = new HashMap<>();
     private boolean hasCompositeKey;
-    private String entityType;
+    private String dbTableName;
     private String keyType;
 
     public Set<FileFieldMetadata> getFields() {

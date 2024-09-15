@@ -22,10 +22,16 @@ public class JpaKeyFieldMetadata extends JpaFieldMetadata implements IJpaKeyFiel
     private Field idClassField;
 
     private boolean isId;
+    private boolean generateIdKeys = false;
 
     @Override
     public boolean isKeyField() {
         return isId;
+    }
+
+    @Override
+    public boolean shouldGenerateKey() {
+        return generateIdKeys;
     }
 
     @Override

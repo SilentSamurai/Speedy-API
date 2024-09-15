@@ -120,4 +120,9 @@ public class StaticEntityMetadata implements EntityMetadata {
     public Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {
         return Optional.empty();
     }
+
+    @Override
+    public String getDbTableName() {
+        return "";
+    }
 }

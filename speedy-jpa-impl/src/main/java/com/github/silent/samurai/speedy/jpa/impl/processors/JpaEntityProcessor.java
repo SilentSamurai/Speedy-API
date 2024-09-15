@@ -34,6 +34,11 @@ public class JpaEntityProcessor {
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
             JpaFieldMetadata memberMetadata = JpaFieldProcessor.processField(attribute,
                     entityType.getJavaType(), entityMetadata);
+
+            if (memberMetadata.getDbColumnName() == null) {
+                continue;
+            }
+
             entityMetadata.addFieldMetadata(memberMetadata);
         }
         return entityMetadata;

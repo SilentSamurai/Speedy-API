@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.data;
 import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Data;
@@ -99,6 +100,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return field.getAnnotation(Id.class) != null;
     }
 
+    @Override
+    public boolean shouldGenerateKey() {
+        return true;
+    }
+
 //    @SneakyThrows
 //    @Override
 //    public boolean setIdFieldWithValue(Object idInstance, Object value) {
@@ -130,6 +136,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     @Override
     public EntityMetadata getAssociationMetadata() {
         return StaticEntityMetadata.createEntityMetadata(ProductItem.class);
+    }
+
+    @Override
+    public FieldMetadata getAssociatedFieldMetadata() {
+        return null;
     }
 
 //    @SneakyThrows

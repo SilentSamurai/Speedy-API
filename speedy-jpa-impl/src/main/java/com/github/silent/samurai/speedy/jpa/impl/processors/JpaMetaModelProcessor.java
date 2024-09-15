@@ -7,11 +7,10 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
-import com.github.silent.samurai.speedy.jpa.impl.query.JpaQueryProcessorImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.metamodel.EntityType;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,10 +26,12 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
     private ISpeedyConfiguration configuration;
     private final Map<String, JpaEntityMetadata> entityMap = new HashMap<>();
     private final Map<Class<?>, JpaEntityMetadata> typeMap = new HashMap<>();
+    private EntityManagerFactory entityManagerFactory;
 
-    public JpaMetaModelProcessor(ISpeedyConfiguration configuration) {
+    public JpaMetaModelProcessor(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {
         this.configuration = configuration;
-        Set<EntityType<?>> entities = configuration.createEntityManagerFactory().getMetamodel().getEntities();
+        this.entityManagerFactory = entityManagerFactory;
+        Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
         for (EntityType<?> entityType : entities) {
             JpaEntityMetadata entityMetadata = JpaEntityProcessor.processEntity(entityType);
             entityMap.put(entityType.getName(), entityMetadata);
@@ -82,15 +83,16 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
 
     @Override
     public QueryProcessor getQueryProcessor() {
-        return new JpaQueryProcessorImpl(configuration.createEntityManager());
+//        return new JpaQueryProcessorImpl(entityManagerFactory.createEntityManager());
+        return null;
     }
 
     @Override
     public boolean closeQueryProcessor(QueryProcessor queryProcessor) {
-        JpaQueryProcessorImpl jpaQueryProcessor = (JpaQueryProcessorImpl) queryProcessor;
-        EntityManager entityManager = jpaQueryProcessor.getEntityManager();
-        if (entityManager != null)
-            entityManager.close();
+//        JpaQueryProcessorImpl jpaQueryProcessor = (JpaQueryProcessorImpl) queryProcessor;
+//        EntityManager entityManager = jpaQueryProcessor.getEntityManager();
+//        if (entityManager != null)
+//            entityManager.close();
         return true;
     }
 

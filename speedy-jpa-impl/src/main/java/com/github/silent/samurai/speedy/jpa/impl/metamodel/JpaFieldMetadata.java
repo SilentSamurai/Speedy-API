@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import lombok.Getter;
@@ -40,6 +41,7 @@ public class JpaFieldMetadata implements IJpaFieldMetadata {
     private boolean isDeserializable;
     private IJpaEntityMetadata entityMetadata;
     private IJpaEntityMetadata associationMetadata;
+    private IJpaFieldMetadata associatedFieldMetadata;
 
     public boolean isAssociation() {
         return jpaAttribute.isAssociation();

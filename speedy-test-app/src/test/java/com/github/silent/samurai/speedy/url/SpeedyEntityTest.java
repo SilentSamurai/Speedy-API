@@ -189,10 +189,10 @@ class SpeedyEntityTest {
         assert supplier != null;
         Assertions.assertNotNull(supplier.getCreatedAt());
 
-        Instant createdat = LocalDateTime.parse(supplier.getCreatedAt(), DateTimeFormatter.ISO_DATE_TIME).toInstant(ZoneOffset.UTC);
+        Instant createdAt = Instant.parse(supplier.getCreatedAt());
 
         Assertions.assertTrue(
-                createdat.toEpochMilli() -
+                createdAt.toEpochMilli() -
                         Instant.parse(dateTimeInstant).toEpochMilli() <= 1000);
         return supplier;
     }
