@@ -52,6 +52,16 @@ class JooqSqlToSpeedyTest {
         assertNotNull(speedyEntity);
         assertTrue(speedyEntity.get(entityMetadata.field("name")).isText());
         assertEquals(speedyEntity.get(entityMetadata.field("name")).asText(), "Product 1");
+
+        assertTrue(speedyEntity.get(entityMetadata.field("id")).isText());
+        assertEquals(speedyEntity.get(entityMetadata.field("id")).asText(), "1");
+
+        assertTrue(speedyEntity.get(entityMetadata.field("cost")).isNumber());
+        assertEquals(speedyEntity.get(entityMetadata.field("cost")).asInt(), 100);
+
+        assertTrue(speedyEntity.get(entityMetadata.field("category")).isText());
+        assertEquals(speedyEntity.get(entityMetadata.field("category")).asText(), "cat-2");
+
     }
 
     @Test
