@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.impl.jooq;
+package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import org.jooq.DataType;

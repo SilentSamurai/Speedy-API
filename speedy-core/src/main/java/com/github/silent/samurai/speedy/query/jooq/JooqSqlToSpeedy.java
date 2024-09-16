@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.impl.jooq;
+package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -37,11 +37,11 @@ public class JooqSqlToSpeedy {
         return record.getValue(fieldName);
     }
 
-    public SpeedyEntity fromJpaEntity(Record record, EntityMetadata from, Set<String> expand) throws SpeedyHttpException {
-        return fromJpaEntityInner(record, from, expand);
+    public SpeedyEntity fromRecord(Record record, EntityMetadata from, Set<String> expand) throws SpeedyHttpException {
+        return fromRecordInner(record, from, expand);
     }
 
-    private SpeedyEntity fromJpaEntityInner(Record record, EntityMetadata entityMetadata, Set<String> expands) throws SpeedyHttpException {
+    private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, Set<String> expands) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = SpeedyValueFactory.fromEntityMetadata(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
 
@@ -56,7 +56,7 @@ public class JooqSqlToSpeedy {
                         throw new BadRequestException("operation not supported");
                     } else {
                         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-                        SpeedyEntity associatedEntity = fromJpaEntityInner(
+                        SpeedyEntity associatedEntity = fromRecordInner(
                                 associatedRecord.get(0),
                                 associationMetadata,
                                 Set.of());

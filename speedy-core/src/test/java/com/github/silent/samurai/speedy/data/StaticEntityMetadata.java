@@ -123,6 +123,6 @@ public class StaticEntityMetadata implements EntityMetadata {
 
     @Override
     public String getDbTableName() {
-        return "";
+        return entityClass.getSimpleName();
     }
 }

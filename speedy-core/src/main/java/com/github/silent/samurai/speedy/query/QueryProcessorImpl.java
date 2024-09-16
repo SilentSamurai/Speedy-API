@@ -1,9 +1,9 @@
-package com.github.silent.samurai.speedy.impl.query;
+package com.github.silent.samurai.speedy.query;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.impl.jooq.JooqSqlToSpeedy;
-import com.github.silent.samurai.speedy.impl.jooq.SpeedyToJooqSql;
+import com.github.silent.samurai.speedy.query.jooq.JooqSqlToSpeedy;
+import com.github.silent.samurai.speedy.query.jooq.SpeedyToJooqSql;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -46,7 +46,7 @@ public class QueryProcessorImpl implements QueryProcessor {
             Result<Record> result = qb.executeQuery();
             Record record = result.get(0);
             return new JooqSqlToSpeedy(dslContext)
-                    .fromJpaEntity(record, speedyQuery.getFrom(), speedyQuery.getExpand());
+                    .fromRecord(record, speedyQuery.getFrom(), speedyQuery.getExpand());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -59,9 +59,10 @@ public class QueryProcessorImpl implements QueryProcessor {
             QueryBuilder qb = new QueryBuilder(speedyQuery, dslContext);
             Result<Record> result = qb.executeQuery();
             List<SpeedyEntity> list = new ArrayList<>();
-            JooqSqlToSpeedy JooqSQLToSpeedy = new JooqSqlToSpeedy(dslContext);
+            JooqSqlToSpeedy jooqSQLToSpeedy = new JooqSqlToSpeedy(dslContext);
             for (Record record : result) {
-                SpeedyEntity speedyEntity = JooqSQLToSpeedy.fromJpaEntity(record, speedyQuery.getFrom(), speedyQuery.getExpand());
+                SpeedyEntity speedyEntity = jooqSQLToSpeedy
+                        .fromRecord(record, speedyQuery.getFrom(), speedyQuery.getExpand());
                 list.add(speedyEntity);
             }
             return list;
@@ -74,8 +75,8 @@ public class QueryProcessorImpl implements QueryProcessor {
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
             DSLContext dslContext = DSL.using(dataSource, dialect, settings);
-            SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
-            Result<Record> result = speedyToJooqSql.findByPrimaryKey(entityKey);
+            Result<Record> result = new SpeedyToJooqSql(dslContext)
+                    .findByPrimaryKey(entityKey);
             return !result.isEmpty();
         } catch (Exception e) {
             throw new BadRequestException(e);
@@ -94,7 +95,7 @@ public class QueryProcessorImpl implements QueryProcessor {
             Result<Record> result = speedyToJooqSql.findByPrimaryKey(entityKey);
 
             return new JooqSqlToSpeedy(dslContext)
-                    .fromJpaEntity(result.get(0), entity.getMetadata(), Set.of());
+                    .fromRecord(result.get(0), entity.getMetadata(), Set.of());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -111,7 +112,7 @@ public class QueryProcessorImpl implements QueryProcessor {
             Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
 
             return new JooqSqlToSpeedy(dslContext)
-                    .fromJpaEntity(result.get(0), entity.getMetadata(), Set.of());
+                    .fromRecord(result.get(0), entity.getMetadata(), Set.of());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -125,7 +126,7 @@ public class QueryProcessorImpl implements QueryProcessor {
 
             Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
             SpeedyEntity entity = new JooqSqlToSpeedy(dslContext)
-                    .fromJpaEntity(result.get(0), pk.getMetadata(), Set.of());
+                    .fromRecord(result.get(0), pk.getMetadata(), Set.of());
 
             speedyToJooqSql.deleteEntity(pk);
             return entity;

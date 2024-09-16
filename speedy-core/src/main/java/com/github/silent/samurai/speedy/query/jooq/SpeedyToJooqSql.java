@@ -1,7 +1,6 @@
-package com.github.silent.samurai.speedy.impl.jooq;
+package com.github.silent.samurai.speedy.query.jooq;
 
 
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;

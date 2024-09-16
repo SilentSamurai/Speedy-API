@@ -1,11 +1,10 @@
-package com.github.silent.samurai.speedy.impl.query;
+package com.github.silent.samurai.speedy.query;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.impl.jooq.JooqSqlToSpeedy;
-import com.github.silent.samurai.speedy.impl.jooq.JooqUtil;
+import com.github.silent.samurai.speedy.query.jooq.JooqUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -274,12 +273,11 @@ public class QueryBuilder {
                     join.getAssociatedFieldMetadata().getDbColumnName().toUpperCase()
             );
             Name fromField = DSL.name(join.getDbColumnName().toUpperCase());
-            try (var a = query.join(tableName)
+            query.join(tableName)
                     .on(
                             DSL.field(fromField)
                                     .eq(DSL.field(joinField))
-                    )) {
-            }
+                    );
         }
     }
 
