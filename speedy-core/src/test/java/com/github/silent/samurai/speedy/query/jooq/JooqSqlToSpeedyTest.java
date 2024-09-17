@@ -1,10 +1,14 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
+import com.github.silent.samurai.speedy.data.ComposedProduct;
 import com.github.silent.samurai.speedy.data.Product;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +37,6 @@ class JooqSqlToSpeedyTest {
 
     JooqSqlToSpeedy jooqSqlToSpeedy;
 
-    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-
     @BeforeEach
     void setUp() {
         jooqSqlToSpeedy = new JooqSqlToSpeedy(dslContext);
@@ -42,6 +44,8 @@ class JooqSqlToSpeedyTest {
 
     @Test
     void fromRecord() throws SpeedyHttpException {
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
+
         Mockito.when(record.getValue("NAME")).thenReturn("Product 1");
         Mockito.when(record.getValue("ID")).thenReturn("1");
         Mockito.when(record.getValue("COST")).thenReturn(100);
@@ -61,10 +65,22 @@ class JooqSqlToSpeedyTest {
 
         assertTrue(speedyEntity.get(entityMetadata.field("category")).isText());
         assertEquals(speedyEntity.get(entityMetadata.field("category")).asText(), "cat-2");
-
     }
 
     @Test
-    void createSpeedyKeyFromFK() {
+    void createSpeedyKeyFromFK() throws SpeedyHttpException {
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
+
+        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
+
+        FieldMetadata productItem = entityMetadata.field("productItem");
+
+        SpeedyEntityKey speedyKeyFromFK = jooqSqlToSpeedy.createSpeedyKeyFromFK(record, productItem);
+
+        LOGGER.info("speedyKeyFromFK: {}", speedyKeyFromFK);
+
+        assertTrue(speedyKeyFromFK.get(entityMetadata.field("id")).isText());
+        assertEquals(speedyKeyFromFK.get(entityMetadata.field("id")).asText(), "1");
+
     }
 }

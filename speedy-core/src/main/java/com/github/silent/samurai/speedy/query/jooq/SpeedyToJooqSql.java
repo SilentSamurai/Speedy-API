@@ -29,30 +29,6 @@ public class SpeedyToJooqSql {
         this.dslContext = dslContext;
     }
 
-    public Result<Record> findByFK(FieldMetadata fieldMetadata,
-                                   Record entityRecord) throws NotFoundException {
-
-        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-
-        FieldMetadata associationFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
-
-        String associatedDbColumn = associationFieldMetadata.getDbColumnName().toUpperCase();
-        String entityDbColumn = fieldMetadata.getDbColumnName().toUpperCase();
-
-        Object value = entityRecord.getValue(entityDbColumn);
-
-        Field<Object> field = (Field<Object>) DSL.field(associatedDbColumn, associationFieldMetadata.getFieldType());
-
-        SelectConditionStep<Record> query = dslContext
-                .select()
-                .from(associationMetadata.getDbTableName())
-                .where(field.eq(value));
-
-        LOGGER.info("expand query: {} ", query);
-
-        return query.fetch();
-    }
-
     public Result<Record> findByPrimaryKey(SpeedyEntityKey pk) throws SpeedyHttpException {
         EntityMetadata entityMetadata = pk.getMetadata();
         SelectJoinStep<Record> query = dslContext.select()

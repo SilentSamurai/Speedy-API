@@ -2,10 +2,7 @@ package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -22,11 +19,11 @@ public class JooqSqlToSpeedy {
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqSqlToSpeedy.class);
 
     private final DSLContext dslContext;
-    private final SpeedyToJooqSql speedyToSQL;
+    private final JooqToJooqSql jooqToJooqSql;
 
     public JooqSqlToSpeedy(DSLContext dslContext) {
         this.dslContext = dslContext;
-        this.speedyToSQL = new SpeedyToJooqSql(dslContext);
+        this.jooqToJooqSql = new JooqToJooqSql(dslContext);
     }
 
     private Object getValueFromRecord(Record record, FieldMetadata fieldMetadata) {
@@ -47,7 +44,7 @@ public class JooqSqlToSpeedy {
 
             if (fieldMetadata.isAssociation()) {
                 if (expands.contains(fieldMetadata.getAssociationMetadata().getName())) {
-                    Result<Record> associatedRecord = speedyToSQL.findByFK(fieldMetadata, record);
+                    Result<Record> associatedRecord = jooqToJooqSql.findByFK(fieldMetadata, record);
                     if (associatedRecord.isEmpty()) {
                         speedyEntity.put(fieldMetadata, SpeedyValueFactory.fromNull());
                         continue;
@@ -101,7 +98,7 @@ public class JooqSqlToSpeedy {
 
     public SpeedyEntityKey createSpeedyKeyFromFK(Record record, FieldMetadata entityMetadata) throws SpeedyHttpException {
         EntityMetadata associationMetadata = entityMetadata.getAssociationMetadata();
-        SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(associationMetadata);
+        SpeedyEntityKey speedyEntityKey = SpeedyValueFactory.createEntityKey(associationMetadata);
 
         KeyFieldMetadata keyFieldMetadata = associationMetadata.getKeyFields().stream().findAny().orElseThrow();
         // foreign key column

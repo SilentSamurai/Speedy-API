@@ -110,4 +110,7 @@ public class SpeedyValueFactory {
     }
 
 
+    public static SpeedyEntityKey createEntityKey(EntityMetadata entityMetadata) {
+        return new SpeedyEntityKey(entityMetadata);
+    }
 }
