@@ -31,43 +31,6 @@ public class CommonUtil {
                 .setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
-    public static <D, T> D mapModel(final Object subject, Class<D> tClass) {
-        return modelMapper.map(subject, tClass);
-    }
-
-//    public static <D, T> List<D> mapModels(final Collection<T> entityList, Class<D> outCLass) {
-//        return entityList.stream()
-//                .map(entity -> mapModel(entity, outCLass))
-//                .collect(Collectors.toList());
-//    }
-//
-//    public static <S, D> D mapModel(final S source, D destination) {
-//        modelMapper.map(source, destination);
-//        return destination;
-//    }
-
-    public static String extractPhoneNumber(String phoneNumber) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < phoneNumber.length(); i++) {
-            if (Character.isDigit(phoneNumber.charAt(i))) {
-                sb.append(phoneNumber.charAt(i));
-            }
-        }
-        if (sb.length() < 10) {
-            return null;
-        }
-        return sb.substring(sb.length() - 10, sb.length());
-    }
-
-    public static String findRegexGroup(String pattern, String source, int group) {
-        Pattern p = Pattern.compile(pattern);
-        Matcher matcher = p.matcher(source);
-        if (!matcher.matches()) {
-            return null;
-        }
-        return matcher.group(group);
-    }
-
     private static final Jackson2ObjectMapperBuilder jacksonBuildr = new Jackson2ObjectMapperBuilder();
     private static final ObjectMapper standardMapper;
 
@@ -84,11 +47,6 @@ public class CommonUtil {
     public static String toJson(Object value) throws JsonProcessingException {
         return standardMapper.writeValueAsString(value);
     }
-
-    public static <D> D mapToModel(final Map<String, ?> map, Class<D> type) {
-        return json().convertValue(map, type);
-    }
-
 
     public static <T> T jsonToType(JsonNode jsonNode, Class<T> type) throws JsonProcessingException {
         return standardMapper.treeToValue(jsonNode, type);

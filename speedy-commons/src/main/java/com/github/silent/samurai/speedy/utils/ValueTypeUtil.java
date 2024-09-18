@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.utils;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
+import org.jooq.impl.SQLDataType;
 
 
 import java.time.*;
