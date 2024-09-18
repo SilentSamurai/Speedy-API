@@ -10,6 +10,8 @@ import lombok.Data;
 import lombok.SneakyThrows;
 
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.lang.reflect.Field;
 
 @Data
@@ -130,17 +132,27 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 
     @Override
     public EntityMetadata getEntityMetadata() {
-        return null;
+        return StaticEntityMetadata.createEntityMetadata(field.getDeclaringClass());
     }
 
     @Override
     public EntityMetadata getAssociationMetadata() {
-        return StaticEntityMetadata.createEntityMetadata(ProductItem.class);
+        if (field.getAnnotation(OneToMany.class) != null) {
+            return StaticEntityMetadata.createEntityMetadata(field.getType());
+        }
+        if (field.getAnnotation(OneToOne.class) != null) {
+            return StaticEntityMetadata.createEntityMetadata(field.getType());
+        }
+        return null;
     }
 
     @Override
     public FieldMetadata getAssociatedFieldMetadata() {
-        return null;
+        EntityMetadata associationMetadata = getAssociationMetadata();
+        return associationMetadata.getAllFields()
+                .stream()
+                .filter(fm -> fm.getOutputPropertyName().equals("id"))
+                .findAny().orElse(null);
     }
 
 //    @SneakyThrows

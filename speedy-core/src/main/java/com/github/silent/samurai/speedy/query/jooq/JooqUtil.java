@@ -1,10 +1,28 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.jooq.DataType;
+import org.jooq.Field;
+import org.jooq.Name;
+import org.jooq.Record;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
+import java.util.Objects;
+import java.util.UUID;
+
 public class JooqUtil {
+
+    static String transformSqlNames = "TO_UPPERCASE";
+
+    public static void transformSqlNames(String setting) {
+        transformSqlNames = setting;
+    }
 
     public static DataType<?> getSQLDataType(ValueType valueType) {
         switch (valueType) {
@@ -30,5 +48,60 @@ public class JooqUtil {
             default:
                 throw new RuntimeException("DataType not supported: " + valueType);
         }
+    }
+
+    public static Table getTable(EntityMetadata entityMetadata) {
+        String name = entityMetadata.getDbTableName();
+
+        Objects.requireNonNull(name);
+
+        if (transformSqlNames.equals("TO_UPPERCASE")) {
+            name = name.toUpperCase();
+        } else if (transformSqlNames.equals("TO_LOWERCASE")) {
+            name = name.toLowerCase();
+        }
+
+        return DSL.table(name);
+    }
+
+    public static <T> Field<T> getColumn(FieldMetadata fieldMetadata) {
+
+        EntityMetadata entityMetadata = fieldMetadata.getEntityMetadata();
+        String name = fieldMetadata.getDbColumnName();
+        Objects.requireNonNull(name);
+
+        if (transformSqlNames.equals("TO_UPPERCASE")) {
+            name = name.toUpperCase();
+        } else if (transformSqlNames.equals("TO_LOWERCASE")) {
+            name = name.toLowerCase();
+        }
+
+        Table<?> table = JooqUtil.getTable(entityMetadata);
+        DataType<?> sqlDataType;
+        if (fieldMetadata.isAssociation()) {
+            ValueType valueType = fieldMetadata.getAssociatedFieldMetadata().getValueType();
+            sqlDataType = JooqUtil.getSQLDataType(valueType);
+        } else {
+            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
+        }
+
+        Name columnName = DSL.name(
+                table.getUnqualifiedName(),
+                DSL.name(name)
+        );
+
+        if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
+            return (Field<T>) DSL.field(columnName, SQLDataType.VARCHAR(36));
+        }
+        return (Field<T>) DSL.field(columnName, sqlDataType);
+    }
+
+    public static Object getValueFromRecord(Record record, FieldMetadata fieldMetadata) {
+        // should never happen
+        if (fieldMetadata.getDbColumnName() == null) {
+            return null;
+        }
+        Field<Object> column = JooqUtil.getColumn(fieldMetadata);
+        return record.getValue(column);
     }
 }

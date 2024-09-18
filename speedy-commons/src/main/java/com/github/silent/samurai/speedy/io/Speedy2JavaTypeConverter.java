@@ -147,25 +147,43 @@ public class Speedy2JavaTypeConverter {
             case NULL:
                 return null;
             case BOOL:
-                return (T) speedyValue.asBoolean();
+                if (speedyValue.isBoolean()) {
+                    return (T) speedyValue.asBoolean();
+                }
             case TEXT:
-                return (T) speedyValue.asText();
+                if (speedyValue.isText()) {
+                    return (T) speedyValue.asText();
+                }
             case INT:
-                return (T) speedyValue.asInt();
+                if (speedyValue.isInt()) {
+                    return (T) speedyValue.asInt();
+                }
             case FLOAT:
-                return (T) speedyValue.asDouble();
+                if (speedyValue.isDouble()) {
+                    return (T) speedyValue.asDouble();
+                }
             case DATE:
-                return (T) speedyValue.asDate();
+                if (speedyValue.isDate()) {
+                    return (T) speedyValue.asDate();
+                }
             case TIME:
-                return (T) speedyValue.asTime();
+                if (speedyValue.isTime()) {
+                    return (T) speedyValue.asTime();
+                }
             case DATE_TIME:
-                return (T) speedyValue.asDateTime();
+                if (speedyValue.isDateTime()) {
+                    return (T) speedyValue.asDateTime();
+                }
             case ZONED_DATE_TIME:
-                return (T) speedyValue.asZonedDateTime();
+                if (speedyValue.isZonedDateTime()) {
+                    return (T) speedyValue.asZonedDateTime();
+                }
             case OBJECT:
             case COLLECTION:
             default:
-                throw new ConversionException("not supported value: " + valueType);
+                throw new ConversionException(
+                        String.format("Cannot convert %s to %s", speedyValue, valueType.name())
+                );
         }
     }
 }

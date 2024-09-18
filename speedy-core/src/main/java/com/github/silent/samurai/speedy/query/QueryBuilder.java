@@ -35,7 +35,7 @@ public class QueryBuilder {
         this.entityMetadata = speedyQuery.getFrom();
         this.dslContext = dslContext;
         this.query = this.dslContext.select()
-                .from(DSL.table(entityMetadata.getDbTableName()));
+                .from(JooqUtil.getTable(speedyQuery.getFrom()));
     }
 
     Field<Object> getPath(BinaryCondition bCondition) {
@@ -44,26 +44,10 @@ public class QueryBuilder {
             FieldMetadata associatedMetadata = queryField.getAssociatedFieldMetadata();
             joins.add(queryField.getFieldMetadata());
 
-            EntityMetadata associationMetadata = associatedMetadata.getEntityMetadata();
-            DataType<?> sqlDataType = JooqUtil.getSQLDataType(associatedMetadata.getValueType());
-
-            Name columnName = DSL.name(
-                    associationMetadata.getDbTableName().toUpperCase(),
-                    associatedMetadata.getDbColumnName().toUpperCase()
-            );
-
-            Field<Object> field = (Field<Object>) DSL.field(columnName, sqlDataType);
-            return field;
+            return JooqUtil.getColumn(associatedMetadata);
         } else {
-            FieldMetadata fieldMetadata = queryField.getFieldMetadata();
-
-            Name columnName = DSL.name(
-                    fieldMetadata.getEntityMetadata().getDbTableName().toUpperCase(),
-                    fieldMetadata.getDbColumnName().toUpperCase()
-            );
-
-            DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
-            return (Field<Object>) DSL.field(columnName, sqlDataType);
+            FieldMetadata fieldMetadata = queryField.getFieldMetadata();;
+            return JooqUtil.getColumn(fieldMetadata);
         }
     }
 
@@ -241,11 +225,7 @@ public class QueryBuilder {
     void captureOrderBy() {
         for (OrderBy orderBy : speedyQuery.getOrderByList()) {
             FieldMetadata fieldMetadata = orderBy.getFieldMetadata();
-            DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
-            Field<Object> field = (Field<Object>) DSL.field(
-                    fieldMetadata.getDbColumnName(),
-                    sqlDataType
-            );
+            Field<Object> field = JooqUtil.getColumn(fieldMetadata);
             OrderByOperator operator = orderBy.getOperator();
             if (operator == OrderByOperator.ASC) {
                 query.orderBy(field.asc());
@@ -261,23 +241,20 @@ public class QueryBuilder {
         int pageSize = pageInfo.getPageSize();
         int pageNumber = pageInfo.getPageNo();
         int offset = (pageNumber) * pageSize;
-        query.limit(pageSize);
-        query.offset(offset);
+        query.limit(pageSize)
+                .offset(offset);
     }
 
     private void joins() {
         for (FieldMetadata join : joins) {
-            Name tableName = DSL.name(join.getAssociationMetadata().getDbTableName().toUpperCase());
-            Name joinField = DSL.name(
-                    join.getAssociationMetadata().getDbTableName().toUpperCase(),
-                    join.getAssociatedFieldMetadata().getDbColumnName().toUpperCase()
-            );
-            Name fromField = DSL.name(join.getDbColumnName().toUpperCase());
-            query.join(tableName)
-                    .on(
-                            DSL.field(fromField)
-                                    .eq(DSL.field(joinField))
-                    );
+            // the foreign key table to join
+            Table<?> table = JooqUtil.getTable(join.getAssociationMetadata());
+            // foreign key field
+            Field<?> fromField = JooqUtil.getColumn(join);
+            // primary key field, from foreign key
+            Field joinField = JooqUtil.getColumn(join.getAssociatedFieldMetadata());
+            query.join(table)
+                    .on(fromField.eq(joinField));
         }
     }
 

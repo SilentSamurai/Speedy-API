@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.data.ComposedProduct;
 import com.github.silent.samurai.speedy.data.Product;
+import com.github.silent.samurai.speedy.data.ProductItem;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -53,18 +53,51 @@ class JooqSqlToSpeedyTest {
 
         SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);
+
         assertNotNull(speedyEntity);
+
         assertTrue(speedyEntity.get(entityMetadata.field("name")).isText());
-        assertEquals(speedyEntity.get(entityMetadata.field("name")).asText(), "Product 1");
+        assertEquals("Product 1", speedyEntity.get(entityMetadata.field("name")).asText());
 
         assertTrue(speedyEntity.get(entityMetadata.field("id")).isText());
-        assertEquals(speedyEntity.get(entityMetadata.field("id")).asText(), "1");
+        assertEquals("1", speedyEntity.get(entityMetadata.field("id")).asText());
 
         assertTrue(speedyEntity.get(entityMetadata.field("cost")).isNumber());
-        assertEquals(speedyEntity.get(entityMetadata.field("cost")).asInt(), 100);
+        assertEquals(100, speedyEntity.get(entityMetadata.field("cost")).asInt());
 
         assertTrue(speedyEntity.get(entityMetadata.field("category")).isText());
-        assertEquals(speedyEntity.get(entityMetadata.field("category")).asText(), "cat-2");
+        assertEquals("cat-2", speedyEntity.get(entityMetadata.field("category")).asText());
+    }
+
+    @Test
+    void fromRecordWithFK() throws SpeedyHttpException {
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
+        EntityMetadata productItemMetadata = StaticEntityMetadata.createEntityMetadata(ProductItem.class);
+
+        Mockito.when(record.getValue("NAME")).thenReturn("Product 1");
+        Mockito.when(record.getValue("ID")).thenReturn("1");
+        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
+        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
+
+        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
+        LOGGER.info("speedyEntity: {}", speedyEntity);
+
+        assertNotNull(speedyEntity);
+
+        assertTrue(speedyEntity.get(entityMetadata.field("name")).isText());
+        assertEquals("Product 1", speedyEntity.get(entityMetadata.field("name")).asText());
+
+        assertTrue(speedyEntity.get(entityMetadata.field("id")).isText());
+        assertEquals("1", speedyEntity.get(entityMetadata.field("id")).asText());
+
+        assertTrue(speedyEntity.get(entityMetadata.field("productItem")).isObject());
+        SpeedyEntity productItem = speedyEntity.get(entityMetadata.field("productItem")).asObject();
+        assertNotNull(productItem);
+        assertTrue(productItem.get(productItemMetadata.field("id")).isText());
+        assertEquals("1", productItem.get(productItemMetadata.field("id")).asText());
+
+        assertTrue(speedyEntity.get(entityMetadata.field("category")).isText());
+        assertEquals("cat-2", speedyEntity.get(entityMetadata.field("category")).asText());
     }
 
     @Test
@@ -80,7 +113,7 @@ class JooqSqlToSpeedyTest {
         LOGGER.info("speedyKeyFromFK: {}", speedyKeyFromFK);
 
         assertTrue(speedyKeyFromFK.get(entityMetadata.field("id")).isText());
-        assertEquals(speedyKeyFromFK.get(entityMetadata.field("id")).asText(), "1");
+        assertEquals("1", speedyKeyFromFK.get(entityMetadata.field("id")).asText());
 
     }
 }

@@ -36,15 +36,12 @@ public class SpeedyToJooqSql {
 
         // Build the where clause for each primary key field
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
-            String fieldName = keyFieldMetadata.getDbColumnName().toUpperCase();
             SpeedyValue speedyValue = pk.get(keyFieldMetadata);
             Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
                     keyFieldMetadata.getValueType(),
                     speedyValue
             );
-
-            DataType<?> sqlDataType = JooqUtil.getSQLDataType(keyFieldMetadata.getValueType());
-            Field<Object> field = (Field<Object>) DSL.field(fieldName, sqlDataType);
+            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
 
             query.where(field.equal(value));
         }
@@ -63,11 +60,11 @@ public class SpeedyToJooqSql {
         // Build the insert query with field values
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
 
-            String dbColumn = fieldMetadata.getDbColumnName().toUpperCase();
+//            String dbColumn = fieldMetadata.getDbColumnName().toUpperCase();
 
             if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
                 UUID value = UUID.randomUUID();
-                Field<String> field = DSL.field(dbColumn, SQLDataType.VARCHAR(36));
+                Field<String> field = JooqUtil.getColumn(fieldMetadata);
                 returnQuery = insertQuery.set(field, value.toString());
                 entity.put(fieldMetadata, SpeedyValueFactory.fromText(value.toString()));
             } else {
@@ -87,16 +84,14 @@ public class SpeedyToJooqSql {
                             innerValue
                     );
 
-                    DataType<?> sqlDataType = JooqUtil.getSQLDataType(associatedFieldMetadata.getValueType());
-                    Field<Object> field = (Field<Object>) DSL.field(dbColumn, sqlDataType);
+                    Field<Object> field = JooqUtil.getColumn(fieldMetadata);
                     returnQuery = insertQuery.set(field, value);
                 } else {
                     Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
                             fieldMetadata.getValueType(),
                             speedyValue
                     );
-                    DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
-                    Field<Object> field = (Field<Object>) DSL.field(dbColumn, sqlDataType);
+                    Field<Object> field = JooqUtil.getColumn(fieldMetadata);
                     returnQuery = insertQuery.set(field, value);
                 }
             }
@@ -120,14 +115,11 @@ public class SpeedyToJooqSql {
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             SpeedyValue val = entity.get(fieldMetadata);
             if (val != null && !val.isEmpty() && !val.isNull()) {
-                String fieldName = fieldMetadata.getDbColumnName().toUpperCase();
                 Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
                         fieldMetadata.getValueType(),
                         val
                 );
-
-                DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
-                Field<Object> field = (Field<Object>) DSL.field(fieldName, sqlDataType);
+                Field<Object> field = JooqUtil.getColumn(fieldMetadata);
 
                 returnQuery = updateQuery.set(field, value);
             }
@@ -136,15 +128,14 @@ public class SpeedyToJooqSql {
         // Build where clause based on primary key fields
         if (returnQuery != null) {
             for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
-                String fieldName = keyFieldMetadata.getDbColumnName().toUpperCase();
+
                 SpeedyValue speedyValue = pk.get(keyFieldMetadata);
                 Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
                         keyFieldMetadata.getValueType(),
                         speedyValue
                 );
 
-                DataType<?> sqlDataType = JooqUtil.getSQLDataType(keyFieldMetadata.getValueType());
-                Field<Object> field = (Field<Object>) DSL.field(fieldName, sqlDataType);
+                Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
 
                 returnQuery.where(field.equal(value));
             }
@@ -163,15 +154,13 @@ public class SpeedyToJooqSql {
 
         // Add where conditions based on primary key fields
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
-            String fieldName = keyFieldMetadata.getDbColumnName().toUpperCase();
             SpeedyValue speedyValue = pk.get(keyFieldMetadata);
             Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
                     keyFieldMetadata.getValueType(),
                     speedyValue
             );
 
-            DataType<?> sqlDataType = JooqUtil.getSQLDataType(keyFieldMetadata.getValueType());
-            Field<Object> field = (Field<Object>) DSL.field(fieldName, sqlDataType);
+            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
 
             deleteQuery.addConditions(field.equal(value));
             isConditionProvided = true;

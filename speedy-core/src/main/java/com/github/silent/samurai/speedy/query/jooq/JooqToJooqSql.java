@@ -23,15 +23,11 @@ public class JooqToJooqSql {
                                    Record entityRecord) {
 
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-
         FieldMetadata associationFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
 
-        String associatedDbColumn = associationFieldMetadata.getDbColumnName().toUpperCase();
-        String entityDbColumn = fieldMetadata.getDbColumnName().toUpperCase();
+        Object value = JooqUtil.getValueFromRecord(entityRecord, fieldMetadata);
 
-        Object value = entityRecord.getValue(entityDbColumn);
-
-        Field<Object> field = (Field<Object>) DSL.field(associatedDbColumn, associationFieldMetadata.getFieldType());
+        Field<Object> field = JooqUtil.getColumn(associationFieldMetadata);
 
         SelectConditionStep<Record> query = dslContext
                 .select()

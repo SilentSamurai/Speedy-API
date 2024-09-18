@@ -87,25 +87,6 @@ public class OASGenerator {
         return basicSchema(fieldMetadata.getValueType());
     }
 
-    public static String getQueryExample(EntityMetadata entityMetadata, Predicate<FieldMetadata> predicate) {
-        StringBuilder sb = new StringBuilder();
-        Iterator<FieldMetadata> iterator = entityMetadata.getAllFields().iterator();
-        while (iterator.hasNext()) {
-            FieldMetadata fieldMetadata = iterator.next();
-            if (predicate.test(fieldMetadata)) {
-                sb.append(fieldMetadata.getOutputPropertyName())
-                        .append("=")
-                        .append("'")
-                        .append(OASGenerator.generateBasicSchema(fieldMetadata).getFormat())
-                        .append("'");
-                if (iterator.hasNext()) {
-                    sb.append(", ");
-                }
-            }
-        }
-        return sb.toString();
-    }
-
     public static Schema createFieldSchema(FieldMetadata fieldMetadata, String associationRef) {
         if (fieldMetadata.isAssociation()) {
             Schema schema = getSchemaRef(getSchemaName(associationRef, fieldMetadata.getAssociationMetadata()));

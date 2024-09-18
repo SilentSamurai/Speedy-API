@@ -26,14 +26,6 @@ public class JooqSqlToSpeedy {
         this.jooqToJooqSql = new JooqToJooqSql(dslContext);
     }
 
-    private Object getValueFromRecord(Record record, FieldMetadata fieldMetadata) {
-        if (fieldMetadata.getDbColumnName() == null) {
-            return null;
-        }
-        String fieldName = fieldMetadata.getDbColumnName().toUpperCase();
-        return record.getValue(fieldName);
-    }
-
     public SpeedyEntity fromRecord(Record record, EntityMetadata from, Set<String> expand) throws SpeedyHttpException {
         return fromRecordInner(record, from, expand);
     }
@@ -69,7 +61,7 @@ public class JooqSqlToSpeedy {
                 }
             } else {
 
-                Object fieldValue = getValueFromRecord(record, fieldMetadata);
+                Object fieldValue = JooqUtil.getValueFromRecord(record, fieldMetadata);
                 if (fieldValue == null) {
                     speedyEntity.put(fieldMetadata, SpeedyValueFactory.fromNull());
                     continue;
@@ -96,14 +88,14 @@ public class JooqSqlToSpeedy {
         return speedyEntity;
     }
 
-    public SpeedyEntityKey createSpeedyKeyFromFK(Record record, FieldMetadata entityMetadata) throws SpeedyHttpException {
-        EntityMetadata associationMetadata = entityMetadata.getAssociationMetadata();
+    public SpeedyEntityKey createSpeedyKeyFromFK(Record record, FieldMetadata fieldMetadata) throws SpeedyHttpException {
+        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+
         SpeedyEntityKey speedyEntityKey = SpeedyValueFactory.createEntityKey(associationMetadata);
 
         KeyFieldMetadata keyFieldMetadata = associationMetadata.getKeyFields().stream().findAny().orElseThrow();
         // foreign key column
-        String columnName = entityMetadata.getDbColumnName().toUpperCase();
-        Object fieldValue = record.getValue(columnName);
+        Object fieldValue = JooqUtil.getValueFromRecord(record, fieldMetadata);
         if (fieldValue == null) {
             speedyEntityKey.put(keyFieldMetadata, SpeedyValueFactory.fromNull());
         } else {

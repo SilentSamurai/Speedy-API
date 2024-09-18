@@ -48,7 +48,7 @@ public class MetaModelSerializer {
         ObjectNode fieldMetadataJson = CommonUtil.json().createObjectNode();
 //        fieldMetadataJson.put("className", fieldMetadata.getClassFieldName());
         fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
-        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
+//        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
         fieldMetadataJson.put("isAssociation", fieldMetadata.isAssociation());
 
         if (fieldMetadata.isAssociation()) {
