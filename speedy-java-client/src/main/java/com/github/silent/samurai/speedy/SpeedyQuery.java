@@ -14,9 +14,9 @@ import java.util.IllegalFormatCodePointException;
 import java.util.List;
 import java.util.Objects;
 
-public class SpdyQBuilder {
+public class SpeedyQuery {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpdyQBuilder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyQuery.class);
 
     private final ObjectNode root = CommonUtil.json().createObjectNode();
     private final ObjectNode where = CommonUtil.json().createObjectNode();
@@ -25,7 +25,15 @@ public class SpdyQBuilder {
     int pageNo = 1;
     int pageSize = 10;
 
-    public SpdyQBuilder $from(String from) {
+    private SpeedyQuery() {
+    }
+
+    public static SpeedyQuery builder() {
+        return new SpeedyQuery();
+    }
+
+
+    public SpeedyQuery $from(String from) {
         if (from == null || from.isEmpty()) {
             throw new IllegalArgumentException("The 'from' parameter cannot be null or empty.");
         }
@@ -33,37 +41,47 @@ public class SpdyQBuilder {
         return this;
     }
 
-    public SpdyQBuilder $where(ObjectNode conditionObj) {
-        if (conditionObj == null || conditionObj.isEmpty()) {
-            throw new IllegalArgumentException("The 'where' parameter cannot be null or empty.");
-        }
-        if (conditionObj.has("$and")) {
-            where.set("$and", conditionObj.get("$and"));
-        }
-        if (conditionObj.has("$or")) {
-            where.set("$or", conditionObj.get("$or"));
+    public SpeedyQuery $where(JsonNode... conditionObjs) {
+        for (JsonNode conditionObj : conditionObjs) {
+            if (conditionObj == null || conditionObj.isEmpty()) {
+                throw new IllegalArgumentException("The 'where' parameter cannot be null or empty.");
+            }
+            if (conditionObj.has("$and")) {
+                where.removeAll();
+                where.set("$and", conditionObj.get("$and"));
+                break;
+            }
+            if (conditionObj.has("$or")) {
+                where.removeAll();
+                where.set("$or", conditionObj.get("$or"));
+                break;
+            }
+            if (!conditionObj.isEmpty()) {
+                String firstField = conditionObj.fieldNames().next();
+                where.set(firstField, conditionObj.get(firstField));
+            }
         }
         return this;
     }
 
-    public SpdyQBuilder $whereCondition(String key, JsonNode value) {
-        Objects.requireNonNull(key, "Key must not be null");
-        where.set(key, value);
-        return this;
-    }
+//    public SpdyQBuilder $whereCondition(String key, JsonNode value) {
+//        Objects.requireNonNull(key, "Key must not be null");
+//        where.set(key, value);
+//        return this;
+//    }
 
-    public SpdyQBuilder $orderByAsc(String key) {
+    public SpeedyQuery $orderByAsc(String key) {
         Objects.requireNonNull(key, "Key must not be null");
         orderBy.set(key, new TextNode("ASC"));
         return this;
     }
 
-    public SpdyQBuilder $orderByDesc(String key) {
+    public SpeedyQuery $orderByDesc(String key) {
         orderBy.set(key, new TextNode("DESC"));
         return this;
     }
 
-    public SpdyQBuilder $expand(String key) {
+    public SpeedyQuery $expand(String key) {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Expand key cannot be null or empty.");
         }
@@ -71,7 +89,7 @@ public class SpdyQBuilder {
         return this;
     }
 
-    public SpdyQBuilder $pageNo(int pageNo) {
+    public SpeedyQuery $pageNo(int pageNo) {
         if (pageNo < 0) {
             throw new IllegalArgumentException("Page number must not be less than 0.");
         }
@@ -79,7 +97,7 @@ public class SpdyQBuilder {
         return this;
     }
 
-    public SpdyQBuilder $pageSize(int pageSize) {
+    public SpeedyQuery $pageSize(int pageSize) {
         if (pageSize < 1) {
             throw new IllegalArgumentException("Page size must be greater than 0.");
         }
@@ -118,11 +136,11 @@ public class SpdyQBuilder {
         return toJsonNode(value, "$lte");
     }
 
-    public static ObjectNode $in(List<Object> values) throws JsonProcessingException {
+    public static ObjectNode $in(Object... values) throws JsonProcessingException {
         return toJsonNode(values, "$in");
     }
 
-    public static ObjectNode $nin(List<Object> values) throws JsonProcessingException {
+    public static ObjectNode $nin(Object... values) throws JsonProcessingException {
         return toJsonNode(values, "$nin");
     }
 
@@ -132,7 +150,7 @@ public class SpdyQBuilder {
         return jsonNodes;
     }
 
-    public static ObjectNode $or(List<JsonNode> conditions) {
+    public static ObjectNode $or(JsonNode... conditions) {
         ObjectNode andNode = CommonUtil.json().createObjectNode();
         andNode.set("$or", CommonUtil.json().createArrayNode());
         for (JsonNode condition : conditions) {
@@ -142,7 +160,7 @@ public class SpdyQBuilder {
         return andNode;
     }
 
-    public static ObjectNode $and(List<JsonNode> conditions) {
+    public static ObjectNode $and(JsonNode... conditions) {
         ObjectNode andNode = CommonUtil.json().createObjectNode();
         andNode.set("$and", CommonUtil.json().createArrayNode());
         for (JsonNode condition : conditions) {
@@ -152,23 +170,23 @@ public class SpdyQBuilder {
         return andNode;
     }
 
-    public SpdyQBuilder $and(JsonNode value) throws JsonProcessingException {
-        if (!where.has("$and")) {
-            where.set("$and", CommonUtil.json().createArrayNode());
-        }
-        ArrayNode and = (ArrayNode) where.get("$and");
-        and.add(value);
-        return this;
-    }
-
-    public SpdyQBuilder $or(JsonNode value) throws JsonProcessingException {
-        if (!where.has("$or")) {
-            where.set("$or", CommonUtil.json().createArrayNode());
-        }
-        ArrayNode or = (ArrayNode) where.get("$or");
-        or.add(value);
-        return this;
-    }
+//    public SpdyQBuilder $and(JsonNode value) throws JsonProcessingException {
+//        if (!where.has("$and")) {
+//            where.set("$and", CommonUtil.json().createArrayNode());
+//        }
+//        ArrayNode and = (ArrayNode) where.get("$and");
+//        and.add(value);
+//        return this;
+//    }
+//
+//    public SpdyQBuilder $or(JsonNode value) throws JsonProcessingException {
+//        if (!where.has("$or")) {
+//            where.set("$or", CommonUtil.json().createArrayNode());
+//        }
+//        ArrayNode or = (ArrayNode) where.get("$or");
+//        or.add(value);
+//        return this;
+//    }
 
     public JsonNode build() throws IllegalFormatCodePointException {
         if (!where.isEmpty()) {
@@ -187,7 +205,7 @@ public class SpdyQBuilder {
         return root;
     }
 
-    public SpdyQBuilder prettyPrint() throws JsonProcessingException {
+    public SpeedyQuery prettyPrint() throws JsonProcessingException {
         ObjectMapper json = CommonUtil.json();// Using the existing ObjectMapper instance
 
         // Create a copy of the root node to avoid modifying the original

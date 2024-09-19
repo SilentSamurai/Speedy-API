@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.url;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.SpdyQ;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.assertj.core.util.Lists;
@@ -31,12 +31,11 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.SpeedyQuery.$eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -406,7 +405,10 @@ class SpeedyEntityTest {
         Assertions.assertEquals(currencyKey.getId(), deletedCurrencyKey.getId());
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpdyQ.whereEq("currencyAbbr", "NZD")
+                SpeedyQuery.builder()
+                        .$where(
+                                $condition("currencyAbbr", $eq("NZD"))
+                        ).build()
         );
 
         Assertions.assertNotNull(someCurrency);
@@ -424,7 +426,10 @@ class SpeedyEntityTest {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpdyQ.whereEq("currencyAbbr", "NZD")
+                SpeedyQuery.builder()
+                        .$where(
+                                $condition("currencyAbbr", $eq("NZD"))
+                        ).build()
         );
 
         Assertions.assertNotNull(someCurrency);
@@ -435,7 +440,10 @@ class SpeedyEntityTest {
         Currency baseCurrency = someCurrency.getPayload().get(0);
 
         someCurrency = currencyApi.queryCurrency(
-                SpdyQ.whereEq("currencyAbbr", "NZD")
+                SpeedyQuery.builder()
+                        .$where(
+                                $condition("currencyAbbr", $eq("NZD"))
+                        ).build()
         );
         Assertions.assertNotNull(someCurrency);
         Assertions.assertNotNull(someCurrency.getPayload());

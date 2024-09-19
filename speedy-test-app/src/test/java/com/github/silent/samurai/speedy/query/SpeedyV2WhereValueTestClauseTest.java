@@ -1,7 +1,8 @@
 package com.github.silent.samurai.speedy.query;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import javax.persistence.EntityManagerFactory;
 
+import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -54,11 +56,13 @@ public class SpeedyV2WhereValueTestClauseTest {
        * */
     @Test
     void testQuery0() throws Exception {
-        ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("$from", "ValueTestEntity");
-        body.putObject("$where")
-                .putObject("localTime")
-                .put("$eq", "10:00:00");
+        JsonNode body = SpeedyQuery.builder()
+                .$from("ValueTestEntity")
+                .$where(
+                        $condition("localTime", SpeedyQuery.$eq("10:00:00"))
+                )
+                .prettyPrint()
+                .build();
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -160,8 +164,6 @@ public class SpeedyV2WhereValueTestClauseTest {
                 .andReturn();
 
     }
-
-
 
 
 }
