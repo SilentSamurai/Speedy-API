@@ -4,12 +4,14 @@ import com.github.silent.samurai.speedy.data.ComposedProduct;
 import com.github.silent.samurai.speedy.data.Product;
 import com.github.silent.samurai.speedy.data.ProductItem;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,14 +45,20 @@ class JooqSqlToSpeedyTest {
         jooqSqlToSpeedy = new JooqSqlToSpeedy(dslContext);
     }
 
+    private <T> OngoingStubbing<T> mockRecord(EntityMetadata entityMetadata, String fieldName) throws NotFoundException {
+        return Mockito.when(
+                record.getValue(JooqUtil.getColumn(entityMetadata.field(fieldName)))
+        );
+    }
+
     @Test
     void fromRecord() throws SpeedyHttpException {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
 
-        Mockito.when(record.getValue("NAME")).thenReturn("Product 1");
-        Mockito.when(record.getValue("ID")).thenReturn("1");
-        Mockito.when(record.getValue("COST")).thenReturn(100);
-        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
+        mockRecord(entityMetadata, "name").thenReturn("Product 1");
+        mockRecord(entityMetadata, "id").thenReturn("1");
+        mockRecord(entityMetadata, "cost").thenReturn(100);
+        mockRecord(entityMetadata, "category").thenReturn("cat-2");
 
         SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);
@@ -74,10 +83,17 @@ class JooqSqlToSpeedyTest {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
         EntityMetadata productItemMetadata = StaticEntityMetadata.createEntityMetadata(ProductItem.class);
 
-        Mockito.when(record.getValue("NAME")).thenReturn("Product 1");
-        Mockito.when(record.getValue("ID")).thenReturn("1");
-        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
-        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
+
+        mockRecord(entityMetadata, "name").thenReturn("Product 1");
+        mockRecord(entityMetadata, "id").thenReturn("1");
+        mockRecord(entityMetadata, "category").thenReturn("cat-2");
+
+        mockRecord(entityMetadata, "productItem").thenReturn("1");
+
+//        Mockito.when(record.getValue("NAME")).thenReturn("Product 1");
+//        Mockito.when(record.getValue("ID")).thenReturn("1");
+//        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
+//        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
 
         SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);
@@ -104,7 +120,7 @@ class JooqSqlToSpeedyTest {
     void createSpeedyKeyFromFK() throws SpeedyHttpException {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
 
-        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
+        mockRecord(entityMetadata, "productItem").thenReturn("1");
 
         FieldMetadata productItem = entityMetadata.field("productItem");
 
