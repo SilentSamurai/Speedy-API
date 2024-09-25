@@ -30,5 +30,8 @@ public class ValueTestEntity extends AbstractBaseEntity {
     @Column(name = "zoned_date_time")
     private ZonedDateTime zonedDateTime;
 
+    @Column(name = "boolean_value")
+    private Boolean booleanValue;
+
 
 }

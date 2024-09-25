@@ -14,6 +14,8 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -33,6 +35,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class SpeedyApiTest {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyApiTest.class);
+
     @Mock
     RestTemplate restTemplate;
 
@@ -48,6 +52,7 @@ class SpeedyApiTest {
 
     @Test
     void create() throws Exception {
+
 
         ObjectNode entity = SpeedyEntityBuilder.builder()
                 .addField("id", "1")
@@ -65,6 +70,7 @@ class SpeedyApiTest {
         ).thenAnswer(invocationOnMock -> {
             RequestEntity<JsonNode> requestEntity = invocationOnMock.getArgument(0);
             requestEntity.getMethod().matches("POST");
+            LOGGER.info("Request: {}", requestEntity);
             assertSame(entity, requestEntity.getBody().get(0));
             return ResponseEntity.of(Optional.of(response));
         });
