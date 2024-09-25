@@ -140,7 +140,10 @@ public class SpeedyFactory {
                 processGETRequests(request, response, queryProcessor);
             } else if (request.getMethod().equals(HttpMethod.POST.name())) {
                 processPOSTRequests(request, response, queryProcessor);
-            } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
+            } else if (
+                    request.getMethod().equals(HttpMethod.PUT.name()) ||
+                            request.getMethod().equals(HttpMethod.PATCH.name())
+            ) {
                 processPUTRequests(request, response, queryProcessor);
             } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
                 processDELETERequests(request, response, queryProcessor);

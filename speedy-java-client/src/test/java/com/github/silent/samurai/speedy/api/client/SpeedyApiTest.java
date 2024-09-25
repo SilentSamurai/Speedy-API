@@ -2,32 +2,22 @@ package com.github.silent.samurai.speedy.api.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.github.silent.samurai.speedy.models.SpeedyEntityBuilder;
+import com.github.silent.samurai.speedy.models.SpeedyCreateRequestBuilder;
+import com.github.silent.samurai.speedy.models.SpeedyCreateRequest;
+import com.github.silent.samurai.speedy.models.SpeedyResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.client.match.JsonPathRequestMatchers;
-import org.springframework.test.web.reactive.server.JsonPathAssertions;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.JsonPathResultMatchers;
 import org.springframework.web.client.RestTemplate;
 
-import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,18 +37,18 @@ class SpeedyApiTest {
     void setUp() {
         objectMapper = new ObjectMapper();
         ApiClient apiClient = new ApiClient(restTemplate);
-        speedyApi = new SpeedyApi(apiClient, "Resource");
+        speedyApi = new SpeedyApi(apiClient);
     }
 
     @Test
     void create() throws Exception {
 
 
-        ObjectNode entity = SpeedyEntityBuilder.builder()
+        SpeedyCreateRequest entity = SpeedyCreateRequestBuilder.builder("Resource")
                 .addField("id", "1")
                 .build();
 
-        ArrayNode response = SpeedyEntityBuilder.builder()
+        SpeedyCreateRequest response = SpeedyCreateRequestBuilder.builder("Resource")
                 .addField("id", "1")
                 .wrapInArray();
 
@@ -75,9 +65,9 @@ class SpeedyApiTest {
             return ResponseEntity.of(Optional.of(response));
         });
 
-        JsonNode jsonNode = speedyApi.create(entity);
+        SpeedyResponse speedyResponse = speedyApi.create(entity);
 
-        assertEquals("1", jsonNode.get(0).get("id").asText());
+        assertEquals("1", speedyResponse.getPayload().get(0).get("id").asText());
     }
 
 
