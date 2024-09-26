@@ -17,7 +17,21 @@ public class SpeedyCreateRequestBuilder {
     }
 
     public SpeedyCreateRequestBuilder addField(String field, Object value) {
-        entity.set(field, CommonUtil.json().convertValue(value, JsonNode.class));
+        String[] parts = field.split("\\.");
+        ObjectNode currentNode = entity;
+
+        // Traverse or create intermediate nodes
+        for (int i = 0; i < parts.length - 1; i++) {
+            String part = parts[i];
+            if (!currentNode.has(part)) {
+                currentNode.set(part, CommonUtil.json().createObjectNode());
+            }
+            currentNode = (ObjectNode) currentNode.get(part);
+        }
+
+        // Set the final field value
+        currentNode.set(parts[parts.length - 1], CommonUtil.json().convertValue(value, JsonNode.class));
+
         return this;
     }
 
@@ -26,19 +40,6 @@ public class SpeedyCreateRequestBuilder {
         speedyCreateRequest.setEntity(entityName);
         speedyCreateRequest.setBody(entity);
         return speedyCreateRequest;
-    }
-
-    public SpeedyCreateRequest wrapInArray() {
-        ArrayNode arrayNode = CommonUtil.json().createArrayNode();
-        arrayNode.add(entity);
-        SpeedyCreateRequest speedyCreateRequest = new SpeedyCreateRequest();
-        speedyCreateRequest.setEntity(entityName);
-        speedyCreateRequest.setBody(arrayNode);
-        return speedyCreateRequest;
-    }
-
-    public static SpeedyCreateRequestBuilder builder(String entityName) {
-        return new SpeedyCreateRequestBuilder(entityName);
     }
 
 

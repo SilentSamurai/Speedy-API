@@ -54,7 +54,7 @@ class SpeedyApiTest {
     }
 
     String createTest() throws Exception {
-        SpeedyCreateRequest entity = SpeedyCreateRequestBuilder
+        SpeedyCreateRequest entity = SpeedyCreateRequest
                 .builder("Category")
                 .addField("name", "cat-client-1")
                 .build();

@@ -12,4 +12,8 @@ public class SpeedyCreateRequest {
     private JsonNode body;
     private String entity;
 
+    public static SpeedyCreateRequestBuilder builder(String entityName) {
+        return new SpeedyCreateRequestBuilder(entityName);
+    }
+
 }
