@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.ApiClient;
 import com.github.silent.samurai.speedy.api.client.SpeedyApi;
@@ -19,6 +21,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 
+import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.SpeedyQuery.$eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -49,45 +53,119 @@ class SpeedyApiTest {
         speedyApi = new SpeedyApi(defaultClient);
     }
 
-
-    @Test
-    void normalTest() throws Exception {
-        SpeedyCreateRequest entity = SpeedyCreateRequestBuilder.builder("Category")
+    String createTest() throws Exception {
+        SpeedyCreateRequest entity = SpeedyCreateRequestBuilder
+                .builder("Category")
                 .addField("name", "cat-client-1")
                 .build();
 
         SpeedyResponse speedyResponse = speedyApi.create(entity);
 
         assertFalse(speedyResponse.getPayload().isEmpty());
-        assertNotNull(speedyResponse.getPayload().get(0).get("id").asText());
-//        assertEquals("1", jsonNode.get(0).get("id").asText());
+        JsonNode entityNode = speedyResponse.getPayload().get(0);
+
+        assertTrue(entityNode.has("id"));
+        assertTrue(entityNode.get("id").isTextual());
+        assertNotNull(entityNode.get("id").asText());
+
+        return entityNode.get("id").asText();
     }
 
-    @Test
-    void updateTest() throws Exception {
-        SpeedyUpdateRequest request = SpeedyUpdateRequest.builder("Category")
-                .key("id", "1")
+
+    void updateTest(String id) throws Exception {
+        SpeedyUpdateRequest request = SpeedyUpdateRequest
+                .builder("Category")
+                .key("id", id)
                 .field("name", "cat-CLIENT-updated-1")
                 .build();
 
         SpeedyResponse speedyResponse = speedyApi.update(request);
 
         assertFalse(speedyResponse.getPayload().isEmpty());
-        assertNotNull(speedyResponse.getPayload().get("id").asText());
-//        assertEquals("1", jsonNode.get(0).get("id").asText());
+        JsonNode entityNode = speedyResponse.getPayload();
+
+        assertTrue(entityNode.has("id"));
+        assertTrue(entityNode.get("id").isTextual());
+        assertNotNull(entityNode.get("id").asText());
+
+        assertTrue(entityNode.has("name"));
+        assertEquals("cat-CLIENT-updated-1", entityNode.get("name").asText());
     }
 
-    @Test
-    void deleteTest() throws Exception {
+    void deleteTest(String id) throws Exception {
         SpeedyDeleteRequest request = SpeedyDeleteRequest.builder("Category")
-                .key("id", "1")
+                .key("id", id)
                 .build();
 
         SpeedyResponse speedyResponse = speedyApi.delete(request);
 
         assertFalse(speedyResponse.getPayload().isEmpty());
-        assertNotNull(speedyResponse.getPayload().get("id").asText());
-//        assertEquals("1", jsonNode.get(0).get("id").asText());
+        JsonNode entityNode = speedyResponse.getPayload().get(0);
+
+        assertTrue(entityNode.has("id"));
+        assertTrue(entityNode.get("id").isTextual());
+        assertNotNull(entityNode.get("id").asText());
     }
+
+    void getTest(String id, String name) throws Exception {
+        SpeedyGetRequest request = SpeedyGetRequest.builder("Category")
+                .key("id", id)
+                .build();
+
+        SpeedyResponse speedyResponse = speedyApi.get(request);
+
+//        assertEquals("1", jsonNode.get(0).get("id").asText());
+
+        assertFalse(speedyResponse.getPayload().isEmpty());
+        JsonNode entityNode = speedyResponse.getPayload().get(0);
+
+        assertTrue(entityNode.has("id"));
+        assertTrue(entityNode.get("id").isTextual());
+        assertNotNull(entityNode.get("id").asText());
+        assertEquals(id, entityNode.get("id").asText());
+
+        assertTrue(entityNode.has("name"));
+        assertEquals(name, entityNode.get("name").asText());
+    }
+
+
+    void query(String id, String name) throws Exception {
+
+        SpeedyQuery speedyQuery = SpeedyQuery.builder("Category")
+                .$where(
+                        $condition("name", $eq(name))
+                );
+
+        SpeedyResponse speedyResponse = speedyApi.query(speedyQuery);
+
+        assertFalse(speedyResponse.getPayload().isEmpty());
+        JsonNode entityNode = speedyResponse.getPayload().get(0);
+
+        assertTrue(entityNode.has("id"));
+        assertTrue(entityNode.get("id").isTextual());
+        assertNotNull(entityNode.get("id").asText());
+        assertEquals(id, entityNode.get("id").asText());
+
+        assertTrue(entityNode.has("name"));
+        assertEquals(name, entityNode.get("name").asText());
+    }
+
+    @Test
+    void normalTest() throws Exception {
+        String id = createTest();
+
+        getTest(id, "cat-client-1");
+
+        updateTest(id);
+
+        getTest(id, "cat-CLIENT-updated-1");
+
+        query(id, "cat-CLIENT-updated-1");
+
+        deleteTest(id);
+
+
+    }
+
 }
 

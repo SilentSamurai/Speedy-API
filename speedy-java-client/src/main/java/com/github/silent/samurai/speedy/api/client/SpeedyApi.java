@@ -1,13 +1,12 @@
 package com.github.silent.samurai.speedy.api.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.models.SpeedyCreateRequest;
-import com.github.silent.samurai.speedy.models.SpeedyDeleteRequest;
-import com.github.silent.samurai.speedy.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.models.SpeedyUpdateRequest;
+import com.github.silent.samurai.speedy.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.core.ParameterizedTypeReference;
@@ -157,6 +156,43 @@ public class SpeedyApi {
         ParameterizedTypeReference<SpeedyResponse> returnType = new ParameterizedTypeReference<>() {
         };
 
+        String path = this.baseUrl + request.getEntity();
+
+        return apiClient.invokeAPI(path,
+                HttpMethod.DELETE,
+                Collections.emptyMap(),
+                queryParams,
+                request.getPkToDelete(),
+                headerParams,
+                cookieParams,
+                formParams,
+                localVarAccept,
+                localVarContentType,
+                localVarAuthNames,
+                returnType).getBody();
+    }
+
+    public SpeedyResponse get(SpeedyGetRequest request) throws Exception {
+//        String body = new ObjectMapper().writeValueAsString(entity);
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, String> cookieParams = new LinkedMultiValueMap<String, String>();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+
+        final String[] localVarAccepts = {
+                "application/json;charset=UTF-8"
+        };
+        final List<MediaType> localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        final String[] localVarContentTypes = {
+                "application/json;charset=UTF-8"
+        };
+        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+
+        String[] localVarAuthNames = new String[]{};
+
+        ParameterizedTypeReference<SpeedyResponse> returnType = new ParameterizedTypeReference<>() {
+        };
+
 
         Iterator<Map.Entry<String, JsonNode>> fields = request.getPk().fields();
 
@@ -168,17 +204,59 @@ public class SpeedyApi {
                 .map(e -> String.format("%s='%s'", e.getKey(), e.getValue().asText()))
                 .reduce((a, b) -> a + "," + b);
 
-        String path = this.baseUrl + speedyUpdateRequest.getEntity();
+        String path = this.baseUrl + request.getEntity();
         if (reduce.isPresent()) {
             path = path + "(" + reduce.get() + ")";
         }
 
 
         return apiClient.invokeAPI(path,
-                HttpMethod.PATCH,
+                HttpMethod.GET,
                 Collections.emptyMap(),
                 queryParams,
-                speedyUpdateRequest.getBody(),
+                null,
+                headerParams,
+                cookieParams,
+                formParams,
+                localVarAccept,
+                localVarContentType,
+                localVarAuthNames,
+                returnType).getBody();
+
+    }
+
+    public SpeedyResponse query(SpeedyQuery speedyQuery) throws JsonProcessingException {
+
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, String> cookieParams = new LinkedMultiValueMap<String, String>();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+
+        final String[] localVarAccepts = {
+                "application/json;charset=UTF-8"
+        };
+        final List<MediaType> localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
+        final String[] localVarContentTypes = {
+                "application/json;charset=UTF-8"
+        };
+        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
+
+        String[] localVarAuthNames = new String[]{};
+
+        ParameterizedTypeReference<SpeedyResponse> returnType = new ParameterizedTypeReference<>() {
+        };
+
+        String path = this.baseUrl + speedyQuery.getFrom() + "/$query/";
+
+        speedyQuery.prettyPrint();
+        JsonNode body = speedyQuery.build();
+
+
+        return apiClient.invokeAPI(path,
+                HttpMethod.POST,
+                Collections.emptyMap(),
+                queryParams,
+                body,
                 headerParams,
                 cookieParams,
                 formParams,

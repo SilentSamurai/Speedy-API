@@ -28,6 +28,10 @@ public class SpeedyQuery {
     private SpeedyQuery() {
     }
 
+    public static SpeedyQuery builder(String entity) {
+        return new SpeedyQuery().$from(entity);
+    }
+
     public static SpeedyQuery builder() {
         return new SpeedyQuery();
     }
@@ -226,5 +230,7 @@ public class SpeedyQuery {
         return this;
     }
 
-
+    public String getFrom() {
+        return root.get("$from").asText();
+    }
 }
