@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
+import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 
 public class Json2Speedy {
     public static SpeedyValue fromValueNode(FieldMetadata fieldMetadata, ValueNode jsonNode) throws BadRequestException {
@@ -37,32 +38,36 @@ public class Json2Speedy {
             case FLOAT:
                 return fromDouble(jsonNode.asDouble());
             case DATE:
-                if (!jsonNode.isTextual()) {
-                    throw new BadRequestException("Date value must be a string");
+                if (!jsonNode.isTextual() || !isDateFormatValid(jsonNode.asText())) {
+                    String formatString = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
+                    String msg = String.format("Date value must be a string with ISO_DATE(%s) format", formatString);
+                    throw new BadRequestException(msg);
                 }
-                String dateValue = jsonNode.asText();
-                LocalDate localDate = LocalDate.parse(dateValue, DateTimeFormatter.ISO_DATE);
+                LocalDate localDate = LocalDate.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE);
                 return fromDate(localDate);
             case TIME:
-                if (!jsonNode.isTextual()) {
-                    throw new BadRequestException("Time value must be a string");
+                if (!jsonNode.isTextual() || !isTimeFormatValid(jsonNode.asText())) {
+                    String formatString = LocalTime.now().format(DateTimeFormatter.ISO_TIME);
+                    String msg = String.format("Time value must be a string with ISO_TIME(%s) format", formatString);
+                    throw new BadRequestException(msg);
                 }
-                String timeValue = jsonNode.asText();
-                LocalTime localTime = LocalTime.parse(timeValue, DateTimeFormatter.ISO_TIME);
+                LocalTime localTime = LocalTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_TIME);
                 return fromTime(localTime);
             case DATE_TIME:
-                if (!jsonNode.isTextual()) {
-                    throw new BadRequestException("DateTime value must be a string");
+                if (!jsonNode.isTextual() || !isDateTimeFormatValid(jsonNode.asText())) {
+                    String formatString = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
+                    String msg = String.format("DateTime value must be a string with ISO_DATE_TIME(%s) format", formatString);
+                    throw new BadRequestException(msg);
                 }
-                String datetimeValue = jsonNode.asText();
-                LocalDateTime datetime = LocalDateTime.parse(datetimeValue, DateTimeFormatter.ISO_DATE_TIME);
+                LocalDateTime datetime = LocalDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE_TIME);
                 return fromDateTime(datetime);
             case ZONED_DATE_TIME:
-                if (!jsonNode.isTextual()) {
-                    throw new BadRequestException("ZonedDateTime value must be a string");
+                if (!jsonNode.isTextual() || !isZonedDateTimeValid(jsonNode.asText())) {
+                    String formatString = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                    String msg = String.format("ZonedDateTime value must be a string with ISO_ZONED_DATE_TIME(%s) format", formatString);
+                    throw new BadRequestException(msg);
                 }
-                String zonedDateTimeValue = jsonNode.asText();
-                ZonedDateTime zonedDateTime = ZonedDateTime.parse(zonedDateTimeValue, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                ZonedDateTime zonedDateTime = ZonedDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                 return fromZonedDateTime(zonedDateTime);
             case NULL:
                 return fromNull();

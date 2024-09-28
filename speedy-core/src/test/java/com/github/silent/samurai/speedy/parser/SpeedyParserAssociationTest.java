@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
-import com.github.silent.samurai.speedy.query.QueryHelper;
+import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,14 +42,14 @@ public class SpeedyParserAssociationTest {
 
         SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/ComposedProduct(productItem.id='1')");
         SpeedyQuery speedyQuery = parser.parse();
-        QueryHelper queryHelper = new QueryHelper(speedyQuery);
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         assertEquals("ComposedProduct", speedyQuery.getFrom().getName());
         EqCondition condition = (EqCondition) speedyQuery.getWhere().getConditions().get(0);
         FieldMetadata fieldMetadata = condition.getField().getAssociatedFieldMetadata();
         String condValue = SpeedyValueFactory.toJavaType(fieldMetadata, condition.getSpeedyValue());
         assertEquals("1", condValue);
-        assertFalse(queryHelper.isOnlyIdentifiersPresent());
+        assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
     }
 
 }

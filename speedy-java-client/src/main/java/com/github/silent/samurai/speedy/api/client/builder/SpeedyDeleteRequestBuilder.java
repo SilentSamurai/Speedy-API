@@ -1,8 +1,9 @@
-package com.github.silent.samurai.speedy.models;
+package com.github.silent.samurai.speedy.api.client.builder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyDeleteRequest;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Getter;
 

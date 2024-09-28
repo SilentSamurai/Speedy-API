@@ -15,11 +15,11 @@ public class GetDataHandler {
         this.context = context;
     }
 
-    public Optional<SpeedyEntity> processOne(QueryProcessor queryProcessor) throws Exception {
-        SpeedyQuery speedyQuery = context.getSpeedyQuery();
-        SpeedyEntity result = queryProcessor.executeOne(speedyQuery);
-        return Optional.ofNullable(result);
-    }
+//    public Optional<SpeedyEntity> processOne(QueryProcessor queryProcessor) throws Exception {
+//        SpeedyQuery speedyQuery = context.getSpeedyQuery();
+//        SpeedyEntity result = queryProcessor.executeOne(speedyQuery);
+//        return Optional.ofNullable(result);
+//    }
 
     public Optional<List<SpeedyEntity>> processMany(QueryProcessor queryProcessor) throws Exception {
         SpeedyQuery speedyQuery = context.getSpeedyQuery();

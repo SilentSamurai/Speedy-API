@@ -1,9 +1,7 @@
-package com.github.silent.samurai.speedy.query;
+package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.query.jooq.JooqSqlToSpeedy;
-import com.github.silent.samurai.speedy.query.jooq.SpeedyToJooqSql;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -23,9 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class QueryProcessorImpl implements QueryProcessor {
+public class JooqQueryProcessorImpl implements QueryProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueryProcessorImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryProcessorImpl.class);
 
     DataSource dataSource;
     SQLDialect dialect;
@@ -33,7 +31,7 @@ public class QueryProcessorImpl implements QueryProcessor {
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
             .withRenderNameStyle(RenderNameStyle.AS_IS);
 
-    public QueryProcessorImpl(DataSource dataSource, SQLDialect dialect) {
+    public JooqQueryProcessorImpl(DataSource dataSource, SQLDialect dialect) {
         this.dataSource = dataSource;
         this.dialect = dialect;
     }
@@ -42,7 +40,7 @@ public class QueryProcessorImpl implements QueryProcessor {
     public SpeedyEntity executeOne(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
             DSLContext dslContext = DSL.using(dataSource, dialect, settings);
-            QueryBuilder qb = new QueryBuilder(speedyQuery, dslContext);
+            JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
             Result<Record> result = qb.executeQuery();
             Record record = result.get(0);
             return new JooqSqlToSpeedy(dslContext)
@@ -56,7 +54,7 @@ public class QueryProcessorImpl implements QueryProcessor {
     public List<SpeedyEntity> executeMany(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
             DSLContext dslContext = DSL.using(dataSource, dialect, settings);
-            QueryBuilder qb = new QueryBuilder(speedyQuery, dslContext);
+            JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
             Result<Record> result = qb.executeQuery();
             List<SpeedyEntity> list = new ArrayList<>();
             JooqSqlToSpeedy jooqSQLToSpeedy = new JooqSqlToSpeedy(dslContext);

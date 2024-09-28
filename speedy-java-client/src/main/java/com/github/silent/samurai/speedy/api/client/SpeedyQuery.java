@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy;
+package com.github.silent.samurai.speedy.api.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

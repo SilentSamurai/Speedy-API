@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class JsonQueryBuilder {
+public class Json2SpeedyQueryBuilder {
 
     final MetaModelProcessor metaModelProcessor;
     final JsonNode rootNode;
@@ -31,14 +31,14 @@ public class JsonQueryBuilder {
 
     final ConditionFactory conditionFactory;
 
-    public JsonQueryBuilder(MetaModelProcessor metaModelProcessor, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
+    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModelProcessor = metaModelProcessor;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(from));
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public JsonQueryBuilder(MetaModelProcessor metaModelProcessor, JsonNode rootNode) throws BadRequestException, NotFoundException {
+    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModelProcessor = metaModelProcessor;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(getFrom()));

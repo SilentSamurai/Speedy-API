@@ -1,8 +1,8 @@
-package com.github.silent.samurai.speedy.models;
+package com.github.silent.samurai.speedy.api.client.builder;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyCreateRequest;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Getter;
 
@@ -16,7 +16,7 @@ public class SpeedyCreateRequestBuilder {
         this.entityName = entityName;
     }
 
-    public SpeedyCreateRequestBuilder addField(String field, Object value) {
+    public <T> SpeedyCreateRequestBuilder addField(String field, T value) {
         String[] parts = field.split("\\.");
         ObjectNode currentNode = entity;
 

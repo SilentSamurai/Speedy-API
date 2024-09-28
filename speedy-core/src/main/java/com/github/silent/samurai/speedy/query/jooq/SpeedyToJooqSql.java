@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
 
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -13,7 +12,6 @@ import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,8 +111,10 @@ public class SpeedyToJooqSql {
 
         // Set values to be updated
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            SpeedyValue val = entity.get(fieldMetadata);
-            if (val != null && !val.isEmpty() && !val.isNull()) {
+            if (entity.has(fieldMetadata) &&
+                    !entity.get(fieldMetadata).isEmpty() && !entity.get(fieldMetadata).isNull()) {
+
+                SpeedyValue val = entity.get(fieldMetadata);
                 Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
                         fieldMetadata.getValueType(),
                         val

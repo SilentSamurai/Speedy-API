@@ -5,7 +5,7 @@ import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.query.QueryProcessorImpl;
+import com.github.silent.samurai.speedy.query.jooq.JooqQueryProcessorImpl;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -133,7 +133,7 @@ public class SpeedyFactory {
 
         DataSource dataSource = speedyConfiguration.getDataSource();
         String dialect = speedyConfiguration.getDialect();
-        QueryProcessor queryProcessor = new QueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));
+        QueryProcessor queryProcessor = new JooqQueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));
 
         try {
             if (request.getMethod().equals(HttpMethod.GET.name())) {
@@ -159,7 +159,6 @@ public class SpeedyFactory {
         } catch (Throwable e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } finally {
-            metaModelProcessor.closeQueryProcessor(queryProcessor);
             response.getWriter().flush();
         }
     }

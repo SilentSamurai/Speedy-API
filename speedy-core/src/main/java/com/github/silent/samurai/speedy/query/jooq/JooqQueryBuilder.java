@@ -1,10 +1,9 @@
-package com.github.silent.samurai.speedy.query;
+package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.query.jooq.JooqUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -20,9 +19,9 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 
-public class QueryBuilder {
+public class JooqQueryBuilder {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(QueryBuilder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryBuilder.class);
 
     private final SpeedyQuery speedyQuery;
     private final EntityMetadata entityMetadata;
@@ -30,7 +29,7 @@ public class QueryBuilder {
     private final List<FieldMetadata> joins = new LinkedList<>();
     private final SelectJoinStep<org.jooq.Record> query;
 
-    public QueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
+    public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
         this.speedyQuery = speedyQuery;
         this.entityMetadata = speedyQuery.getFrom();
         this.dslContext = dslContext;

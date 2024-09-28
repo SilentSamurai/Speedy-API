@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.io;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.ConversionException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;

@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.url;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.assertj.core.util.Lists;
@@ -34,8 +34,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)

@@ -288,6 +288,6 @@ class MetadataUtilTest {
         // assert name is na
         assertEquals("na", name.asText());
         // assert productItem is null
-        assertNull(productEntity.get(productMetadata.field("productItem")));
+        assertFalse(productEntity.has(productMetadata.field("productItem")));
     }
 }

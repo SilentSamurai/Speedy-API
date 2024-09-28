@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.query.QueryHelper;
+import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +29,14 @@ public class PutRequestParser {
         SpeedyUriContext parser = new SpeedyUriContext(context.getMetaModelProcessor(), context.getRequestURI());
         SpeedyQuery speedyQuery = parser.parse();
         context.setSpeedyQuery(speedyQuery);
-        QueryHelper queryHelper = new QueryHelper(speedyQuery);
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         ObjectMapper json = CommonUtil.json();
         JsonNode jsonElement = json.readTree(context.getRequest().getReader());
         if (jsonElement == null || !jsonElement.isObject()) {
             throw new BadRequestException("no content to process");
         }
-        if (!queryHelper.isOnlyIdentifiersPresent()) {
+        if (!speedyQueryHelper.isOnlyIdentifiersPresent()) {
             throw new BadRequestException("Primary Key Incomplete.");
         }
         EntityMetadata entityMetadata = speedyQuery.getFrom();

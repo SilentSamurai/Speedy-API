@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.models;
+package com.github.silent.samurai.speedy.api.client.models;
 
 
 import com.fasterxml.jackson.databind.JsonNode;

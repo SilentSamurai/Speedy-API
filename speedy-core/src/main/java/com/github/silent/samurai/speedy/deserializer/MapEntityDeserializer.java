@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.io.BasicDeserializer;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
@@ -28,7 +29,11 @@ public class MapEntityDeserializer {
         this.entityManager = entityManager;
     }
 
-    public static SpeedyValue fromBasicString(ValueType valueType, String valueAsString) throws Exception {
+    public SpeedyEntity deserialize() throws Exception {
+        return createEntity(this.entityMetadata, entityMap);
+    }
+
+    private static SpeedyValue fromBasicString(ValueType valueType, String valueAsString) throws Exception {
         switch (valueType) {
             case TEXT:
                 return fromText(valueAsString);
@@ -49,10 +54,6 @@ public class MapEntityDeserializer {
         }
     }
 
-    public SpeedyEntity deserialize() throws Exception {
-        return createEntity(this.entityMetadata, entityMap);
-    }
-
     private SpeedyEntity createEntity(EntityMetadata entityMetadata, Map<String, String> entityMap) throws Exception {
         SpeedyEntity entity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
@@ -68,7 +69,7 @@ public class MapEntityDeserializer {
     private SpeedyValue createField(
             FieldMetadata fieldMetadata,
             Map<String, String> fieldsMap) throws Exception {
-        SpeedyValue value = null;
+        SpeedyValue value = SpeedyValueFactory.fromNull();
         String propertyName = fieldMetadata.getOutputPropertyName();
         if (fieldsMap.containsKey(propertyName)) {
             if (fieldMetadata.isAssociation()) {

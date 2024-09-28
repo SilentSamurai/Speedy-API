@@ -6,14 +6,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.docs.MetaModelSerializer;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.query.QueryProcessorImpl;
+import com.github.silent.samurai.speedy.query.jooq.JooqQueryProcessorImpl;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.query.JsonQueryBuilder;
+import com.github.silent.samurai.speedy.query.Json2SpeedyQueryBuilder;
 import com.github.silent.samurai.speedy.request.get.GetRequestContext;
 import com.github.silent.samurai.speedy.serializers.JSONSerializer;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -59,20 +59,20 @@ public class SpeedyApiController {
 
         DataSource dataSource = speedyFactory.getSpeedyConfiguration().getDataSource();
         String dialect = speedyFactory.getSpeedyConfiguration().getDialect();
-        QueryProcessor queryProcessor = new QueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));
+        QueryProcessor queryProcessor = new JooqQueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));
         try {
 
             JsonNode jsonQuery = CommonUtil.json().readTree(request.getReader());
 
-            JsonQueryBuilder jsonQueryBuilder;
+            Json2SpeedyQueryBuilder json2SpeedyQueryBuilder;
 
             if (from.isPresent()) {
-                jsonQueryBuilder = new JsonQueryBuilder(metaModelProcessor, from.get(), jsonQuery);
+                json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModelProcessor, from.get(), jsonQuery);
             } else {
-                jsonQueryBuilder = new JsonQueryBuilder(metaModelProcessor, jsonQuery);
+                json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModelProcessor, jsonQuery);
             }
 
-              SpeedyQuery speedyQuery = jsonQueryBuilder.build();
+              SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
 
             GetRequestContext context = new GetRequestContext(request, response, metaModelProcessor);
 
@@ -92,7 +92,6 @@ public class SpeedyApiController {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } finally {
             response.getWriter().flush();
-            metaModelProcessor.closeQueryProcessor(queryProcessor);
         }
     }
 

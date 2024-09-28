@@ -19,8 +19,4 @@ public interface MetaModelProcessor {
 
     FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException;
 
-    QueryProcessor getQueryProcessor();
-
-    boolean closeQueryProcessor(QueryProcessor queryProcessor);
-
 }

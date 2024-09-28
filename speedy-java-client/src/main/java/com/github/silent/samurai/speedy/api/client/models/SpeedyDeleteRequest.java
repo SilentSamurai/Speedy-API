@@ -1,8 +1,7 @@
-package com.github.silent.samurai.speedy.models;
+package com.github.silent.samurai.speedy.api.client.models;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.api.client.builder.SpeedyDeleteRequestBuilder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +12,9 @@ public class SpeedyDeleteRequest {
 
     private String entity;
     private ArrayNode pkToDelete;
+
+    public SpeedyDeleteRequest() {
+    }
 
     public static SpeedyDeleteRequestBuilder builder(String entity) {
         return new SpeedyDeleteRequestBuilder(entity);

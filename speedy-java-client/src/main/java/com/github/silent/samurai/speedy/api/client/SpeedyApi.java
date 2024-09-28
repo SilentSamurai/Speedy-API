@@ -1,12 +1,9 @@
 package com.github.silent.samurai.speedy.api.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.api.client.models.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.core.ParameterizedTypeReference;

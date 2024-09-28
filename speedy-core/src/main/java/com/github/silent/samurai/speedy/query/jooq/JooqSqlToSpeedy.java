@@ -61,11 +61,13 @@ public class JooqSqlToSpeedy {
                 }
             } else {
 
-                Object fieldValue = JooqUtil.getValueFromRecord(record, fieldMetadata);
-                if (fieldValue == null) {
+                Optional<Object> optionalFieldObj = JooqUtil.getValueFromRecord(record, fieldMetadata);
+                if (optionalFieldObj.isEmpty()) {
                     speedyEntity.put(fieldMetadata, SpeedyValueFactory.fromNull());
                     continue;
                 }
+
+                Object fieldValue = optionalFieldObj.get();
 
                 if (fieldMetadata.isCollection()) {
                     Collection<?> listOfInstances = (Collection<?>) fieldValue;
@@ -95,11 +97,11 @@ public class JooqSqlToSpeedy {
 
         KeyFieldMetadata keyFieldMetadata = associationMetadata.getKeyFields().stream().findAny().orElseThrow();
         // foreign key column
-        Object fieldValue = JooqUtil.getValueFromRecord(record, fieldMetadata);
-        if (fieldValue == null) {
+        Optional<Object> optional = JooqUtil.getValueFromRecord(record, fieldMetadata);
+        if (optional.isEmpty()) {
             speedyEntityKey.put(keyFieldMetadata, SpeedyValueFactory.fromNull());
         } else {
-            SpeedyValue speedyValue = SpeedyValueFactory.fromJavaTypes(keyFieldMetadata, fieldValue);
+            SpeedyValue speedyValue = SpeedyValueFactory.fromJavaTypes(keyFieldMetadata, optional.get());
             speedyEntityKey.put(keyFieldMetadata, speedyValue);
         }
 

@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +24,8 @@ import javax.persistence.EntityManagerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -94,7 +94,8 @@ class SpeedyAssociationTest {
 
 //        String query = String.format("(id='%s')", productKey.getId());
         FilteredProductResponse productResponse = productApi.queryProduct(
-                SpeedyQuery.builder()
+                SpeedyRequest
+                        .query()
                         .$where(
                                 $condition("id", $eq(productKey.getId()))
                         ).build()

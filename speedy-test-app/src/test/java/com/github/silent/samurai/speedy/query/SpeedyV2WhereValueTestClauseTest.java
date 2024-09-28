@@ -2,9 +2,9 @@ package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -25,7 +25,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import javax.persistence.EntityManagerFactory;
 
-import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -56,10 +57,9 @@ public class SpeedyV2WhereValueTestClauseTest {
        * */
     @Test
     void testQuery0() throws Exception {
-        JsonNode body = SpeedyQuery.builder()
-                .$from("ValueTestEntity")
+        JsonNode body = SpeedyRequest.query("ValueTestEntity")
                 .$where(
-                        $condition("localTime", SpeedyQuery.$eq("10:00:00"))
+                        $condition("localTime", $eq("10:00:00"))
                 )
                 .prettyPrint()
                 .build();
@@ -147,8 +147,8 @@ public class SpeedyV2WhereValueTestClauseTest {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "ValueTestEntity");
         body.putObject("$where")
-                .putObject("localTime")
-                .put("$gte", "11:00:00");
+                .putObject("localDateTime")
+                .put("$gte", "2030-11-23T11:00:00");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(body))

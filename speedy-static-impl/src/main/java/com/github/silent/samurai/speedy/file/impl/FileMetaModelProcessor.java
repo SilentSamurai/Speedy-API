@@ -83,14 +83,4 @@ public class FileMetaModelProcessor implements MetaModelProcessor {
         EntityMetadata entityMetadata = findEntityMetadata(entityName);
         return entityMetadata.field(fieldName);
     }
-
-    @Override
-    public QueryProcessor getQueryProcessor() {
-        return null;
-    }
-
-    @Override
-    public boolean closeQueryProcessor(QueryProcessor queryProcessor) {
-        return false;
-    }
 }

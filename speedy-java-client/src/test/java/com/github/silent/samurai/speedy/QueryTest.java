@@ -2,9 +2,10 @@ package com.github.silent.samurai.speedy;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import org.junit.jupiter.api.Test;
 
-import static com.github.silent.samurai.speedy.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
 
 public class QueryTest {
 

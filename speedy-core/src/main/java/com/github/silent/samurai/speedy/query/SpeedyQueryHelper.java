@@ -15,12 +15,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class QueryHelper {
+public class SpeedyQueryHelper {
 
     public final Map<String, BinaryCondition> conditionMap = new HashMap<>();
     private final SpeedyQuery speedyQuery;
 
-    public QueryHelper(SpeedyQuery speedyQuery) {
+    public SpeedyQueryHelper(SpeedyQuery speedyQuery) {
         this.speedyQuery = speedyQuery;
         this.initial();
     }

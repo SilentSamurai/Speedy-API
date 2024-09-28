@@ -10,7 +10,11 @@ import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.models.AntlrRequest;
+import com.github.silent.samurai.speedy.models.Filter;
+import com.github.silent.samurai.speedy.models.ResourceRequest;
+import com.github.silent.samurai.speedy.models.UrlQuery;
+import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 

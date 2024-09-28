@@ -11,7 +11,6 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,7 +46,7 @@ class JooqSqlToSpeedyTest {
 
     private <T> OngoingStubbing<T> mockRecord(EntityMetadata entityMetadata, String fieldName) throws NotFoundException {
         return Mockito.when(
-                record.getValue(JooqUtil.getColumn(entityMetadata.field(fieldName)))
+                record.get(JooqUtil.getColumn(entityMetadata.field(fieldName)))
         );
     }
 

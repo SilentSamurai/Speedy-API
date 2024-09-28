@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -56,8 +56,8 @@ public class SpeedyV2ExpandTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyQuery.builder()
-                                .$from("Product")
+                        SpeedyRequest
+                                .query("Product")
                                 .$expand("Category")
                                 .prettyPrint()
                                 .build()

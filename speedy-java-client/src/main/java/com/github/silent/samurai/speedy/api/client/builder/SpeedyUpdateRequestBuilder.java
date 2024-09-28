@@ -1,7 +1,8 @@
-package com.github.silent.samurai.speedy.models;
+package com.github.silent.samurai.speedy.api.client.builder;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyUpdateRequest;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.Getter;
 
@@ -35,9 +36,7 @@ public class SpeedyUpdateRequestBuilder {
         return request;
     }
 
-    public static SpeedyUpdateRequestBuilder builder(String entityName) {
-        return new SpeedyUpdateRequestBuilder(entityName);
-    }
+
 
 
 }

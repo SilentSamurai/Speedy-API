@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.utils;
 
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -12,8 +13,16 @@ public class SpeedyEntityUtil {
         EntityMetadata metadata = entity.getMetadata();
         SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(metadata);
         for (KeyFieldMetadata keyField : metadata.getKeyFields()) {
-            SpeedyValue speedyValue = entity.get(keyField);
-            speedyEntityKey.put(keyField, speedyValue);
+            if (keyField.isAssociation()) {
+                SpeedyEntity associatedEntity = entity.get(keyField).asObject();
+                FieldMetadata associatedFieldMetadata = keyField.getAssociatedFieldMetadata();
+                SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
+                speedyEntityKey.put(keyField, innerValue);
+            } else {
+                SpeedyValue speedyValue = entity.get(keyField);
+                speedyEntityKey.put(keyField, speedyValue);
+            }
+
         }
         return speedyEntityKey;
     }

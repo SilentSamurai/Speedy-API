@@ -14,6 +14,7 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JooqUtil {
@@ -96,12 +97,17 @@ public class JooqUtil {
         return (Field<T>) DSL.field(columnName, sqlDataType);
     }
 
-    public static Object getValueFromRecord(Record record, FieldMetadata fieldMetadata) {
+    public static <T> Optional<T> getValueFromRecord(Record record, FieldMetadata fieldMetadata) {
         // should never happen
         if (fieldMetadata.getDbColumnName() == null) {
-            return null;
+            return Optional.empty();
         }
-        Field<Object> column = JooqUtil.getColumn(fieldMetadata);
-        return record.getValue(column);
+        Field<T> column = JooqUtil.getColumn(fieldMetadata);
+        try {
+            T value = record.get(column);
+            return Optional.ofNullable(value);
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 }

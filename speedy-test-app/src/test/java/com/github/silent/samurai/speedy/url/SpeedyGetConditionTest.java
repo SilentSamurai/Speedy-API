@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.SpeedyQuery;
+import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -60,7 +60,7 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 //        "(cost < 50)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("cost", $lt(50))
                         ).build()
@@ -82,7 +82,8 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost <= 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest
+                        .query()
                         .$where(
                                 $condition("cost", $lte(75))
                         ).build()
@@ -104,7 +105,8 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost > 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest
+                        .query()
                         .$where(
                                 $condition("cost", $gt(75))
                         ).build()
@@ -126,7 +128,7 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost >= 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("cost", $gte(75))
                         ).build()
@@ -149,7 +151,7 @@ class SpeedyGetConditionTest {
 
         //"(cost != 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("cost", $ne(75))
                         ).build()
@@ -170,7 +172,7 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost = 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("cost", $eq(75))
                         ).build()
@@ -189,7 +191,7 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost < 75 & cost >= 25)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $and(
                                         $condition("cost", $lt(75)),
@@ -214,11 +216,11 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost < 25 | cost > 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $or(
                                         $condition("cost", $lt(25)),
-                                        $condition("cost", SpeedyQuery.$gt(75))
+                                        $condition("cost", $gt(75))
                                 )
                         )
                         .prettyPrint()
@@ -240,15 +242,15 @@ class SpeedyGetConditionTest {
 
         // "(cost > 75 & cost < 25 | cost > 45 & cost < 60 )"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $or(
                                         $and(
-                                                $condition("cost", SpeedyQuery.$gt(75)),
+                                                $condition("cost", $gt(75)),
                                                 $condition("cost", $lt(25))
                                         ),
                                         $and(
-                                                $condition("cost", SpeedyQuery.$gt(45)),
+                                                $condition("cost", $gt(45)),
                                                 $condition("cost", $lt(60))
                                         )
                                 )
@@ -272,7 +274,7 @@ class SpeedyGetConditionTest {
 
         // "(cost <> [ 25, 50, 75])"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("cost", $in(25, 50, 75))
                         ).build()
@@ -296,7 +298,7 @@ class SpeedyGetConditionTest {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost <!> [ 25, 50, 75])"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("cost", $nin(25, 50, 75))
                         ).build()
@@ -319,7 +321,7 @@ class SpeedyGetConditionTest {
 
         // " (category.id = '1') "
         FilteredProductResponse someInventory = productApi.queryProduct(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("category.id", $eq("1"))
                         ).build()
@@ -339,7 +341,7 @@ class SpeedyGetConditionTest {
 
         // "( name = 'Product 1' & category.id = '1')"
         FilteredProductResponse someInventory = productApi.queryProduct(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("name", $eq("Product 1")),
                                 $condition("category.id", $eq("1"))
@@ -362,7 +364,7 @@ class SpeedyGetConditionTest {
 
         // "( purchaseDate < '2023-05-11T18:13:38.626Z' )"
         FilteredProcurementResponse someInventory = procurementApi.queryProcurement(
-                SpeedyQuery.builder()
+                SpeedyRequest.query()
                         .$where(
                                 $condition("purchaseDate", $lt("2023-05-11T18:13:38.626Z"))
                         ).build()

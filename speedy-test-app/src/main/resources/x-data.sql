@@ -158,6 +158,7 @@ CREATE TABLE value_test_table
     local_time      time NULL,
     instant_time    datetime NULL,
     zoned_date_time TIMESTAMP WITH TIME ZONE NULL,
+    boolean_value boolean NULL,
     CONSTRAINT pk_value_test_table PRIMARY KEY (id)
 );
 

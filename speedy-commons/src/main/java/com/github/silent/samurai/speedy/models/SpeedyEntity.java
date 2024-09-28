@@ -4,7 +4,6 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +21,9 @@ public class SpeedyEntity implements SpeedyValue {
     }
 
     public SpeedyValue get(FieldMetadata fieldMetadata) {
+        if (!has(fieldMetadata)) {
+            throw new IllegalArgumentException("Field " + fieldMetadata.getOutputPropertyName() + " does not exist");
+        }
         return fields.get(fieldMetadata.getOutputPropertyName());
     }
 

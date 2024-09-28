@@ -6,14 +6,14 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.models.SpeedyCollection;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 

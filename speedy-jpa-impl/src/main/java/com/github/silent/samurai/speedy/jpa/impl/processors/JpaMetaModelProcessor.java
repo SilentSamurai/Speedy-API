@@ -81,20 +81,5 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         return entityMetadata.field(entityName);
     }
 
-    @Override
-    public QueryProcessor getQueryProcessor() {
-//        return new JpaQueryProcessorImpl(entityManagerFactory.createEntityManager());
-        return null;
-    }
-
-    @Override
-    public boolean closeQueryProcessor(QueryProcessor queryProcessor) {
-//        JpaQueryProcessorImpl jpaQueryProcessor = (JpaQueryProcessorImpl) queryProcessor;
-//        EntityManager entityManager = jpaQueryProcessor.getEntityManager();
-//        if (entityManager != null)
-//            entityManager.close();
-        return true;
-    }
-
 
 }

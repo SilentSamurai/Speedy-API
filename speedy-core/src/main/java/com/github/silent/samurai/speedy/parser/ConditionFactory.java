@@ -9,8 +9,8 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import com.github.silent.samurai.speedy.models.conditions.*;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -2,11 +2,12 @@ package com.github.silent.samurai.speedy.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.ApiClient;
 import com.github.silent.samurai.speedy.api.client.SpeedyApi;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.models.*;
 import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,8 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 
-import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -114,7 +115,7 @@ class ForeignKeyTest {
         LOGGER.info("Updated product name to 'updated-client-product'");
 
         // Query the updated product using the new name
-        SpeedyQuery queryRequest = SpeedyQuery.builder("Product")
+        SpeedyQuery queryRequest = SpeedyRequest.query("Product")
                 .$where(
                         $condition("name", $eq("updated-client-product"))
                 );

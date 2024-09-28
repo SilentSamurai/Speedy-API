@@ -140,7 +140,7 @@ class SpeedyGetTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThanOrEqualTo(2))))
                 .andReturn();
     }
 

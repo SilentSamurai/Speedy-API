@@ -2,11 +2,12 @@ package com.github.silent.samurai.speedy.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.ApiClient;
 import com.github.silent.samurai.speedy.api.client.SpeedyApi;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.models.*;
 import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,8 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.EntityManagerFactory;
 
-import static com.github.silent.samurai.speedy.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -54,8 +55,8 @@ class SpeedyApiTest {
     }
 
     String createTest() throws Exception {
-        SpeedyCreateRequest entity = SpeedyCreateRequest
-                .builder("Category")
+        SpeedyCreateRequest entity = SpeedyRequest
+                .create("Category")
                 .addField("name", "cat-client-1")
                 .build();
 
@@ -73,8 +74,8 @@ class SpeedyApiTest {
 
 
     void updateTest(String id) throws Exception {
-        SpeedyUpdateRequest request = SpeedyUpdateRequest
-                .builder("Category")
+        SpeedyUpdateRequest request = SpeedyRequest
+                .update("Category")
                 .key("id", id)
                 .field("name", "cat-CLIENT-updated-1")
                 .build();
@@ -93,7 +94,7 @@ class SpeedyApiTest {
     }
 
     void deleteTest(String id) throws Exception {
-        SpeedyDeleteRequest request = SpeedyDeleteRequest.builder("Category")
+        SpeedyDeleteRequest request = SpeedyRequest.delete("Category")
                 .key("id", id)
                 .build();
 
@@ -131,7 +132,8 @@ class SpeedyApiTest {
 
     void query(String id, String name) throws Exception {
 
-        SpeedyQuery speedyQuery = SpeedyQuery.builder("Category")
+        SpeedyQuery speedyQuery = SpeedyRequest
+                .query("Category")
                 .$where(
                         $condition("name", $eq(name))
                 );

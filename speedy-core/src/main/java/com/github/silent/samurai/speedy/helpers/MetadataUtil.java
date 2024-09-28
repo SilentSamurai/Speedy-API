@@ -40,7 +40,7 @@ public class MetadataUtil {
             QueryKeyDeserializer deserializer = new QueryKeyDeserializer(speedyQuery);
             return deserializer.deserialize();
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse parameters", e);
+            throw new BadRequestException("failed to parse parameters : " + e.getMessage(), e);
         }
     }
 
@@ -48,7 +48,7 @@ public class MetadataUtil {
         try {
             return SpeedyValueFactory.fromJsonObject(entityMetadata, jsonObject);
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse body", e);
+            throw new BadRequestException("failed to parse body : " + e.getMessage(), e);
         }
     }
 
@@ -56,7 +56,7 @@ public class MetadataUtil {
         try {
             return SpeedyValueFactory.fromPkJson(entityMetadata, keyJson);
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse body", e);
+            throw new BadRequestException("failed to parse body : " + e.getMessage(), e);
         }
     }
 

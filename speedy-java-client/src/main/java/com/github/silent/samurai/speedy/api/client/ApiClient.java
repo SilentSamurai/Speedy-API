@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.api.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.api.client.auth.Authentication;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.logging.Log;
@@ -37,24 +36,9 @@ import java.util.*;
 import java.util.Map.Entry;
 
 @Getter
-@Setter
-public class ApiClient extends JavaTimeFormatter {
+public class ApiClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiClient.class);
-
-    public enum CollectionFormat {
-        CSV(","), TSV("\t"), SSV(" "), PIPES("|"), MULTI(null);
-
-        private final String separator;
-
-        private CollectionFormat(String separator) {
-            this.separator = separator;
-        }
-
-        private String collectionToString(Collection<?> collection) {
-            return StringUtils.collectionToDelimitedString(collection, separator);
-        }
-    }
 
     private boolean debugging = false;
 
@@ -65,9 +49,7 @@ public class ApiClient extends JavaTimeFormatter {
 
     private RestTemplate restTemplate;
 
-    private Map<String, Authentication> authentications;
-
-    private DateFormat dateFormat;
+    private Map<String, String> authentications;
 
     public ApiClient() {
         this.restTemplate = buildRestTemplate();
@@ -80,18 +62,11 @@ public class ApiClient extends JavaTimeFormatter {
     }
 
     protected void init() {
-        // Use RFC3339 format for date and datetime.
-        // See http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14
-        this.dateFormat = new RFC3339DateFormat();
-
-        // Use UTC as the default time zone.
-        this.dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
         // Set default User-Agent.
         setUserAgent("Speedy-Java-SDK");
 
         // Setup authentications (key: authentication name, value: authentication).
-        authentications = new HashMap<String, Authentication>();
+        authentications = new HashMap<String, String>();
         // Prevent the authentications from being modified.
         authentications = Collections.unmodifiableMap(authentications);
     }
@@ -108,12 +83,8 @@ public class ApiClient extends JavaTimeFormatter {
         defaultHeaders.add(name, value);
     }
 
-    public ApiClient addDefaultCookie(String name, String value) {
-        if (defaultCookies.containsKey(name)) {
-            defaultCookies.remove(name);
-        }
-        defaultCookies.add(name, value);
-        return this;
+    public void addAuthorization(String authValue) {
+        addDefaultHeader("Authorization", authValue);
     }
 
     public void setDebugging(boolean debugging) {
@@ -140,139 +111,6 @@ public class ApiClient extends JavaTimeFormatter {
         this.debugging = debugging;
     }
 
-    public ApiClient setDateFormat(DateFormat dateFormat) {
-        this.dateFormat = dateFormat;
-        return this;
-    }
-
-    public Date parseDate(String str) {
-        try {
-            return dateFormat.parse(str);
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String formatDate(Date date) {
-        return dateFormat.format(date);
-    }
-
-    public String parameterToString(Object param) {
-        if (param == null) {
-            return "";
-        } else if (param instanceof Date) {
-            return formatDate((Date) param);
-        } else if (param instanceof OffsetDateTime) {
-            return formatOffsetDateTime((OffsetDateTime) param);
-        } else if (param instanceof Collection) {
-            StringBuilder b = new StringBuilder();
-            for (Object o : (Collection<?>) param) {
-                if (b.length() > 0) {
-                    b.append(",");
-                }
-                b.append(String.valueOf(o));
-            }
-            return b.toString();
-        } else {
-            return String.valueOf(param);
-        }
-    }
-
-    /**
-     * Formats the specified collection path parameter to a string value.
-     *
-     * @param collectionFormat The collection format of the parameter.
-     * @param values           The values of the parameter.
-     * @return String representation of the parameter
-     */
-    public String collectionPathParameterToString(CollectionFormat collectionFormat, Collection<?> values) {
-        // create the value based on the collection format
-        if (CollectionFormat.MULTI.equals(collectionFormat)) {
-            // not valid for path params
-            return parameterToString(values);
-        }
-
-        // collectionFormat is assumed to be "csv" by default
-        if (collectionFormat == null) {
-            collectionFormat = CollectionFormat.CSV;
-        }
-
-        return collectionFormat.collectionToString(values);
-    }
-
-    /**
-     * Converts a parameter to a {@link MultiValueMap} for use in REST requests
-     *
-     * @param collectionFormat The format to convert to
-     * @param name             The name of the parameter
-     * @param value            The parameter's value
-     * @return a Map containing the String value(s) of the input parameter
-     */
-    public MultiValueMap<String, String> parameterToMultiValueMap(CollectionFormat collectionFormat, String name, Object value) {
-        final MultiValueMap<String, String> params = new LinkedMultiValueMap<String, String>();
-
-        if (name == null || name.isEmpty() || value == null) {
-            return params;
-        }
-
-        if (collectionFormat == null) {
-            collectionFormat = CollectionFormat.CSV;
-        }
-
-        if (value instanceof Map) {
-            @SuppressWarnings("unchecked") final Map<String, Object> valuesMap = (Map<String, Object>) value;
-            for (final Entry<String, Object> entry : valuesMap.entrySet()) {
-                params.add(entry.getKey(), parameterToString(entry.getValue()));
-            }
-            return params;
-        }
-
-        Collection<?> valueCollection = null;
-        if (value instanceof Collection) {
-            valueCollection = (Collection<?>) value;
-        } else {
-            params.add(name, parameterToString(value));
-            return params;
-        }
-
-        if (valueCollection.isEmpty()) {
-            return params;
-        }
-
-        if (collectionFormat.equals(CollectionFormat.MULTI)) {
-            for (Object item : valueCollection) {
-                params.add(name, parameterToString(item));
-            }
-            return params;
-        }
-
-        List<String> values = new ArrayList<String>();
-        for (Object o : valueCollection) {
-            values.add(parameterToString(o));
-        }
-        params.add(name, collectionFormat.collectionToString(values));
-
-        return params;
-    }
-
-    /**
-     * Check if the given {@code String} is a JSON MIME.
-     *
-     * @param mediaType the input MediaType
-     * @return boolean true if the MediaType represents JSON, false otherwise
-     */
-    public boolean isJsonMime(String mediaType) {
-        // "* / *" is default to JSON
-        if ("*/*".equals(mediaType)) {
-            return true;
-        }
-
-        try {
-            return isJsonMime(MediaType.parseMediaType(mediaType));
-        } catch (InvalidMediaTypeException e) {
-        }
-        return false;
-    }
 
     /**
      * Check if the given MIME is a JSON MIME.
@@ -289,16 +127,6 @@ public class ApiClient extends JavaTimeFormatter {
     }
 
     /**
-     * Check if the given {@code String} is a Problem JSON MIME (RFC-7807).
-     *
-     * @param mediaType the input MediaType
-     * @return boolean true if the MediaType represents Problem JSON, false otherwise
-     */
-    public boolean isProblemJsonMime(String mediaType) {
-        return "application/problem+json".equalsIgnoreCase(mediaType);
-    }
-
-    /**
      * Select the Accept header's value from the given accepts array:
      * if JSON exists in the given array, use it;
      * otherwise use all of them (joining into a string)
@@ -312,7 +140,7 @@ public class ApiClient extends JavaTimeFormatter {
         }
         for (String accept : accepts) {
             MediaType mediaType = MediaType.parseMediaType(accept);
-            if (isJsonMime(mediaType) && !isProblemJsonMime(accept)) {
+            if (isJsonMime(mediaType)) {
                 return Collections.singletonList(mediaType);
             }
         }
@@ -354,56 +182,6 @@ public class ApiClient extends JavaTimeFormatter {
     }
 
     /**
-     * Expand path template with variables
-     *
-     * @param pathTemplate path template with placeholders
-     * @param variables    variables to replace
-     * @return path with placeholders replaced by variables
-     */
-    public String expandPath(String pathTemplate, Map<String, Object> variables) {
-        return UriComponentsBuilder.fromHttpUrl(pathTemplate).buildAndExpand(variables).toUriString();
-    }
-
-    /**
-     * Include queryParams in uriParams taking into account the paramName
-     *
-     * @param queryParams The query parameters
-     * @param uriParams   The path parameters
-     *                    return templatized query string
-     */
-    public String generateQueryUri(MultiValueMap<String, String> queryParams, Map<String, Object> uriParams) {
-        StringBuilder queryBuilder = new StringBuilder();
-        queryParams.forEach((name, values) -> {
-            try {
-                final String encodedName = URLEncoder.encode(name.toString(), "UTF-8");
-                if (CollectionUtils.isEmpty(values)) {
-                    if (queryBuilder.length() != 0) {
-                        queryBuilder.append('&');
-                    }
-                    queryBuilder.append(encodedName);
-                } else {
-                    int valueItemCounter = 0;
-                    for (Object value : values) {
-                        if (queryBuilder.length() != 0) {
-                            queryBuilder.append('&');
-                        }
-                        queryBuilder.append(encodedName);
-                        if (value != null) {
-                            String templatizedKey = encodedName + valueItemCounter++;
-                            uriParams.put(templatizedKey, value.toString());
-                            queryBuilder.append('=').append("{").append(templatizedKey).append("}");
-                        }
-                    }
-                }
-            } catch (UnsupportedEncodingException e) {
-
-            }
-        });
-        return queryBuilder.toString();
-
-    }
-
-    /**
      * Invoke API by sending HTTP request with the given options.
      *
      * @param <T>          the return type to use
@@ -430,7 +208,7 @@ public class ApiClient extends JavaTimeFormatter {
                                            MediaType contentType, String[] authNames,
                                            ParameterizedTypeReference<T> returnType) throws RestClientException {
 
-        updateParamsForAuth(authNames, queryParams, headerParams, cookieParams);
+//        updateParamsForAuth(authNames, queryParams, headerParams, cookieParams);
 
         Map<String, Object> uriParams = new HashMap<>();
         uriParams.putAll(pathParams);
@@ -557,23 +335,6 @@ public class ApiClient extends JavaTimeFormatter {
         uriBuilderFactory.setEncodingMode(DefaultUriBuilderFactory.EncodingMode.VALUES_ONLY);
         restTemplate.setUriTemplateHandler(uriBuilderFactory);
         return restTemplate;
-    }
-
-    /**
-     * Update query and header parameters based on authentication settings.
-     *
-     * @param authNames    The authentications to apply
-     * @param queryParams  The query parameters
-     * @param headerParams The header parameters
-     */
-    protected void updateParamsForAuth(String[] authNames, MultiValueMap<String, String> queryParams, HttpHeaders headerParams, MultiValueMap<String, String> cookieParams) {
-        for (String authName : authNames) {
-            Authentication auth = authentications.get(authName);
-            if (auth == null) {
-                throw new RestClientException("Authentication undefined: " + authName);
-            }
-            auth.applyToParams(queryParams, headerParams, cookieParams);
-        }
     }
 
     private class ApiClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
