@@ -23,7 +23,6 @@ import com.github.silent.samurai.speedy.request.PostDataHandler;
 import com.github.silent.samurai.speedy.request.UpdateDataHandler;
 import com.github.silent.samurai.speedy.serializers.JSONSerializer;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import com.github.silent.samurai.speedy.utils.CommonUtils;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.speedy.validation.MetaModelVerifier;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
@@ -131,7 +130,7 @@ public class SpeedyFactory {
 
     public void processRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        String requestURI = CommonUtils.getRequestURI(request);
+        String requestURI = CommonUtil.getRequestURI(request);
         String method = request.getMethod();
 
         try {

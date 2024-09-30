@@ -5,14 +5,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -124,5 +129,13 @@ public class CommonUtil {
         }
         // If the class is not a parameterized type, return an empty array
         return typeOptional;
+    }
+
+    public static String getRequestURI(HttpServletRequest request) throws UnsupportedEncodingException {
+        String requestURI = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
+        if (request.getQueryString() != null) {
+            requestURI += "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8);
+        }
+        return requestURI.replaceAll(SpeedyConstant.URI, "");
     }
 }

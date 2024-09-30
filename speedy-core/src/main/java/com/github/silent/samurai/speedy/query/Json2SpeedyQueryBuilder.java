@@ -165,12 +165,10 @@ public class Json2SpeedyQueryBuilder {
                 for (Iterator<String> it2 = jsonNode.fieldNames(); it2.hasNext(); ) {
                     String fieldName = it2.next();
                     JsonNode fieldNode = jsonNode.get(fieldName);
-                    if (fieldNode.isTextual()) {
-                        if (fieldNode.asText().equalsIgnoreCase("ASC")) {
-                            speedyQuery.orderByAsc(fieldName);
-                        } else if (fieldNode.asText().equalsIgnoreCase("DESC")) {
-                            speedyQuery.orderByDesc(fieldName);
-                        }
+                    if (fieldNode.isTextual() && fieldNode.asText().equalsIgnoreCase("ASC")) {
+                        speedyQuery.orderByAsc(fieldName);
+                    } else if (fieldNode.isTextual() && fieldNode.asText().equalsIgnoreCase("DESC")) {
+                        speedyQuery.orderByDesc(fieldName);
                     } else {
                         throw new BadRequestException("order by should be fieldname: asc|desc");
                     }
