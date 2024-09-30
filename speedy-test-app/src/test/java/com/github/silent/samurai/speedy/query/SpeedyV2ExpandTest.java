@@ -54,7 +54,7 @@ public class SpeedyV2ExpandTest {
     void testQuery1() throws Exception {
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyRequest
                                 .query("Product")
@@ -111,7 +111,7 @@ public class SpeedyV2ExpandTest {
                 .put("$index", 1)
                 .put("$size", 2);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON);
 

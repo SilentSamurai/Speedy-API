@@ -45,14 +45,14 @@ public class SpeedyApi {
 
     public SpeedyResponse createMany(SpeedyCreateRequest speedyCreateRequest) {
         return invokeAPI(
-                this.baseUrl + speedyCreateRequest.getEntity(),
+                this.baseUrl + speedyCreateRequest.getEntity() + "/$create",
                 HttpMethod.POST,
                 speedyCreateRequest.getBody()
         );
     }
 
     public SpeedyResponse update(SpeedyUpdateRequest speedyUpdateRequest) {
-        String path = this.baseUrl + speedyUpdateRequest.getEntity() + formatPrimaryKey(speedyUpdateRequest.getPk());
+        String path = this.baseUrl + speedyUpdateRequest.getEntity() + "/$update";
 
         return invokeAPI(
                 path,
@@ -62,7 +62,7 @@ public class SpeedyApi {
     }
 
     public SpeedyResponse delete(SpeedyDeleteRequest request) {
-        String path = this.baseUrl + request.getEntity();
+        String path = this.baseUrl + request.getEntity() + "/$delete";
 
         return invokeAPI(
                 path,

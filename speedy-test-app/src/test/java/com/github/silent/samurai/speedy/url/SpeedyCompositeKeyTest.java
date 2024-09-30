@@ -114,7 +114,10 @@ class SpeedyCompositeKeyTest {
 
         UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest();
         updateOrderRequest.setDiscount(100.0);
-        UpdateOrderResponse response = apiInstance.updateOrder(orderKey.getProductId(), orderKey.getSupplierId(), updateOrderRequest);
+        updateOrderRequest.setProductId(orderKey.getProductId());
+        updateOrderRequest.setSupplierId(orderKey.getSupplierId());
+
+        UpdateOrderResponse response = apiInstance.updateOrder(updateOrderRequest);
 
         Order payload = response.getPayload();
         Assertions.assertNotNull(payload);

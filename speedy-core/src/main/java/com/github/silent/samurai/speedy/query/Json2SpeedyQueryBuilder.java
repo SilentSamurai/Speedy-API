@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
@@ -35,6 +36,13 @@ public class Json2SpeedyQueryBuilder {
         this.metaModelProcessor = metaModelProcessor;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(from));
+        this.conditionFactory = speedyQuery.getConditionFactory();
+    }
+
+    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModelProcessor = metaModelProcessor;
+        this.rootNode = rootNode;
+        this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 

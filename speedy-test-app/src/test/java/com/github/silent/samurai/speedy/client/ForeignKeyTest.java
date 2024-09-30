@@ -101,7 +101,7 @@ class ForeignKeyTest {
         LOGGER.info("Fetched product details match with the created product");
 
         // Update Product name
-        SpeedyUpdateRequest updateRequest = SpeedyUpdateRequest.builder("Product")
+        SpeedyUpdateRequest updateRequest = SpeedyRequest.update("Product")
                 .key("id", productId)
                 .field("name", "updated-client-product")
                 .build();

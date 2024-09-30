@@ -61,17 +61,17 @@ public class ConditionFactory {
     }
 
     public QueryField createNormalField(String field) throws SpeedyHttpException {
-        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
         return new NormalField(fieldMetadata);
     }
 
     public QueryField createAssociatedField(String field, String associatedField) throws SpeedyHttpException {
-        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
         if (!fieldMetadata.isAssociation()) {
             throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
         }
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-        FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
+        FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
         return new AssociatedField(fieldMetadata, associatedFieldMetadata);
     }
 
@@ -81,20 +81,20 @@ public class ConditionFactory {
 
     public BinaryCondition createBinaryCondition(String field, String operatorSymbol, ValueNode value) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
-        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
         SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(fieldMetadata, value);
         QueryField normalField = new NormalField(fieldMetadata);
         return createCondition(normalField, operator, speedyValue);
     }
 
     public BinaryCondition createAssociatedCondition(String field, String associatedField, String operatorSymbol, ValueNode value) throws SpeedyHttpException {
-        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         if (!fieldMetadata.isAssociation()) {
             throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
         }
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-        FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
+        FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
         QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
         SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(associatedFieldMetadata, value);
         return createCondition(queryField, operator, speedyValue);
@@ -102,7 +102,7 @@ public class ConditionFactory {
 
     public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, String value) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
-        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
         SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(fieldMetadata, value);
         QueryField normalField = new NormalField(fieldMetadata);
         return createCondition(normalField, operator, speedyValue);
@@ -110,7 +110,7 @@ public class ConditionFactory {
 
     public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, List<String> values) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
-        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
         List<SpeedyValue> instances = new LinkedList<>();
         for (String value : values) {
             SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(fieldMetadata, value);
@@ -122,13 +122,13 @@ public class ConditionFactory {
     }
 
     public BinaryCondition createAssociatedConditionQuotedString(String field, String associatedField, String operatorSymbol, String value) throws SpeedyHttpException {
-        FieldMetadata fieldMetadata = this.entityMetadata.field(field);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         if (!fieldMetadata.isAssociation()) {
             throw new BadRequestException("");
         }
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-        FieldMetadata associatedFieldMetadata = associationMetadata.field(associatedField);
+        FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
         QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
         SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(associatedFieldMetadata, value);
         return createCondition(queryField, operator, speedyValue);

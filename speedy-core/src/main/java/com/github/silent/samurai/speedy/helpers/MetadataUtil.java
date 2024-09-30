@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.helpers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.deserializer.QueryKeyDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -35,7 +36,7 @@ public class MetadataUtil {
         return false;
     }
 
-    public static SpeedyEntityKey createIdentifierFromQuery(SpeedyQuery speedyQuery) throws Exception {
+    public static SpeedyEntityKey createIdentifierFromQuery(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
             QueryKeyDeserializer deserializer = new QueryKeyDeserializer(speedyQuery);
             return deserializer.deserialize();
@@ -44,7 +45,7 @@ public class MetadataUtil {
         }
     }
 
-    public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject) throws Exception {
+    public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject) throws SpeedyHttpException {
         try {
             return SpeedyValueFactory.fromJsonObject(entityMetadata, jsonObject);
         } catch (Exception e) {
@@ -52,7 +53,7 @@ public class MetadataUtil {
         }
     }
 
-    public static SpeedyEntityKey createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson) throws Exception {
+    public static SpeedyEntityKey createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson) throws SpeedyHttpException {
         try {
             return SpeedyValueFactory.fromPkJson(entityMetadata, keyJson);
         } catch (Exception e) {

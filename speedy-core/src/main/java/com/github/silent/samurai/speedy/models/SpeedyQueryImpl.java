@@ -39,14 +39,14 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     }
 
     public OrderBy orderByDesc(String field) throws NotFoundException {
-        FieldMetadata fieldMetadata = this.from.field(field);
+        FieldMetadata fieldMetadata = this.from.getField(field);
         OrderByImpl desc = OrderByImpl.desc(fieldMetadata);
         orderByList.add(desc);
         return desc;
     }
 
     public OrderBy orderByAsc(String field) throws NotFoundException {
-        FieldMetadata fieldMetadata = this.from.field(field);
+        FieldMetadata fieldMetadata = this.from.getField(field);
         OrderByImpl asc = OrderByImpl.asc(fieldMetadata);
         orderByList.add(asc);
         return asc;

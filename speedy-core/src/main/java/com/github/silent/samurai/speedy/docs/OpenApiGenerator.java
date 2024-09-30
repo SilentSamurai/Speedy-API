@@ -27,10 +27,13 @@ public class OpenApiGenerator {
             PathItem basePathItem = new PathItem();
             PathItem identifierPathItem = new PathItem();
             PathItem queryPathItem = new PathItem();
+            PathItem createPathItem = new PathItem();
+            PathItem updatePathItem = new PathItem();
+            PathItem deletePathItem = new PathItem();
 
-            postOperation(entityMetadata, basePathItem);
-            putOperation(entityMetadata, identifierPathItem);
-            deleteOperation(entityMetadata, basePathItem);
+            postOperation(entityMetadata, createPathItem);
+            putOperation(entityMetadata, updatePathItem);
+            deleteOperation(entityMetadata, deletePathItem);
             getWithPrimaryFields(entityMetadata, identifierPathItem);
 //            getOperation(entityMetadata, queryPathItem);
             getWithFieldQuery(entityMetadata, queryPathItem);
@@ -43,6 +46,15 @@ public class OpenApiGenerator {
 
             String querypath = String.format("%s/%s/$query", SpeedyConstant.URI, entityMetadata.getName());
             openApi.path(querypath, queryPathItem);
+
+            String createPath = String.format("%s/%s/$create", SpeedyConstant.URI, entityMetadata.getName());
+            openApi.path(createPath, createPathItem);
+
+            String updatePath = String.format("%s/%s/$update", SpeedyConstant.URI, entityMetadata.getName());
+            openApi.path(updatePath, updatePathItem);
+
+            String deletePath = String.format("%s/%s/$delete", SpeedyConstant.URI, entityMetadata.getName());
+            openApi.path(deletePath, deletePathItem);
 
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
         }
@@ -83,7 +95,7 @@ public class OpenApiGenerator {
 
         Schema<String> updateSchema = OASGenerator.createEntitySchema(
                 entityMetadata,
-                fm -> !(fm instanceof KeyFieldMetadata) && fm.isUpdatable(),
+                fm -> fm.isUpdatable() || fm instanceof KeyFieldMetadata,
                 OASGenerator.ENTITY_KEY,
                 true
         );
@@ -137,7 +149,7 @@ public class OpenApiGenerator {
         operation.summary("Update a(n) " + entityMetadata.getName());
         operation.tags(Lists.newArrayList(entityMetadata.getName()));
 
-        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
+//        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
 
         operation.requestBody(OASGenerator.getJsonBody(
                 OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))

@@ -1,10 +1,13 @@
 package com.github.silent.samurai.speedy.url;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.utils.CommonUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -49,8 +52,11 @@ public class SpeedyPutTest {
 
         Assertions.assertNotNull(category.getId());
 
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstant.URI + "/Category(id='" + category.getId() + "')")
-                .content("{'name':'generated-category-update-modified'}")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.patch(SpeedyConstant.URI + "/Category/$update")
+                .content(CommonUtil.json().createObjectNode()
+                        .put("id", category.getId())
+                        .put("name", "generated-category-update-modified")
+                        .toPrettyString())
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(updateRequest)

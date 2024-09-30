@@ -156,7 +156,7 @@ class SpeedyEntityTest {
                 .altPhoneNo("8594093448")
                 .phoneNo("8594094438");
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier")
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/$create")
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -370,9 +370,10 @@ class SpeedyEntityTest {
 
         UpdateCurrencyRequest updateCurrencyRequest = new UpdateCurrencyRequest();
         updateCurrencyRequest.country("Earth2");
+        updateCurrencyRequest.setId(currencyKey.getId());
 
         UpdateCurrencyResponse updateCurrency200Response = currencyApi
-                .updateCurrency(currencyKey.getId(), updateCurrencyRequest);
+                .updateCurrency(updateCurrencyRequest);
 
         Assertions.assertNotNull(updateCurrency200Response);
         Assertions.assertNotNull(updateCurrency200Response.getPayload());

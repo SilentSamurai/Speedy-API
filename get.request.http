@@ -1,4 +1,4 @@
-GET http://localhost:8080/speedy/v1/Procurement( supplier.id = '1' )
+POST http://localhost:8080/speedy/v1/Procurement/$query
 Accept: application/json
 Content-Type: application/json
 

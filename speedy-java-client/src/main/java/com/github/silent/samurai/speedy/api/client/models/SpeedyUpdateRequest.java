@@ -13,7 +13,6 @@ public class SpeedyUpdateRequest {
 
     private JsonNode body;
     private String entity;
-    private ObjectNode pk;
 
     public SpeedyUpdateRequest() {
     }

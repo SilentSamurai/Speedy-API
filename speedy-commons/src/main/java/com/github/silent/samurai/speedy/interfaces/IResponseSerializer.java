@@ -11,7 +11,7 @@ public interface IResponseSerializer {
 
     String getContentType();
 
-    ResponseReturningRequestContext getContext();
+    IResponseContext getContext();
 
     void write(List<SpeedyEntity> speedyEntities) throws Exception;
 

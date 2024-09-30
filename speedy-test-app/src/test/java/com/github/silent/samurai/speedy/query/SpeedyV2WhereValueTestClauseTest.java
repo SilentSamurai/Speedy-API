@@ -64,7 +64,7 @@ public class SpeedyV2WhereValueTestClauseTest {
                 .prettyPrint()
                 .build();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/ValueTestEntity/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -107,7 +107,7 @@ public class SpeedyV2WhereValueTestClauseTest {
                 .putObject("localTime")
                 .put("$lt", "11:00:00");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/ValueTestEntity/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -150,7 +150,7 @@ public class SpeedyV2WhereValueTestClauseTest {
                 .putObject("localDateTime")
                 .put("$gte", "2030-11-23T11:00:00");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/ValueTestEntity/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON);
 

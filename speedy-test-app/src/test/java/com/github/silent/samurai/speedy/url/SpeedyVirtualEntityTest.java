@@ -85,7 +85,9 @@ class SpeedyVirtualEntityTest {
 
         UpdateVirtualEntityRequest entityRequest = new UpdateVirtualEntityRequest();
         entityRequest.description("Updated Description");
-        UpdateVirtualEntityResponse response = virtualEntityApi.updateVirtualEntity(virtualEntityKey.getId(), entityRequest);
+        entityRequest.setId(virtualEntityKey.getId());
+
+        UpdateVirtualEntityResponse response = virtualEntityApi.updateVirtualEntity(entityRequest);
         Assertions.assertNotNull(response.getPayload());
         VirtualEntity payload = response.getPayload();
 

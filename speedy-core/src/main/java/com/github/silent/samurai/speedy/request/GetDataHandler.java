@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.request.get;
+package com.github.silent.samurai.speedy.request;
 
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
@@ -9,9 +9,9 @@ import java.util.Optional;
 
 public class GetDataHandler {
 
-    private final GetRequestContext context;
+    private final IRequestContextImpl context;
 
-    public GetDataHandler(GetRequestContext context) {
+    public GetDataHandler(IRequestContextImpl context) {
         this.context = context;
     }
 
@@ -21,8 +21,8 @@ public class GetDataHandler {
 //        return Optional.ofNullable(result);
 //    }
 
-    public Optional<List<SpeedyEntity>> processMany(QueryProcessor queryProcessor) throws Exception {
-        SpeedyQuery speedyQuery = context.getSpeedyQuery();
+    public Optional<List<SpeedyEntity>> processMany(SpeedyQuery speedyQuery) throws Exception {
+        QueryProcessor queryProcessor = context.getQueryProcessor();
         List<SpeedyEntity> result = queryProcessor.executeMany(speedyQuery);
         return Optional.ofNullable(result);
     }

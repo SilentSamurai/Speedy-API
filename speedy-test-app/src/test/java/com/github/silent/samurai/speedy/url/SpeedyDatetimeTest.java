@@ -81,7 +81,7 @@ class SpeedyDatetimeTest {
                 .altPhoneNo("9013019322")
                 .phoneNo("9013019322");
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier")
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/$create")
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
                 .contentType(MediaType.APPLICATION_JSON);
 

@@ -54,7 +54,7 @@ public class SpeedyDeleteTest {
         long count = categoryRepository.count();
 
 
-        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
+        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$delete")
                 .content("[{'id':'" + category.getId() + "'}]")
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -67,7 +67,7 @@ public class SpeedyDeleteTest {
 
     @Test
     void incompleteKey() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$update")
                 .content("[{'name':'1'}]")
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -77,7 +77,7 @@ public class SpeedyDeleteTest {
 
     @Test
     void emptyContent() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$delete")
                 .contentType(MediaType.APPLICATION_JSON);
 
         mvc.perform(updateRequest)

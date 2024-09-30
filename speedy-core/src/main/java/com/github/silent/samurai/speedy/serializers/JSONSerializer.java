@@ -13,20 +13,23 @@ import org.springframework.http.MediaType;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class JSONSerializer implements IResponseSerializer {
 
-    private final ResponseReturningRequestContext context;
+    private final IResponseContext context;
     private final Predicate<FieldMetadata> fieldPredicate;
+    private final Set<String> expands = new HashSet<>();
 
-    public JSONSerializer(ResponseReturningRequestContext context) {
+    public JSONSerializer(IResponseContext context) {
         this.context = context;
         this.fieldPredicate = fieldMetadata -> true;
     }
 
-    public JSONSerializer(ResponseReturningRequestContext context, Predicate<FieldMetadata> fieldPredicate) {
+    public JSONSerializer(IResponseContext context, Predicate<FieldMetadata> fieldPredicate) {
         this.context = context;
         this.fieldPredicate = fieldPredicate;
     }
@@ -37,14 +40,14 @@ public class JSONSerializer implements IResponseSerializer {
     }
 
     @Override
-    public ResponseReturningRequestContext getContext() {
+    public IResponseContext getContext() {
         return context;
     }
 
     public void writeResponse(SinglePayload requestedPayload) throws Exception {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
                 context.getMetaModelProcessor(), fieldPredicate);
-        selectiveSpeedy2Json.addExpand(context.getQuery().getExpand());
+        selectiveSpeedy2Json.addExpand(expands);
 
         SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
         JsonNode jsonElement = selectiveSpeedy2Json.fromSpeedyEntity(payload, context.getEntityMetadata());
@@ -63,7 +66,7 @@ public class JSONSerializer implements IResponseSerializer {
 
     public void writeResponse(MultiPayload multiPayload) throws Exception {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(context.getMetaModelProcessor(), fieldPredicate);
-        selectiveSpeedy2Json.addExpand(context.getQuery().getExpand());
+        selectiveSpeedy2Json.addExpand(context.getExpand());
         List<? extends SpeedyValue> resultList = multiPayload.getPayload();
         JsonNode jsonElement = selectiveSpeedy2Json.formCollection(resultList, context.getEntityMetadata());
         commonCode(jsonElement, multiPayload.getPageIndex(), multiPayload.getPageSize(), multiPayload.getTotalPageCount());
@@ -72,7 +75,7 @@ public class JSONSerializer implements IResponseSerializer {
     @Override
     public void write(List<SpeedyEntity> speedyEntities) throws Exception {
         MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(speedyEntities);
-        int pageNumber = getContext().getQuery().getPageInfo().getPageNo();
+        int pageNumber = getContext().getPageNo();
         responseWrapper.setPageIndex(pageNumber);
         HttpServletResponse response = getContext().getResponse();
         response.setContentType(this.getContentType());

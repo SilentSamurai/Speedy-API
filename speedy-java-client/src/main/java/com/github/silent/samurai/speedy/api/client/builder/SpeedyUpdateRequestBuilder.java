@@ -9,7 +9,6 @@ import lombok.Getter;
 public class SpeedyUpdateRequestBuilder {
 
     ObjectNode entity = CommonUtil.json().createObjectNode();
-    ObjectNode pk = CommonUtil.json().createObjectNode();
 
     @Getter
     private final String entityName;
@@ -19,7 +18,7 @@ public class SpeedyUpdateRequestBuilder {
     }
 
     public SpeedyUpdateRequestBuilder key(String field, Object value) {
-        pk.set(field, CommonUtil.json().convertValue(value, JsonNode.class));
+        entity.set(field, CommonUtil.json().convertValue(value, JsonNode.class));
         return this;
     }
 
@@ -32,7 +31,6 @@ public class SpeedyUpdateRequestBuilder {
         SpeedyUpdateRequest request = new SpeedyUpdateRequest();
         request.setEntity(entityName);
         request.setBody(entity);
-        request.setPk(pk);
         return request;
     }
 
