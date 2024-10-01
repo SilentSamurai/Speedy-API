@@ -4,6 +4,7 @@ public interface ISpeedyRegistry {
 
     ISpeedyRegistry registerEventHandler(ISpeedyEventHandler eventHandler);
 
-    ISpeedyRegistry registerVirtualEntityHandler(SpeedyVirtualEntityHandler virtualEntityHandler);
+    ISpeedyRegistry registerVirtualEntityHandler(SpeedyVirtualEntityHandler virtualEntityHandler, Class<?> entityClass);
 
+    ISpeedyRegistry registerValidator(ISpeedyCustomValidation validator);
 }

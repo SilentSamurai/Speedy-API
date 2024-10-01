@@ -11,6 +11,13 @@ public interface EntityMetadata {
 
     boolean has(String fieldName);
 
+    default FieldMetadata getField(String fieldName) throws NotFoundException {
+        if (has(fieldName)) {
+            return field(fieldName);
+        }
+        throw new NotFoundException(String.format("Field '%s' not found in entity %s", fieldName, getName()));
+    }
+
     FieldMetadata field(String fieldName) throws NotFoundException;
 
     Set<FieldMetadata> getAllFields();
@@ -19,17 +26,9 @@ public interface EntityMetadata {
 
     boolean hasCompositeKey();
 
-    Class<?> getEntityClass();
-
-    Class<?> getKeyClass();
-
     Set<KeyFieldMetadata> getKeyFields();
 
     Set<String> getKeyFieldNames();
-
-    Object createNewEntityInstance() throws Exception;
-
-    Object createNewKeyInstance() throws Exception;
 
     Set<FieldMetadata> getAssociatedFields();
 
@@ -38,4 +37,6 @@ public interface EntityMetadata {
                 .filter(fld -> fld.getAssociationMetadata() == secondaryResource)
                 .findAny();
     }
+
+    String getDbTableName();
 }

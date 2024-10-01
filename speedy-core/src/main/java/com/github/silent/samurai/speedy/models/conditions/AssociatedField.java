@@ -1,29 +1,24 @@
 package com.github.silent.samurai.speedy.models.conditions;
 
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import lombok.Getter;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Root;
-
 @Getter
-public class AssociatedField implements DbField {
+public class AssociatedField implements QueryField {
 
     private final FieldMetadata fieldMetadata;
-    private final FieldMetadata parentFieldMetadata;
+    private final FieldMetadata associatedFieldMetadata;
+    private final boolean associated;
 
-    public AssociatedField(FieldMetadata parentField, FieldMetadata fieldMetadata) {
+    public AssociatedField(FieldMetadata fieldMetadata, FieldMetadata associatedFieldMetadata) {
         this.fieldMetadata = fieldMetadata;
-        this.parentFieldMetadata = parentField;
+        this.associatedFieldMetadata = associatedFieldMetadata;
+        this.associated = true;
     }
 
     @Override
-    public <T> Path<T> getPath(CriteriaBuilder criteriaBuilder,
-                               Root<?> tableRoot) throws SpeedyHttpException {
-        return tableRoot.get(parentFieldMetadata.getClassFieldName())
-                .get(fieldMetadata.getClassFieldName());
+    public FieldMetadata getMetadataForParsing() {
+        return getAssociatedFieldMetadata();
     }
-
 }

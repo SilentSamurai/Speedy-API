@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -29,13 +30,13 @@ public class Procurement extends AbstractBaseEntity {
     private Instant purchaseDate;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "created_by")
     private String createdBy;
 
     @Column(name = "modified_at")
-    private Instant modifiedAt;
+    private LocalDateTime modifiedAt;
 
     @Column(name = "modified_by")
     private String modifiedBy;

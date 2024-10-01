@@ -1,0 +1,47 @@
+{
+    "$from": "Resource",
+    "$where": {
+        "id": "abcd-efgh",
+        "cost": {
+            "$eq": "0",
+            "$ne": "0",
+            "$lt": "0",
+            "$gt": "0",
+            "$in": [
+                0,
+                2,
+                1
+            ],
+            "$nin": [
+                0,
+                1
+            ]
+        },
+        "$and": [
+            {
+                "id": "1"
+            },
+            {
+                "desc": "desc1"
+            }
+        ],
+        "$or": [
+            {
+                "id": "1"
+            },
+            {
+                "desc": "desc1"
+            }
+        ]
+    },
+    "$orderBy": {
+        "id": "ASC"
+    },
+    "$expand": [
+        "relation"
+    ],
+    "$page": {
+        "$index": 0,
+        "$size": 100
+    }
+}

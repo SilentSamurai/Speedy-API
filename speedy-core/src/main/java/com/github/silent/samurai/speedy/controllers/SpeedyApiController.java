@@ -12,10 +12,7 @@ import io.swagger.v3.oas.annotations.Hidden;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -33,15 +30,8 @@ public class SpeedyApiController {
     SpeedyFactory speedyFactory;
 
     @Hidden
-    @GetMapping(value = "/$metadata")
+    @GetMapping(value = "/$metadata", produces = "application/json")
     public String metadata() throws JsonProcessingException {
-        MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
-        JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);
-        return CommonUtil.json().writeValueAsString(jsonElement);
-    }
-
-    @PostMapping(value = "/$query")
-    public String query() throws JsonProcessingException {
         MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
         JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);
         return CommonUtil.json().writeValueAsString(jsonElement);
@@ -50,6 +40,6 @@ public class SpeedyApiController {
     @Hidden
     @RequestMapping(value = {"*", "*/*"})
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, InvocationTargetException, IllegalAccessException {
-        speedyFactory.requestResource(request, response);
+        speedyFactory.processRequest(request, response);
     }
 }

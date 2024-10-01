@@ -39,7 +39,7 @@ public class StaticEntityMetadata implements EntityMetadata {
 
     @Override
     public String getName() {
-        return entityClass.getName();
+        return entityClass.getSimpleName();
     }
 
     @Override
@@ -70,23 +70,13 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public Set<String> getAllFieldNames() {
         return getAllFields().stream()
-                .map(FieldMetadata::getClassFieldName)
+                .map(FieldMetadata::getOutputPropertyName)
                 .collect(Collectors.toSet());
     }
 
     @Override
     public boolean hasCompositeKey() {
         return entityClass.getAnnotation(IdClass.class) != null;
-    }
-
-    @Override
-    public Class<?> getEntityClass() {
-        return entityClass;
-    }
-
-    @Override
-    public Class<?> getKeyClass() {
-        return keyClass;
     }
 
     @Override
@@ -107,16 +97,16 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public Set<String> getKeyFieldNames() {
         return getKeyFields().stream()
-                .map(FieldMetadata::getClassFieldName)
+                .map(FieldMetadata::getOutputPropertyName)
                 .collect(Collectors.toSet());
     }
 
-    @Override
+    //    @Override
     public Object createNewEntityInstance() throws Exception {
         return entityClass.getConstructor().newInstance();
     }
 
-    @Override
+    //    @Override
     public Object createNewKeyInstance() throws Exception {
         return keyClass.getConstructor().newInstance();
     }
@@ -129,5 +119,10 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {
         return Optional.empty();
+    }
+
+    @Override
+    public String getDbTableName() {
+        return entityClass.getSimpleName();
     }
 }

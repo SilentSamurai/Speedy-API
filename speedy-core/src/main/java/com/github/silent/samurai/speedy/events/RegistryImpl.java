@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.events;
 
+import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
@@ -13,7 +14,9 @@ public class RegistryImpl implements ISpeedyRegistry {
 
     private final List<ISpeedyEventHandler> eventHandlers = new LinkedList<>();
 
-    private final List<SpeedyVirtualEntityHandler> virtualEntityHandlers = new LinkedList<>();
+    private final List<VEHHoldr> virtualEntityHandlers = new LinkedList<>();
+
+    private final List<ISpeedyCustomValidation> validators = new LinkedList<>();
 
     @Override
     public ISpeedyRegistry registerEventHandler(ISpeedyEventHandler eventHandler) {
@@ -22,9 +25,26 @@ public class RegistryImpl implements ISpeedyRegistry {
     }
 
     @Override
-    public ISpeedyRegistry registerVirtualEntityHandler(SpeedyVirtualEntityHandler virtualEntityHandler) {
-        virtualEntityHandlers.add(virtualEntityHandler);
+    public ISpeedyRegistry registerVirtualEntityHandler(SpeedyVirtualEntityHandler virtualEntityHandler, Class<?> entityClass) {
+        virtualEntityHandlers.add(new VEHHoldr(virtualEntityHandler, entityClass));
         return this;
+    }
+
+    @Override
+    public ISpeedyRegistry registerValidator(ISpeedyCustomValidation validator) {
+        validators.add(validator);
+        return this;
+    }
+
+    @Getter
+    static class VEHHoldr {
+        SpeedyVirtualEntityHandler handler;
+        Class<?> entityClass;
+
+        public VEHHoldr(SpeedyVirtualEntityHandler handler, Class<?> entityClass) {
+            this.handler = handler;
+            this.entityClass = entityClass;
+        }
     }
 
 }

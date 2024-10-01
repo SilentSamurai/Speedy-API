@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Index;
 import javax.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter

@@ -1,35 +1,21 @@
 package com.github.silent.samurai.speedy.models.conditions;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.models.Operator;
-import lombok.Data;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
+import lombok.Getter;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.List;
+@Getter
+public class NotInCondition implements BinaryCondition {
 
-@Data
-public class NotInCondition implements BinaryMVCondition {
+    private final QueryField field;
+    private final ConditionOperator operator = ConditionOperator.NOT_IN;
+    private final SpeedyValue speedyValue;
 
-    private DbField field;
-    private Operator operator = Operator.NOT_IN;
-    private List<Object> instances;
 
-    public NotInCondition(DbField field, List<Object> instances) {
+    public NotInCondition(QueryField field, SpeedyValue speedyValue) {
         this.field = field;
-        this.instances = instances;
-    }
-
-    @Override
-    public void updateFromJson(JsonParser jsonParser) {
-    }
-
-    @Override
-    public Predicate getPredicate(CriteriaBuilder criteriaBuilder, Root<?> tableRoot, EntityMetadata entityMetadata) throws Exception {
-        Path<? extends Comparable<?>> path = field.getPath(criteriaBuilder, tableRoot);
-        return criteriaBuilder.not(path.in(instances));
+        this.speedyValue = speedyValue;
     }
 }

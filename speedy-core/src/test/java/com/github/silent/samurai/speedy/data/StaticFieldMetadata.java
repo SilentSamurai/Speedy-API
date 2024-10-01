@@ -1,12 +1,17 @@
 package com.github.silent.samurai.speedy.data;
 
 import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Data;
 import lombok.SneakyThrows;
 
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.lang.reflect.Field;
 
 @Data
@@ -21,15 +26,20 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return fieldMetadata;
     }
 
-    @SneakyThrows
     @Override
-    public Object getEntityFieldValue(Object entity) {
-        return field.get(entity);
+    public ValueType getValueType() {
+        return ValueTypeUtil.fromClass(field.getType());
     }
+
+//    @SneakyThrows
+//    @Override
+//    public Object getEntityFieldValue(Object entity) {
+//        return field.get(entity);
+//    }
 
     @Override
     public boolean isAssociation() {
-        return field.getType().isAssignableFrom(AssociationEntity.class);
+        return field.getType().isAssignableFrom(ProductItem.class);
     }
 
     @Override
@@ -72,10 +82,10 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return true;
     }
 
-    @Override
-    public String getClassFieldName() {
-        return field.getName();
-    }
+//    @Override
+//    public String getClassFieldName() {
+//        return field.getName();
+//    }
 
     @Override
     public String getDbColumnName() {
@@ -92,18 +102,23 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return field.getAnnotation(Id.class) != null;
     }
 
-    @SneakyThrows
     @Override
-    public boolean setIdFieldWithValue(Object idInstance, Object value) {
-        field.set(idInstance, value);
-        return false;
+    public boolean shouldGenerateKey() {
+        return true;
     }
 
-    @SneakyThrows
-    @Override
-    public Object getIdFieldValue(Object idInstance) {
-        return field.get(idInstance);
-    }
+//    @SneakyThrows
+//    @Override
+//    public boolean setIdFieldWithValue(Object idInstance, Object value) {
+//        field.set(idInstance, value);
+//        return false;
+//    }
+
+//    @SneakyThrows
+//    @Override
+//    public Object getIdFieldValue(Object idInstance) {
+//        return field.get(idInstance);
+//    }
 
     @Override
     public IgnoreType getIgnoreProperty() {
@@ -117,18 +132,33 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 
     @Override
     public EntityMetadata getEntityMetadata() {
-        return null;
+        return StaticEntityMetadata.createEntityMetadata(field.getDeclaringClass());
     }
 
     @Override
     public EntityMetadata getAssociationMetadata() {
-        return StaticEntityMetadata.createEntityMetadata(AssociationEntity.class);
+        if (field.getAnnotation(OneToMany.class) != null) {
+            return StaticEntityMetadata.createEntityMetadata(field.getType());
+        }
+        if (field.getAnnotation(OneToOne.class) != null) {
+            return StaticEntityMetadata.createEntityMetadata(field.getType());
+        }
+        return null;
     }
 
-    @SneakyThrows
     @Override
-    public boolean setEntityFieldWithValue(Object entity, Object value) {
-        field.set(entity, value);
-        return false;
+    public FieldMetadata getAssociatedFieldMetadata() {
+        EntityMetadata associationMetadata = getAssociationMetadata();
+        return associationMetadata.getAllFields()
+                .stream()
+                .filter(fm -> fm.getOutputPropertyName().equals("id"))
+                .findAny().orElse(null);
     }
+
+//    @SneakyThrows
+//    @Override
+//    public boolean setEntityFieldWithValue(Object entity, Object value) {
+//        field.set(entity, value);
+//        return false;
+//    }
 }

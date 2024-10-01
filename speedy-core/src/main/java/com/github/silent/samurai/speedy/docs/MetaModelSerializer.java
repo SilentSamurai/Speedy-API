@@ -26,6 +26,8 @@ public class MetaModelSerializer {
         ObjectMapper json = CommonUtil.json();
         ObjectNode jsonMetadata = json.createObjectNode();
         jsonMetadata.put("name", entityMetadata.getName());
+        jsonMetadata.put("hasCompositeKey", entityMetadata.hasCompositeKey());
+//        jsonMetadata.put("dbTable", entityMetadata.getDbTableName());
         ArrayNode fieldArray = json.createArrayNode();
         entityMetadata.getAllFields().stream()
                 .map(MetaModelSerializer::serializeFieldMetadata)
@@ -37,19 +39,24 @@ public class MetaModelSerializer {
                 .map(MetaModelSerializer::serializeFieldMetadata)
                 .forEach(keyArray::add);
         jsonMetadata.set("keyFields", keyArray);
-        jsonMetadata.put("hasCompositeKey", entityMetadata.hasCompositeKey());
-        jsonMetadata.put("entityType", entityMetadata.getEntityClass().getName());
-        jsonMetadata.put("keyType", entityMetadata.getKeyClass().getName());
+
         return jsonMetadata;
     }
 
 
     public static JsonNode serializeFieldMetadata(FieldMetadata fieldMetadata) {
         ObjectNode fieldMetadataJson = CommonUtil.json().createObjectNode();
-        fieldMetadataJson.put("className", fieldMetadata.getClassFieldName());
+//        fieldMetadataJson.put("className", fieldMetadata.getClassFieldName());
         fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
-        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
-        fieldMetadataJson.put("fieldType", fieldMetadata.getFieldType().getName());
+//        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
+        fieldMetadataJson.put("isAssociation", fieldMetadata.isAssociation());
+
+        if (fieldMetadata.isAssociation()) {
+            fieldMetadataJson.put("associatedWith", fieldMetadata.getAssociationMetadata().getName());
+            fieldMetadataJson.put("associatedField", fieldMetadata.getAssociatedFieldMetadata().getOutputPropertyName());
+        }
+
+        fieldMetadataJson.put("fieldType", fieldMetadata.getValueType().name());
         fieldMetadataJson.put("isNullable", fieldMetadata.isNullable());
         fieldMetadataJson.put("isAssociation", fieldMetadata.isAssociation());
         fieldMetadataJson.put("isCollection", fieldMetadata.isCollection());

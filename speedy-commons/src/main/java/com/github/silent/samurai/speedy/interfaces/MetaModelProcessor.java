@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 
 import java.util.Collection;
 
@@ -17,4 +18,5 @@ public interface MetaModelProcessor {
     EntityMetadata findEntityMetadata(String entityName) throws NotFoundException;
 
     FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException;
+
 }

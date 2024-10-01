@@ -1,4 +1,4 @@
-GET http://localhost:8080/speedy/v1/Procurement( supplier.id = '1' )
+POST http://localhost:8080/speedy/v1/Procurement/$query
 Accept: application/json
 Content-Type: application/json
 
@@ -14,10 +14,11 @@ Content-Type: application/json
 }
 
 ###
-GET http://localhost:80/speedy/v1.0/Category/
+POST http://localhost:8080/speedy/v1/$query/
 Content-Type: application/json
 
 {
+    "from": "Category",
     "select": [
         "name",
         "createdBy"
@@ -32,12 +33,12 @@ Content-Type: application/json
     "where": [
         {
             "operator": "=",
-            "field": "NAME",
+            "queryField": "NAME",
             "value": "Piyush"
         },
         {
             "operator": "in",
-            "field": "ROLL",
+            "queryField": "ROLL",
             "value": [
                 13
             ]
@@ -47,19 +48,19 @@ Content-Type: application/json
             "conditions": [
                 {
                     "operator": "equal",
-                    "field": "A",
+                    "queryField": "A",
                     "value": 5
                 },
                 {
                     "operator": "equal",
-                    "field": "A",
+                    "queryField": "A",
                     "value": 10
                 }
             ]
         },
         {
             "operator": "dateBetween",
-            "field": "BIRTH",
+            "queryField": "BIRTH",
             "value": {
                 "start": "Date('')",
                 "end": "Date('')"
@@ -74,7 +75,7 @@ Content-Type: application/json
     "having": [
         {
             "operator": "equal",
-            "field": "NAME",
+            "queryField": "NAME",
             "value": "Piyush"
         }
     ],
@@ -90,43 +91,55 @@ Accept: application/json
 
 ###
 
-POST http://localhost:8080/speedy/v2/$query
+POST http://localhost:8080/speedy/v1/ValueTestEntity/$query
 Accept: application/json
 Content-Type: application/json
 
 {
-    "where": {
+    "$from": "Resource",
+    "$where": {
+        "id": "abcd-efgh",
+        "cost": {
+            "$eq": "0",
+            "$ne": "0",
+            "$lt": "0",
+            "$gt": "0",
+            "$in": [
+                0,
+                2,
+                1
+            ],
+            "$nin": [
+                0,
+                1
+            ]
+        },
         "$and": [
             {
-                "id": {
-                    "$eq": "abcd"
-                },
-                "name": "acs"
+                "id": "1"
             },
             {
-                "category.product.name": "P1"
+                "desc": "desc1"
+            }
+        ],
+        "$or": [
+            {
+                "id": "1"
+            },
+            {
+                "desc": "desc1"
             }
         ]
     },
-    "select": [
-        "id",
-        "name",
-        "desc"
+    "$orderBy": {
+        "id": "ASC"
+    },
+    "$expand": [
+        "relation"
     ],
-    "orderBy": [
-        {
-            "name": "desc"
-        },
-        {
-            "id": "asc"
-        }
-    ],
-    "expand": [
-        "product"
-    ],
-    "page": {
-        "index": 0,
-        "size": 100
+    "$page": {
+        "$index": 0,
+        "$size": 100
     }
 }
 

@@ -1,13 +1,17 @@
 package com.github.silent.samurai.speedy.parser;
 
-import com.github.silent.samurai.speedy.data.EntityTestClass;
+import com.github.silent.samurai.speedy.data.Product;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.models.Operator;
-import com.github.silent.samurai.speedy.models.conditions.Condition;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,9 +23,12 @@ import org.mockito.quality.Strictness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -31,26 +38,27 @@ class SpeedyUriContextTest {
     @Mock
     MetaModelProcessor metaModelProcessor;
 
-    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(EntityTestClass.class);
+    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
 
     String UriRoot = SpeedyConstant.URI;
 
     @BeforeEach
     void setUp() throws NotFoundException {
-        Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
+        Mockito.when(metaModelProcessor.findEntityMetadata("Product")).thenReturn(entityMetadata);
     }
 
     @Test
     void processRequest() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer");
-        parser.parse();
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
+        assertEquals("Product", speedyQuery.getFrom().getName());
+        assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest_1() {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "Customer");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "Product");
         try {
             parser.parse();
         } catch (RuntimeException e) {
@@ -62,289 +70,365 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer('1')");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product('1')");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertTrue(parser.getPrimaryResource().isOnlyIdentifiersPresent());
-        assertEquals("1", parser.getPrimaryResource().getFirstFilterValue("id", String.class));
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
+        String rawValueOfValue = speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class);
+        assertEquals("1", rawValueOfValue);
     }
 
     @Test
     void processRequest2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer/");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product/");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        assertEquals("Product", speedyQuery.getFrom().getName());
+        assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer('1')/");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product('1')/");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertTrue(parser.getPrimaryResource().isOnlyIdentifiersPresent());
-        assertEquals("1", parser.getPrimaryResource().getFirstFilterValue("id", String.class));
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
+        assertEquals("1", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
 
     @Test
     void processRequest6() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(id='1')");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(id='1')");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals("1", parser.getPrimaryResource().getFirstFilterValue("id", String.class));
-        assertTrue(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
+        assertEquals("1", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
 
     @Test
     void processRequest6_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(id='1', name='apple')");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(id='1', name='apple')");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals("apple", parser.getPrimaryResource().getFirstFilterValue("name", String.class));
-        assertEquals("1", parser.getPrimaryResource().getFirstFilterValue("id", String.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
+        assertEquals("1", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
+
+        fieldMetadata = speedyQuery.getFrom().field("name");
+        assertEquals("apple", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
 
     @Test
     void processRequest6_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(id='fdc0bff1-8cc6-446e-a74e-5295039a92dd')");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(id='fdc0bff1-8cc6-446e-a74e-5295039a92dd')");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", parser.getPrimaryResource().getFirstFilterValue("id", String.class));
-        assertTrue(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
+        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
 
     @Test
     void processRequest7() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name='apple')");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name='apple')");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals("apple", parser.getPrimaryResource().getFirstFilterValue("name", String.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
+        assertEquals("apple", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
 
     @Test
     void processRequest7_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name='apple?&*')");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name='apple?&*')");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals("apple?&*", parser.getPrimaryResource().getFirstFilterValue("name", String.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
+        assertEquals("apple?&*", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
 
     @Test
     void processRequest8() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name='Test-01%42')");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name='Test-01%42')");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals("Test-01B", parser.getPrimaryResource().getFirstFilterValue("name", String.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
+        assertEquals("Test-01B", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
 
     @Test
     void processRequest8_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost < 0)");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost < 0)");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.LT, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
-        assertEquals(0, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("cost");
+        Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
+
+        assertEquals(ConditionOperator.LT, condition.get().getOperator());
+        assertEquals(0, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
+
     }
 
     @Test
     void processRequest8_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost <= 25)");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost <= 25)");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.LTE, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
-        assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("cost");
+        Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
+
+        assertEquals(ConditionOperator.LTE, condition.get().getOperator());
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
     }
 
     @Test
     void processRequest8_3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost == 25)");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost == 25)");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.EQ, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
-        assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("cost");
+        Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
+
+        assertEquals(ConditionOperator.EQ, condition.get().getOperator());
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
     }
 
     @Test
     void processRequest8_4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost = 25)");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost = 25)");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.EQ, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
-        assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("cost");
+        Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
+
+        assertEquals(ConditionOperator.EQ, condition.get().getOperator());
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
     }
 
     @Test
     void processRequest8_5() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost > 25)");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost > 25)");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.GT, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
-        assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("cost");
+        Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
+
+        assertEquals(ConditionOperator.GT, condition.get().getOperator());
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
     }
 
     @Test
     void processRequest8_6() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(cost >= 25)");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost >= 25)");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
-        assertEquals(Operator.GTE, parser.getPrimaryResource().getFirstConditionByField("cost").getOperator());
-        assertEquals(25, parser.getPrimaryResource().getFirstFilterValue("cost", Integer.class));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("cost");
+        Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
+
+        assertEquals(ConditionOperator.GTE, condition.get().getOperator());
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
     }
 
 
     @Test
     void processRequest9() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?$format='JSON'");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?$format='JSON'");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals("JSON", parser.getQuery("$format", String.class).get(0));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest10() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?$format='JSON'&$metadata='true'");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?$format='JSON'&$metadata='true'");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals("JSON", parser.getQuery("$format", String.class).get(0));
         assertEquals(true, parser.getQuery("$metadata", boolean.class).get(0));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest10_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?$format='JSON&'&$metadata='true'");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?$format='JSON&'&$metadata='true'");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals("JSON&", parser.getQuery("$format", String.class).get(0));
         assertEquals("true", parser.getQuery("$metadata", String.class).get(0));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest10_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal='2'&doubleVal='2.0'");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal='2'&doubleVal='2.0'");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals(2, parser.getQuery("intVal", int.class).get(0));
         assertEquals(2.0, parser.getQuery("doubleVal", double.class).get(0));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest10_3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertTrue(parser.hasQuery("intVal"));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest10_4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal=2");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal=2");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals(2, parser.getQuery("intVal", int.class).get(0));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest10_5() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?intVal=2&doubleVal='2.0'");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal=2&doubleVal='2.0'");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals(2, parser.getQuery("intVal", int.class).get(0));
         assertEquals(2.0, parser.getQuery("doubleVal", double.class).get(0));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest11() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?orderBy='name,id'");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?orderBy='name,id'");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals("name,id", parser.getQuery("orderBy", String.class).get(0));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest11_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?orderBy='name'&orderBy='id'");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?orderBy='name'&orderBy='id'");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals("name", parser.getQuery("orderBy", String.class).get(0));
         assertEquals("id", parser.getQuery("orderBy", String.class).get(1));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest11_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer?orderBy=['name','id']");
-        parser.parse();
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?orderBy=['name','id']");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals("Customer", parser.getPrimaryResource().getResource());
+        Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
+        Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
+
         assertEquals("name", parser.getQuery("orderBy", String.class).get(0));
         assertEquals("id", parser.getQuery("orderBy", String.class).get(1));
-        assertFalse(parser.getPrimaryResource().isOnlyIdentifiersPresent());
     }
 
     @Test
     void processRequest12_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer");
-        parser.parse();
-        try {
-            List<String> names = parser.getPrimaryResource().getFilterValuesByField("name", String.class);
-            assertNotNull(names);
-            assertTrue(names.isEmpty());
-        } catch (NotFoundException e) {
-            assertEquals("keyword not found", e.getMessage());
-        }
+        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product");
+        SpeedyQuery speedyQuery = parser.parse();
+        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Customer(name == 'koil')");
-        parser.parse();
-        List<String> names = parser.getPrimaryResource().getFilterValuesByField("name", String.class);
-        assertNotNull(names);
-        assertFalse(names.isEmpty());
-        assertEquals("koil", names.get(0));
+        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
+        Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
-        List<? extends Condition> conditions = parser.getPrimaryResource().getConditionsByField("name");
-        assertNotNull(conditions);
-        assertFalse(conditions.isEmpty());
+        assertTrue(condition.isEmpty());
+
+        parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name == 'koil')");
+        speedyQuery = parser.parse();
+        speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
+
+        fieldMetadata = speedyQuery.getFrom().field("name");
+        String rawValueOfValue = speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class);
+        assertNotNull(rawValueOfValue);
+        assertEquals("koil", rawValueOfValue);
+
+        condition = speedyQueryHelper.getCondition(fieldMetadata);
+        assertFalse(condition.isEmpty());
     }
 
 

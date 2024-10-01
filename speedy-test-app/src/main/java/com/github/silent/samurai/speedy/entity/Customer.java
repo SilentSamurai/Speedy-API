@@ -9,7 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -44,7 +44,7 @@ public class Customer extends AbstractBaseEntity {
     private String altPhoneNo;
 
     @Column(name = "created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     @SpeedyIgnore(IgnoreType.WRITE)
     @Column(name = "created_by")

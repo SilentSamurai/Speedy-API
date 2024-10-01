@@ -1,10 +1,13 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ValueType;
+
+import java.util.Map;
 
 public interface FieldMetadata {
 
-    Object getEntityFieldValue(Object entity);
+    ValueType getValueType();
 
     boolean isAssociation();
 
@@ -24,8 +27,6 @@ public interface FieldMetadata {
 
     boolean isDeserializable();
 
-    String getClassFieldName();
-
     String getDbColumnName();
 
     String getOutputPropertyName();
@@ -38,5 +39,9 @@ public interface FieldMetadata {
 
     EntityMetadata getAssociationMetadata();
 
-    boolean setEntityFieldWithValue(Object entity, Object value);
+    FieldMetadata getAssociatedFieldMetadata();
+
+//    // foreign_key -> primary_key
+//    // entity_field -> associated_key
+//    Map<String, String> getAssociatedFields();
 }

@@ -8,7 +8,6 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Root;
 
 public interface DbField {
-
     FieldMetadata getFieldMetadata();
 
     <T> Path<T> getPath(CriteriaBuilder criteriaBuilder,

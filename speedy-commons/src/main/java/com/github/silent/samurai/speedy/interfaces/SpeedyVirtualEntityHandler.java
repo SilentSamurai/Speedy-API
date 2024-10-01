@@ -1,11 +1,15 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-public interface SpeedyVirtualEntityHandler<T> {
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
-    T create(T entity);
+public interface SpeedyVirtualEntityHandler {
 
-    T update(T entity);
+    SpeedyEntity create(SpeedyEntity entity) throws NotFoundException;
 
-    T delete(T entity);
+    SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws NotFoundException;
+
+    SpeedyEntity delete(SpeedyEntityKey pk) throws NotFoundException;
 
 }

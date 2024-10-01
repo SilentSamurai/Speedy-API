@@ -6,7 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -34,5 +34,5 @@ public class ExchangeRate extends AbstractBaseEntity {
     private Double invExchangeRate;
 
     @Column(name = "created_at", insertable = false, updatable = false)
-    private Date createdAt;
+    private LocalDateTime createdAt;
 }

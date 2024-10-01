@@ -1,23 +1,29 @@
 package com.github.silent.samurai.speedy.parser;
 
+import com.fasterxml.jackson.databind.node.ValueNode;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.models.Filter;
-import com.github.silent.samurai.speedy.models.Operator;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.models.conditions.*;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
-import com.google.common.collect.Lists;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 
 public class ConditionFactory {
 
-    public static BinarySVCondition createCondition(DbField field, Operator operator, Object instance) throws SpeedyHttpException {
+    private final EntityMetadata entityMetadata;
+
+    public ConditionFactory(EntityMetadata entityMetadata) {
+        this.entityMetadata = entityMetadata;
+    }
+
+    private BinaryCondition createCondition(QueryField field, ConditionOperator operator, SpeedyValue instance) throws SpeedyHttpException {
         switch (operator) {
             case EQ:
                 return new EqCondition(field, instance);
@@ -31,68 +37,101 @@ public class ConditionFactory {
                 return new LessThanEqualCondition(field, instance);
             case GTE:
                 return new GreaterThanEqualCondition(field, instance);
-        }
-        throw new BadRequestException("");
-    }
-
-    public static BinaryMVCondition createCondition(
-            DbField field,
-            Operator operator,
-            List<Object> instances) throws SpeedyHttpException {
-        if (instances.isEmpty()) {
-            throw new BadRequestException();
-        }
-        switch (operator) {
             case IN:
-                return new InCondition(field, instances);
+                return new InCondition(field, instance);
             case NOT_IN:
-                return new NotInCondition(field, instances);
+                return new NotInCondition(field, instance);
         }
         throw new BadRequestException("");
     }
 
-    public static BinaryCondition createCondition(Filter filter, EntityMetadata entityMetadata) throws SpeedyHttpException {
-        Objects.requireNonNull(filter);
-        Operator operator = Operator.fromSymbol(filter.getOperator());
-        DbField field = getDbField(filter, entityMetadata);
-        List<String> values = filter.getValues();
-        if (operator.doesAcceptMultipleValues()) {
-            List<Object> instances = new LinkedList<>();
-            for (String value : values) {
-                Object instance = CommonUtil.quotedStringToPrimitive(value, field.getFieldMetadata().getFieldType());
-                instances.add(instance);
+    public QueryField createQueryField(String fieldName) throws SpeedyHttpException {
+        String associatedField = null;
+        if (fieldName.contains(".")) {
+            String[] parts = fieldName.split("\\.");
+            if (parts.length == 2) {
+                fieldName = parts[0];
+                associatedField = parts[1];
             }
-            return createCondition(field, operator, instances);
         }
-        if (filter.getValues().isEmpty()) {
-            throw new BadRequestException();
+        if (associatedField != null) {
+            return createAssociatedField(fieldName, associatedField);
         }
-        Object instance = CommonUtil.quotedStringToPrimitive(values.get(0), field.getFieldMetadata().getFieldType());
-        return createCondition(field, operator, instance);
+        return createNormalField(fieldName);
     }
 
-    public static List<Object> getConditionValue(BinaryCondition condition) {
-        if (condition instanceof BinarySVCondition) {
-            return Lists.newArrayList(((BinarySVCondition) condition).getInstance());
-        }
-        if (condition instanceof BinaryMVCondition) {
-            return ((BinaryMVCondition) condition).getInstances();
-        }
-        return Collections.emptyList();
+    public QueryField createNormalField(String field) throws SpeedyHttpException {
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        return new NormalField(fieldMetadata);
     }
 
-    public static DbField getDbField(Filter filter, EntityMetadata entityMetadata) throws SpeedyHttpException {
-        if (filter.isAssociationPresent()) {
-            FieldMetadata fieldMetadata = entityMetadata.field(filter.getField());
-            if (!fieldMetadata.isAssociation()) {
-                throw new BadRequestException("");
-            }
-            EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-            FieldMetadata associatedFieldMetadata = associationMetadata.field(filter.getAssociationId());
-            return new AssociatedField(fieldMetadata, associatedFieldMetadata);
+    public QueryField createAssociatedField(String field, String associatedField) throws SpeedyHttpException {
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        if (!fieldMetadata.isAssociation()) {
+            throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
         }
-        FieldMetadata metadata = entityMetadata.field(filter.getField());
-        return new NormalField(metadata);
+        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+        FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
+        return new AssociatedField(fieldMetadata, associatedFieldMetadata);
+    }
+
+    public BinaryCondition createBiCondition(QueryField normalField, ConditionOperator operator, SpeedyValue speedyValue) throws SpeedyHttpException {
+        return createCondition(normalField, operator, speedyValue);
+    }
+
+    public BinaryCondition createBinaryCondition(String field, String operatorSymbol, ValueNode value) throws SpeedyHttpException {
+        ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(fieldMetadata, value);
+        QueryField normalField = new NormalField(fieldMetadata);
+        return createCondition(normalField, operator, speedyValue);
+    }
+
+    public BinaryCondition createAssociatedCondition(String field, String associatedField, String operatorSymbol, ValueNode value) throws SpeedyHttpException {
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+        if (!fieldMetadata.isAssociation()) {
+            throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
+        }
+        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+        FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
+        QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(associatedFieldMetadata, value);
+        return createCondition(queryField, operator, speedyValue);
+    }
+
+    public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, String value) throws SpeedyHttpException {
+        ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(fieldMetadata, value);
+        QueryField normalField = new NormalField(fieldMetadata);
+        return createCondition(normalField, operator, speedyValue);
+    }
+
+    public BinaryCondition createBinaryConditionQuotedString(String field, String operatorSymbol, List<String> values) throws SpeedyHttpException {
+        ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        List<SpeedyValue> instances = new LinkedList<>();
+        for (String value : values) {
+            SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(fieldMetadata, value);
+            instances.add(speedyValue);
+        }
+        SpeedyValue speedyValue = SpeedyValueFactory.fromCollection(instances);
+        QueryField normalField = new NormalField(fieldMetadata);
+        return createCondition(normalField, operator, speedyValue);
+    }
+
+    public BinaryCondition createAssociatedConditionQuotedString(String field, String associatedField, String operatorSymbol, String value) throws SpeedyHttpException {
+        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+        if (!fieldMetadata.isAssociation()) {
+            throw new BadRequestException("");
+        }
+        EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
+        FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
+        QueryField queryField = new AssociatedField(fieldMetadata, associatedFieldMetadata);
+        SpeedyValue speedyValue = SpeedyValueFactory.fromQuotedString(associatedFieldMetadata, value);
+        return createCondition(queryField, operator, speedyValue);
     }
 
 }

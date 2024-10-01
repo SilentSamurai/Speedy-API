@@ -1,10 +1,12 @@
 package com.github.silent.samurai.speedy.docs;
 
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.Encoding;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -17,6 +19,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 public class OASGenerator {
@@ -27,6 +30,8 @@ public class OASGenerator {
     public static final String CREATE_REQUEST_NAME = "Create{0}Request";
     public static final String UPDATE_REQUEST_NAME = "Update{0}Request";
     public static final String GET_REQUEST_NAME = "Get{0}Request";
+    public static final String QUERY_REQUEST_NAME = "QueryRequest";
+    public static final String QUERY_REQUEST_WHERE_NAME = "QueryRequestWhere";
 
 
     private static final Map<Class<?>, Schema<?>> PRIMITIVE_TYPE_TO_SCHEMA_MAP = new HashMap<>();
@@ -56,35 +61,30 @@ public class OASGenerator {
         PRIMITIVE_TYPE_TO_SCHEMA_MAP.put(UUID.class, new Schema<>().type("string").format("uuid"));
     }
 
-    public static Schema basicSchema(Class<?> clazz) {
-        return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(clazz);
+    public static Schema basicSchema(ValueType valueType) {
+        switch (valueType) {
+            case BOOL:
+                return new Schema<>().type("boolean");
+            case TEXT:
+                return new Schema<>().type("string");
+            case INT:
+                return new Schema<>().type("integer").format("int64");
+            case FLOAT:
+                return new Schema<>().type("number").format("double");
+            case DATE_TIME:
+            case DATE:
+            case TIME:
+                return new Schema<>().type("string");
+            case OBJECT:
+            case COLLECTION:
+            case NULL:
+            default:
+                return new Schema<>().type("string");
+        }
     }
 
     public static Schema generateBasicSchema(FieldMetadata fieldMetadata) {
-        if (PRIMITIVE_TYPE_TO_SCHEMA_MAP.containsKey(fieldMetadata.getFieldType())) {
-            return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(fieldMetadata.getFieldType());
-        } else {
-            return PRIMITIVE_TYPE_TO_SCHEMA_MAP.get(String.class);
-        }
-    }
-
-    public static String getQueryExample(EntityMetadata entityMetadata, Predicate<FieldMetadata> predicate) {
-        StringBuilder sb = new StringBuilder();
-        Iterator<FieldMetadata> iterator = entityMetadata.getAllFields().iterator();
-        while (iterator.hasNext()) {
-            FieldMetadata fieldMetadata = iterator.next();
-            if (predicate.test(fieldMetadata)) {
-                sb.append(fieldMetadata.getOutputPropertyName())
-                        .append("=")
-                        .append("'")
-                        .append(OASGenerator.generateBasicSchema(fieldMetadata).getFormat())
-                        .append("'");
-                if (iterator.hasNext()) {
-                    sb.append(", ");
-                }
-            }
-        }
-        return sb.toString();
+        return basicSchema(fieldMetadata.getValueType());
     }
 
     public static Schema createFieldSchema(FieldMetadata fieldMetadata, String associationRef) {
@@ -130,8 +130,8 @@ public class OASGenerator {
         return new Schema<>()
                 .type("object")
                 .addProperty("payload", ref)
-                .addProperty("pageCount", OASGenerator.basicSchema(long.class))
-                .addProperty("pageIndex", OASGenerator.basicSchema(long.class));
+                .addProperty("pageCount", OASGenerator.basicSchema(ValueType.INT))
+                .addProperty("pageIndex", OASGenerator.basicSchema(ValueType.INT));
     }
 
     public static Schema getSchemaRef(String schemaName) {
@@ -145,7 +145,7 @@ public class OASGenerator {
     public static RequestBody getJsonBody(Schema schema) {
         return new RequestBody()
                 .content(new Content()
-                        .addMediaType(APPLICATION_JSON_VALUE, new MediaType()
+                        .addMediaType(APPLICATION_JSON_UTF8_VALUE, new MediaType()
                                 .schema(schema)
                         )
                 );
@@ -154,45 +154,10 @@ public class OASGenerator {
     public static ApiResponse getJsonResponse(String name, Schema schema) {
         return new ApiResponse()
                 .content(new Content()
-                        .addMediaType(APPLICATION_JSON_VALUE, new MediaType()
+                        .addMediaType(APPLICATION_JSON_UTF8_VALUE, new MediaType()
                                 .schema(wrapInPayload(schema).name(name).title(name))
                         )
                 );
-    }
-
-    public static void addPagingAndOrderingInfo(Operation operation) {
-        operation.addParametersItem(
-                new Parameter()
-                        .description("the no of the current page you want to request")
-                        .name("pageNo")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(Integer.class))
-        );
-        operation.addParametersItem(
-                new Parameter()
-                        .description("amount of data in a single page")
-                        .name("pageSize")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(Integer.class))
-        );
-        operation.addParametersItem(
-                new Parameter()
-                        .description("sort the result in ascending order by this column")
-                        .name("orderBy")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(String.class))
-        );
-        operation.addParametersItem(
-                new Parameter()
-                        .description("sort the result in descending order by this column")
-                        .name("orderByDesc")
-                        .in("query")
-                        .required(false)
-                        .schema(OASGenerator.basicSchema(String.class))
-        );
     }
 
 
@@ -204,7 +169,7 @@ public class OASGenerator {
                             .description(keyField.getOutputPropertyName() + " field value.")
                             .in("path")
                             .allowEmptyValue(false)
-                            .schema(OASGenerator.basicSchema(keyField.getFieldType()))
+                            .schema(OASGenerator.generateBasicSchema(keyField))
             );
         }
     }

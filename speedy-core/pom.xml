@@ -42,6 +42,18 @@
             <version>2.0.10</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>3.16.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-meta</artifactId>
+            <version>3.16.0</version>
+        </dependency>
     </dependencies>
 
 

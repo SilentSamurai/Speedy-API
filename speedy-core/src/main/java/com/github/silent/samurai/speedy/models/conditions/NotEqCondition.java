@@ -1,34 +1,20 @@
 package com.github.silent.samurai.speedy.models.conditions;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.models.Operator;
-import lombok.Data;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
+import lombok.Getter;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+@Getter
+public class NotEqCondition implements BinaryCondition {
 
-@Data
-public class NotEqCondition implements BinarySVCondition {
+    private final QueryField field;
+    private final SpeedyValue speedyValue;
+    private final ConditionOperator operator = ConditionOperator.NEQ;
 
-    private DbField field;
-    private Object instance;
-    private Operator operator = Operator.NEQ;
-
-    public NotEqCondition(DbField field, Object instance) {
+    public NotEqCondition(QueryField field, SpeedyValue speedyValue) {
         this.field = field;
-        this.instance = instance;
-    }
-
-    @Override
-    public void updateFromJson(JsonParser jsonParser) {
-    }
-
-    @Override
-    public Predicate getPredicate(CriteriaBuilder criteriaBuilder, Root<?> tableRoot, EntityMetadata entityMetadata) throws Exception {
-        Path<? extends Comparable<?>> path = field.getPath(criteriaBuilder, tableRoot);
-        return criteriaBuilder.notEqual(path, instance);
+        this.speedyValue = speedyValue;
     }
 }

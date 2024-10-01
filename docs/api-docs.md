@@ -66,6 +66,6 @@ use this api to get a single resource
 
 #### GET Api
 
-use this api to get a multiple resource and filter them via query
+use this api to get a multiple resource and filter them via speedyQueryImpl
 
 ![](_media/open-api-6.png)

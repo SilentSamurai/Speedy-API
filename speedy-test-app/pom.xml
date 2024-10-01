@@ -29,6 +29,12 @@
             <version>${project.parent.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-java-client</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
         <!--        <dependency>-->
         <!--            <groupId>${project.parent.groupId}</groupId>-->
         <!--            <artifactId>speedy-commons</artifactId>-->
@@ -52,6 +58,12 @@
             <version>${project.parent.version}</version>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>${project.parent.groupId}</groupId>-->
+<!--            <artifactId>speedy-static-impl</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--        </dependency>-->
+
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
@@ -71,6 +83,13 @@
             <artifactId>h2</artifactId>
             <version>2.1.214</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
 
     </dependencies>
 
@@ -100,7 +119,8 @@
                             <!--                            <language>spring</language>-->
                             <configOptions>
                                 <java8>true</java8>
-                                <dateLibrary>custom</dateLibrary>
+                                <dateLibrary>java8</dateLibrary>
+                                <useJava8Dates>true</useJava8Dates>
                                 <annotationLibrary>none</annotationLibrary>
                                 <sourceFolder>src/main/java</sourceFolder>
                             </configOptions>
