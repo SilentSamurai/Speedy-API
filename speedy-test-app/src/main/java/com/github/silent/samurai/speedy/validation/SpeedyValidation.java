@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpeedyValidation implements ISpeedyCustomValidation {
 
-    @SpeedyValidator(value = Category.class, requests = SpeedyRequestType.CREATE)
+    @SpeedyValidator(entity = "Category", requests = SpeedyRequestType.CREATE)
     public boolean validateCategory(SpeedyEntity category) throws Exception {
         EntityMetadata entityMetadata = category.getMetadata();
         FieldMetadata name = entityMetadata.field("name");
@@ -22,7 +22,7 @@ public class SpeedyValidation implements ISpeedyCustomValidation {
     }
 
 
-    @SpeedyValidator(Supplier.class)
+    @SpeedyValidator(entity = "Supplier")
     public boolean validateCustomer(SpeedyEntity supplier) throws Exception {
         return true;
     }

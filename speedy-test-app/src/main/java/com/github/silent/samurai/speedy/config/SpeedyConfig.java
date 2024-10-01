@@ -40,14 +40,10 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     }
 
     @Override
-    public ISpeedyCustomValidation getCustomValidator() {
-        return speedyValidation;
-    }
-
-    @Override
     public void register(ISpeedyRegistry registry) {
-        registry.registerEventHandler(entityEvents);
-        registry.registerVirtualEntityHandler(virtualEntityHandler, VirtualEntity.class);
+        registry.registerEventHandler(entityEvents)
+                .registerVirtualEntityHandler(virtualEntityHandler, VirtualEntity.class)
+                .registerValidator(speedyValidation);
     }
 
     @Override

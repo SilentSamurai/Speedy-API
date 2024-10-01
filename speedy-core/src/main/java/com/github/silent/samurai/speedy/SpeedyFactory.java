@@ -58,15 +58,19 @@ public class SpeedyFactory {
         this.speedyConfiguration = speedyConfiguration;
         this.metaModelProcessor = speedyConfiguration.createMetaModelProcessor();
         new MetaModelVerifier(metaModelProcessor).verify();
-        this.validationProcessor = new ValidationProcessor(speedyConfiguration.getCustomValidator(), metaModelProcessor);
-        this.validationProcessor.process();
+
         // events
         this.eventRegistry = new RegistryImpl();
         speedyConfiguration.register(eventRegistry);
         this.eventProcessor = new EventProcessor(metaModelProcessor, eventRegistry);
         this.eventProcessor.processRegistry();
+
         this.vEntityProcessor = new VirtualEntityProcessor(metaModelProcessor, eventRegistry);
         this.vEntityProcessor.processRegistry();
+
+        this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModelProcessor);
+        this.validationProcessor.process();
+
         DataSource dataSource = speedyConfiguration.getDataSource();
         String dialect = speedyConfiguration.getDialect();
         this.queryProcessor = new JooqQueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));

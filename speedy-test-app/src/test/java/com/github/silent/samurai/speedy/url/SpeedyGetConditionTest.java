@@ -3,7 +3,6 @@ package com.github.silent.samurai.speedy.url;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +25,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
 
@@ -286,7 +286,7 @@ class SpeedyGetConditionTest {
         Assertions.assertEquals(3, payload.size());
         for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
-            HashSet<Double> integers = Sets.newHashSet(25.0, 50.0, 75.0);
+            Set<Double> integers = Set.of(25.0, 50.0, 75.0);
             Assertions.assertTrue(integers.contains(inventory.getCost()));
         }
 
@@ -309,7 +309,7 @@ class SpeedyGetConditionTest {
         Assertions.assertTrue(!payload.isEmpty());
         for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
-            HashSet<Double> integers = Sets.newHashSet(25.0, 50.0, 75.0);
+            Set<Double> integers = Set.of(25.0, 50.0, 75.0);
             Assertions.assertFalse(integers.contains(inventory.getCost()));
         }
 

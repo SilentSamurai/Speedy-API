@@ -6,4 +6,5 @@ public interface ISpeedyRegistry {
 
     ISpeedyRegistry registerVirtualEntityHandler(SpeedyVirtualEntityHandler virtualEntityHandler, Class<?> entityClass);
 
+    ISpeedyRegistry registerValidator(ISpeedyCustomValidation validator);
 }

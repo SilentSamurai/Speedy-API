@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.docs;
 
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.google.common.collect.Lists;
+
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.responses.ApiResponses;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 public class OpenApiGenerator {
 
@@ -106,7 +107,7 @@ public class OpenApiGenerator {
         Operation operation = new Operation();
         operation.operationId("BulkCreate" + entityMetadata.getName());
         operation.summary("Bulk create " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
+        operation.tags(List.of(entityMetadata.getName()));
         operation.requestBody(OASGenerator.getJsonBody(
                 OASGenerator.wrapInArray(
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.CREATE_REQUEST_NAME, entityMetadata))
@@ -127,7 +128,7 @@ public class OpenApiGenerator {
         Operation operation = new Operation();
         operation.operationId("BulkDelete" + entityMetadata.getName());
         operation.summary("Bulk delete " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
+        operation.tags(List.of(entityMetadata.getName()));
         operation.requestBody(OASGenerator.getJsonBody(OASGenerator.wrapInArray(
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_KEY, entityMetadata))
                 )
@@ -147,7 +148,7 @@ public class OpenApiGenerator {
         Operation operation = new Operation();
         operation.operationId("Update" + entityMetadata.getName());
         operation.summary("Update a(n) " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
+        operation.tags(List.of(entityMetadata.getName()));
 
 //        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
 
@@ -168,7 +169,7 @@ public class OpenApiGenerator {
         Operation operation = new Operation();
         operation.operationId("Get" + entityMetadata.getName());
         operation.summary("Get a(n) " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
+        operation.tags(List.of(entityMetadata.getName()));
 
         OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
 
@@ -187,7 +188,7 @@ public class OpenApiGenerator {
         Operation operation = new Operation();
         operation.operationId("Query" + entityMetadata.getName());
         operation.summary("Filter " + entityMetadata.getName());
-        operation.tags(Lists.newArrayList(entityMetadata.getName()));
+        operation.tags(List.of(entityMetadata.getName()));
         operation.requestBody(OASGenerator.getJsonBody(
                 new Schema<>().example(QUERY_EXAMPLE)
         ).description("Fields needed for creation"));

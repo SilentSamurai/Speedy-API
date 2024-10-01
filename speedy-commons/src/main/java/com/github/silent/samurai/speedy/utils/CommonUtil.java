@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
-import org.modelmapper.Conditions;
-import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
+
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,21 +18,10 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class CommonUtil {
 
-    private static final ModelMapper modelMapper;
-
-    static {
-        modelMapper = new ModelMapper();
-        modelMapper.getConfiguration()
-                .setPropertyCondition(Conditions.isNotNull())
-                .setMatchingStrategy(MatchingStrategies.STRICT);
-    }
 
     private static final Jackson2ObjectMapperBuilder jacksonBuildr = new Jackson2ObjectMapperBuilder();
     private static final ObjectMapper standardMapper;

@@ -8,8 +8,6 @@ public interface ISpeedyConfiguration {
 
     MetaModelProcessor createMetaModelProcessor();
 
-    ISpeedyCustomValidation getCustomValidator();
-
     void register(ISpeedyRegistry registry);
 
     DataSource getDataSource();

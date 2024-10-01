@@ -14,7 +14,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,7 +48,7 @@ class MetadataUtilTest {
     @Test
     void isPrimaryKeyComplete() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        HashSet<String> fields = Sets.newHashSet("id");
+        Set<String> fields = Set.of("id");
         ObjectNode objectNode = CommonUtil.json().createObjectNode();
         objectNode.put("id", "pol-pol-ois");
         assertTrue(MetadataUtil.isPrimaryKeyComplete(entityMetadata, objectNode));
@@ -57,7 +57,7 @@ class MetadataUtilTest {
     @Test
     void isNullPrimaryKeyComplete() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        HashSet<String> fields = Sets.newHashSet("id");
+        Set<String> fields = Set.of("id");
         ObjectNode objectNode = CommonUtil.json().createObjectNode();
         objectNode.putNull("id");
         assertFalse(MetadataUtil.isPrimaryKeyComplete(entityMetadata, objectNode));
@@ -66,21 +66,21 @@ class MetadataUtilTest {
     @Test
     void hasOnlyPrimaryKeyFields() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        HashSet<String> fields = Sets.newHashSet("id");
+        Set<String> fields = Set.of("id");
         assertTrue(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
     @Test
     void hasOnlyPrimaryKeyFields1() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        HashSet<String> fields = Sets.newHashSet("id", "name");
+        Set<String> fields = Set.of("id", "name");
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
     @Test
     void hasOnlyPrimaryKeyFields2() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        HashSet<String> fields = Sets.newHashSet();
+        Set<String> fields = Set.of();
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
@@ -88,7 +88,7 @@ class MetadataUtilTest {
     void hasOnlyPrimaryKeyFields2_1() {
         EntityMetadata entityMetadata = Mockito.mock(EntityMetadata.class);
 //        Mockito.when(entityMetadata.getKeyFields()).thenReturn(Sets.newHashSet());
-        HashSet<String> fields = Sets.newHashSet();
+        Set<String> fields = Set.of();
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
@@ -96,14 +96,14 @@ class MetadataUtilTest {
     @Test
     void hasOnlyPrimaryKeyFields3() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
-        HashSet<String> fields = Sets.newHashSet("id");
+        Set<String> fields = Set.of("id");
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
     @Test
     void hasOnlyPrimaryKeyFields4() {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
-        HashSet<String> fields = Sets.newHashSet("id", "name", "category");
+        Set<String> fields = Set.of("id", "name", "category");
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 

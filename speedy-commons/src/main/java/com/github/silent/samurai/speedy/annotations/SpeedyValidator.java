@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SpeedyValidator {
 
-    Class<?> value() default ISpeedyCustomValidation.class;
+    String entity() default "";
 
     SpeedyRequestType[] requests() default {SpeedyRequestType.CREATE, SpeedyRequestType.UPDATE};
 

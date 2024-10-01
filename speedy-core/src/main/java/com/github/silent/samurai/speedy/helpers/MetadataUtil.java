@@ -12,26 +12,32 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
-import com.google.common.collect.Sets;
-import com.google.common.collect.Streams;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class MetadataUtil {
 
     public static boolean isPrimaryKeyComplete(EntityMetadata entityMetadata, ObjectNode objectNode) {
-        Set<String> validFieldnames = Streams.stream(objectNode.fieldNames())
+        Set<String> validFieldnames = StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(objectNode.fieldNames(), Spliterator.ORDERED),
+                        false)
                 .filter(field -> !objectNode.get(field).isNull())
                 .collect(Collectors.toSet());
-        Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFieldNames(), validFieldnames);
-        return difference.size() == entityMetadata.getKeyFields().size();
+        validFieldnames.retainAll(entityMetadata.getKeyFieldNames());
+        return validFieldnames.size() == entityMetadata.getKeyFields().size();
     }
 
     public static boolean hasOnlyPrimaryKeyFields(EntityMetadata entityMetadata, Set<String> fields) {
         if (!fields.isEmpty() && entityMetadata.getKeyFieldNames().size() == fields.size()) {
-            Sets.SetView<String> difference = Sets.intersection(entityMetadata.getKeyFieldNames(), fields);
-            return difference.size() == entityMetadata.getKeyFieldNames().size();
+            Set<String> fieldCopy = new HashSet<>(fields);
+            fieldCopy.retainAll(entityMetadata.getKeyFieldNames());
+            return fieldCopy.size() == entityMetadata.getKeyFieldNames().size();
         }
         return false;
     }
