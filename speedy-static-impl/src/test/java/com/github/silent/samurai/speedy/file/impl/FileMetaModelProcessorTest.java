@@ -5,9 +5,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,7 +27,7 @@ class FileMetaModelProcessorTest {
 
     @BeforeAll
     static void setUp() throws IOException {
-        fileMetaModelProcessor = new FileMetaModelProcessor("metamodel.json", dataSource, SQLDialect.H2);
+        fileMetaModelProcessor = new FileMetaModelProcessor("metamodel.json");
     }
 
     @Test

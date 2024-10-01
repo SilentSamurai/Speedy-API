@@ -6,8 +6,7 @@ import com.github.silent.samurai.speedy.file.impl.processor.FileProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import org.jooq.SQLDialect;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,15 +27,10 @@ public class FileMetaModelProcessor implements MetaModelProcessor {
     @Value("${speedy.metamodel.file}")
     private String metaModelFile;
 
-    private DataSource dataSource;
-    private SQLDialect dialect;
-
     private final Map<String, FileEntityMetadata> entityMap = new HashMap<>();
 
-    public FileMetaModelProcessor(String fileName, DataSource dataSource, SQLDialect dialect) {
+    public FileMetaModelProcessor(String fileName) {
         this.metaModelFile = fileName;
-        this.dataSource = dataSource;
-        this.dialect = dialect;
         try {
             File file = ResourceUtils.getFile("classpath:" + metaModelFile);
             try (InputStream in = new FileInputStream(file)) {
