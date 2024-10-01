@@ -7,8 +7,8 @@ import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import lombok.Data;
 import lombok.SneakyThrows;
 
-import javax.persistence.Id;
-import javax.persistence.IdClass;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;

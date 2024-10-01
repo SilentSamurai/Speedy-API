@@ -4,11 +4,11 @@ import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import javax.persistence.Entity;
-import javax.persistence.IdClass;
-import javax.persistence.Table;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.EntityType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
+import jakarta.persistence.metamodel.Attribute;
+import jakarta.persistence.metamodel.EntityType;
 import java.util.Map;
 
 public class JpaEntityProcessor {

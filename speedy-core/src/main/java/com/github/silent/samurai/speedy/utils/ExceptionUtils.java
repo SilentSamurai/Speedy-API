@@ -9,8 +9,8 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
 import org.springframework.http.MediaType;
 
-import javax.persistence.PersistenceException;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.persistence.PersistenceException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.HashMap;

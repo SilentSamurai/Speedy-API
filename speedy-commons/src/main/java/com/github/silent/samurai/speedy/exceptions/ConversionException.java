@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.exceptions;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class ConversionException extends SpeedyHttpRuntimeException {
 

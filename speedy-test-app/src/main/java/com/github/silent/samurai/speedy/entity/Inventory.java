@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.entity;
 import lombok.Data;
 import org.hibernate.annotations.Formula;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Data
 @Table(name = "inventory")

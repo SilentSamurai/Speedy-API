@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Data;
 import lombok.SneakyThrows;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 import java.lang.reflect.Field;
 
 @Data

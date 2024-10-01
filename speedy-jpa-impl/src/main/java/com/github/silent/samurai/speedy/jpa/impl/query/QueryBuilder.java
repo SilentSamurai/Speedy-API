@@ -14,10 +14,10 @@
 //import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 //import com.google.common.collect.Lists;
 //
-//import javax.persistence.EntityManager;
-//import javax.persistence.Query;
-//import javax.persistence.TypedQuery;
-//import javax.persistence.criteria.*;
+//import jakarta.persistence.EntityManager;
+//import jakarta.persistence.Query;
+//import jakarta.persistence.TypedQuery;
+//import jakarta.persistence.criteria.*;
 //import java.time.LocalDate;
 //import java.time.LocalDateTime;
 //import java.time.LocalTime;

@@ -9,9 +9,9 @@ import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Data;
 import lombok.SneakyThrows;
 
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import java.lang.reflect.Field;
 
 @Data

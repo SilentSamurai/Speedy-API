@@ -25,10 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -75,7 +72,7 @@ class SpeedyUriContextTest {
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
-        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+        assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
         String rawValueOfValue = speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class);
         assertEquals("1", rawValueOfValue);
@@ -98,7 +95,7 @@ class SpeedyUriContextTest {
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
-        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+        assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
         assertEquals("1", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
@@ -110,7 +107,7 @@ class SpeedyUriContextTest {
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
-        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+        assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
         assertEquals("1", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));
     }
@@ -138,7 +135,7 @@ class SpeedyUriContextTest {
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
-        Assertions.assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
+        assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
 
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
         assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", speedyQueryHelper.getRawValueOfValue(fieldMetadata, String.class));

@@ -15,12 +15,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.JoinColumn;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.SingularAttribute;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.metamodel.Attribute;
+import jakarta.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;

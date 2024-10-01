@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.file.impl.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 

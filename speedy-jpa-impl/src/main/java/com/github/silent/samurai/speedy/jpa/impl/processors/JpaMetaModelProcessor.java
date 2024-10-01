@@ -10,8 +10,8 @@ import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.metamodel.EntityType;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.metamodel.EntityType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;

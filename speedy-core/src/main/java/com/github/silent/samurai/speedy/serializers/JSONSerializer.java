@@ -11,7 +11,7 @@ import com.github.silent.samurai.speedy.responses.SinglePayloadWrapper;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.http.MediaType;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;

@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.data;
 
 import lombok.Data;
 
-import javax.persistence.Id;
-import javax.persistence.IdClass;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 
 
 @Data

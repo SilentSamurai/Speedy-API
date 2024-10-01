@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Set;
 
 public interface IResponseContext {

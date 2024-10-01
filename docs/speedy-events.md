@@ -29,8 +29,8 @@ import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 
 @Configuration
 public class SpeedyConfig implements ISpeedyConfiguration {

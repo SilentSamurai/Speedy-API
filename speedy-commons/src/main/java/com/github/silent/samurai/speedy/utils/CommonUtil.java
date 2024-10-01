@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;

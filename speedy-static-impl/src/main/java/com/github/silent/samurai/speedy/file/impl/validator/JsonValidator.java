@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.file.impl.validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.*;
+import jakarta.validation.*;
 import java.util.Set;
 
 public class JsonValidator {

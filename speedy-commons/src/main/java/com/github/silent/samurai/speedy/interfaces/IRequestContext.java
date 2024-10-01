@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface IRequestContext {
 

@@ -1,20 +1,12 @@
 package com.github.silent.samurai.speedy.file.impl.metadata;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.KeyDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.github.silent.samurai.speedy.enums.IgnoreType;
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Getter;
 import lombok.Setter;
-import org.dom4j.datatype.SchemaParser;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 @Getter

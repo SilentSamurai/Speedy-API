@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.data;
 
 import lombok.Data;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 
 
 @Data

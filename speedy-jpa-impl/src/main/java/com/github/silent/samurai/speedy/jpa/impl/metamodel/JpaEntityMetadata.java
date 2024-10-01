@@ -9,7 +9,7 @@ import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.metamodel.EntityType;
+import jakarta.persistence.metamodel.EntityType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
