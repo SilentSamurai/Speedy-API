@@ -15,11 +15,5 @@
             <version>0.0.2</version>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq</artifactId>
-            <version>3.19.7</version>
-        </dependency>
     </dependencies>
 </project>
