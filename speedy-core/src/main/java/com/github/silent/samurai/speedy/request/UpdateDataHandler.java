@@ -67,13 +67,9 @@ public class UpdateDataHandler {
 
             eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
 
-            if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
-                SpeedyVirtualEntityHandler handler = context.getVEntityProcessor().getHandler(entityMetadata);
-                savedEntity = handler.update(this.pk, entity);
-            } else {
-                QueryProcessor queryProcessor = context.getQueryProcessor();
-                savedEntity = queryProcessor.update(this.pk, entity);
-            }
+            QueryProcessor queryProcessor = context.getQueryProcessor();
+            savedEntity = queryProcessor.update(this.pk, entity);
+
             eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
 
         }

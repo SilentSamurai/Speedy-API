@@ -31,51 +31,13 @@ public class PostDataHandler {
         this.context = context;
     }
 
-    private List<SpeedyEntity> processVirtual(List<SpeedyEntity> parsedEntities) throws SpeedyHttpException {
-        EventProcessor eventProcessor = context.getEventProcessor();
-        EntityMetadata entityMetadata = context.getEntityMetadata();
-
-        List<SpeedyEntity> savedObjects = new LinkedList<>();
-        for (SpeedyEntity parsedObject : parsedEntities) {
-            try {
-                // validation
-                context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
-                // event trigger
-                eventProcessor.triggerEvent(
-                        SpeedyEventType.PRE_INSERT,
-                        entityMetadata,
-                        parsedObject
-                );
-                // save handler trigger
-                SpeedyVirtualEntityHandler handler = context.getVEntityProcessor().getHandler(entityMetadata);
-                SpeedyEntity savedEntity = handler.create(parsedObject);
-                if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
-                    throw new BadRequestException("Incomplete Key after save");
-                }
-                savedObjects.add(savedEntity);
-                eventProcessor.triggerEvent(
-                        SpeedyEventType.POST_INSERT,
-                        entityMetadata,
-                        parsedObject
-                );
-            } catch (SpeedyHttpException throwable) {
-                throw throwable;
-            } catch (Exception e) {
-                throw new InternalServerError(e);
-            }
-        }
-        return savedObjects;
-    }
-
     private List<SpeedyEntity> processPhysical(List<SpeedyEntity> parsedEntities) throws SpeedyHttpException {
         EventProcessor eventProcessor = context.getEventProcessor();
         EntityMetadata entityMetadata = context.getEntityMetadata();
         QueryProcessor queryProcessor = context.getQueryProcessor();
-
-        List<SpeedyEntity> savedObjects = new LinkedList<>();
-
-        for (SpeedyEntity parsedObject : parsedEntities) {
-            try {
+        List<SpeedyEntity> savedObjects;
+        try {
+            for (SpeedyEntity parsedObject : parsedEntities) {
                 // validate entity
                 context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
                 // trigger pre insert event
@@ -84,12 +46,15 @@ public class PostDataHandler {
                         entityMetadata,
                         parsedObject
                 );
-                // save the entity
-                SpeedyEntity savedEntity = queryProcessor.create(parsedObject);
+            }
+
+            savedObjects = queryProcessor.create(parsedEntities);
+
+            for (SpeedyEntity savedEntity : savedObjects) {
                 if (savedEntity == null || savedEntity.isEmpty()) {
-                    LOGGER.info("{} save failed {}", entityMetadata.getName(), parsedObject);
+                    LOGGER.info("{} save failed", entityMetadata.getName());
                 } else {
-                    LOGGER.info("{} saved {}", entityMetadata.getName(), parsedObject);
+                    LOGGER.info("{} saved {}", entityMetadata.getName(), savedEntity);
                 }
 
                 // check if primary key is complete
@@ -100,16 +65,15 @@ public class PostDataHandler {
                 eventProcessor.triggerEvent(
                         SpeedyEventType.POST_INSERT,
                         entityMetadata,
-                        parsedObject
+                        savedEntity
                 );
-                // add to saved objects
-                savedObjects.add(savedEntity);
-
-            } catch (SpeedyHttpException throwable) {
-                throw throwable;
-            } catch (Exception e) {
-                throw new InternalServerError(e);
             }
+
+
+        } catch (SpeedyHttpException throwable) {
+            throw throwable;
+        } catch (Exception e) {
+            throw new InternalServerError(e);
         }
         return savedObjects;
     }
@@ -117,12 +81,7 @@ public class PostDataHandler {
     public Optional<List<SpeedyEntity>> processBatch(List<SpeedyEntity> parsedEntities) throws SpeedyHttpException {
         List<SpeedyEntity> savedObjects = null;
         if (!parsedEntities.isEmpty()) {
-            EntityMetadata entityMetadata = context.getEntityMetadata();
-            if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
-                savedObjects = processVirtual(parsedEntities);
-            } else {
-                savedObjects = processPhysical(parsedEntities);
-            }
+            savedObjects = processPhysical(parsedEntities);
         }
         return Optional.ofNullable(savedObjects);
     }

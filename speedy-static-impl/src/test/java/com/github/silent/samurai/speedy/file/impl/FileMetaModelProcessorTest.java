@@ -78,7 +78,7 @@ class FileMetaModelProcessorTest {
 
         FieldMetadata idField = productMetadata.field("id");
         assertNotNull(idField);
-        assertTrue(idField instanceof KeyFieldMetadata);
+        assertInstanceOf(KeyFieldMetadata.class, idField);
         assertEquals(ValueType.TEXT, idField.getValueType());
         assertEquals("id", idField.getDbColumnName());
         assertEquals("id", idField.getOutputPropertyName());

@@ -82,16 +82,25 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     }
 
     @Override
-    public SpeedyEntity create(SpeedyEntity entity) throws SpeedyHttpException {
+    public List<SpeedyEntity> create(List<SpeedyEntity> entities) throws SpeedyHttpException {
         try {
             SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
-            speedyToJooqSql.insertEntity(entity);
 
-            SpeedyEntityKey entityKey = SpeedyEntityUtil.toEntityKey(entity);
-            Result<Record> result = speedyToJooqSql.findByPrimaryKey(entityKey);
+            speedyToJooqSql.insertEntity(entities);
 
-            return new JooqSqlToSpeedy(dslContext)
-                    .fromRecord(result.get(0), entity.getMetadata(), Set.of());
+            List<SpeedyEntity> entityList = new ArrayList<>(entities.size());
+
+            for (SpeedyEntity entity : entities) {
+                SpeedyEntityKey entityKey = SpeedyEntityUtil.toEntityKey(entity);
+                Result<Record> result = speedyToJooqSql.findByPrimaryKey(entityKey);
+
+                SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dslContext)
+                        .fromRecord(result.get(0), entity.getMetadata(), Set.of());
+
+                entityList.add(speedyEntity);
+            }
+
+            return entityList;
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -114,16 +123,21 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     }
 
     @Override
-    public SpeedyEntity delete(SpeedyEntityKey pk) throws SpeedyHttpException {
+    public List<SpeedyEntity> delete(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
         try {
+            List<SpeedyEntity> entities = new ArrayList<>(pks.size());
             SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
 
-            Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
-            SpeedyEntity entity = new JooqSqlToSpeedy(dslContext)
-                    .fromRecord(result.get(0), pk.getMetadata(), Set.of());
+            for (SpeedyEntityKey pk : pks) {
+                Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
+                SpeedyEntity entity = new JooqSqlToSpeedy(dslContext)
+                        .fromRecord(result.get(0), pk.getMetadata(), Set.of());
 
-            speedyToJooqSql.deleteEntity(pk);
-            return entity;
+                entities.add(entity);
+            }
+
+            speedyToJooqSql.deleteEntity(pks);
+            return entities;
         } catch (Exception e) {
             throw new BadRequestException(e);
         }

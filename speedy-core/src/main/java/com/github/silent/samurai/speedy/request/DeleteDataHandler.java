@@ -65,11 +65,12 @@ public class DeleteDataHandler {
     }
 
     public Optional<List<SpeedyEntity>> runBatchQuery() throws Exception {
-        List<SpeedyEntity> deletedObjects = new LinkedList<>();
+        List<SpeedyEntity> deletedObjects = List.of();
         EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();
         QueryProcessor queryProcessor = context.getQueryProcessor();
         if (!keysToBeRemoved.isEmpty()) {
+
             for (SpeedyEntityKey parsedKey : keysToBeRemoved) {
                 // validate b4 delete
                 context.getValidationProcessor().validateDeleteRequestEntity(
@@ -80,21 +81,18 @@ public class DeleteDataHandler {
                         SpeedyEventType.PRE_DELETE,
                         entityMetadata,
                         parsedKey);
-                // handle delete request
-                if (context.getVEntityProcessor().isVirtualEntity(entityMetadata)) {
-                    SpeedyVirtualEntityHandler handler = context.getVEntityProcessor().getHandler(entityMetadata);
-                    SpeedyEntity deletedEntity = handler.delete(parsedKey);
-                    deletedObjects.add(deletedEntity);
-                } else {
-                    SpeedyEntity deletedEntity = queryProcessor.delete(parsedKey);
-                    deletedObjects.add(deletedEntity);
-                }
+            }
 
+            // handle delete request
+            deletedObjects = queryProcessor.delete(keysToBeRemoved);
+
+            for (SpeedyEntityKey parsedKey : keysToBeRemoved) {
                 // fire post delete event
                 eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE,
                         entityMetadata, parsedKey);
             }
+
         }
-        return Optional.of(deletedObjects);
+        return Optional.ofNullable(deletedObjects);
     }
 }

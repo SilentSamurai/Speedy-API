@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy.docs;
 
+import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.interfaces.*;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -15,9 +17,11 @@ import java.util.List;
 public class OpenApiGenerator {
 
     private final MetaModelProcessor metaModelProcessor;
+    private final VirtualEntityProcessor vEntityProcessor;
 
-    public OpenApiGenerator(MetaModelProcessor metaModelProcessor) {
-        this.metaModelProcessor = metaModelProcessor;
+    public OpenApiGenerator(SpeedyFactory speedyFactory) {
+        this.metaModelProcessor = speedyFactory.getMetaModelProcessor();
+        this.vEntityProcessor = speedyFactory.getVEntityProcessor();
     }
 
     public void generate(OpenAPI openApi) {
@@ -35,6 +39,7 @@ public class OpenApiGenerator {
             postOperation(entityMetadata, createPathItem);
             putOperation(entityMetadata, updatePathItem);
             deleteOperation(entityMetadata, deletePathItem);
+
             getWithPrimaryFields(entityMetadata, identifierPathItem);
 //            getOperation(entityMetadata, queryPathItem);
             getWithFieldQuery(entityMetadata, queryPathItem);
@@ -48,16 +53,19 @@ public class OpenApiGenerator {
             String querypath = String.format("%s/%s/$query", SpeedyConstant.URI, entityMetadata.getName());
             openApi.path(querypath, queryPathItem);
 
-            String createPath = String.format("%s/%s/$create", SpeedyConstant.URI, entityMetadata.getName());
-            openApi.path(createPath, createPathItem);
-
-            String updatePath = String.format("%s/%s/$update", SpeedyConstant.URI, entityMetadata.getName());
-            openApi.path(updatePath, updatePathItem);
-
-            String deletePath = String.format("%s/%s/$delete", SpeedyConstant.URI, entityMetadata.getName());
-            openApi.path(deletePath, deletePathItem);
-
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
+
+            if (!vEntityProcessor.isVirtualEntity(entityMetadata)) {
+                String createPath = String.format("%s/%s/$create", SpeedyConstant.URI, entityMetadata.getName());
+                openApi.path(createPath, createPathItem);
+
+                String updatePath = String.format("%s/%s/$update", SpeedyConstant.URI, entityMetadata.getName());
+                openApi.path(updatePath, updatePathItem);
+
+                String deletePath = String.format("%s/%s/$delete", SpeedyConstant.URI, entityMetadata.getName());
+                openApi.path(deletePath, deletePathItem);
+            }
+
         }
     }
 

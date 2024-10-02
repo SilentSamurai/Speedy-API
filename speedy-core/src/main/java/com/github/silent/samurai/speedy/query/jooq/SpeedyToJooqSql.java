@@ -15,6 +15,7 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.UUID;
 
 public class SpeedyToJooqSql {
@@ -48,9 +49,9 @@ public class SpeedyToJooqSql {
         return query.fetch();
     }
 
-    public boolean insertEntity(SpeedyEntity entity) throws SpeedyHttpException {
+    public void insertEntity(DSLContext context, SpeedyEntity entity) throws SpeedyHttpException {
         EntityMetadata entityMetadata = entity.getMetadata();
-        InsertSetStep<Record> insertQuery = dslContext
+        InsertSetStep<Record> insertQuery = context
                 .insertInto(DSL.table(entityMetadata.getDbTableName()));
 
         InsertSetMoreStep<Record> returnQuery = null;
@@ -101,7 +102,14 @@ public class SpeedyToJooqSql {
             returnQuery.execute();
         }
 
-        return true;
+    }
+
+    public void insertEntity(List<SpeedyEntity> entities) {
+        dslContext.transaction(conf -> {
+            for (SpeedyEntity entity : entities) {
+                insertEntity(conf.dsl(), entity);
+            }
+        });
     }
 
     public boolean updateEntity(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
@@ -146,9 +154,9 @@ public class SpeedyToJooqSql {
         return true;
     }
 
-    public boolean deleteEntity(SpeedyEntityKey pk) throws SpeedyHttpException {
+    private boolean deleteEntity(DSLContext context, SpeedyEntityKey pk) throws SpeedyHttpException {
         EntityMetadata entityMetadata = pk.getMetadata();
-        DeleteQuery<Record> deleteQuery = dslContext.deleteQuery(DSL.table(entityMetadata.getDbTableName()));
+        DeleteQuery<Record> deleteQuery = context.deleteQuery(DSL.table(entityMetadata.getDbTableName()));
 
         boolean isConditionProvided = false;
 
@@ -170,6 +178,14 @@ public class SpeedyToJooqSql {
             deleteQuery.execute();
         }
         return true;
+    }
+
+    public void deleteEntity(List<SpeedyEntityKey> pks) {
+        dslContext.transaction(conf -> {
+            for (SpeedyEntityKey pk : pks) {
+                deleteEntity(conf.dsl(), pk);
+            }
+        });
     }
 
 }

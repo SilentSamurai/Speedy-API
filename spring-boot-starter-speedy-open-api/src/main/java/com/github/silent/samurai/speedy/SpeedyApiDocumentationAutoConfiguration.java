@@ -12,7 +12,7 @@ public class SpeedyApiDocumentationAutoConfiguration {
 
     @Bean
     public OpenApiCustomizer customerGlobalHeaderOpenApiCustomizer(SpeedyFactory speedyFactory) {
-        OpenApiGenerator openApiGenerator = new OpenApiGenerator(speedyFactory.getMetaModelProcessor());
+        OpenApiGenerator openApiGenerator = new OpenApiGenerator(speedyFactory);
         return openApiGenerator::generate;
     }
 
