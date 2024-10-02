@@ -180,11 +180,12 @@ public class SpeedyFactory {
             }
         } catch (SpeedyHttpException e) {
             ExceptionUtils.writeException(response, e);
-            LOGGER.error("Exception at get {} ", request.getRequestURI(), e);
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } catch (Exception e) {
             response.setStatus(ExceptionUtils.getStatusFromException(e));
-            LOGGER.error("Exception at get {} ", request.getRequestURI(), e);
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } catch (Throwable e) {
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } finally {
             response.getWriter().flush();

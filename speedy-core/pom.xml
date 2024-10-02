@@ -46,13 +46,15 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
-            <version>3.16.0</version>
+<!--            <version>3.19.8</version>-->
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-meta</artifactId>
-            <version>3.16.0</version>
+<!--            <version>3.16.0</version>-->
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

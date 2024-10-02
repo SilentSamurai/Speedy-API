@@ -25,21 +25,23 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryProcessorImpl.class);
 
-    DataSource dataSource;
-    SQLDialect dialect;
-    Settings settings = new Settings()
+    private final DataSource dataSource;
+    private final SQLDialect dialect;
+    private final Settings settings = new Settings()
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
             .withRenderNameStyle(RenderNameStyle.AS_IS);
+
+    private final DSLContext dslContext;
 
     public JooqQueryProcessorImpl(DataSource dataSource, SQLDialect dialect) {
         this.dataSource = dataSource;
         this.dialect = dialect;
+        this.dslContext = DSL.using(dataSource, dialect, settings);
     }
 
     @Override
     public SpeedyEntity executeOne(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
-            DSLContext dslContext = DSL.using(dataSource, dialect, settings);
             JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
             Result<Record> result = qb.executeQuery();
             Record record = result.get(0);
@@ -53,7 +55,6 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public List<SpeedyEntity> executeMany(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
-            DSLContext dslContext = DSL.using(dataSource, dialect, settings);
             JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
             Result<Record> result = qb.executeQuery();
             List<SpeedyEntity> list = new ArrayList<>();
@@ -72,7 +73,6 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
-            DSLContext dslContext = DSL.using(dataSource, dialect, settings);
             Result<Record> result = new SpeedyToJooqSql(dslContext)
                     .findByPrimaryKey(entityKey);
             return !result.isEmpty();
@@ -84,8 +84,6 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity create(SpeedyEntity entity) throws SpeedyHttpException {
         try {
-            DSLContext dslContext = DSL.using(dataSource, dialect, settings);
-
             SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
             speedyToJooqSql.insertEntity(entity);
 
@@ -102,7 +100,6 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
         try {
-            DSLContext dslContext = DSL.using(dataSource, dialect, settings);
             SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
 
             speedyToJooqSql.updateEntity(pk, entity);
@@ -119,7 +116,6 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity delete(SpeedyEntityKey pk) throws SpeedyHttpException {
         try {
-            DSLContext dslContext = DSL.using(dataSource, dialect, settings);
             SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
 
             Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);

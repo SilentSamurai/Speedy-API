@@ -4,7 +4,6 @@ import com.github.silent.samurai.speedy.entity.VirtualEntity;
 import com.github.silent.samurai.speedy.events.EntityEvents;
 import com.github.silent.samurai.speedy.events.VirtualEntityHandler;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessor;

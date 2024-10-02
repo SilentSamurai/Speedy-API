@@ -1,12 +1,13 @@
 package com.github.silent.samurai.speedy.url;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.github.silent.samurai.speedy.repositories.ProductRepository;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Order;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.CategoryApi;
 import org.openapitools.client.api.ProductApi;
@@ -21,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -41,6 +43,10 @@ class SpeedyAssociationTest {
 
     @Autowired
     CategoryRepository categoryRepository;
+
+    @Autowired
+    ProductRepository productRepository;
+
     ApiClient defaultClient;
     @Autowired
     private MockMvc mvc;
@@ -62,6 +68,7 @@ class SpeedyAssociationTest {
         apiInstance.bulkCreateCategory(postCategories);
     }
 
+
     @Test
     void createProduct() throws Exception {
         CategoryApi categoryApi = new CategoryApi(defaultClient);
@@ -73,15 +80,15 @@ class SpeedyAssociationTest {
         Assertions.assertNotNull(categoryResponse);
         Assertions.assertNotNull(categoryResponse.getPayload());
         Assertions.assertFalse(categoryResponse.getPayload().isEmpty());
-        CategoryKey getCategory = categoryResponse.getPayload().get(0);
-        Assertions.assertNotNull(getCategory.getId());
-        Assertions.assertNotEquals("", getCategory.getId());
+        CategoryKey categoryKey = categoryResponse.getPayload().get(0);
+        Assertions.assertNotNull(categoryKey.getId());
+        Assertions.assertNotEquals("", categoryKey.getId());
 
 
         ProductApi productApi = new ProductApi(defaultClient);
         CreateProductRequest postProduct = new CreateProductRequest()
                 .name("New Product")
-                .category(new CategoryKey().id(getCategory.getId()))
+                .category(new CategoryKey().id(categoryKey.getId()))
                 .description("dummy Product");
         BulkCreateProductResponse productsResponse = productApi.bulkCreateProduct(List.of(postProduct));
 
@@ -106,7 +113,7 @@ class SpeedyAssociationTest {
         Assertions.assertEquals(1, productList.size());
         Product product = productList.get(0);
         Assertions.assertNotNull(product.getCategory());
-        Assertions.assertEquals(getCategory.getId(), product.getCategory().getId());
+        Assertions.assertEquals(categoryKey.getId(), product.getCategory().getId());
 
 
     }

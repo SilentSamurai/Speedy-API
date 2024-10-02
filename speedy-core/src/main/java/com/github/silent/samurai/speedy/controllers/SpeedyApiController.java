@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -38,7 +39,7 @@ public class SpeedyApiController {
     }
 
     @Hidden
-    @RequestMapping(value = {"*", "*/*"})
+    @RequestMapping(value = {"*", "/**", "*/*"})
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, InvocationTargetException, IllegalAccessException {
         speedyFactory.processRequest(request, response);
     }

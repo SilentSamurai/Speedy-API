@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.3</version>
+        <version>3.3.0</version>
         <relativePath/> <!-- lookup parent sender repository -->
     </parent>
 
@@ -25,8 +25,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
 <!--        <kotlin.version>1.8.0</kotlin.version>-->
-        <springdoc.version>1.6.4</springdoc.version>
-        <junit-jupiter.version>5.7.1</junit-jupiter.version>
+        <springdoc.version>2.5.0</springdoc.version>
+<!--        <junit-jupiter.version>5.7.1</junit-jupiter.version>-->
     </properties>
 
     <modules>
@@ -88,47 +88,19 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <!--Version is not needed when used with Spring Boot parent pom file -->
-            <version>4.5.13</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.junit.jupiter</groupId>-->
-<!--            <artifactId>junit-jupiter</artifactId>-->
-<!--            <version>${junit-jupiter.version}</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-
-
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
+<!--            <version>1.18.26</version>-->
             <scope>provided</scope>
         </dependency>
 
     </dependencies>
-
-<!--    <dependencyManagement>-->
-<!--        <dependencies>-->
-<!--            <dependency>-->
-<!--                <groupId>org.junit</groupId>-->
-<!--                <artifactId>junit-bom</artifactId>-->
-<!--                <version>5.11.1</version>-->
-<!--                <type>pom</type>-->
-<!--                <scope>import</scope>-->
-<!--            </dependency>-->
-<!--        </dependencies>-->
-<!--    </dependencyManagement>-->
 
     <distributionManagement>
         <snapshotRepository>

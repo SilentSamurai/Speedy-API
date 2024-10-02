@@ -239,9 +239,8 @@ public class JooqQueryBuilder {
         PageInfo pageInfo = speedyQuery.getPageInfo();
         int pageSize = pageInfo.getPageSize();
         int pageNumber = pageInfo.getPageNo();
-        int offset = (pageNumber) * pageSize;
-        query.limit(pageSize)
-                .offset(offset);
+        long offset = (long) (pageNumber) * pageSize;
+        query.limit(offset, pageSize);
     }
 
     private void joins() {

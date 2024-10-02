@@ -24,10 +24,11 @@
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-core</artifactId>
             <version>${project.parent.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-common</artifactId>
+            <artifactId>springdoc-openapi-starter-common</artifactId>
             <version>${springdoc.version}</version>
             <scope>compile</scope>
             <exclusions>

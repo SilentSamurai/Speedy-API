@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy;
 
 import com.github.silent.samurai.speedy.docs.OpenApiGenerator;
-import org.springdoc.core.customizers.OpenApiCustomiser;
+import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class SpeedyApiDocumentationAutoConfiguration {
 
     @Bean
-    public OpenApiCustomiser customerGlobalHeaderOpenApiCustomizer(SpeedyFactory speedyFactory) {
+    public OpenApiCustomizer customerGlobalHeaderOpenApiCustomizer(SpeedyFactory speedyFactory) {
         OpenApiGenerator openApiGenerator = new OpenApiGenerator(speedyFactory.getMetaModelProcessor());
         return openApiGenerator::generate;
     }
