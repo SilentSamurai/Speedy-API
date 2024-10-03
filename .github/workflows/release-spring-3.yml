@@ -19,16 +19,16 @@ jobs:
             -   id: install-secret-key
                 name: Install gpg secret key
                 run: |
-                    cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+                    cat <(echo -e "${{ secrets.GPG_SIGNING_KEY }}") | gpg --batch --import
                     gpg --list-secret-keys --keyid-format LONG
             -   id: publish-to-central
                 name: Publish to Central Repository
                 env:
-                    MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-                    MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+                    MAVEN_USERNAME: ${{ secrets.CENTRAL_TOKEN_USERNAME }}
+                    MAVEN_PASSWORD: ${{ secrets.CENTRAL_TOKEN_PASSWORD }}
                 run: |
                     mvn \
                       --no-transfer-progress \
                       --batch-mode \
-                      -Dgpg.passphrase=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} \
+                      -Dgpg.passphrase=${{ secrets.GPG_SIGNING_KEY_PASSWORD }} \
                       clean deploy -P=ossrh
