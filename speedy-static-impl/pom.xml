@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.github.SilentSamurai</groupId>
         <artifactId>speedy-api-parent</artifactId>
-        <version>0.0.2</version>
+        <version>3.0.0</version>
     </parent>
     <artifactId>speedy-static-impl</artifactId>
     <name>speedy-static-impl</name>
@@ -12,7 +12,7 @@
         <dependency>
             <groupId>com.github.SilentSamurai</groupId>
             <artifactId>speedy-commons</artifactId>
-            <version>0.0.2</version>
+            <version>3.0.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
