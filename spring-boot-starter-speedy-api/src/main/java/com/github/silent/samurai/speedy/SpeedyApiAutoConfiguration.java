@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy;
 
 import com.github.silent.samurai.speedy.controllers.SpeedyApiController;
+import com.github.silent.samurai.speedy.docs.SpeedyOpenApiCustomizer;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,5 +21,10 @@ public class SpeedyApiAutoConfiguration {
         return new SpeedyFactory(speedyConfiguration);
     }
 
+    @Bean
+    @ConditionalOnBean(SpeedyFactory.class)
+    public SpeedyOpenApiCustomizer speedyOpenApiCustomizer(SpeedyFactory speedyFactory) {
+        return new SpeedyOpenApiCustomizer(speedyFactory);
+    }
 
 }

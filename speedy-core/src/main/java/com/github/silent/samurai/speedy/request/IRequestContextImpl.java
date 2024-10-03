@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.request;
 
 import com.github.silent.samurai.speedy.events.EventProcessor;
-import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.IRequestContext;
@@ -22,7 +21,6 @@ public class IRequestContextImpl implements IRequestContext {
     private final MetaModelProcessor metaModelProcessor;
     private final ValidationProcessor validationProcessor;
     private final EventProcessor eventProcessor;
-    private final VirtualEntityProcessor vEntityProcessor;
     private final QueryProcessor queryProcessor;
     private final EntityMetadata entityMetadata;
 
@@ -31,7 +29,6 @@ public class IRequestContextImpl implements IRequestContext {
                                MetaModelProcessor metaModelProcessor,
                                ValidationProcessor validationProcessor,
                                EventProcessor eventProcessor,
-                               VirtualEntityProcessor vEntityProcessor,
                                QueryProcessor queryProcessor,
                                EntityMetadata metadata) {
         this.request = request;
@@ -39,7 +36,6 @@ public class IRequestContextImpl implements IRequestContext {
         this.metaModelProcessor = metaModelProcessor;
         this.validationProcessor = validationProcessor;
         this.eventProcessor = eventProcessor;
-        this.vEntityProcessor = vEntityProcessor;
         this.queryProcessor = queryProcessor;
         this.entityMetadata = metadata;
     }

@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.data;
 
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -124,5 +125,10 @@ public class StaticEntityMetadata implements EntityMetadata {
     @Override
     public String getDbTableName() {
         return entityClass.getSimpleName();
+    }
+
+    @Override
+    public ActionType getActionType() {
+        return ActionType.ALL;
     }
 }

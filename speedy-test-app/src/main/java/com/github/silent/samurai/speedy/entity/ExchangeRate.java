@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.entity;
 
-import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
+import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@SpeedyIgnore
+@SpeedyAction
 @Table(name = "exchange_rates")
 public class ExchangeRate extends AbstractBaseEntity {
 

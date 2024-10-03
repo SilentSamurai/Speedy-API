@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.validation;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyValidator;
-import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
+import com.github.silent.samurai.speedy.enums.SpeedyValidationRequestType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -46,13 +46,13 @@ public class ValidationProcessor {
                         SpeedyValidator annotation = declaredMethod.getAnnotation(SpeedyValidator.class);
                         String entityName = annotation.entity();
                         EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entityName);
-                        if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.CREATE)) {
+                        if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.CREATE)) {
                             createValidationMethods.put(entityMetadata.getName(), Pair.of(instance, declaredMethod));
                         }
-                        if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.UPDATE)) {
+                        if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.UPDATE)) {
                             updateValidationMethods.put(entityMetadata.getName(), Pair.of(instance, declaredMethod));
                         }
-                        if (Arrays.stream(annotation.requests()).anyMatch(speedyRequestType -> speedyRequestType == SpeedyRequestType.DELETE)) {
+                        if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.DELETE)) {
                             deleteValidationMethods.put(entityMetadata.getName(), Pair.of(instance, declaredMethod));
                         }
                     }

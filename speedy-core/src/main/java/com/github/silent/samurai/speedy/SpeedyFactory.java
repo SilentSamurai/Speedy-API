@@ -34,6 +34,7 @@ import org.springframework.http.HttpMethod;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Collections;
@@ -50,7 +51,6 @@ public class SpeedyFactory {
     private final ValidationProcessor validationProcessor;
     private final EventProcessor eventProcessor;
     private final RegistryImpl eventRegistry;
-    private final VirtualEntityProcessor vEntityProcessor;
     private final QueryProcessor queryProcessor;
 
 
@@ -64,9 +64,6 @@ public class SpeedyFactory {
         speedyConfiguration.register(eventRegistry);
         this.eventProcessor = new EventProcessor(metaModelProcessor, eventRegistry);
         this.eventProcessor.processRegistry();
-
-        this.vEntityProcessor = new VirtualEntityProcessor(metaModelProcessor, eventRegistry);
-        this.vEntityProcessor.processRegistry();
 
         this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModelProcessor);
         this.validationProcessor.process();
@@ -144,7 +141,8 @@ public class SpeedyFactory {
 
             EntityMetadata resourceMetadata = uriSpeedyQuery.getFrom();
 
-            IRequestContextImpl context = new IRequestContextImpl(request, response, metaModelProcessor, validationProcessor, eventProcessor, vEntityProcessor, queryProcessor, resourceMetadata);
+            IRequestContextImpl context = new IRequestContextImpl(request,
+                    response, metaModelProcessor, validationProcessor, eventProcessor, queryProcessor, resourceMetadata);
 
 
             if (method.equals(HttpMethod.GET.name())) {

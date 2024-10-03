@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.jpa.impl.processors;
 
+import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -30,6 +31,11 @@ public class JpaEntityProcessor {
         entityMetadata.setKeyClass(getIdClassType(entityType));
         entityMetadata.setHasCompositeKey(!entityType.hasSingleIdAttribute());
         entityMetadata.setTableName(getTableName(entityType.getJavaType()));
+
+        SpeedyAction annotation = entityType.getBindableJavaType().getAnnotation(SpeedyAction.class);
+        if (annotation != null) {
+            entityMetadata.setActionType(annotation.value());
+        }
 
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
             JpaFieldMetadata memberMetadata = JpaFieldProcessor.processField(attribute,

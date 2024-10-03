@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
-import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import lombok.Data;
 
 import jakarta.persistence.*;
@@ -46,7 +46,7 @@ public class Customer extends AbstractBaseEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @SpeedyIgnore(IgnoreType.WRITE)
+    @SpeedyAction(ActionType.READ)
     @Column(name = "created_by")
     private String createdBy;
 

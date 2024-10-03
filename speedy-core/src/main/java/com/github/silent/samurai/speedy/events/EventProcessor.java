@@ -53,8 +53,8 @@ public class EventProcessor {
             try {
                 if (declaredMethod.isAnnotationPresent(SpeedyEvent.class)) {
                     SpeedyEvent annotation = declaredMethod.getAnnotation(SpeedyEvent.class);
-                    Class<?> entityClass = annotation.value();
-                    EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entityClass.getSimpleName());
+                    String entity = annotation.value();
+                    EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entity);
                     for (SpeedyEventType event : SpeedyEventType.values()) {
                         eventMap.putIfAbsent(event, new HashMap<>());
                         Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(event);

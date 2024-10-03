@@ -39,10 +39,6 @@ public class SpeedyUriContext {
         this.requestURI = requestURI;
     }
 
-    public MultiValueMap<String, String> getRawQuery() {
-        return rawQuery;
-    }
-
     public boolean hasQuery(String queryName) {
         return rawQuery.containsKey(queryName);
     }

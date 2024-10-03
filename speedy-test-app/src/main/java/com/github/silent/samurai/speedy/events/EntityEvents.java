@@ -14,7 +14,7 @@ public class EntityEvents implements ISpeedyEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityEvents.class);
 
-    @SpeedyEvent(value = Category.class, eventType = {SpeedyEventType.POST_INSERT, SpeedyEventType.PRE_INSERT})
+    @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.POST_INSERT, SpeedyEventType.PRE_INSERT})
     public void categoryPostInsertEvent(SpeedyEntity category) throws Exception {
         LOGGER.info("Category Post Insert Event");
     }

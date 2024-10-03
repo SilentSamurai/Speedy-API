@@ -10,7 +10,6 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -87,6 +86,10 @@ public class PostDataHandler {
     }
 
     public Optional<List<SpeedyEntity>> process(EntityMetadata resourceMetadata, JsonNode jsonElement) throws SpeedyHttpException {
+        if (!resourceMetadata.isCreateAllowed()) {
+            throw new BadRequestException(String.format("create not allowed for %s", resourceMetadata.getName()));
+        }
+
         List<SpeedyEntity> speedyEntities = parserContent(resourceMetadata, jsonElement);
         return processBatch(speedyEntities);
     }

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
@@ -98,24 +97,6 @@ public class CommonUtil {
             return Double.class;
         }
         return null;
-    }
-
-    public static Optional<Type> getTypeParameters(Class<?> clazz) {
-        Type[] genericSuperclass = clazz.getGenericInterfaces();
-
-        Optional<Type> typeOptional = Optional.empty();
-        for (Type inf : genericSuperclass) {
-            if (inf instanceof ParameterizedType) {
-                ParameterizedType type = (ParameterizedType) inf;
-                if (SpeedyVirtualEntityHandler.class.isAssignableFrom((Class<?>) type.getRawType())) {
-                    Type[] actualTypeArguments = type.getActualTypeArguments();
-                    typeOptional = Optional.of(actualTypeArguments[0]);
-                    break;
-                }
-            }
-        }
-        // If the class is not a parameterized type, return an empty array
-        return typeOptional;
     }
 
     public static String getRequestURI(HttpServletRequest request) throws UnsupportedEncodingException {

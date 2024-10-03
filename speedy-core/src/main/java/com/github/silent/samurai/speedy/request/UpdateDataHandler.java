@@ -9,7 +9,6 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -33,6 +32,10 @@ public class UpdateDataHandler {
     }
 
     public Optional<SpeedyEntity> process() throws Exception {
+        EntityMetadata entityMetadata = context.getEntityMetadata();
+        if (!entityMetadata.isUpdateAllowed()) {
+            throw new BadRequestException(String.format("update not allowed for %s", entityMetadata.getName()));
+        }
         parse();
         return runBatch();
     }

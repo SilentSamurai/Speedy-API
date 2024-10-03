@@ -25,26 +25,19 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>spring-boot-starter-speedy-open-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-java-client</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-jpa-impl</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
 <!--        <dependency>-->

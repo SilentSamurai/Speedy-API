@@ -14,14 +14,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-public class OpenApiGenerator {
+public class SpeedyOpenApiCustomizer {
 
     private final MetaModelProcessor metaModelProcessor;
-    private final VirtualEntityProcessor vEntityProcessor;
 
-    public OpenApiGenerator(SpeedyFactory speedyFactory) {
+    public SpeedyOpenApiCustomizer(SpeedyFactory speedyFactory) {
         this.metaModelProcessor = speedyFactory.getMetaModelProcessor();
-        this.vEntityProcessor = speedyFactory.getVEntityProcessor();
     }
 
     public void generate(OpenAPI openApi) {
@@ -55,7 +53,7 @@ public class OpenApiGenerator {
 
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
 
-            if (!vEntityProcessor.isVirtualEntity(entityMetadata)) {
+            if (!entityMetadata.isReadOnly()) {
                 String createPath = String.format("%s/%s/$create", SpeedyConstant.URI, entityMetadata.getName());
                 openApi.path(createPath, createPathItem);
 

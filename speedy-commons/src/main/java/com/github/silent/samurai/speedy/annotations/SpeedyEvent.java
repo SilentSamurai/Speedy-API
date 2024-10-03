@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SpeedyEvent {
 
-    Class<?> value();
+    String value() default "";
 
     SpeedyEventType[] eventType();
 

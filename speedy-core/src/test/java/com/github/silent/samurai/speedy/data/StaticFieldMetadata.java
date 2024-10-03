@@ -1,13 +1,12 @@
 package com.github.silent.samurai.speedy.data;
 
-import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Data;
-import lombok.SneakyThrows;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
@@ -121,8 +120,8 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 //    }
 
     @Override
-    public IgnoreType getIgnoreProperty() {
-        return IgnoreType.ALL;
+    public ActionType getIgnoreProperty() {
+        return ActionType.ALL;
     }
 
     @Override

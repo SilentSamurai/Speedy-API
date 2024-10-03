@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.file.impl.metadata;
 
-import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
@@ -35,7 +35,7 @@ public class FileFieldMetadata implements FieldMetadata {
 
 
     @Override
-    public IgnoreType getIgnoreProperty() {
+    public ActionType getIgnoreProperty() {
         return null;
     }
 

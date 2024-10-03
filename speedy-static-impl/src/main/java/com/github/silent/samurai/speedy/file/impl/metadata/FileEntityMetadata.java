@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.file.impl.metadata;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -27,6 +28,7 @@ public class FileEntityMetadata implements EntityMetadata {
     private boolean hasCompositeKey;
     private String dbTableName;
     private String keyType;
+    private ActionType actionType = ActionType.ALL;
 
     public Set<FileFieldMetadata> getFields() {
         return new HashSet<>(fieldMap.values());

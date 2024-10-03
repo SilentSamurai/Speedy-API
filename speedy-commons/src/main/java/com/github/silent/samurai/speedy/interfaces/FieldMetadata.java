@@ -1,9 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ValueType;
-
-import java.util.Map;
 
 public interface FieldMetadata {
 
@@ -31,7 +29,7 @@ public interface FieldMetadata {
 
     String getOutputPropertyName();
 
-    IgnoreType getIgnoreProperty();
+    ActionType getIgnoreProperty();
 
     Class<?> getFieldType();
 

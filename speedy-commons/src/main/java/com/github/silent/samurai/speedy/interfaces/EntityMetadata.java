@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces;
 
+import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
 import java.util.Optional;
@@ -39,4 +41,26 @@ public interface EntityMetadata {
     }
 
     String getDbTableName();
+
+    ActionType getActionType();
+
+    default boolean isReadOnly() {
+        return getActionType() == ActionType.READ;
+    }
+
+    default boolean isReadAllowed() {
+        return getActionType() == ActionType.READ || getActionType() == ActionType.ALL;
+    }
+
+    default boolean isCreateAllowed() {
+        return getActionType() == ActionType.CREATE || getActionType() == ActionType.ALL;
+    }
+
+    default boolean isUpdateAllowed() {
+        return getActionType() == ActionType.UPDATE || getActionType() == ActionType.ALL;
+    }
+
+    default boolean isDeleteAllowed() {
+        return getActionType() == ActionType.DELETE || getActionType() == ActionType.ALL;
+    }
 }

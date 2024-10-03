@@ -9,7 +9,6 @@ import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyVirtualEntityHandler;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -33,6 +32,11 @@ public class DeleteDataHandler {
     }
 
     public Optional<List<SpeedyEntity>> process() throws Exception {
+        EntityMetadata entityMetadata = context.getEntityMetadata();
+        if (!entityMetadata.isDeleteAllowed()) {
+            throw new BadRequestException(String.format("delete not allowed for %s", entityMetadata.getName()));
+        }
+
         parse();
         return runBatchQuery();
     }

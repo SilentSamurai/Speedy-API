@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
@@ -26,6 +27,7 @@ public class JpaEntityMetadata implements IJpaEntityMetadata {
     private EntityType<?> jpaEntityType;
     private Class<?> entityClass;
     private Class<?> keyClass;
+    private ActionType actionType = ActionType.ALL;
 
     public void addFieldMetadata(JpaFieldMetadata metadata) {
         this.fieldMap.put(metadata.getClassFieldName(), metadata);
@@ -100,4 +102,5 @@ public class JpaEntityMetadata implements IJpaEntityMetadata {
     public String getDbTableName() {
         return tableName;
     }
+
 }

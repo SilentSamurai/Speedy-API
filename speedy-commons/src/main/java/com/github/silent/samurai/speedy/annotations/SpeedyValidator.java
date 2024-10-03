@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.annotations;
 
-import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
+import com.github.silent.samurai.speedy.enums.SpeedyValidationRequestType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -14,6 +13,6 @@ public @interface SpeedyValidator {
 
     String entity() default "";
 
-    SpeedyRequestType[] requests() default {SpeedyRequestType.CREATE, SpeedyRequestType.UPDATE};
+    SpeedyValidationRequestType[] requests() default {SpeedyValidationRequestType.CREATE, SpeedyValidationRequestType.UPDATE};
 
 }

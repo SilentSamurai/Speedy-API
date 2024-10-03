@@ -24,25 +24,17 @@ public class ConditionFactory {
     }
 
     private BinaryCondition createCondition(QueryField field, ConditionOperator operator, SpeedyValue instance) throws SpeedyHttpException {
-        switch (operator) {
-            case EQ:
-                return new EqCondition(field, instance);
-            case NEQ:
-                return new NotEqCondition(field, instance);
-            case LT:
-                return new LessThanCondition(field, instance);
-            case GT:
-                return new GreaterThanCondition(field, instance);
-            case LTE:
-                return new LessThanEqualCondition(field, instance);
-            case GTE:
-                return new GreaterThanEqualCondition(field, instance);
-            case IN:
-                return new InCondition(field, instance);
-            case NOT_IN:
-                return new NotInCondition(field, instance);
-        }
-        throw new BadRequestException("");
+        return switch (operator) {
+            case EQ -> new EqCondition(field, instance);
+            case NEQ -> new NotEqCondition(field, instance);
+            case LT -> new LessThanCondition(field, instance);
+            case GT -> new GreaterThanCondition(field, instance);
+            case LTE -> new LessThanEqualCondition(field, instance);
+            case GTE -> new GreaterThanEqualCondition(field, instance);
+            case IN -> new InCondition(field, instance);
+            case NOT_IN -> new NotInCondition(field, instance);
+            default -> throw new BadRequestException("");
+        };
     }
 
     public QueryField createQueryField(String fieldName) throws SpeedyHttpException {

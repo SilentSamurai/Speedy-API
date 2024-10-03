@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.jpa.impl.data;
 
-import com.github.silent.samurai.speedy.enums.IgnoreType;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -120,8 +120,8 @@ public class StaticFieldMetadata implements IJpaKeyFieldMetadata {
     }
 
     @Override
-    public IgnoreType getIgnoreProperty() {
-        return IgnoreType.ALL;
+    public ActionType getIgnoreProperty() {
+        return ActionType.ALL;
     }
 
     @Override

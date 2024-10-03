@@ -2,8 +2,7 @@ package com.github.silent.samurai.speedy.jpa.impl.processors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
-import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
@@ -17,14 +16,12 @@ import org.springframework.core.annotation.AnnotationUtils;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.SingularAttribute;
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class JpaFieldProcessor {
 
@@ -194,13 +191,15 @@ public class JpaFieldProcessor {
             fieldMetadata.setDeserializable(false);
         }
 
-        SpeedyIgnore speedyIgnore = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyIgnore.class);
-        if (speedyIgnore != null) {
-            switch (speedyIgnore.value()) {
+        SpeedyAction speedyAction = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyAction.class);
+        if (speedyAction != null) {
+            switch (speedyAction.value()) {
                 case READ:
                     fieldMetadata.setSerializable(false);
                     break;
-                case WRITE:
+                case CREATE:
+                case UPDATE:
+                case DELETE:
                     fieldMetadata.setDeserializable(false);
                     break;
                 case ALL:
@@ -208,7 +207,7 @@ public class JpaFieldProcessor {
                     fieldMetadata.setDeserializable(false);
                     break;
             }
-            fieldMetadata.setIgnoreProperty(speedyIgnore.value());
+            fieldMetadata.setIgnoreProperty(speedyAction.value());
         }
 
         if (!fieldMetadata.isNullable() && fieldMetadata.isDeserializable()) {
