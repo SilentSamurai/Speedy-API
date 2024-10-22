@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<settings>
+    <profiles>
+        <profile>
+            <id>ossrh</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gpg.executable>gpg</gpg.executable>
+                <gpg.keyname>7FA5C36B02752B8CC1049C3A2A75294A8475C84D</gpg.keyname>
+                <gpg.passphrase>wkPyUw5hQTE!obmGAfBQ$c95yhGWJ2k</gpg.passphrase>
+            </properties>
+        </profile>
+    </profiles>
+    <servers>
+        <server>
+            <id>ossrh</id>
+            <username>iKxOq5j+</username>
+            <password>3rtoClm6ZtCT6R0e/Sk+pLSt+mxIJ6pLdRwwWhBK1Y3U</password>
+
+        </server>
+    </servers>
+</settings>
