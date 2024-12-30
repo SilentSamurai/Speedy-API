@@ -1,12 +1,9 @@
 package com.github.silent.samurai.speedy.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
 
 @Getter
 @Setter
@@ -14,7 +11,13 @@ import jakarta.persistence.Table;
         @Index(name = "categories_name_key", columnList = "name", unique = true)
 })
 @Entity
-public class Category extends AbstractBaseEntity {
+public class Category {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id")
+    protected String id;
+
     @Column(name = "name", nullable = false, length = 250)
     private String name;
 
