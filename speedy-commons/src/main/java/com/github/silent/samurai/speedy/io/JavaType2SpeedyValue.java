@@ -12,6 +12,7 @@ import java.time.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class JavaType2SpeedyValue {
     private static final Map<String, ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
@@ -46,6 +47,9 @@ public class JavaType2SpeedyValue {
     private static void initConverters() {
         put(ValueType.TEXT, String.class, (instance, valueType) -> {
             return new SpeedyText((String) instance);
+        });
+        put(ValueType.TEXT, UUID.class, (instance, valueType) -> {
+            return new SpeedyText(String.valueOf(instance));
         });
         put(ValueType.INT, int.class, (instance, valueType) -> {
             Integer value = (Integer) instance;

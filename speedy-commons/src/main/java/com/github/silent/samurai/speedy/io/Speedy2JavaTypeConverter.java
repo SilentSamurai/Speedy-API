@@ -12,6 +12,7 @@ import java.time.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class Speedy2JavaTypeConverter {
 
@@ -42,6 +43,9 @@ public class Speedy2JavaTypeConverter {
 
         put(ValueType.TEXT, String.class, (speedyValue, type) -> {
             return ((SpeedyText) speedyValue).getValue();
+        });
+        put(ValueType.TEXT, UUID.class, (speedyValue, type) -> {
+            return UUID.fromString(speedyValue.asText());
         });
         put(ValueType.INT, int.class, (speedyValue, type) -> {
             SpeedyInt speedyInt = (SpeedyInt) speedyValue;
