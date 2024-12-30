@@ -167,6 +167,8 @@ public class JpaFieldProcessor {
             if (fieldMetadata instanceof KeyFieldMetadata && isUuidGenerationRequired) {
                 JpaKeyFieldMetadata keyFieldMetadata = (JpaKeyFieldMetadata) fieldMetadata;
                 keyFieldMetadata.setGenerateIdKeys(true);
+                // uuid is not required to be present inside the speedy framework, string is enough.
+                fieldMetadata.setFieldType(String.class);
             }
             fieldMetadata.setInsertable(false);
             fieldMetadata.setUpdatable(false);
