@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaKeyFieldMetadata;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
+import jakarta.persistence.GenerationType;
 import org.hibernate.annotations.Formula;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.SingularAttribute;
+
 import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -159,8 +161,10 @@ public class JpaFieldProcessor {
 
         GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), GeneratedValue.class);
         if (generatedValueAnnotation != null) {
-            if (fieldMetadata instanceof KeyFieldMetadata &&
-                    generatedValueAnnotation.generator().toUpperCase().contains("UUID")) {
+            boolean isUuidGenerationRequired =
+                    generatedValueAnnotation.generator().toUpperCase().contains("UUID") ||
+                            generatedValueAnnotation.strategy() == GenerationType.UUID;
+            if (fieldMetadata instanceof KeyFieldMetadata && isUuidGenerationRequired) {
                 JpaKeyFieldMetadata keyFieldMetadata = (JpaKeyFieldMetadata) fieldMetadata;
                 keyFieldMetadata.setGenerateIdKeys(true);
             }
