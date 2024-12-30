@@ -13,7 +13,7 @@ public class ValueTypeUtil {
     private static final Map<Class<?>, ValueType> CLASS_TO_VALUE_TYPE_MAP = new HashMap<>();
 
     static {
-        CLASS_TO_VALUE_TYPE_MAP.put(UUID.class, ValueType.TEXT);
+//        CLASS_TO_VALUE_TYPE_MAP.put(UUID.class, ValueType.TEXT);
         CLASS_TO_VALUE_TYPE_MAP.put(String.class, ValueType.TEXT);
         CLASS_TO_VALUE_TYPE_MAP.put(Boolean.class, ValueType.BOOL);
         CLASS_TO_VALUE_TYPE_MAP.put(boolean.class, ValueType.BOOL);
