@@ -72,10 +72,15 @@ public class Json2SpeedyQueryBuilder {
         }
         // if operator is provided a : { $eq : b }
         if (fieldNode.isObject()) {
+            //  fieldNode = { $eq : b }
             for (Iterator<String> it2 = fieldNode.fieldNames(); it2.hasNext(); ) {
+                // capture operator
                 String operatorSymbol = it2.next();
-                JsonNode valueNode = fieldNode.get(operatorSymbol);
+                // parse operator
                 ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+                // capture value node after operator
+                JsonNode valueNode = fieldNode.get(operatorSymbol);
+
                 // if operator is $in or $nin and value is an array, a : { $in : [b, c] }
                 if (operator.doesAcceptMultipleValues() && valueNode.isArray()) {
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
@@ -88,7 +93,7 @@ public class Json2SpeedyQueryBuilder {
                     SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
                     return conditionFactory.createBiCondition(queryField, operator, fieldValue);
                 }
-                // if operator is $eq $lte etc , a : { $eq : b }
+                // if operator is $eq $lte $regex , value will be basic a : { $regex : "sup*" }
                 if (valueNode.isValueNode()) {
                     SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) valueNode);
                     return conditionFactory.createBiCondition(queryField, operator, speedyValue);
@@ -99,11 +104,12 @@ public class Json2SpeedyQueryBuilder {
     }
 
     BooleanCondition createAndCondition(ObjectNode objectNode) throws SpeedyHttpException {
-        // create and condtion from object: { a : { $eq : b }, c : d }
+        // create $and condition from object: { a : { $eq : b }, c : d }
         BooleanCondition booleanCondition = new BooleanConditionImpl(ConditionOperator.AND);
         for (Iterator<String> it2 = objectNode.fieldNames(); it2.hasNext(); ) {
             String fieldName = it2.next();
             JsonNode fieldNode = objectNode.get(fieldName);
+            // create a sub query on above $and query
             BinaryCondition binaryCondition = captureSingleBinaryQuery(fieldName, fieldNode);
             booleanCondition.addSubCondition(binaryCondition);
         }
@@ -154,7 +160,7 @@ public class Json2SpeedyQueryBuilder {
                 speedyQuery.setWhere(createBooleanCondition((ObjectNode) jsonNode));
                 return;
             }
-            throw new BadRequestException("where must be an object");
+            throw new BadRequestException("$where must be an object");
         }
     }
 

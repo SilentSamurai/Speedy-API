@@ -27,7 +27,7 @@ public class JooqQueryBuilder {
     private final EntityMetadata entityMetadata;
     private final DSLContext dslContext;
     private final List<FieldMetadata> joins = new LinkedList<>();
-    private final SelectJoinStep<org.jooq.Record> query;
+    private final SelectJoinStep<Record> query;
 
     public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
         this.speedyQuery = speedyQuery;
@@ -45,7 +45,8 @@ public class JooqQueryBuilder {
 
             return JooqUtil.getColumn(associatedMetadata);
         } else {
-            FieldMetadata fieldMetadata = queryField.getFieldMetadata();;
+            FieldMetadata fieldMetadata = queryField.getFieldMetadata();
+            ;
             return JooqUtil.getColumn(fieldMetadata);
         }
     }
@@ -71,6 +72,16 @@ public class JooqQueryBuilder {
         }
         return predicates.stream()
                 .reduce(DSL.noCondition(), org.jooq.Condition::and);
+    }
+
+    org.jooq.Condition regexPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        if (!speedyValue.isText()) {
+            throw new BadRequestException("only text values are supported for $regex.");
+        }
+        Field<Object> path = getPath(bCondition);
+        String rawValue = speedyValue.asText().replaceAll("\\*", "%");
+        return path.like(rawValue);
     }
 
     org.jooq.Condition equalPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
@@ -199,26 +210,30 @@ public class JooqQueryBuilder {
 
         BinaryCondition bCondition = (BinaryCondition) condition;
 
-        switch (condition.getOperator()) {
+        return switch (condition.getOperator()) {
             case EQ:
-                return equalPredicate(bCondition);
+                yield equalPredicate(bCondition);
             case NEQ:
-                return notEqualPredicate(bCondition);
+                yield notEqualPredicate(bCondition);
             case LT:
-                return lessThanPredicate(bCondition);
+                yield lessThanPredicate(bCondition);
             case GT:
-                return greaterThanPredicate(bCondition);
+                yield greaterThanPredicate(bCondition);
             case LTE:
-                return lessThanOrEqualToPredicate(bCondition);
+                yield lessThanOrEqualToPredicate(bCondition);
             case GTE:
-                return greaterThanOrEqualToPredicate(bCondition);
+                yield greaterThanOrEqualToPredicate(bCondition);
             case IN:
-                return inPredicate(bCondition);
+                yield inPredicate(bCondition);
             case NOT_IN:
-                return notInPredicate(bCondition);
-            default:
+                yield notInPredicate(bCondition);
+            case REGEX:
+                yield regexPredicate(bCondition);
+            case AND:
+            case OR:
                 throw new BadRequestException("Unknown Operator");
-        }
+
+        };
     }
 
     void captureOrderBy() {

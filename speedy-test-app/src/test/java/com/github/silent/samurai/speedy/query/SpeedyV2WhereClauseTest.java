@@ -818,5 +818,109 @@ public class SpeedyV2WhereClauseTest {
 
     }
 
+    @Test
+    void testQuery20RegexCondition() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Category");
+        body.putObject("$where")
+                .putObject("name")
+                .put("$regex", "*10*");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name")
+                        .value(Matchers.everyItem(
+                                Matchers.anyOf(
+                                        Matchers.equalTo("cat-10-10")
+//                                        Matchers.equalTo("cat-12-12")
+                                )
+                        )))
+                .andReturn();
+
+    }
+
+    @Test
+    void testQuery20RegexCondition2() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Category");
+        body.putObject("$where")
+                .putObject("name")
+                .put("$regex", ".10*");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(0))))
+                .andReturn();
+
+    }
+
+    @Test
+    void testQuery20RegexCondition3() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Category");
+        body.putObject("$where")
+                .putObject("name")
+                .put("$regex", "cat-1*");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name")
+                        .value(Matchers.everyItem(
+                                Matchers.anyOf(
+                                        Matchers.equalTo("cat-10-10"),
+                                        Matchers.equalTo("cat-11-11"),
+                                        Matchers.equalTo("cat-12-12"),
+                                        Matchers.equalTo("cat-13-13"),
+                                        Matchers.equalTo("cat-1-1")
+                                )
+                        )))
+                .andReturn();
+
+    }
+
 
 }

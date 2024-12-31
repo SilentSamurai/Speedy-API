@@ -84,6 +84,23 @@ public class SpeedyFactory {
         jsonSerializer.write(speedyEntities);
     }
 
+    public void processQueryRequest(IRequestContextImpl context) throws Exception {
+        // get entity metadata
+        EntityMetadata resourceMetadata = context.getEntityMetadata();
+        ObjectMapper json = CommonUtil.json();
+        // get query from request body
+        JsonNode jsonBody = json.readTree(context.getRequest().getReader());
+        // create JSON Query parser
+        Json2SpeedyQueryBuilder json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModelProcessor, resourceMetadata, jsonBody);
+        // build speedy query
+        SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
+
+        List<SpeedyEntity> speedyEntities = queryProcessor.executeMany(speedyQuery);
+        IResponseContext responseContext = context.createResponseContext().pageNo(speedyQuery.getPageInfo().getPageNo()).expands(speedyQuery.getExpand()).build();
+        IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
+        jsonSerializer.write(speedyEntities);
+    }
+
     public void processCreateRequests(IRequestContextImpl context) throws Exception {
         EntityMetadata resourceMetadata = context.getEntityMetadata();
         ObjectMapper json = CommonUtil.json();
@@ -93,18 +110,6 @@ public class SpeedyFactory {
         IResponseSerializer jsonSerializer = new JSONSerializer(responseContext, KeyFieldMetadata.class::isInstance);
         jsonSerializer.write(savedEntities.orElse(Collections.emptyList()));
 
-    }
-
-    public void processQueryRequest(IRequestContextImpl context) throws Exception {
-        EntityMetadata resourceMetadata = context.getEntityMetadata();
-        ObjectMapper json = CommonUtil.json();
-        JsonNode jsonBody = json.readTree(context.getRequest().getReader());
-        Json2SpeedyQueryBuilder json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModelProcessor, resourceMetadata, jsonBody);
-        SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
-        List<SpeedyEntity> speedyEntities = queryProcessor.executeMany(speedyQuery);
-        IResponseContext responseContext = context.createResponseContext().pageNo(speedyQuery.getPageInfo().getPageNo()).expands(speedyQuery.getExpand()).build();
-        IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
-        jsonSerializer.write(speedyEntities);
     }
 
     public void processPutRequests(IRequestContextImpl context) throws Exception {

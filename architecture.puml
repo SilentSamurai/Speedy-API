@@ -1,0 +1,15 @@
+
+
+@startuml
+
+start
+
+:Query Request /$query;
+
+:parse body;
+:speedy query;
+
+
+stop
+
+@enduml
