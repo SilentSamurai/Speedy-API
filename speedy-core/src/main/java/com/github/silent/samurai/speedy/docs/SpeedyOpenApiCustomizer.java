@@ -238,6 +238,7 @@ public class SpeedyOpenApiCustomizer {
             "            \"$ne\": \"0\",\n" +
             "            \"$lt\": \"0\",\n" +
             "            \"$gt\": \"0\",\n" +
+            "            \"$regex\": \"cat*\",\n" +
             "            \"$in\": [\n" +
             "                0,\n" +
             "                2,\n" +
@@ -275,7 +276,7 @@ public class SpeedyOpenApiCustomizer {
             "        \"$index\": 0,\n" +
             "        \"$size\": 100\n" +
             "    }\n" +
-            "}";
+            "}" ;
 
 }
 
