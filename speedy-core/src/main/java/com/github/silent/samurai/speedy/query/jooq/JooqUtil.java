@@ -25,7 +25,7 @@ public class JooqUtil {
         transformSqlNames = setting;
     }
 
-    public static DataType<?> getSQLDataType(ValueType valueType) {
+    public static DataType<?> getSQLDataType(String fieldReference, ValueType valueType) {
         switch (valueType) {
             case BOOL:
                 return SQLDataType.BOOLEAN;
@@ -47,7 +47,7 @@ public class JooqUtil {
             case COLLECTION:
             case NULL:
             default:
-                throw new RuntimeException("DataType not supported: " + valueType);
+                throw new RuntimeException(String.format("DataType not supported: {} for field {}", valueType, fieldReference));
         }
     }
 
@@ -81,9 +81,9 @@ public class JooqUtil {
         DataType<?> sqlDataType;
         if (fieldMetadata.isAssociation()) {
             ValueType valueType = fieldMetadata.getAssociatedFieldMetadata().getValueType();
-            sqlDataType = JooqUtil.getSQLDataType(valueType);
+            sqlDataType = JooqUtil.getSQLDataType(name, valueType);
         } else {
-            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getValueType());
+            sqlDataType = JooqUtil.getSQLDataType(name, fieldMetadata.getValueType());
         }
 
         Name columnName = DSL.name(

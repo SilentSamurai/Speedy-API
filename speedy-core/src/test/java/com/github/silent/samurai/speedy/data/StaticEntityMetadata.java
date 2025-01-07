@@ -10,6 +10,8 @@ import lombok.SneakyThrows;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import org.mockito.internal.util.collections.Sets;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;
@@ -128,7 +130,7 @@ public class StaticEntityMetadata implements EntityMetadata {
     }
 
     @Override
-    public ActionType getActionType() {
-        return ActionType.ALL;
+    public Set<ActionType> getActionType() {
+        return Sets.newSet(ActionType.ALL);
     }
 }

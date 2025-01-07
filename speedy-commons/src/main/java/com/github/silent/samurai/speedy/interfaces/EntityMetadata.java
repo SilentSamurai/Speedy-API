@@ -42,25 +42,25 @@ public interface EntityMetadata {
 
     String getDbTableName();
 
-    ActionType getActionType();
+    Set<ActionType> getActionType();
 
     default boolean isReadOnly() {
-        return getActionType() == ActionType.READ;
+        return getActionType().contains(ActionType.READ) && getActionType().size() == 1;
     }
 
     default boolean isReadAllowed() {
-        return getActionType() == ActionType.READ || getActionType() == ActionType.ALL;
+        return getActionType().contains(ActionType.READ) || getActionType().contains(ActionType.ALL);
     }
 
     default boolean isCreateAllowed() {
-        return getActionType() == ActionType.CREATE || getActionType() == ActionType.ALL;
+        return getActionType().contains(ActionType.CREATE) || getActionType().contains(ActionType.ALL);
     }
 
     default boolean isUpdateAllowed() {
-        return getActionType() == ActionType.UPDATE || getActionType() == ActionType.ALL;
+        return getActionType().contains(ActionType.UPDATE) || getActionType().contains(ActionType.ALL);
     }
 
     default boolean isDeleteAllowed() {
-        return getActionType() == ActionType.DELETE || getActionType() == ActionType.ALL;
+        return getActionType().contains(ActionType.DELETE) || getActionType().contains(ActionType.ALL);
     }
 }

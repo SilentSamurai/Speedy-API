@@ -3,27 +3,31 @@ package com.github.silent.samurai.speedy.jpa.impl.processors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.enums.ActionType;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaKeyFieldMetadata;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import org.hibernate.annotations.Formula;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.SingularAttribute;
 
 import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static com.github.silent.samurai.speedy.enums.ActionType.*;
 
 public class JpaFieldProcessor {
 
@@ -199,21 +203,46 @@ public class JpaFieldProcessor {
 
         SpeedyAction speedyAction = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyAction.class);
         if (speedyAction != null) {
-            switch (speedyAction.value()) {
-                case READ:
-                    fieldMetadata.setSerializable(false);
-                    break;
-                case CREATE:
-                case UPDATE:
-                case DELETE:
-                    fieldMetadata.setDeserializable(false);
-                    break;
-                case ALL:
-                    fieldMetadata.setSerializable(false);
-                    fieldMetadata.setDeserializable(false);
-                    break;
+            Set<ActionType> actionTypesSet = Arrays.stream(speedyAction.value()).collect(Collectors.toSet());
+
+            // give as less permission as you can
+            fieldMetadata.setSerializable(false);
+            fieldMetadata.setInsertable(false);
+            fieldMetadata.setUpdatable(false);
+            fieldMetadata.setDeserializable(false);
+
+            if (actionTypesSet.contains(CREATE)) {
+                fieldMetadata.setInsertable(true);
+                fieldMetadata.setSerializable(true);
             }
-            fieldMetadata.setIgnoreProperty(speedyAction.value());
+            if (actionTypesSet.contains(UPDATE)) {
+                fieldMetadata.setUpdatable(true);
+                fieldMetadata.setSerializable(true);
+            }
+            if (actionTypesSet.contains(DELETE)) {
+                // todo: figure out what logic can be done here
+                fieldMetadata.setSerializable(true);
+            }
+            if (actionTypesSet.contains(READ)) {
+                fieldMetadata.setDeserializable(true);
+            }
+            if (actionTypesSet.contains(ALL)) {
+                fieldMetadata.setInsertable(true);
+                fieldMetadata.setUpdatable(true);
+                fieldMetadata.setSerializable(true);
+                fieldMetadata.setDeserializable(true);
+            }
+        }
+
+        Enumerated enumerated = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Enumerated.class);
+        if (enumerated != null) {
+            EnumType value = enumerated.value();
+            switch (value) {
+                case STRING -> fieldMetadata.setValueType(ValueType.TEXT);
+                case ORDINAL -> fieldMetadata.setValueType(ValueType.INT);
+            }
+        } else {
+            fieldMetadata.setValueType(ValueTypeUtil.fromClass(fieldMetadata.getFieldType()));
         }
 
         if (!fieldMetadata.isNullable() && fieldMetadata.isDeserializable()) {
@@ -224,7 +253,8 @@ public class JpaFieldProcessor {
         Map<String, Method> getterSetter = findGetterSetter(entityClass, member.getName());
         fieldMetadata.setGetter(getterSetter.get("GET"));
         fieldMetadata.setSetter(getterSetter.get("SET"));
-        fieldMetadata.setValueType(ValueTypeUtil.fromClass(fieldMetadata.getFieldType()));
+
+
         return fieldMetadata;
     }
 }
