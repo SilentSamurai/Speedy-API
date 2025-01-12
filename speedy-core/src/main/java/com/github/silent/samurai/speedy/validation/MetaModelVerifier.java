@@ -24,7 +24,7 @@ public class MetaModelVerifier {
 
             for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
                 Objects.requireNonNull(fieldMetadata);
-                Objects.requireNonNull(fieldMetadata.getFieldType());
+                Objects.requireNonNull(fieldMetadata.getValueType());
                 Objects.requireNonNull(fieldMetadata.getDbColumnName(), entityMetadata.getName() + " Db Column Name not found");
 
                 if (fieldMetadata.isAssociation()) {

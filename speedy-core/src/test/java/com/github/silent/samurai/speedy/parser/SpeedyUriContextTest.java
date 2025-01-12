@@ -193,7 +193,7 @@ class SpeedyUriContextTest {
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
         assertEquals(ConditionOperator.LT, condition.get().getOperator());
-        assertEquals(0, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
+        assertEquals(0, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Long.class));
 
     }
 
@@ -210,7 +210,7 @@ class SpeedyUriContextTest {
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
         assertEquals(ConditionOperator.LTE, condition.get().getOperator());
-        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Long.class));
     }
 
     @Test
@@ -226,7 +226,7 @@ class SpeedyUriContextTest {
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
         assertEquals(ConditionOperator.EQ, condition.get().getOperator());
-        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Long.class));
     }
 
     @Test
@@ -242,7 +242,7 @@ class SpeedyUriContextTest {
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
         assertEquals(ConditionOperator.EQ, condition.get().getOperator());
-        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Long.class));
     }
 
     @Test
@@ -258,7 +258,7 @@ class SpeedyUriContextTest {
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
         assertEquals(ConditionOperator.GT, condition.get().getOperator());
-        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Long.class));
     }
 
     @Test
@@ -274,7 +274,7 @@ class SpeedyUriContextTest {
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
         assertEquals(ConditionOperator.GTE, condition.get().getOperator());
-        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Integer.class));
+        assertEquals(25, speedyQueryHelper.getRawValueOfValue(fieldMetadata, Long.class));
     }
 
 

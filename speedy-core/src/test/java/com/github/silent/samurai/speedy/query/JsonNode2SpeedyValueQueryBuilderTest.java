@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class Json2SpeedyQueryBuilderTest {
+class JsonNode2SpeedyValueQueryBuilderTest {
 
     private MetaModelProcessor metaModelProcessor;
     private ObjectMapper objectMapper;

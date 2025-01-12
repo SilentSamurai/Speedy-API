@@ -79,8 +79,8 @@ public class JooqSqlToSpeedy {
                     SpeedyCollection speedyCollection = SpeedyValueFactory.fromCollection(listOfSpeedyValue);
                     speedyEntity.put(fieldMetadata, speedyCollection);
                 } else {
+                    // fieldValue some time is of not correct type, int promoted to decimal. and visa-versa
                     SpeedyValue speedyValue = SpeedyValueFactory.fromJavaTypes(
-                            fieldValue.getClass(),
                             fieldMetadata.getValueType(),
                             fieldValue);
                     speedyEntity.put(fieldMetadata, speedyValue);

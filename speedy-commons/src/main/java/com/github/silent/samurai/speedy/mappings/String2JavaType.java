@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.io;
+package com.github.silent.samurai.speedy.mappings;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.ThrowingFunction;
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BasicDeserializer {
+public class String2JavaType {
 
     private static final Map<Class<?>, ThrowingFunction<String, Object, Exception>> converters = new HashMap<>();
 
@@ -49,7 +49,7 @@ public class BasicDeserializer {
     }
 
     private static Object stringToBasic(String value, Class<?> targetType) throws Exception {
-        return BasicDeserializer.deserialize(value, targetType);
+        return String2JavaType.deserialize(value, targetType);
     }
 
 

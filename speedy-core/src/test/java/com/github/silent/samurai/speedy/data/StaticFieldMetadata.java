@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.mappings.JavaType2ValueType;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Data;
 
@@ -27,7 +28,7 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 
     @Override
     public ValueType getValueType() {
-        return ValueTypeUtil.fromClass(field.getType());
+        return JavaType2ValueType.fromClass(field.getType());
     }
 
 //    @SneakyThrows
@@ -119,15 +120,15 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 //        return field.get(idInstance);
 //    }
 
-    @Override
-    public ActionType getIgnoreProperty() {
-        return ActionType.ALL;
-    }
-
-    @Override
-    public Class<?> getFieldType() {
-        return field.getType();
-    }
+//    @Override
+//    public ActionType getIgnoreProperty() {
+//        return ActionType.ALL;
+//    }
+//
+//    @Override
+//    public Class<?> getFieldType() {
+//        return field.getType();
+//    }
 
     @Override
     public EntityMetadata getEntityMetadata() {

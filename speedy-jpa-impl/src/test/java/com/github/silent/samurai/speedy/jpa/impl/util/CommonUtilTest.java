@@ -51,7 +51,7 @@ class CommonUtilTest {
         Product product = new Product();
         product.setId("1");
         product.setName("abcd");
-        product.setCost(0);
+        product.setCost(0L);
         product.setCategory("cat-1");
 
         SpeedyEntity entity = CommonUtil.fromJpaEntity(product, entityMetadata, Collections.emptySet());

@@ -29,9 +29,9 @@ public interface FieldMetadata {
 
     String getOutputPropertyName();
 
-    ActionType getIgnoreProperty();
+//    ActionType getIgnoreProperty();
 
-    Class<?> getFieldType();
+//    Class<?> getFieldType();
 
     EntityMetadata getEntityMetadata();
 

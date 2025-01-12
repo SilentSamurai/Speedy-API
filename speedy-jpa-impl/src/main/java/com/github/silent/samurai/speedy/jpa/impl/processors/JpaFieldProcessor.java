@@ -10,6 +10,7 @@ import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaKeyFieldMetadata;
+import com.github.silent.samurai.speedy.mappings.JavaType2ValueType;
 import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Formula;
@@ -242,7 +243,7 @@ public class JpaFieldProcessor {
                 case ORDINAL -> fieldMetadata.setValueType(ValueType.INT);
             }
         } else {
-            fieldMetadata.setValueType(ValueTypeUtil.fromClass(fieldMetadata.getFieldType()));
+            fieldMetadata.setValueType(JavaType2ValueType.fromClass(fieldMetadata.getFieldType()));
         }
 
         if (!fieldMetadata.isNullable() && fieldMetadata.isDeserializable()) {

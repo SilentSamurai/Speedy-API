@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.io;
+package com.github.silent.samurai.speedy.mappings;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -6,6 +6,8 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.*;
@@ -65,6 +67,12 @@ public class JavaType2SpeedyValue {
         put(ValueType.INT, Long.class, (instance, valueType) -> {
             return new SpeedyInt((Long) instance);
         });
+        put(ValueType.INT, BigInteger.class, (instance, valueType) -> {
+            return new SpeedyInt((Long) instance.longValue());
+        });
+        put(ValueType.INT, BigDecimal.class, (instance, valueType) -> {
+            return new SpeedyInt((Long) instance.longValue());
+        });
         put(ValueType.FLOAT, float.class, (instance, valueType) -> {
             return new SpeedyDouble(instance.doubleValue());
         });
@@ -76,6 +84,12 @@ public class JavaType2SpeedyValue {
         });
         put(ValueType.FLOAT, Double.class, (instance, valueType) -> {
             return new SpeedyDouble((Double) instance);
+        });
+        put(ValueType.FLOAT, BigDecimal.class, (instance, valueType) -> {
+            return new SpeedyDouble(instance.doubleValue());
+        });
+        put(ValueType.FLOAT, BigInteger.class, (instance, valueType) -> {
+            return new SpeedyDouble(instance.doubleValue());
         });
         put(ValueType.BOOL, boolean.class, (instance, valueType) -> {
             return new SpeedyBoolean((Boolean) instance);
