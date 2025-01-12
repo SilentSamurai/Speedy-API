@@ -22,16 +22,16 @@ public class JooqToJooqSql {
         this.dslContext = dslContext;
     }
 
-    public Result<Record> findByFK(FieldMetadata fieldMetadata,
-                                   Record entityRecord) throws BadRequestException {
+    public Optional<Result<Record>> findByFK(FieldMetadata fieldMetadata,
+                                             Record entityRecord) throws BadRequestException {
 
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associationFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
 
         Optional<?> optional = JooqUtil.getValueFromRecord(entityRecord, fieldMetadata);
         if (optional.isEmpty()) {
-            String exmsg = String.format("optional not present for %s", fieldMetadata.getOutputPropertyName());
-            throw new BadRequestException(exmsg);
+            LOGGER.error("foreign key not found: {}", fieldMetadata.getOutputPropertyName());
+            return Optional.empty();
         }
 
         Field<Object> field = JooqUtil.getColumn(associationFieldMetadata);
@@ -43,6 +43,6 @@ public class JooqToJooqSql {
 
         LOGGER.info("expand query: {} ", query);
 
-        return query.fetch();
+        return Optional.of(query.fetch());
     }
 }

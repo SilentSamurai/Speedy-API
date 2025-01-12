@@ -36,8 +36,9 @@ public class JooqSqlToSpeedy {
 
             if (fieldMetadata.isAssociation()) {
                 if (expands.contains(fieldMetadata.getAssociationMetadata().getName())) {
-                    Result<Record> associatedRecord = jooqToJooqSql.findByFK(fieldMetadata, record);
-                    if (associatedRecord.isEmpty()) {
+                    // extract FK from current record, then query foreign table rows
+                    Optional<Result<Record>> associatedRecord = jooqToJooqSql.findByFK(fieldMetadata, record);
+                    if (associatedRecord.isEmpty() || associatedRecord.get().isEmpty()) {
                         speedyEntity.put(fieldMetadata, SpeedyValueFactory.fromNull());
                         continue;
                     }
@@ -46,7 +47,7 @@ public class JooqSqlToSpeedy {
                     } else {
                         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
                         SpeedyEntity associatedEntity = fromRecordInner(
-                                associatedRecord.get(0),
+                                associatedRecord.get().get(0),
                                 associationMetadata,
                                 Set.of());
                         speedyEntity.put(fieldMetadata, associatedEntity);

@@ -47,10 +47,15 @@ public class SelectiveSpeedy2Json {
                             jsonObject.set(fieldMetadata.getOutputPropertyName(), childArray);
                         }
                     } else {
-                        SpeedyEntity value = (SpeedyEntity) speedyEntity.get(fieldMetadata);
-                        if (value != null) {
-                            ObjectNode childObject = fromSpeedyEntity(value, fieldMetadata.getAssociationMetadata());
-                            jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
+                        if (speedyEntity.has(fieldMetadata) && speedyEntity.get(fieldMetadata) != null) {
+                            // if association is not present
+                            if (speedyEntity.get(fieldMetadata).isObject()) {
+                                SpeedyEntity speedyObject = speedyEntity.get(fieldMetadata).asObject();
+                                ObjectNode childObject = fromSpeedyEntity(speedyObject, fieldMetadata.getAssociationMetadata());
+                                jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
+                            } else {
+                                jsonObject.putNull(fieldMetadata.getOutputPropertyName());
+                            }
                         }
                     }
                 } else {
@@ -61,10 +66,13 @@ public class SelectiveSpeedy2Json {
                             jsonObject.set(fieldMetadata.getOutputPropertyName(), childArray);
                         }
                     } else {
-                        SpeedyEntity value = (SpeedyEntity) speedyEntity.get(fieldMetadata);
-                        if (!value.isEmpty()) {
+                        SpeedyValue fieldValue = speedyEntity.get(fieldMetadata);
+                        if (fieldValue.isObject()) {
+                            SpeedyEntity value = speedyEntity.get(fieldMetadata).asObject();
                             ObjectNode childObject = onlyKeys(value, fieldMetadata.getAssociationMetadata());
                             jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
+                        } else {
+                            jsonObject.putNull(fieldMetadata.getOutputPropertyName());
                         }
                     }
                 }
@@ -89,10 +97,14 @@ public class SelectiveSpeedy2Json {
 
     public ArrayNode onlyKeyCollection(Collection<SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
-        for (SpeedyValue object : collection) {
-            SpeedyEntity speedyEntity = (SpeedyEntity) object;
-            JsonNode jsonObject = onlyKeys(speedyEntity, entityMetadata);
-            jsonArray.add(jsonObject);
+        for (SpeedyValue speedyValue : collection) {
+            if (speedyValue.isObject()) {
+                SpeedyEntity speedyEntity = speedyValue.asObject();
+                JsonNode jsonObject = onlyKeys(speedyEntity, entityMetadata);
+                jsonArray.add(jsonObject);
+            } else {
+                jsonArray.addNull();
+            }
         }
         return jsonArray;
     }
@@ -167,9 +179,13 @@ public class SelectiveSpeedy2Json {
     public ArrayNode formCollection(Collection<? extends SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue object : collection) {
-            SpeedyEntity speedyEntity = (SpeedyEntity) object;
-            JsonNode jsonObject = fromSpeedyEntity(speedyEntity, entityMetadata);
-            jsonArray.add(jsonObject);
+            if (object.isObject()) {
+                SpeedyEntity speedyEntity = object.asObject();
+                JsonNode jsonObject = fromSpeedyEntity(speedyEntity, entityMetadata);
+                jsonArray.add(jsonObject);
+            } else {
+                jsonArray.addNull();
+            }
         }
         return jsonArray;
     }
