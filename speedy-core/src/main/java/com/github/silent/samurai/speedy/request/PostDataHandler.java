@@ -37,14 +37,15 @@ public class PostDataHandler {
         List<SpeedyEntity> savedObjects;
         try {
             for (SpeedyEntity parsedObject : parsedEntities) {
-                // validate entity
-                context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
+                // trigger should go first, then validate the entire thing
                 // trigger pre insert event
                 eventProcessor.triggerEvent(
                         SpeedyEventType.PRE_INSERT,
                         entityMetadata,
                         parsedObject
                 );
+                // validate entity
+                context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
             }
 
             savedObjects = queryProcessor.create(parsedEntities);

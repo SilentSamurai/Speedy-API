@@ -46,7 +46,6 @@ public class JooqQueryBuilder {
             return JooqUtil.getColumn(associatedMetadata);
         } else {
             FieldMetadata fieldMetadata = queryField.getFieldMetadata();
-            ;
             return JooqUtil.getColumn(fieldMetadata);
         }
     }

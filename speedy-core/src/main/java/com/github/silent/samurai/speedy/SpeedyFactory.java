@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.query.Json2SpeedyQueryBuilder;
 import com.github.silent.samurai.speedy.query.jooq.JooqQueryProcessorImpl;
@@ -40,6 +41,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 public class SpeedyFactory {
@@ -74,12 +77,23 @@ public class SpeedyFactory {
     }
 
     public void processGetRequests(IRequestContextImpl context, SpeedyQuery speedyQuery) throws Exception {
+
+        SpeedyQueryImpl speedyImpl = (SpeedyQueryImpl) speedyQuery;
+        speedyImpl.setExpand(
+                speedyQuery.getFrom()
+                        .getAssociatedFields().stream().map(
+                                item -> item.getAssociationMetadata().getName()
+                        ).collect(Collectors.toSet())
+        );
+
         Optional<List<SpeedyEntity>> requestedData = new GetDataHandler(context).processMany(speedyQuery);
         if (requestedData.isEmpty()) {
             throw new NotFoundException();
         }
         List<SpeedyEntity> speedyEntities = requestedData.get();
-        IResponseContext responseContext = context.createResponseContext().build();
+        IResponseContext responseContext = context.createResponseContext()
+                .expands(speedyQuery.getExpand())
+                .build();
         IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
         jsonSerializer.write(speedyEntities);
     }
@@ -96,7 +110,10 @@ public class SpeedyFactory {
         SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
 
         List<SpeedyEntity> speedyEntities = queryProcessor.executeMany(speedyQuery);
-        IResponseContext responseContext = context.createResponseContext().pageNo(speedyQuery.getPageInfo().getPageNo()).expands(speedyQuery.getExpand()).build();
+        IResponseContext responseContext = context.createResponseContext()
+                .pageNo(speedyQuery.getPageInfo().getPageNo())
+                .expands(speedyQuery.getExpand())
+                .build();
         IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
         jsonSerializer.write(speedyEntities);
     }

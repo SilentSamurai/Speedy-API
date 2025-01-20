@@ -214,18 +214,18 @@ public class JpaFieldProcessor {
 
             if (actionTypesSet.contains(CREATE)) {
                 fieldMetadata.setInsertable(true);
-                fieldMetadata.setSerializable(true);
+                fieldMetadata.setDeserializable(true);
             }
             if (actionTypesSet.contains(UPDATE)) {
                 fieldMetadata.setUpdatable(true);
-                fieldMetadata.setSerializable(true);
+                fieldMetadata.setDeserializable(true);
             }
             if (actionTypesSet.contains(DELETE)) {
                 // todo: figure out what logic can be done here
-                fieldMetadata.setSerializable(true);
+                fieldMetadata.setDeserializable(true);
             }
             if (actionTypesSet.contains(READ)) {
-                fieldMetadata.setDeserializable(true);
+                fieldMetadata.setSerializable(true);
             }
             if (actionTypesSet.contains(ALL)) {
                 fieldMetadata.setInsertable(true);
