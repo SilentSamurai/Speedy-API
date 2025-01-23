@@ -57,7 +57,7 @@ public class SpeedyFactory {
     private final QueryProcessor queryProcessor;
 
 
-    public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) {
+    public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this.speedyConfiguration = speedyConfiguration;
         this.metaModelProcessor = speedyConfiguration.createMetaModelProcessor();
         new MetaModelVerifier(metaModelProcessor).verify();

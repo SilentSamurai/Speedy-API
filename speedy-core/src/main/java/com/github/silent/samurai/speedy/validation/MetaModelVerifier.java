@@ -1,6 +1,9 @@
 package com.github.silent.samurai.speedy.validation;
 
 
+import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.InternalServerError;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
@@ -16,7 +19,7 @@ public class MetaModelVerifier {
         this.metaModelProcessor = metaModelProcessor;
     }
 
-    public boolean verify() {
+    public boolean verify() throws SpeedyHttpException {
         for (EntityMetadata entityMetadata : metaModelProcessor.getAllEntityMetadata()) {
             Objects.requireNonNull(entityMetadata);
             Objects.requireNonNull(entityMetadata.getName(), "Entity Name not found");
@@ -31,6 +34,16 @@ public class MetaModelVerifier {
                     Objects.requireNonNull(fieldMetadata.getAssociationMetadata());
                     Objects.requireNonNull(fieldMetadata.getAssociatedFieldMetadata());
                 }
+
+                if (fieldMetadata.getValueType() == ValueType.OBJECT || fieldMetadata.getValueType() == ValueType.COLLECTION ) {
+                    if(!fieldMetadata.isAssociation()) {
+                        String msg = String.format(
+                                "field %s in entity %s is derived as speedy object type which is not supported",
+                                fieldMetadata.getOutputPropertyName(), entityMetadata.getName());
+                        throw new InternalServerError(msg);
+                    }
+                }
+
 
             }
 

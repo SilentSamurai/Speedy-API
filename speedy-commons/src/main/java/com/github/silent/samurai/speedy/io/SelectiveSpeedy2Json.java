@@ -162,7 +162,7 @@ public class SelectiveSpeedy2Json {
                 break;
             case OBJECT:
             case COLLECTION:
-                break;
+                throw new RuntimeException("OBJECT & Collection Not implemented yet in basic");
         }
     }
 

@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy;
 
 import com.github.silent.samurai.speedy.controllers.SpeedyApiController;
 import com.github.silent.samurai.speedy.docs.SpeedyOpenApiCustomizer;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -19,7 +20,7 @@ public class SpeedyApiAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(ISpeedyConfiguration.class)
-    public SpeedyFactory speedyFactory(ISpeedyConfiguration speedyConfiguration) {
+    public SpeedyFactory speedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         return new SpeedyFactory(speedyConfiguration);
     }
 
