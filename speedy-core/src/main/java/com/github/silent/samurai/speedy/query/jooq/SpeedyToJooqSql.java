@@ -69,6 +69,7 @@ public class SpeedyToJooqSql {
             } else {
 
                 if (!entity.has(fieldMetadata) || entity.get(fieldMetadata).isEmpty() || entity.get(fieldMetadata).isNull()) {
+                    // you can throw by checking nullable or db can throw
                     continue;
                 }
                 SpeedyValue speedyValue = entity.get(fieldMetadata);
@@ -76,6 +77,14 @@ public class SpeedyToJooqSql {
                 if (fieldMetadata.isAssociation()) {
                     SpeedyEntity associatedEntity = speedyValue.asObject();
                     FieldMetadata associatedFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
+
+                    if (!associatedEntity.has(associatedFieldMetadata)
+                            || associatedEntity.get(associatedFieldMetadata).isEmpty()
+                            || associatedEntity.get(associatedFieldMetadata).isNull()) {
+                        // you can throw by checking nullable or db can throw
+                        continue;
+                    }
+
                     SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
 
                     Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
@@ -116,6 +125,9 @@ public class SpeedyToJooqSql {
         EntityMetadata entityMetadata = entity.getMetadata();
         UpdateSetFirstStep<Record> updateQuery = dslContext.update(DSL.table(entityMetadata.getDbTableName()));
         UpdateSetMoreStep<Record> returnQuery = null;
+
+        // TODO: update for foreign key update
+
 
         // Set values to be updated
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {

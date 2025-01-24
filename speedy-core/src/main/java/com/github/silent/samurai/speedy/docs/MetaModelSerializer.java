@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
@@ -50,6 +51,11 @@ public class MetaModelSerializer {
         fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
 //        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
         fieldMetadataJson.put("isAssociation", fieldMetadata.isAssociation());
+
+        if (fieldMetadata instanceof KeyFieldMetadata keyFieldMetadata) {
+            fieldMetadataJson.put("isKeyField", keyFieldMetadata.isKeyField());
+            fieldMetadataJson.put("isKeyGenerated", keyFieldMetadata.shouldGenerateKey());
+        }
 
         if (fieldMetadata.isAssociation()) {
             fieldMetadataJson.put("associatedWith", fieldMetadata.getAssociationMetadata().getName());
