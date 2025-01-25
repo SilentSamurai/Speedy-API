@@ -128,20 +128,42 @@ public class SpeedyToJooqSql {
 
         // TODO: update for foreign key update
 
-
         // Set values to be updated
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (entity.has(fieldMetadata) &&
                     !entity.get(fieldMetadata).isEmpty() && !entity.get(fieldMetadata).isNull()) {
 
                 SpeedyValue val = entity.get(fieldMetadata);
-                Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                        fieldMetadata.getValueType(),
-                        val
-                );
-                Field<Object> field = JooqUtil.getColumn(fieldMetadata);
 
-                returnQuery = updateQuery.set(field, value);
+                if(fieldMetadata.isAssociation()) {
+                    SpeedyEntity associatedEntity = val.asObject();
+                    FieldMetadata associatedFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
+
+                    if (!associatedEntity.has(associatedFieldMetadata)
+                            || associatedEntity.get(associatedFieldMetadata).isEmpty()
+                            || associatedEntity.get(associatedFieldMetadata).isNull()) {
+                        // you can throw by checking nullable or db can throw
+                        continue;
+                    }
+                    //
+                    SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
+
+                    Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
+                            associatedFieldMetadata.getValueType(),
+                            innerValue
+                    );
+                    // update current object with foreign key
+                    Field<Object> field = JooqUtil.getColumn(fieldMetadata);
+                    returnQuery = updateQuery.set(field, value);
+                } else {
+                    Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
+                            fieldMetadata.getValueType(),
+                            val
+                    );
+                    Field<Object> field = JooqUtil.getColumn(fieldMetadata);
+
+                    returnQuery = updateQuery.set(field, value);
+                }
             }
         }
 
