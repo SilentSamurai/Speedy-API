@@ -137,7 +137,7 @@ public class SpeedyFactory {
         IResponseContext responseContext = context.createResponseContext().build();
         IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
         SpeedyEntity speedyEntity = savedEntity.get();
-        jsonSerializer.write(speedyEntity);
+        jsonSerializer.write(List.of(speedyEntity));
     }
 
     public void processDeleteRequests(IRequestContextImpl context) throws Exception {

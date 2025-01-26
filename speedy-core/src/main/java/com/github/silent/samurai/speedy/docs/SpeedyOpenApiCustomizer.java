@@ -164,7 +164,9 @@ public class SpeedyOpenApiCustomizer {
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Update{0}Response", entityMetadata),
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+                )
         ).description("successful update."));
         operation.responses(apiResponses);
         identifierPathItem.put(operation);
@@ -276,7 +278,7 @@ public class SpeedyOpenApiCustomizer {
             "        \"$index\": 0,\n" +
             "        \"$size\": 100\n" +
             "    }\n" +
-            "}" ;
+            "}";
 
 }
 

@@ -110,6 +110,10 @@ class ForeignKeyTest {
 
         // Validate update
         JsonNode updatedProduct = updateResponse.getPayload();
+        assertTrue(updatedProduct.isArray());
+        assertFalse(updatedProduct.isEmpty());
+        updatedProduct = updatedProduct.get(0);
+
         assertEquals(productId, updatedProduct.get("id").asText());
         assertEquals("updated-client-product", updatedProduct.get("name").asText());
         LOGGER.info("Updated product name to 'updated-client-product'");

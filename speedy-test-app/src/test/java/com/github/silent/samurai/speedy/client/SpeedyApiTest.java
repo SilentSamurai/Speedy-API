@@ -25,6 +25,7 @@ import jakarta.persistence.EntityManagerFactory;
 import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
 import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -85,6 +86,9 @@ class SpeedyApiTest {
         assertFalse(speedyResponse.getPayload().isEmpty());
         JsonNode entityNode = speedyResponse.getPayload();
 
+        assertTrue(entityNode.isArray());
+        assertFalse(entityNode.isEmpty());
+        entityNode = entityNode.get(0);
         assertTrue(entityNode.has("id"));
         assertTrue(entityNode.get("id").isTextual());
         assertNotNull(entityNode.get("id").asText());
