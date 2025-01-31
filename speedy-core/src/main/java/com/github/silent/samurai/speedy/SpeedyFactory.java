@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.events.RegistryImpl;
-import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -38,10 +37,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
@@ -109,13 +108,18 @@ public class SpeedyFactory {
         // build speedy query
         SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
 
-        List<SpeedyEntity> speedyEntities = queryProcessor.executeMany(speedyQuery);
-        IResponseContext responseContext = context.createResponseContext()
-                .pageNo(speedyQuery.getPageInfo().getPageNo())
-                .expands(speedyQuery.getExpand())
-                .build();
-        IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
-        jsonSerializer.write(speedyEntities);
+        if (speedyQuery.getSelect().contains("count")) {
+            BigInteger count = queryProcessor.executeCount(speedyQuery);
+            new JSONSerializer(context.createResponseContext().build()).write(count);
+        } else {
+            List<SpeedyEntity> speedyEntities = queryProcessor.executeMany(speedyQuery);
+            IResponseContext responseContext = context.createResponseContext()
+                    .pageNo(speedyQuery.getPageInfo().getPageNo())
+                    .expands(speedyQuery.getExpand())
+                    .build();
+            IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
+            jsonSerializer.write(speedyEntities);
+        }
     }
 
     public void processCreateRequests(IRequestContextImpl context) throws Exception {
@@ -164,7 +168,8 @@ public class SpeedyFactory {
             EntityMetadata resourceMetadata = uriSpeedyQuery.getFrom();
 
             IRequestContextImpl context = new IRequestContextImpl(request,
-                    response, metaModelProcessor, validationProcessor, eventProcessor, queryProcessor, resourceMetadata);
+                    response, metaModelProcessor,
+                    validationProcessor, eventProcessor, queryProcessor, resourceMetadata);
 
 
             if (method.equals(HttpMethod.GET.name())) {

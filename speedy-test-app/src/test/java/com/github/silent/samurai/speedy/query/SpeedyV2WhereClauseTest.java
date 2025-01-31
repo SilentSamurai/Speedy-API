@@ -62,7 +62,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -102,7 +102,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -144,7 +144,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Currency/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -187,7 +187,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -228,7 +228,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -269,7 +269,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -310,7 +310,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -351,7 +351,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -392,7 +392,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -433,7 +433,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -474,7 +474,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -524,7 +524,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -580,7 +580,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -636,7 +636,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -682,7 +682,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -727,7 +727,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -767,7 +767,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -800,7 +800,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -829,7 +829,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -867,7 +867,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -892,7 +892,7 @@ public class SpeedyV2WhereClauseTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)

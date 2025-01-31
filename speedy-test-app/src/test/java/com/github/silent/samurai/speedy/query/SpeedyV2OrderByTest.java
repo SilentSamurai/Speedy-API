@@ -62,7 +62,7 @@ public class SpeedyV2OrderByTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -101,7 +101,7 @@ public class SpeedyV2OrderByTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)

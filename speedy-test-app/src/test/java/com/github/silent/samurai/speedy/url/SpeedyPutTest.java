@@ -7,20 +7,30 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openapitools.client.ApiClient;
+import org.openapitools.client.api.CategoryApi;
+import org.openapitools.client.model.UpdateCategoryRequest;
+import org.openapitools.client.model.UpdateCategoryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import jakarta.persistence.EntityManagerFactory;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -40,6 +50,14 @@ public class SpeedyPutTest {
 
     @Autowired
     private MockMvc mvc;
+    private ApiClient defaultClient;
+
+    @BeforeEach
+    void setUp() {
+        MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+        defaultClient = new ApiClient(restTemplate);
+    }
 
     @Test
     void updateCategory() throws Exception {
@@ -48,14 +66,14 @@ public class SpeedyPutTest {
         category.setName("generated-category-update");
         categoryRepository.save(category);
 
-        Assertions.assertNotNull(category.getId());
+        assertNotNull(category.getId());
 
         MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.patch(SpeedyConstant.URI + "/Category/$update")
                 .content(CommonUtil.json().createObjectNode()
                         .put("id", category.getId())
                         .put("name", "generated-category-update-modified")
                         .toPrettyString())
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isOk());
@@ -69,10 +87,39 @@ public class SpeedyPutTest {
     void incompleteKey() throws Exception {
         MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstant.URI + "/Category(name='not-there')")
                 .content("{'name':'generated-cat'}")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void missingKey() throws Exception {
+        assertThrows(Exception.class, () -> {
+            CategoryApi categoryApi = new CategoryApi(defaultClient);
+            UpdateCategoryRequest categoryRequest = new UpdateCategoryRequest();
+            String value = CommonUtil.generateString(300);
+            categoryRequest.setName(value);
+            UpdateCategoryResponse response = categoryApi.updateCategory(categoryRequest);
+            assertNotNull(response);
+            assertNotNull(response.getPayload());
+            List<org.openapitools.client.model.Category> payload = response.getPayload();
+        });
+    }
+
+    @Test
+    void failValidation() throws Exception {
+        assertThrows(Exception.class, () -> {
+            CategoryApi categoryApi = new CategoryApi(defaultClient);
+            UpdateCategoryRequest categoryRequest = new UpdateCategoryRequest();
+            String value = CommonUtil.generateString(300);
+            categoryRequest.setId("1");
+            categoryRequest.setName(value);
+            UpdateCategoryResponse response = categoryApi.updateCategory(categoryRequest);
+            assertNotNull(response);
+            assertNotNull(response.getPayload());
+            List<org.openapitools.client.model.Category> payload = response.getPayload();
+        });
     }
 
 }

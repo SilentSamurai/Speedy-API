@@ -159,7 +159,7 @@ class SpeedyEntityTest {
 
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/$create")
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         MvcResult mvcResult = mvc.perform(getRequest)
                 .andExpect(status().isOk())

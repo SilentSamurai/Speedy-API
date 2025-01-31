@@ -71,6 +71,7 @@ public class ValidationProcessor {
     }
 
     private void defaultValidator(SpeedyEntity entity) throws BadRequestException {
+        // TODO : this validation will never work with speedy entity
         Set<ConstraintViolation<Object>> constraintViolations = validator.validate(entity);
         if (!constraintViolations.isEmpty()) {
             StringBuilder sb = new StringBuilder();

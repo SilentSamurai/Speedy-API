@@ -10,9 +10,7 @@ import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.IllegalFormatCodePointException;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class SpeedyQuery {
 
@@ -22,6 +20,7 @@ public class SpeedyQuery {
     private final ObjectNode where = CommonUtil.json().createObjectNode();
     private final ObjectNode orderBy = CommonUtil.json().createObjectNode();
     private final ArrayNode expand = CommonUtil.json().createArrayNode();
+    private final Set<String> select = new HashSet<>();
     int pageNo = 1;
     int pageSize = 10;
 
@@ -202,6 +201,11 @@ public class SpeedyQuery {
         if (!expand.isEmpty()) {
             root.set("$expand", expand);
         }
+        if (!select.isEmpty()) {
+            ArrayNode arrayNode = CommonUtil.json().createArrayNode();
+            select.forEach(arrayNode::add);
+            root.set("$select", arrayNode);
+        }
         ObjectNode pageNode = CommonUtil.json().createObjectNode();
         pageNode.put("$pageNo", pageNo);
         pageNode.put("$pageSize", pageSize);
@@ -232,5 +236,10 @@ public class SpeedyQuery {
 
     public String getFrom() {
         return root.get("$from").asText();
+    }
+
+    public SpeedyQuery $select(String... select) {
+        this.select.addAll(Arrays.asList(select));
+        return this;
     }
 }

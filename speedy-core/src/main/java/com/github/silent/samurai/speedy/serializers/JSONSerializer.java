@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -90,6 +91,17 @@ public class JSONSerializer implements IResponseSerializer {
         response.setContentType(this.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
         this.writeResponse(responseWrapper);
+    }
+
+    @Override
+    public void write(BigInteger count) throws Exception {
+        HttpServletResponse response = getContext().getResponse();
+        response.setContentType(this.getContentType());
+        response.setStatus(HttpServletResponse.SC_OK);
+        ObjectMapper json = CommonUtil.json();
+        ObjectNode basePayload = json.createObjectNode();
+        basePayload.set("count", json.valueToTree(count));
+        json.writeValue(context.getResponse().getWriter(), basePayload);
     }
 
 

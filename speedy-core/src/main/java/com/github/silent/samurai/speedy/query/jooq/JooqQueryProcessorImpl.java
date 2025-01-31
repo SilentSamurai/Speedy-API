@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -40,13 +41,10 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     }
 
     @Override
-    public SpeedyEntity executeOne(SpeedyQuery speedyQuery) throws SpeedyHttpException {
+    public BigInteger executeCount(SpeedyQuery query) throws SpeedyHttpException {
         try {
-            JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
-            Result<Record> result = qb.executeQuery();
-            Record record = result.get(0);
-            return new JooqSqlToSpeedy(dslContext)
-                    .fromRecord(record, speedyQuery.getFrom(), speedyQuery.getExpand());
+            JooqQueryBuilder qb = new JooqQueryBuilder(query, dslContext);
+            return qb.executeCountQuery();
         } catch (Exception e) {
             throw new BadRequestException(e);
         }

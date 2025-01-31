@@ -12,7 +12,7 @@
         <dependency>
             <groupId>com.github.SilentSamurai</groupId>
             <artifactId>speedy-commons</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.docs;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.interfaces.*;
 
 import io.swagger.v3.oas.models.OpenAPI;

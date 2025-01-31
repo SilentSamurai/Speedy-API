@@ -4,11 +4,12 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface QueryProcessor {
 
-    SpeedyEntity executeOne(SpeedyQuery query) throws SpeedyHttpException;
+    BigInteger executeCount(SpeedyQuery query) throws SpeedyHttpException;
 
     List<SpeedyEntity> executeMany(SpeedyQuery query) throws SpeedyHttpException;
 

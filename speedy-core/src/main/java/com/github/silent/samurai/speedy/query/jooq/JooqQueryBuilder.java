@@ -16,6 +16,7 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.util.*;
 
 
@@ -27,14 +28,12 @@ public class JooqQueryBuilder {
     private final EntityMetadata entityMetadata;
     private final DSLContext dslContext;
     private final List<FieldMetadata> joins = new LinkedList<>();
-    private final SelectJoinStep<Record> query;
+    private SelectJoinStep<? extends Record> query;
 
     public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
         this.speedyQuery = speedyQuery;
         this.entityMetadata = speedyQuery.getFrom();
         this.dslContext = dslContext;
-        this.query = this.dslContext.select()
-                .from(JooqUtil.getTable(speedyQuery.getFrom()));
     }
 
     Field<Object> getPath(BinaryCondition bCondition) {
@@ -271,6 +270,12 @@ public class JooqQueryBuilder {
     }
 
     public Result<Record> executeQuery() throws Exception {
+
+        SelectJoinStep<Record> from = this.dslContext.select()
+                .from(JooqUtil.getTable(speedyQuery.getFrom()));
+
+        this.query = from;
+
         if (Objects.nonNull(speedyQuery.getWhere())) {
             org.jooq.Condition whereCondition = conditionToPredicate(this.speedyQuery.getWhere());
             query.where(whereCondition);
@@ -279,9 +284,25 @@ public class JooqQueryBuilder {
         addPageInfo();
         joins();
 
-        LOGGER.info("query sql: {} ", query.toString());
-        return query.fetch();
+        LOGGER.info("SQL Query: {} ", query.toString());
+        return from.fetch();
     }
 
+
+    public BigInteger executeCountQuery() throws Exception {
+        SelectJoinStep<Record1<Integer>> from = this.dslContext.select(DSL.count())
+                .from(JooqUtil.getTable(speedyQuery.getFrom()));
+
+        this.query = from;
+
+        if (Objects.nonNull(speedyQuery.getWhere())) {
+            org.jooq.Condition whereCondition = conditionToPredicate(this.speedyQuery.getWhere());
+            SelectConditionStep<? extends Record> where = query.where(whereCondition);
+        }
+        joins();
+
+        LOGGER.info("SQL Query: {} ", query.toString());
+        return from.fetchOne(0, BigInteger.class);
+    }
 
 }

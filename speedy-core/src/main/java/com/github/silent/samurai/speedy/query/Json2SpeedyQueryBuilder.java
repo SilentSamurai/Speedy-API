@@ -210,7 +210,23 @@ public class Json2SpeedyQueryBuilder {
         }
     }
 
+    void buildSelect() {
+        if (rootNode.has("$select")) {
+            JsonNode jsonNode = rootNode.get("$select");
+            if (jsonNode.isArray()) {
+                for (JsonNode node : jsonNode) {
+                    if (node.isTextual()) {
+                        speedyQuery.addSelect(node.asText());
+                    }
+                }
+            } else if (jsonNode.isTextual()) {
+                speedyQuery.addSelect(jsonNode.asText());
+            }
+        }
+    }
+
     public SpeedyQuery build() throws SpeedyHttpException {
+        buildSelect();
         buildWhere();
         buildOrderBy();
         buildPaging();
