@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.util.Set;
+
 @Getter
 @Setter
 @Table(name = "categories", indexes = {
@@ -21,5 +23,8 @@ public class Category {
 
     @Column(name = "name", nullable = false, length = 250)
     private String name;
+
+    @OneToMany(mappedBy = "category")
+    private Set<Product> products;
 
 }
