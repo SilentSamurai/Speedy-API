@@ -76,8 +76,8 @@ public class JSONSerializer implements IResponseSerializer {
     @Override
     public void write(List<SpeedyEntity> speedyEntities) throws Exception {
         MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(speedyEntities);
-        int pageNumber = getContext().getPageNo();
-        responseWrapper.setPageIndex(pageNumber);
+        responseWrapper.setPageIndex(getContext().getPageNo());
+//        responseWrapper.setPageSize(getContext().getPageSize());
         HttpServletResponse response = getContext().getResponse();
         response.setContentType(this.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);
@@ -87,6 +87,8 @@ public class JSONSerializer implements IResponseSerializer {
     @Override
     public void write(SpeedyEntity speedyEntity) throws Exception {
         SinglePayloadWrapper responseWrapper = SinglePayloadWrapper.wrapperInResponse(speedyEntity);
+        responseWrapper.setPageIndex(getContext().getPageNo());
+//        responseWrapper.setPageSize(getContext().getPageSize());
         HttpServletResponse response = getContext().getResponse();
         response.setContentType(this.getContentType());
         response.setStatus(HttpServletResponse.SC_OK);

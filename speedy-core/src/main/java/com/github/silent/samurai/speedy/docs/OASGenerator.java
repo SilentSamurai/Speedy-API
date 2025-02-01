@@ -130,7 +130,7 @@ public class OASGenerator {
         return new Schema<>()
                 .type("object")
                 .addProperty("payload", ref)
-                .addProperty("pageCount", OASGenerator.basicSchema(ValueType.INT))
+                .addProperty("pageSize", OASGenerator.basicSchema(ValueType.INT))
                 .addProperty("pageIndex", OASGenerator.basicSchema(ValueType.INT));
     }
 
