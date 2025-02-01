@@ -12,6 +12,8 @@ import lombok.Data;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import lombok.SneakyThrows;
+
 import java.lang.reflect.Field;
 
 @Data
@@ -30,12 +32,6 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     public ValueType getValueType() {
         return JavaType2ValueType.fromClass(field.getType());
     }
-
-//    @SneakyThrows
-//    @Override
-//    public Object getEntityFieldValue(Object entity) {
-//        return field.get(entity);
-//    }
 
     @Override
     public boolean isAssociation() {
@@ -160,5 +156,10 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 //    public boolean setEntityFieldWithValue(Object entity, Object value) {
 //        field.set(entity, value);
 //        return false;
+//    }
+
+//    @SneakyThrows
+//    public Object getEntityFieldValue(Object entity) {
+//        return field.get(entity);
 //    }
 }

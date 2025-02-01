@@ -247,6 +247,8 @@ INSERT INTO products (ID, NAME, DESCRIPTION, CATEGORY_ID)
 VALUES ('5', 'Product 5', 'Description 5', '3');
 INSERT INTO products (ID, NAME, DESCRIPTION, CATEGORY_ID)
 VALUES ('6', 'Product 6', 'Description 6', '3');
+INSERT INTO products (ID, NAME, DESCRIPTION, CATEGORY_ID)
+VALUES ('7', 'Product 7', 'Description 7', '3');
 
 
 INSERT INTO suppliers (ID, NAME, ADDRESS, EMAIL, PHONE_NO, ALT_PHONE_NO, CREATED_AT, CREATED_BY)

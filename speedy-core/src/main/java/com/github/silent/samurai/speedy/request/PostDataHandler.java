@@ -57,6 +57,7 @@ public class PostDataHandler {
                     LOGGER.info("{} saved {}", entityMetadata.getName(), savedEntity);
                 }
 
+                // TODO: remove this may b not good to throw exception right after insert
                 // check if primary key is complete
                 if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
                     throw new BadRequestException("Incomplete Key after save");
@@ -78,21 +79,17 @@ public class PostDataHandler {
         return savedObjects;
     }
 
-    public Optional<List<SpeedyEntity>> processBatch(List<SpeedyEntity> parsedEntities) throws SpeedyHttpException {
-        List<SpeedyEntity> savedObjects = null;
-        if (!parsedEntities.isEmpty()) {
-            savedObjects = processPhysical(parsedEntities);
-        }
-        return Optional.ofNullable(savedObjects);
-    }
-
     public Optional<List<SpeedyEntity>> process(EntityMetadata resourceMetadata, JsonNode jsonElement) throws SpeedyHttpException {
         if (!resourceMetadata.isCreateAllowed()) {
             throw new BadRequestException(String.format("create not allowed for %s", resourceMetadata.getName()));
         }
 
         List<SpeedyEntity> speedyEntities = parserContent(resourceMetadata, jsonElement);
-        return processBatch(speedyEntities);
+        if (speedyEntities.isEmpty()) {
+            return Optional.empty();
+        }
+        List<SpeedyEntity> savedObjects  = processPhysical(speedyEntities);
+        return Optional.of(savedObjects);
     }
 
     public List<SpeedyEntity> parserContent(EntityMetadata resourceMetadata, JsonNode jsonElement) throws SpeedyHttpException {

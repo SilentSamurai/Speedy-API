@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class JooqSqlToSpeedy {
 
@@ -27,15 +28,16 @@ public class JooqSqlToSpeedy {
     }
 
     public SpeedyEntity fromRecord(Record record, EntityMetadata from, Set<String> expand) throws SpeedyHttpException {
-        return fromRecordInner(record, from, expand);
+        return fromRecordInner(record, from, new HashSet<>(expand));
     }
 
     private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, Set<String> expands) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = SpeedyValueFactory.fromEntityMetadata(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-
             if (fieldMetadata.isAssociation()) {
                 if (expands.contains(fieldMetadata.getAssociationMetadata().getName())) {
+                    // remove once expanded, done to remove recursive expand
+                    expands.remove(fieldMetadata.getAssociationMetadata().getName());
                     // extract FK from current record, then query foreign table rows
                     Optional<Result<Record>> associatedRecord = jooqToJooqSql.findByFK(fieldMetadata, record);
                     if (associatedRecord.isEmpty() || associatedRecord.get().isEmpty()) {
@@ -49,7 +51,8 @@ public class JooqSqlToSpeedy {
                         SpeedyEntity associatedEntity = fromRecordInner(
                                 associatedRecord.get().get(0),
                                 associationMetadata,
-                                Set.of());
+                                expands
+                        );
                         speedyEntity.put(fieldMetadata, associatedEntity);
                     }
                 } else {

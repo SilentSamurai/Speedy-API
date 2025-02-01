@@ -51,7 +51,7 @@ public class SpeedyV2ExpandTest {
        }
        * */
     @Test
-    void testQuery1() throws Exception {
+    void single_level_expand() throws Exception {
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
@@ -104,7 +104,7 @@ public class SpeedyV2ExpandTest {
        }
        * */
     @Test
-    void testQuery2() throws Exception {
+    void pagging() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Category");
         body.putObject("$page")
@@ -137,6 +137,62 @@ public class SpeedyV2ExpandTest {
                                         Matchers.equalTo("cat-4-4")
                                 )
                         )))
+                .andReturn();
+
+    }
+
+
+    @Test
+    void multi_level_expand() throws Exception {
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
+                .post(SpeedyConstant.URI + "/Procurement/$query")
+                .content(CommonUtil.json().writeValueAsString(
+                        SpeedyRequest
+                                .query("Procurement")
+                                .$expand("Product")
+                                .$expand("Category")
+                                .prettyPrint()
+                                .build()
+                ))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdBy").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdBy").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdBy")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.name").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.name")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category.id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category.id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category.name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category.name").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.category.name")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
                 .andReturn();
 
     }

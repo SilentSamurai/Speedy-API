@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public interface EntityMetadata {
 
@@ -33,6 +34,12 @@ public interface EntityMetadata {
     Set<String> getKeyFieldNames();
 
     Set<FieldMetadata> getAssociatedFields();
+
+    default Set<FieldMetadata> getAllNonKeyFields() {
+        return getAllFields().stream()
+                .filter(fm -> !(fm instanceof KeyFieldMetadata))
+                .collect(Collectors.toSet());
+    }
 
     default Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {
         return this.getAssociatedFields().stream()

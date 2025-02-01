@@ -109,7 +109,7 @@ public class StaticEntityMetadata implements EntityMetadata {
         return entityClass.getConstructor().newInstance();
     }
 
-    //    @Override
+    // @Override
     public Object createNewKeyInstance() throws Exception {
         return keyClass.getConstructor().newInstance();
     }

@@ -230,7 +230,6 @@ public class JooqQueryBuilder {
             case AND:
             case OR:
                 throw new BadRequestException("Unknown Operator");
-
         };
     }
 
@@ -298,10 +297,10 @@ public class JooqQueryBuilder {
         if (Objects.nonNull(speedyQuery.getWhere())) {
             org.jooq.Condition whereCondition = conditionToPredicate(this.speedyQuery.getWhere());
             SelectConditionStep<? extends Record> where = query.where(whereCondition);
+            joins();
         }
-        joins();
 
-        LOGGER.info("SQL Query: {} ", query.toString());
+        LOGGER.info("SQL Count Query: {} ", query.toString());
         return from.fetchOne(0, BigInteger.class);
     }
 

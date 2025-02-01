@@ -11,8 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.CategoryApi;
-import org.openapitools.client.model.UpdateCategoryRequest;
-import org.openapitools.client.model.UpdateCategoryResponse;
+import org.openapitools.client.api.ProductApi;
+import org.openapitools.client.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +81,36 @@ public class SpeedyPutTest {
         Optional<Category> categoryOptional = categoryRepository.findById(category.getId());
         Assertions.assertTrue(categoryOptional.isPresent());
         Assertions.assertEquals("generated-category-update-modified", categoryOptional.get().getName());
+    }
+
+    @Test
+    void updateAssosiation() throws Exception {
+        ProductApi productApi = new ProductApi(defaultClient);
+
+        FilteredProductResponse getResp = productApi.getProduct("7");
+        assertNotNull(getResp);
+        assertNotNull(getResp.getPayload());
+        assertFalse(getResp.getPayload().isEmpty());
+        Product getProduct = getResp.getPayload().get(0);
+        assertNotNull(getProduct.getId());
+        assertNotNull(getProduct.getName());
+        assertNotNull(getProduct.getDescription());
+        assertNotNull(getProduct.getCategory());
+        assertEquals("3", getProduct.getCategory().getId());
+
+        UpdateProductRequest productRequest = new UpdateProductRequest();
+        productRequest.setId("7");
+        productRequest.setCategory(new CategoryKey().id("1"));
+        UpdateProductResponse response = productApi.updateProduct(productRequest);
+        assertNotNull(response);
+        assertNotNull(response.getPayload());
+        assertFalse(response.getPayload().isEmpty());
+        Product product = response.getPayload().get(0);
+        assertNotNull(product.getId());
+        assertNotNull(product.getName());
+        assertNotNull(product.getDescription());
+        assertNotNull(product.getCategory());
+        assertEquals("1", product.getCategory().getId());
     }
 
     @Test

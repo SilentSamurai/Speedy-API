@@ -62,7 +62,7 @@ public class JooqUtil {
             name = name.toLowerCase();
         }
 
-        return DSL.table(name);
+        return DSL.table(DSL.name(name));
     }
 
     public static <T> Field<T> getColumn(FieldMetadata fieldMetadata) {
