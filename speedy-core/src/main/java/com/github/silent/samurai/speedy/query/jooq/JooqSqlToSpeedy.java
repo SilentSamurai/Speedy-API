@@ -27,11 +27,11 @@ public class JooqSqlToSpeedy {
         this.jooqToJooqSql = new JooqToJooqSql(dslContext);
     }
 
-    public SpeedyEntity fromRecord(Record record, EntityMetadata from, Set<String> expand) throws SpeedyHttpException {
-        return fromRecordInner(record, from, new HashSet<>(expand));
+    public SpeedyEntity fromRecord(Record record, EntityMetadata from, List<String> expand) throws SpeedyHttpException {
+        return fromRecordInner(record, from, new ArrayList<>(expand));
     }
 
-    private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, Set<String> expands) throws SpeedyHttpException {
+    private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, List<String> expands) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = SpeedyValueFactory.fromEntityMetadata(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (fieldMetadata.isAssociation()) {

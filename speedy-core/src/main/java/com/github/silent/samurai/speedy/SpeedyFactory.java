@@ -82,7 +82,7 @@ public class SpeedyFactory {
                 speedyQuery.getFrom()
                         .getAssociatedFields().stream().map(
                                 item -> item.getAssociationMetadata().getName()
-                        ).collect(Collectors.toSet())
+                        ).collect(Collectors.toList())
         );
 
         Optional<List<SpeedyEntity>> requestedData = new GetDataHandler(context).processMany(speedyQuery);

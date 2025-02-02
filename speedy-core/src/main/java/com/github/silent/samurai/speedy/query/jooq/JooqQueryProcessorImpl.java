@@ -93,7 +93,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                 Result<Record> result = speedyToJooqSql.findByPrimaryKey(entityKey);
 
                 SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dslContext)
-                        .fromRecord(result.get(0), entity.getMetadata(), Set.of());
+                        .fromRecord(result.get(0), entity.getMetadata(), List.of());
 
                 entityList.add(speedyEntity);
             }
@@ -114,7 +114,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
 
             return new JooqSqlToSpeedy(dslContext)
-                    .fromRecord(result.get(0), entity.getMetadata(), Set.of());
+                    .fromRecord(result.get(0), entity.getMetadata(), List.of());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -129,7 +129,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             for (SpeedyEntityKey pk : pks) {
                 Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
                 SpeedyEntity entity = new JooqSqlToSpeedy(dslContext)
-                        .fromRecord(result.get(0), pk.getMetadata(), Set.of());
+                        .fromRecord(result.get(0), pk.getMetadata(), List.of());
 
                 entities.add(entity);
             }

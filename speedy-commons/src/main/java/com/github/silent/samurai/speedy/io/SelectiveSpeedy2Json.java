@@ -12,21 +12,17 @@ import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class SelectiveSpeedy2Json {
 
-    private final MetaModelProcessor metaModelProcessor;
     private final Predicate<FieldMetadata> fieldPredicate;
     private static final ObjectMapper json = CommonUtil.json();
 
-    private final Set<String> expand = new HashSet<>();
+    private final List<String> expand = new ArrayList<>();
 
     public SelectiveSpeedy2Json(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
-        this.metaModelProcessor = metaModelProcessor;
         this.fieldPredicate = fieldPredicate;
     }
 
@@ -40,6 +36,8 @@ public class SelectiveSpeedy2Json {
             }
             if (fieldMetadata.isAssociation()) {
                 if (expand.contains(fieldMetadata.getAssociationMetadata().getName())) {
+                    // remove expands
+                    expand.remove(fieldMetadata.getAssociationMetadata().getName());
                     if (fieldMetadata.isCollection()) {
                         Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
                         if (value != null) {
@@ -190,7 +188,7 @@ public class SelectiveSpeedy2Json {
         return jsonArray;
     }
 
-    public void addExpand(Set<String> associationName) {
+    public void addAllExpands(List<String> associationName) {
         this.expand.addAll(associationName);
     }
 }

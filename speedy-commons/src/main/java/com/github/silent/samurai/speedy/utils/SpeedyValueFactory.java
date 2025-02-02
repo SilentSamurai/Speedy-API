@@ -106,11 +106,9 @@ public class SpeedyValueFactory {
         return (T) SpeedyValue2JavaType.convert(speedyValue, basicClass);
     }
 
-
     public static <T> T toJavaTypeOnlyViaValueType(ValueType valueType, SpeedyValue speedyValue) throws SpeedyHttpException {
         return SpeedyValue2JavaType.convert(speedyValue, valueType);
     }
-
 
     public static SpeedyEntityKey createEntityKey(EntityMetadata entityMetadata) {
         return new SpeedyEntityKey(entityMetadata);
