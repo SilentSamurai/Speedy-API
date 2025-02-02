@@ -20,13 +20,13 @@ public class SelectiveSpeedy2Json {
     private final Predicate<FieldMetadata> fieldPredicate;
     private static final ObjectMapper json = CommonUtil.json();
 
-    private final List<String> expand = new ArrayList<>();
-
     public SelectiveSpeedy2Json(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
         this.fieldPredicate = fieldPredicate;
     }
 
-    public ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity,
+                                       EntityMetadata entityMetadata,
+                                       List<String> expand) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ObjectNode jsonObject = json.createObjectNode();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
@@ -41,7 +41,9 @@ public class SelectiveSpeedy2Json {
                     if (fieldMetadata.isCollection()) {
                         Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
                         if (value != null) {
-                            ArrayNode childArray = formCollection(value, fieldMetadata.getAssociationMetadata());
+                            ArrayNode childArray = formCollection(value,
+                                    fieldMetadata.getAssociationMetadata(),
+                                    expand);
                             jsonObject.set(fieldMetadata.getOutputPropertyName(), childArray);
                         }
                     } else {
@@ -49,7 +51,9 @@ public class SelectiveSpeedy2Json {
                             // if association is not present
                             if (speedyEntity.get(fieldMetadata).isObject()) {
                                 SpeedyEntity speedyObject = speedyEntity.get(fieldMetadata).asObject();
-                                ObjectNode childObject = fromSpeedyEntity(speedyObject, fieldMetadata.getAssociationMetadata());
+                                ObjectNode childObject = fromSpeedyEntity(speedyObject,
+                                        fieldMetadata.getAssociationMetadata(),
+                                        expand);
                                 jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
                             } else {
                                 jsonObject.putNull(fieldMetadata.getOutputPropertyName());
@@ -174,21 +178,20 @@ public class SelectiveSpeedy2Json {
         return jsonArray;
     }
 
-    public ArrayNode formCollection(Collection<? extends SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ArrayNode formCollection(Collection<? extends SpeedyValue> collection,
+                                    EntityMetadata entityMetadata,
+                                    List<String> expands) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue object : collection) {
             if (object.isObject()) {
                 SpeedyEntity speedyEntity = object.asObject();
-                JsonNode jsonObject = fromSpeedyEntity(speedyEntity, entityMetadata);
+                List<String> expand = new ArrayList<>(expands);
+                JsonNode jsonObject = fromSpeedyEntity(speedyEntity, entityMetadata, expand);
                 jsonArray.add(jsonObject);
             } else {
                 jsonArray.addNull();
             }
         }
         return jsonArray;
-    }
-
-    public void addAllExpands(List<String> associationName) {
-        this.expand.addAll(associationName);
     }
 }

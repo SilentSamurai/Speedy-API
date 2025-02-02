@@ -12,6 +12,7 @@ import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.http.MediaType;
 
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
@@ -42,17 +43,6 @@ public class JSONSerializer implements IResponseSerializer {
         return context;
     }
 
-    public void writeResponse(SinglePayload requestedPayload) throws Exception {
-        SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
-                context.getMetaModelProcessor(), fieldPredicate);
-
-        selectiveSpeedy2Json.addAllExpands(context.getExpand());
-
-        SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
-        JsonNode jsonElement = selectiveSpeedy2Json.fromSpeedyEntity(payload, context.getEntityMetadata());
-        commonCode(jsonElement, requestedPayload.getPageIndex(), requestedPayload.getPageSize(), requestedPayload.getTotalPageCount());
-    }
-
     private void commonCode(JsonNode jsonElement, long pageIndex, long pageSize, long totalPageCount) throws IOException {
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();
@@ -63,11 +53,26 @@ public class JSONSerializer implements IResponseSerializer {
         json.writeValue(context.getResponse().getWriter(), basePayload);
     }
 
+    public void writeResponse(SinglePayload requestedPayload) throws Exception {
+        SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
+                context.getMetaModelProcessor(), fieldPredicate);
+
+        SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
+        JsonNode jsonElement = selectiveSpeedy2Json.fromSpeedyEntity(payload, context.getEntityMetadata(), context.getExpand());
+        commonCode(jsonElement, requestedPayload.getPageIndex(), requestedPayload.getPageSize(), requestedPayload.getTotalPageCount());
+    }
+
     public void writeResponse(MultiPayload multiPayload) throws Exception {
-        SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(context.getMetaModelProcessor(), fieldPredicate);
-        selectiveSpeedy2Json.addAllExpands(context.getExpand());
+        SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
+                context.getMetaModelProcessor(),
+                fieldPredicate
+        );
         List<? extends SpeedyValue> resultList = multiPayload.getPayload();
-        JsonNode jsonElement = selectiveSpeedy2Json.formCollection(resultList, context.getEntityMetadata());
+        JsonNode jsonElement = selectiveSpeedy2Json.formCollection(
+                resultList,
+                context.getEntityMetadata(),
+                context.getExpand()
+        );
         commonCode(jsonElement, multiPayload.getPageIndex(), multiPayload.getPageSize(), multiPayload.getTotalPageCount());
     }
 
