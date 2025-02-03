@@ -104,7 +104,7 @@ Content-Type: application/json
             "$ne": "0",
             "$lt": "0",
             "$gt": "0",
-            "$regex": "cat*",
+            "$matches": "cat*",
             "$in": [
                 0,
                 2,

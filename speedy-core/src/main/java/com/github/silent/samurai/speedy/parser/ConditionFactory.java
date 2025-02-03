@@ -33,7 +33,7 @@ public class ConditionFactory {
             case GTE -> new GreaterThanEqualCondition(field, instance);
             case IN -> new InCondition(field, instance);
             case NOT_IN -> new NotInCondition(field, instance);
-            case REGEX -> new RegexCondition(field, instance);
+            case PATTERN_MATCHING -> new MatchingCondition(field, instance);
             case AND, OR -> throw new BadRequestException("");
 
         };

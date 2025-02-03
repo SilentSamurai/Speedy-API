@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.enums;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 
 public enum ConditionOperator {
-    EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR, REGEX;
+    EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR, PATTERN_MATCHING;
 
     public boolean doesAcceptMultipleValues() {
         return this == IN || this == NOT_IN;
@@ -22,8 +22,8 @@ public enum ConditionOperator {
             return GT;
         } else if (symbol.equals(">=") || symbol.equals("$gte")) {
             return GTE;
-        } else if (symbol.equals("=*") || symbol.equals("$regex")) {
-            return REGEX;
+        } else if (symbol.equals("=*") || symbol.equals("$matches")) {
+            return PATTERN_MATCHING;
         } else if (symbol.equals("<>") || symbol.equals("$in")) {
             return IN;
         } else if (symbol.equals("<!>") || symbol.equals("$nin")) {

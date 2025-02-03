@@ -239,7 +239,7 @@ public class SpeedyOpenApiCustomizer {
             "            \"$ne\": \"0\",\n" +
             "            \"$lt\": \"0\",\n" +
             "            \"$gt\": \"0\",\n" +
-            "            \"$regex\": \"cat*\",\n" +
+            "            \"$matches\": \"cat*\",\n" +
             "            \"$in\": [\n" +
             "                0,\n" +
             "                2,\n" +

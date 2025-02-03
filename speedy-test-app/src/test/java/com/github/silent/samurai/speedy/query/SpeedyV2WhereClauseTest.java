@@ -819,12 +819,12 @@ public class SpeedyV2WhereClauseTest {
     }
 
     @Test
-    void testQuery20RegexCondition() throws Exception {
+    void query_with_pattern_matching() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Category");
         body.putObject("$where")
                 .putObject("name")
-                .put("$regex", "*10*");
+                .put("$matches", "*10*");
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
@@ -857,12 +857,12 @@ public class SpeedyV2WhereClauseTest {
     }
 
     @Test
-    void testQuery20RegexCondition2() throws Exception {
+    void query_with_pattern_matching_with_dot() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Category");
         body.putObject("$where")
                 .putObject("name")
-                .put("$regex", ".10*");
+                .put("$matches", ".10*");
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
@@ -882,12 +882,12 @@ public class SpeedyV2WhereClauseTest {
     }
 
     @Test
-    void testQuery20RegexCondition3() throws Exception {
+    void query_with_pattern_matching_with_special_symbols() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Category");
         body.putObject("$where")
                 .putObject("name")
-                .put("$regex", "cat-1*");
+                .put("$matches", "cat-1*");
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")

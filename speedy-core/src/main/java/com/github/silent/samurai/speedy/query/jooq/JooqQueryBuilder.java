@@ -72,10 +72,10 @@ public class JooqQueryBuilder {
                 .reduce(DSL.noCondition(), org.jooq.Condition::and);
     }
 
-    org.jooq.Condition regexPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+    org.jooq.Condition matchPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         SpeedyValue speedyValue = bCondition.getSpeedyValue();
         if (!speedyValue.isText()) {
-            throw new BadRequestException("only text values are supported for $regex.");
+            throw new BadRequestException("only text values are supported for $matches.");
         }
         Field<Object> path = getPath(bCondition);
         String rawValue = speedyValue.asText().replaceAll("\\*", "%");
@@ -225,8 +225,8 @@ public class JooqQueryBuilder {
                 yield inPredicate(bCondition);
             case NOT_IN:
                 yield notInPredicate(bCondition);
-            case REGEX:
-                yield regexPredicate(bCondition);
+            case PATTERN_MATCHING:
+                yield matchPredicate(bCondition);
             case AND:
             case OR:
                 throw new BadRequestException("Unknown Operator");

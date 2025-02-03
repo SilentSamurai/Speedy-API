@@ -9,14 +9,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RegexCondition implements BinaryCondition {
+public class MatchingCondition implements BinaryCondition {
 
     private final QueryField field;
     private final SpeedyValue speedyValue;
-    private final ConditionOperator operator = ConditionOperator.REGEX;
+    private final ConditionOperator operator = ConditionOperator.PATTERN_MATCHING;
 
 
-    public RegexCondition(QueryField queryField, SpeedyValue speedyValue) {
+    public MatchingCondition(QueryField queryField, SpeedyValue speedyValue) {
         this.field = queryField;
         this.speedyValue = speedyValue;
     }

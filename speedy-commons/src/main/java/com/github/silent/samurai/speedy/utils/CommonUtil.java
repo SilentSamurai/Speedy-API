@@ -43,7 +43,7 @@ public class CommonUtil {
         return standardMapper.treeToValue(jsonNode, type);
     }
 
-    public static List<String> inQuotesSplitter(String input, String regex) {
+    public static List<String> inQuotesSplitter(String input, String matches) {
         List<String> tokens = new ArrayList<>();
         int start = 0;
         boolean inQuotes = false;

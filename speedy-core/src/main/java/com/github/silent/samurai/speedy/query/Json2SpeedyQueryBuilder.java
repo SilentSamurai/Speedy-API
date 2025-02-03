@@ -93,7 +93,7 @@ public class Json2SpeedyQueryBuilder {
                     SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
                     return conditionFactory.createBiCondition(queryField, operator, fieldValue);
                 }
-                // if operator is $eq $lte $regex , value will be basic a : { $regex : "sup*" }
+                // if operator is $eq $lte $matches , value will be basic a : { $matches : "sup*" }
                 if (valueNode.isValueNode()) {
                     SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) valueNode);
                     return conditionFactory.createBiCondition(queryField, operator, speedyValue);
