@@ -21,7 +21,7 @@ public class SpeedyQuery {
     private final ObjectNode orderBy = CommonUtil.json().createObjectNode();
     private final ArrayNode expand = CommonUtil.json().createArrayNode();
     private final Set<String> select = new HashSet<>();
-    int pageNo = 1;
+    int pageNo = 0;
     int pageSize = 10;
 
     private SpeedyQuery() {
@@ -207,8 +207,8 @@ public class SpeedyQuery {
             root.set("$select", arrayNode);
         }
         ObjectNode pageNode = CommonUtil.json().createObjectNode();
-        pageNode.put("$pageNo", pageNo);
-        pageNode.put("$pageSize", pageSize);
+        pageNode.put("$index", pageNo);
+        pageNode.put("$size", pageSize);
         root.set("$page", pageNode);
         return root;
     }
@@ -224,8 +224,8 @@ public class SpeedyQuery {
 
         // Page information
         ObjectNode pageNode = json.createObjectNode();
-        pageNode.put("$pageNo", pageNo);
-        pageNode.put("$pageSize", pageSize);
+        pageNode.put("$index", pageNo);
+        pageNode.put("$size", pageSize);
         rootCopy.set("$page", pageNode);
 
         // Return the pretty-printed JSON string
