@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
@@ -71,8 +72,8 @@ public class SpeedyFactory {
         this.validationProcessor.process();
 
         DataSource dataSource = speedyConfiguration.getDataSource();
-        String dialect = speedyConfiguration.getDialect();
-        this.queryProcessor = new JooqQueryProcessorImpl(dataSource, SQLDialect.valueOf(dialect));
+        SpeedyDialect dialect = speedyConfiguration.getDialect();
+        this.queryProcessor = new JooqQueryProcessorImpl(dataSource, dialect);
     }
 
     public void processGetRequests(IRequestContextImpl context, SpeedyQuery speedyQuery) throws Exception {

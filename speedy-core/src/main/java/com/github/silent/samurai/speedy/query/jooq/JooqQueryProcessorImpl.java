@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
+import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
@@ -34,9 +35,9 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
 
     private final DSLContext dslContext;
 
-    public JooqQueryProcessorImpl(DataSource dataSource, SQLDialect dialect) {
+    public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect) {
         this.dataSource = dataSource;
-        this.dialect = dialect;
+        this.dialect = JooqUtil.toJooqDialect(speedyDialect);
         this.dslContext = DSL.using(dataSource, dialect, settings);
     }
 

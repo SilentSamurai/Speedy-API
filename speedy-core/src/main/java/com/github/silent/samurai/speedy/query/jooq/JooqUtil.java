@@ -1,21 +1,17 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
+import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
-import org.jooq.DataType;
-import org.jooq.Field;
-import org.jooq.Name;
+import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 public class JooqUtil {
 
@@ -110,4 +106,22 @@ public class JooqUtil {
             return Optional.empty();
         }
     }
+
+    public static SQLDialect toJooqDialect(SpeedyDialect dialect) {
+        return switch (dialect) {
+            case H2 -> SQLDialect.H2;
+            case MYSQL -> SQLDialect.MYSQL;
+            case POSTGRES -> SQLDialect.POSTGRES;
+            case SQLITE -> SQLDialect.SQLITE;
+            case MARIADB -> SQLDialect.MARIADB;
+            case DERBY -> SQLDialect.DERBY;
+            case FIREBIRD -> SQLDialect.FIREBIRD;
+            case HSQLDB -> SQLDialect.HSQLDB;
+            case DUCKDB -> SQLDialect.DUCKDB;
+            case TRINO -> SQLDialect.TRINO;
+            case YUGABYTEDB -> SQLDialect.YUGABYTEDB;
+            default -> SQLDialect.DEFAULT;
+        };
+    }
+
 }
