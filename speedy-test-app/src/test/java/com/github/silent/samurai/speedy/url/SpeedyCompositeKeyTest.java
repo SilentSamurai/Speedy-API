@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -119,9 +120,10 @@ class SpeedyCompositeKeyTest {
 
         UpdateOrderResponse response = apiInstance.updateOrder(updateOrderRequest);
 
-        Order payload = response.getPayload();
+        List<Order> payload = response.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertEquals(100.0, payload.getDiscount());
+        Assertions.assertFalse(payload.isEmpty());
+        Assertions.assertEquals(100.0, payload.get(0).getDiscount());
 
         List<Order> payload1 = apiInstance.getOrder(orderKey.getProductId(), orderKey.getSupplierId()).getPayload();
 

@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.jpa.impl.util;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -75,13 +74,13 @@ public class CommonUtil {
                     Collection<?> listOfInstances = (Collection<?>) fieldValue;
                     List<SpeedyValue> listOfSpeedyValue = new LinkedList<>();
                     for (Object item : listOfInstances) {
-                        SpeedyValue speedyValue = SpeedyValueFactory.fromJavaTypes(fieldMetadata, item);
+                        SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(fieldMetadata, item);
                         listOfSpeedyValue.add(speedyValue);
                     }
                     SpeedyCollection speedyCollection = SpeedyValueFactory.fromCollection(listOfSpeedyValue);
                     speedyEntity.put(fieldMetadata, speedyCollection);
                 } else {
-                    SpeedyValue speedyValue = SpeedyValueFactory.fromJavaTypes(fieldMetadata, fieldValue);
+                    SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(fieldMetadata, fieldValue);
                     speedyEntity.put(fieldMetadata, speedyValue);
                 }
             }
@@ -105,7 +104,7 @@ public class CommonUtil {
                 speedyEntityKey.put(keyFieldMetadata, SpeedyValueFactory.fromNull());
                 continue;
             }
-            SpeedyValue speedyValue = SpeedyValueFactory.fromJavaTypes(keyFieldMetadata, fieldValue);
+            SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(keyFieldMetadata, fieldValue);
             speedyEntityKey.put(keyFieldMetadata, speedyValue);
         }
         return speedyEntityKey;

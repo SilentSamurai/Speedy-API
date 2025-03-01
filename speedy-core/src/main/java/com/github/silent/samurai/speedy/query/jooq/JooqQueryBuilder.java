@@ -16,6 +16,7 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.util.*;
 
 
@@ -23,30 +24,31 @@ public class JooqQueryBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryBuilder.class);
 
-    private final SpeedyQuery speedyQuery;
-    private final EntityMetadata entityMetadata;
-    private final DSLContext dslContext;
-    private final List<FieldMetadata> joins = new LinkedList<>();
-    private final SelectJoinStep<org.jooq.Record> query;
+    final SpeedyQuery speedyQuery;
+    final EntityMetadata entityMetadata;
+    final DSLContext dslContext;
+    final Map<String, FieldMetadata> joins = new HashMap<>();
+    SelectJoinStep<? extends Record> query;
+    final SQLDialect dialect;
 
     public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
         this.speedyQuery = speedyQuery;
         this.entityMetadata = speedyQuery.getFrom();
         this.dslContext = dslContext;
-        this.query = this.dslContext.select()
-                .from(JooqUtil.getTable(speedyQuery.getFrom()));
+        this.dialect = dslContext.dialect();
     }
 
     Field<Object> getPath(BinaryCondition bCondition) {
         QueryField queryField = bCondition.getField();
         if (queryField.isAssociated()) {
             FieldMetadata associatedMetadata = queryField.getAssociatedFieldMetadata();
-            joins.add(queryField.getFieldMetadata());
+            joins.put(associatedMetadata.getEntityMetadata().getDbTableName(),
+                    queryField.getFieldMetadata());
 
-            return JooqUtil.getColumn(associatedMetadata);
+            return JooqUtil.getColumn(associatedMetadata, dialect);
         } else {
-            FieldMetadata fieldMetadata = queryField.getFieldMetadata();;
-            return JooqUtil.getColumn(fieldMetadata);
+            FieldMetadata fieldMetadata = queryField.getFieldMetadata();
+            return JooqUtil.getColumn(fieldMetadata, dialect);
         }
     }
 
@@ -71,6 +73,16 @@ public class JooqQueryBuilder {
         }
         return predicates.stream()
                 .reduce(DSL.noCondition(), org.jooq.Condition::and);
+    }
+
+    org.jooq.Condition matchPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+        if (!speedyValue.isText()) {
+            throw new BadRequestException("only text values are supported for $matches.");
+        }
+        Field<Object> path = getPath(bCondition);
+        String rawValue = speedyValue.asText().replaceAll("\\*", "%");
+        return path.like(rawValue);
     }
 
     org.jooq.Condition equalPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
@@ -199,32 +211,35 @@ public class JooqQueryBuilder {
 
         BinaryCondition bCondition = (BinaryCondition) condition;
 
-        switch (condition.getOperator()) {
+        return switch (condition.getOperator()) {
             case EQ:
-                return equalPredicate(bCondition);
+                yield equalPredicate(bCondition);
             case NEQ:
-                return notEqualPredicate(bCondition);
+                yield notEqualPredicate(bCondition);
             case LT:
-                return lessThanPredicate(bCondition);
+                yield lessThanPredicate(bCondition);
             case GT:
-                return greaterThanPredicate(bCondition);
+                yield greaterThanPredicate(bCondition);
             case LTE:
-                return lessThanOrEqualToPredicate(bCondition);
+                yield lessThanOrEqualToPredicate(bCondition);
             case GTE:
-                return greaterThanOrEqualToPredicate(bCondition);
+                yield greaterThanOrEqualToPredicate(bCondition);
             case IN:
-                return inPredicate(bCondition);
+                yield inPredicate(bCondition);
             case NOT_IN:
-                return notInPredicate(bCondition);
-            default:
+                yield notInPredicate(bCondition);
+            case PATTERN_MATCHING:
+                yield matchPredicate(bCondition);
+            case AND:
+            case OR:
                 throw new BadRequestException("Unknown Operator");
-        }
+        };
     }
 
     void captureOrderBy() {
         for (OrderBy orderBy : speedyQuery.getOrderByList()) {
             FieldMetadata fieldMetadata = orderBy.getFieldMetadata();
-            Field<Object> field = JooqUtil.getColumn(fieldMetadata);
+            Field<Object> field = JooqUtil.getColumn(fieldMetadata, dialect);
             OrderByOperator operator = orderBy.getOperator();
             if (operator == OrderByOperator.ASC) {
                 query.orderBy(field.asc());
@@ -244,19 +259,24 @@ public class JooqQueryBuilder {
     }
 
     private void joins() {
-        for (FieldMetadata join : joins) {
+        for (FieldMetadata join : joins.values()) {
             // the foreign key table to join
-            Table<?> table = JooqUtil.getTable(join.getAssociationMetadata());
+            Table<?> table = JooqUtil.getTable(join.getAssociationMetadata(), dialect);
             // foreign key field
-            Field<?> fromField = JooqUtil.getColumn(join);
-            // primary key field, from foreign key
-            Field joinField = JooqUtil.getColumn(join.getAssociatedFieldMetadata());
+            Field<?> fromField = JooqUtil.getColumn(join, dialect);
+            // primary key field, from foreign table
+            Field joinField = JooqUtil.getColumn(join.getAssociatedFieldMetadata(), dialect);
             query.join(table)
                     .on(fromField.eq(joinField));
         }
     }
 
-    public Result<Record> executeQuery() throws Exception {
+    void prepareQuery() throws Exception {
+        SelectJoinStep<Record> from = this.dslContext.select()
+                .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
+
+        this.query = from;
+
         if (Objects.nonNull(speedyQuery.getWhere())) {
             org.jooq.Condition whereCondition = conditionToPredicate(this.speedyQuery.getWhere());
             query.where(whereCondition);
@@ -265,9 +285,29 @@ public class JooqQueryBuilder {
         addPageInfo();
         joins();
 
-        LOGGER.info("query sql: {} ", query.toString());
+        LOGGER.info("SQL Query: {} ", query.toString());
+    }
+
+    public Result<? extends Record> executeQuery() throws Exception {
+        prepareQuery();
         return query.fetch();
     }
 
+
+    public BigInteger executeCountQuery() throws Exception {
+        SelectJoinStep<Record1<Integer>> from = this.dslContext.select(DSL.count())
+                .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
+
+        this.query = from;
+
+        if (Objects.nonNull(speedyQuery.getWhere())) {
+            org.jooq.Condition whereCondition = conditionToPredicate(this.speedyQuery.getWhere());
+            SelectConditionStep<? extends Record> where = query.where(whereCondition);
+            joins();
+        }
+
+        LOGGER.info("SQL Count Query: {} ", query.toString());
+        return from.fetchOne(0, BigInteger.class);
+    }
 
 }

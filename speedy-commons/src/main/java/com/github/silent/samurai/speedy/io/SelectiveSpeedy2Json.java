@@ -12,25 +12,21 @@ import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 public class SelectiveSpeedy2Json {
 
-    private final MetaModelProcessor metaModelProcessor;
     private final Predicate<FieldMetadata> fieldPredicate;
     private static final ObjectMapper json = CommonUtil.json();
 
-    private final Set<String> expand = new HashSet<>();
-
-    public SelectiveSpeedy2Json(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
-        this.metaModelProcessor = metaModelProcessor;
+    public SelectiveSpeedy2Json(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate) {
         this.fieldPredicate = fieldPredicate;
     }
 
-    public ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity,
+                                       EntityMetadata entityMetadata,
+                                       List<String> expand) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ObjectNode jsonObject = json.createObjectNode();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
@@ -40,17 +36,28 @@ public class SelectiveSpeedy2Json {
             }
             if (fieldMetadata.isAssociation()) {
                 if (expand.contains(fieldMetadata.getAssociationMetadata().getName())) {
+                    // remove expands
+                    expand.remove(fieldMetadata.getAssociationMetadata().getName());
                     if (fieldMetadata.isCollection()) {
                         Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
                         if (value != null) {
-                            ArrayNode childArray = formCollection(value, fieldMetadata.getAssociationMetadata());
+                            ArrayNode childArray = formCollection(value,
+                                    fieldMetadata.getAssociationMetadata(),
+                                    expand);
                             jsonObject.set(fieldMetadata.getOutputPropertyName(), childArray);
                         }
                     } else {
-                        SpeedyEntity value = (SpeedyEntity) speedyEntity.get(fieldMetadata);
-                        if (value != null) {
-                            ObjectNode childObject = fromSpeedyEntity(value, fieldMetadata.getAssociationMetadata());
-                            jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
+                        if (speedyEntity.has(fieldMetadata) && speedyEntity.get(fieldMetadata) != null) {
+                            // if association is not present
+                            if (speedyEntity.get(fieldMetadata).isObject()) {
+                                SpeedyEntity speedyObject = speedyEntity.get(fieldMetadata).asObject();
+                                ObjectNode childObject = fromSpeedyEntity(speedyObject,
+                                        fieldMetadata.getAssociationMetadata(),
+                                        expand);
+                                jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
+                            } else {
+                                jsonObject.putNull(fieldMetadata.getOutputPropertyName());
+                            }
                         }
                     }
                 } else {
@@ -61,10 +68,13 @@ public class SelectiveSpeedy2Json {
                             jsonObject.set(fieldMetadata.getOutputPropertyName(), childArray);
                         }
                     } else {
-                        SpeedyEntity value = (SpeedyEntity) speedyEntity.get(fieldMetadata);
-                        if (!value.isEmpty()) {
+                        SpeedyValue fieldValue = speedyEntity.get(fieldMetadata);
+                        if (fieldValue.isObject()) {
+                            SpeedyEntity value = speedyEntity.get(fieldMetadata).asObject();
                             ObjectNode childObject = onlyKeys(value, fieldMetadata.getAssociationMetadata());
                             jsonObject.set(fieldMetadata.getOutputPropertyName(), childObject);
+                        } else {
+                            jsonObject.putNull(fieldMetadata.getOutputPropertyName());
                         }
                     }
                 }
@@ -89,10 +99,14 @@ public class SelectiveSpeedy2Json {
 
     public ArrayNode onlyKeyCollection(Collection<SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
-        for (SpeedyValue object : collection) {
-            SpeedyEntity speedyEntity = (SpeedyEntity) object;
-            JsonNode jsonObject = onlyKeys(speedyEntity, entityMetadata);
-            jsonArray.add(jsonObject);
+        for (SpeedyValue speedyValue : collection) {
+            if (speedyValue.isObject()) {
+                SpeedyEntity speedyEntity = speedyValue.asObject();
+                JsonNode jsonObject = onlyKeys(speedyEntity, entityMetadata);
+                jsonArray.add(jsonObject);
+            } else {
+                jsonArray.addNull();
+            }
         }
         return jsonArray;
     }
@@ -150,7 +164,7 @@ public class SelectiveSpeedy2Json {
                 break;
             case OBJECT:
             case COLLECTION:
-                break;
+                throw new RuntimeException("OBJECT & Collection Not implemented yet in basic");
         }
     }
 
@@ -164,17 +178,20 @@ public class SelectiveSpeedy2Json {
         return jsonArray;
     }
 
-    public ArrayNode formCollection(Collection<? extends SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ArrayNode formCollection(Collection<? extends SpeedyValue> collection,
+                                    EntityMetadata entityMetadata,
+                                    List<String> expands) throws InvocationTargetException, IllegalAccessException, NotFoundException {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue object : collection) {
-            SpeedyEntity speedyEntity = (SpeedyEntity) object;
-            JsonNode jsonObject = fromSpeedyEntity(speedyEntity, entityMetadata);
-            jsonArray.add(jsonObject);
+            if (object.isObject()) {
+                SpeedyEntity speedyEntity = object.asObject();
+                List<String> expand = new ArrayList<>(expands);
+                JsonNode jsonObject = fromSpeedyEntity(speedyEntity, entityMetadata, expand);
+                jsonArray.add(jsonObject);
+            } else {
+                jsonArray.addNull();
+            }
         }
         return jsonArray;
-    }
-
-    public void addExpand(Set<String> associationName) {
-        this.expand.addAll(associationName);
     }
 }

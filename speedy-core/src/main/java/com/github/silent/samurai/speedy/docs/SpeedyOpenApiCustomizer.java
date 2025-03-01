@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.docs;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.events.VirtualEntityProcessor;
 import com.github.silent.samurai.speedy.interfaces.*;
 
 import io.swagger.v3.oas.models.OpenAPI;
@@ -16,14 +15,14 @@ import java.util.List;
 
 public class SpeedyOpenApiCustomizer {
 
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
 
     public SpeedyOpenApiCustomizer(SpeedyFactory speedyFactory) {
-        this.metaModelProcessor = speedyFactory.getMetaModelProcessor();
+        this.metaModel = speedyFactory.getMetaModel();
     }
 
     public void generate(OpenAPI openApi) {
-        Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
+        Collection<EntityMetadata> allEntityMetadata = metaModel.getAllEntityMetadata();
 
         for (EntityMetadata entityMetadata : allEntityMetadata) {
 
@@ -164,7 +163,9 @@ public class SpeedyOpenApiCustomizer {
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Update{0}Response", entityMetadata),
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+                )
         ).description("successful update."));
         operation.responses(apiResponses);
         identifierPathItem.put(operation);
@@ -238,6 +239,7 @@ public class SpeedyOpenApiCustomizer {
             "            \"$ne\": \"0\",\n" +
             "            \"$lt\": \"0\",\n" +
             "            \"$gt\": \"0\",\n" +
+            "            \"$matches\": \"cat*\",\n" +
             "            \"$in\": [\n" +
             "                0,\n" +
             "                2,\n" +

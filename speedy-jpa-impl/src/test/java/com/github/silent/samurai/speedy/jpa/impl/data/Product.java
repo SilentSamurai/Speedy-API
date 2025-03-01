@@ -13,6 +13,6 @@ public class Product {
     String id;
     String name;
     String category;
-    Integer cost;
+    Long cost;
 
 }

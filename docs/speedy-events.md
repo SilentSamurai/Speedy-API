@@ -23,7 +23,7 @@ import com.github.silent.samurai.speedy.events.VirtualEntityHandler;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.processors.JpaMetaModelProcessor;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,14 +6,14 @@
                 "name": "createdBy",
                 "outputProperty": "createdBy",
                 "dbColumn": "created_by",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isRequired": true
             },
             {
                 "name": "modifiedBy",
                 "outputProperty": "modifiedBy",
                 "dbColumn": "modified_by",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isNullable": true
             },
             {
@@ -42,7 +42,7 @@
                 "name": "id",
                 "outputProperty": "id",
                 "dbColumn": "id",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isKeyField": true
             },
             {
@@ -111,13 +111,13 @@
                 "name": "supplier",
                 "outputProperty": "supplier",
                 "dbColumn": "supplier_id",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "product",
                 "outputProperty": "productId",
                 "dbColumn": "product_id",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "orderDate",
@@ -167,7 +167,7 @@
                 "name": "id",
                 "outputProperty": "id",
                 "dbColumn": "id",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isKeyField": true
             }
         ],
@@ -182,14 +182,14 @@
                 "name": "id",
                 "outputProperty": "id",
                 "dbColumn": "id",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isKeyField": true
             },
             {
                 "name": "name",
                 "outputProperty": "name",
                 "dbColumn": "name",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             }
         ],
         "hasCompositeKey": false,
@@ -203,13 +203,13 @@
                 "name": "name",
                 "outputProperty": "name",
                 "dbColumn": "name",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "id",
                 "outputProperty": "id",
                 "dbColumn": "id",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isKeyField": true
             },
             {
@@ -224,7 +224,7 @@
                 "name": "description",
                 "outputProperty": "description",
                 "dbColumn": "description",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             }
         ],
         "hasCompositeKey": false,
@@ -238,26 +238,26 @@
                 "name": "phoneNo",
                 "outputProperty": "phoneNo",
                 "dbColumn": "phone_no",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "createdBy",
                 "outputProperty": "createdBy",
                 "dbColumn": "created_by",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "id",
                 "outputProperty": "id",
                 "dbColumn": "id",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isKeyField": true
             },
             {
                 "name": "address",
                 "outputProperty": "address",
                 "dbColumn": "address",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "createdAt",
@@ -269,19 +269,19 @@
                 "name": "name",
                 "outputProperty": "name",
                 "dbColumn": "name",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "altPhoneNo",
                 "outputProperty": "altPhoneNo",
                 "dbColumn": "alt_phone_no",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             },
             {
                 "name": "email",
                 "outputProperty": "email",
                 "dbColumn": "email",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             }
         ],
         "hasCompositeKey": false,
@@ -295,14 +295,14 @@
                 "name": "id",
                 "outputProperty": "id",
                 "dbColumn": "id",
-                "fieldType": "TEXT",
+                "fieldType": "VARCHAR",
                 "isKeyField": true
             },
             {
                 "name": "name",
                 "outputProperty": "name",
                 "dbColumn": "name",
-                "fieldType": "TEXT"
+                "fieldType": "VARCHAR"
             }
         ],
         "hasCompositeKey": false,

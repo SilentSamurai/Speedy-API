@@ -1,12 +1,12 @@
 package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.AntlrParser;
-import com.github.silent.samurai.speedy.io.BasicDeserializer;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.mappings.String2JavaType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class SpeedyUriContext {
 
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
     private final String requestURI;
     private final MultiValueMap<String, String> rawQuery = new LinkedMultiValueMap<>();
     private String fragment;
@@ -34,8 +34,8 @@ public class SpeedyUriContext {
     private ResourceRequest resourceRequest;
 
 
-    public SpeedyUriContext(MetaModelProcessor metaModelProcessor, String requestURI) {
-        this.metaModelProcessor = metaModelProcessor;
+    public SpeedyUriContext(MetaModel metaModel, String requestURI) {
+        this.metaModel = metaModel;
         this.requestURI = requestURI;
     }
 
@@ -54,7 +54,7 @@ public class SpeedyUriContext {
         List<String> values = rawQuery.get(name);
         List<T> list = new ArrayList<>();
         for (String str : values) {
-            T t = BasicDeserializer.quotedStringToPrimitive(str, type);
+            T t = String2JavaType.quotedStringToPrimitive(str, type);
             list.add(t);
         }
         return list;
@@ -63,7 +63,7 @@ public class SpeedyUriContext {
     public <T> T getQueryOrDefault(String name, Class<T> type, T defaultValue) throws BadRequestException {
         if (hasQuery(name)) {
             String queryValue = rawQuery.get(name).get(0);
-            return BasicDeserializer.quotedStringToPrimitive(queryValue, type);
+            return String2JavaType.quotedStringToPrimitive(queryValue, type);
         }
         return defaultValue;
     }
@@ -87,7 +87,7 @@ public class SpeedyUriContext {
         this.resourceRequest = antlrRequest.getRequestList().get(0);
 
         String primaryResource = resourceRequest.getResource();
-        EntityMetadata resourceMetadata = this.metaModelProcessor.findEntityMetadata(primaryResource);
+        EntityMetadata resourceMetadata = this.metaModel.findEntityMetadata(primaryResource);
         this.speedyQuery = new SpeedyQueryImpl(resourceMetadata);
 
         this.filterConditionChain = resourceRequest.getFilterOrder();

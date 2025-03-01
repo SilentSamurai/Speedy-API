@@ -1,14 +1,16 @@
 package com.github.silent.samurai.speedy.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Matchers;
-import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,16 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import jakarta.persistence.EntityManagerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static org.hamcrest.Matchers.contains;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -39,7 +50,7 @@ public class SpeedyV2OrderByTest {
     @Autowired
     SpeedyFactory speedyFactory;
 
-     @Autowired
+    @Autowired
     CategoryRepository categoryRepository;
 
     @Autowired
@@ -62,7 +73,7 @@ public class SpeedyV2OrderByTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
@@ -81,6 +92,36 @@ public class SpeedyV2OrderByTest {
                         .value(Matchers.everyItem(Matchers.isA(String.class))))
                 .andReturn();
 
+
+    }
+
+    @Test
+    void check_order_by_with_actual_names() throws Exception {
+        // Get actual categories from repository and sort them
+        List<Category> categories = (List<Category>) categoryRepository.findAll();
+        List<String> expectedNames = categories.stream()
+                .map(Category::getName)
+                .sorted() // ASC order
+                .toList();
+        List<String> reverseName = new ArrayList<>(expectedNames);
+        Collections.reverse(reverseName);
+
+        JsonNode body = SpeedyRequest.query("Category")
+                .$orderByAsc("name")
+                .$pageSize(50)
+                .prettyPrint()
+                .build();
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name")
+                        .value(contains(expectedNames.toArray())))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name")
+                        .value(Matchers.not(contains(reverseName.toArray()))));
     }
 
 
@@ -101,7 +142,7 @@ public class SpeedyV2OrderByTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)

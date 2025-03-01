@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface IResponseSerializer {
@@ -16,4 +17,6 @@ public interface IResponseSerializer {
     void write(List<SpeedyEntity> speedyEntities) throws Exception;
 
     void write(SpeedyEntity speedyEntity) throws Exception;
+
+    void write(BigInteger count) throws Exception;
 }

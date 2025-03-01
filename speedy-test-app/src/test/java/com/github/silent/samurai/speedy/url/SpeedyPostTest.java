@@ -57,7 +57,7 @@ class SpeedyPostTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
                 .content(CommonUtil.toJson(List.of(category)))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
@@ -84,7 +84,7 @@ class SpeedyPostTest {
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
                 .content(CommonUtil.toJson(List.of(category)))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(createRequest)
                 .andExpect(status().isBadRequest());
@@ -99,7 +99,7 @@ class SpeedyPostTest {
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
                 .content(CommonUtil.toJson(List.of(category)))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(createRequest)
                 .andExpect(status().isBadRequest());
@@ -116,7 +116,7 @@ class SpeedyPostTest {
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Customer/$create")
                 .content(CommonUtil.toJson(List.of(customer)))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(createRequest)
                 .andExpect(status().isBadRequest());
@@ -131,7 +131,7 @@ class SpeedyPostTest {
 
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
                 .content(CommonUtil.toJson(List.of(category)))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         MvcResult mvcResult = mvc.perform(createRequest)
                 .andExpect(status().isOk())
@@ -168,7 +168,7 @@ class SpeedyPostTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
                 .content(CommonUtil.toJson(categories))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())

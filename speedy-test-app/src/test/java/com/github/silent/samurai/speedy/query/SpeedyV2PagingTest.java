@@ -62,12 +62,16 @@ public class SpeedyV2PagingTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageIndex").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageSize").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageIndex").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageSize").isNumber())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(Matchers.equalTo(2))))
@@ -110,12 +114,16 @@ public class SpeedyV2PagingTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageIndex").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageSize").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageIndex").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageSize").isNumber())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(Matchers.equalTo(2))))

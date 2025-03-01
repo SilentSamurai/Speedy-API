@@ -1,17 +1,17 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
+import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+
 import javax.sql.DataSource;
 
 public interface ISpeedyConfiguration {
 
-    MetaModelProcessor createMetaModelProcessor();
+    MetaModelProcessor metaModelProcessor();
 
     void register(ISpeedyRegistry registry);
 
     DataSource getDataSource();
 
-    String getDialect();
+    SpeedyDialect getDialect();
 
 }

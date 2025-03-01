@@ -103,6 +103,10 @@ class ValueTest {
         SpeedyResponse updateResponse = speedyApi.update(updateRequest);
         JsonNode updatedEntity = updateResponse.getPayload();
 
+        assertTrue(updatedEntity.isArray());
+        assertFalse(updatedEntity.isEmpty());
+        updatedEntity = updatedEntity.get(0);
+
         assertTrue(updatedEntity.has("booleanValue"));
         assertFalse(updatedEntity.get("booleanValue").asBoolean());
 

@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.data.Product;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
@@ -24,9 +24,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class Json2SpeedyQueryBuilderTest {
+class JsonNode2SpeedyValueQueryBuilderTest {
 
-    private MetaModelProcessor metaModelProcessor;
+    private MetaModel metaModel;
     private ObjectMapper objectMapper;
     private JsonNode rootNode;
     private Json2SpeedyQueryBuilder builder;
@@ -34,7 +34,7 @@ class Json2SpeedyQueryBuilderTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        metaModelProcessor = mock(MetaModelProcessor.class);
+        metaModel = mock(MetaModel.class);
         objectMapper = new ObjectMapper();
     }
 
@@ -57,11 +57,11 @@ class Json2SpeedyQueryBuilderTest {
         rootNode = objectMapper.readTree(json);
 
 
-        when(metaModelProcessor.findEntityMetadata("Product"))
+        when(metaModel.findEntityMetadata("Product"))
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         // Initialize the builder
-        builder = new Json2SpeedyQueryBuilder(metaModelProcessor, "Product", rootNode);
+        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
 
         // Build the query
         SpeedyQuery query = builder.build();
@@ -98,12 +98,12 @@ class Json2SpeedyQueryBuilderTest {
         String json = "{\"$from\":\"Product\",\"$where\":\"invalidWhere\"}";
 
 
-        when(metaModelProcessor.findEntityMetadata("Product"))
+        when(metaModel.findEntityMetadata("Product"))
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModelProcessor, "Product", rootNode);
+        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to invalid where clause
         assertThrows(BadRequestException.class, builder::build);
@@ -123,12 +123,12 @@ class Json2SpeedyQueryBuilderTest {
         String json = "{\"$from\":\"Product\",\"$orderBy\":{\"id\":\"ASC\",\"name\":\"DESC\"}}";
 
 
-        when(metaModelProcessor.findEntityMetadata("Product"))
+        when(metaModel.findEntityMetadata("Product"))
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModelProcessor, "Product", rootNode);
+        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -154,12 +154,12 @@ class Json2SpeedyQueryBuilderTest {
         String json = "{\"$from\":\"Product\",\"$orderBy\":{\"id\":\"INVALID_ORDER\"}}";
 
 
-        when(metaModelProcessor.findEntityMetadata("Product"))
+        when(metaModel.findEntityMetadata("Product"))
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModelProcessor, "Product", rootNode);
+        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to invalid order clause
         assertThrows(BadRequestException.class, builder::build);
@@ -179,12 +179,12 @@ class Json2SpeedyQueryBuilderTest {
         String json = "{\"$from\":\"Product\",\"$page\":{\"$index\":1,\"$size\":20}}";
 
 
-        when(metaModelProcessor.findEntityMetadata("Product"))
+        when(metaModel.findEntityMetadata("Product"))
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModelProcessor, "Product", rootNode);
+        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -206,12 +206,12 @@ class Json2SpeedyQueryBuilderTest {
         String json = "{\"$from\":\"Product\",\"$page\":{\"$size\":20}}";
 
 
-        when(metaModelProcessor.findEntityMetadata("Product"))
+        when(metaModel.findEntityMetadata("Product"))
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModelProcessor, "Product", rootNode);
+        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -231,12 +231,12 @@ class Json2SpeedyQueryBuilderTest {
         String json = "{\"$from\":\"Product\",\"$expand\":[\"relation\"]}";
 
 
-        when(metaModelProcessor.findEntityMetadata("Product"))
+        when(metaModel.findEntityMetadata("Product"))
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModelProcessor, "Product", rootNode);
+        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -255,6 +255,6 @@ class Json2SpeedyQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        assertThrows(BadRequestException.class, () -> new Json2SpeedyQueryBuilder(metaModelProcessor, rootNode));
+        assertThrows(BadRequestException.class, () -> new Json2SpeedyQueryBuilder(metaModel, rootNode));
     }
 }

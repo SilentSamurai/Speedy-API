@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -20,11 +21,36 @@ public class SpeedyEntity implements SpeedyValue {
         return fields.containsKey(fieldMetadata.getOutputPropertyName());
     }
 
+    public SpeedyValue getOrDefault(FieldMetadata fieldMetadata, SpeedyValue speedyValue) {
+        if (!has(fieldMetadata)) {
+            return speedyValue;
+        }
+        return fields.get(fieldMetadata.getOutputPropertyName());
+    }
+
+    public SpeedyValue getOrDefault(String fieldName, SpeedyValue speedyValue) throws NotFoundException {
+        FieldMetadata fieldMetadata = entityMetadata.field(fieldName);
+        if (!has(fieldMetadata)) {
+            return speedyValue;
+        }
+        return fields.get(fieldMetadata.getOutputPropertyName());
+    }
+
+    public SpeedyValue get(String fieldName) throws NotFoundException {
+        FieldMetadata fieldMetadata = entityMetadata.field(fieldName);
+        return get(fieldMetadata);
+    }
+
     public SpeedyValue get(FieldMetadata fieldMetadata) {
         if (!has(fieldMetadata)) {
             throw new IllegalArgumentException("Field " + fieldMetadata.getOutputPropertyName() + " does not exist");
         }
         return fields.get(fieldMetadata.getOutputPropertyName());
+    }
+
+    public void put(String fieldName, SpeedyValue value) throws NotFoundException {
+        FieldMetadata fieldMetadata = entityMetadata.field(fieldName);
+        fields.put(fieldMetadata.getOutputPropertyName(), value);
     }
 
     public void put(FieldMetadata fieldMetadata, SpeedyValue value) {

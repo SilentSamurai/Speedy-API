@@ -1,7 +1,9 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
+import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -17,9 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class JooqQueryProcessorImpl implements QueryProcessor {
 
@@ -31,22 +33,21 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
             .withRenderNameStyle(RenderNameStyle.AS_IS);
 
+    private final Converter converter = new JooqConversionImpl();
+
     private final DSLContext dslContext;
 
-    public JooqQueryProcessorImpl(DataSource dataSource, SQLDialect dialect) {
+    public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect) {
         this.dataSource = dataSource;
-        this.dialect = dialect;
+        this.dialect = JooqUtil.toJooqDialect(speedyDialect);
         this.dslContext = DSL.using(dataSource, dialect, settings);
     }
 
     @Override
-    public SpeedyEntity executeOne(SpeedyQuery speedyQuery) throws SpeedyHttpException {
+    public BigInteger executeCount(SpeedyQuery query) throws SpeedyHttpException {
         try {
-            JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
-            Result<Record> result = qb.executeQuery();
-            Record record = result.get(0);
-            return new JooqSqlToSpeedy(dslContext)
-                    .fromRecord(record, speedyQuery.getFrom(), speedyQuery.getExpand());
+            JooqQueryBuilder qb = new JooqQueryBuilder(query, dslContext);
+            return qb.executeCountQuery();
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -56,7 +57,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     public List<SpeedyEntity> executeMany(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
             JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
-            Result<Record> result = qb.executeQuery();
+            Result<? extends Record> result = qb.executeQuery();
             List<SpeedyEntity> list = new ArrayList<>();
             JooqSqlToSpeedy jooqSQLToSpeedy = new JooqSqlToSpeedy(dslContext);
             for (Record record : result) {
@@ -95,7 +96,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                 Result<Record> result = speedyToJooqSql.findByPrimaryKey(entityKey);
 
                 SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dslContext)
-                        .fromRecord(result.get(0), entity.getMetadata(), Set.of());
+                        .fromRecord(result.get(0), entity.getMetadata(), List.of());
 
                 entityList.add(speedyEntity);
             }
@@ -116,7 +117,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
 
             return new JooqSqlToSpeedy(dslContext)
-                    .fromRecord(result.get(0), entity.getMetadata(), Set.of());
+                    .fromRecord(result.get(0), entity.getMetadata(), List.of());
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
@@ -131,7 +132,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             for (SpeedyEntityKey pk : pks) {
                 Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
                 SpeedyEntity entity = new JooqSqlToSpeedy(dslContext)
-                        .fromRecord(result.get(0), pk.getMetadata(), Set.of());
+                        .fromRecord(result.get(0), pk.getMetadata(), List.of());
 
                 entities.add(entity);
             }
@@ -141,5 +142,10 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
+    }
+
+    @Override
+    public JooqConversionImpl getConversionProcessor() {
+        return new JooqConversionImpl();
     }
 }

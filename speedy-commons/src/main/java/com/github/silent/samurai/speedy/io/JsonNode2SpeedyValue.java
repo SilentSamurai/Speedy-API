@@ -23,20 +23,20 @@ import java.util.LinkedList;
 import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 
-public class Json2Speedy {
+public class JsonNode2SpeedyValue {
     public static SpeedyValue fromValueNode(FieldMetadata fieldMetadata, ValueNode jsonNode) throws BadRequestException {
         if (jsonNode.isNull()) {
             return fromNull();
         }
-        switch (fieldMetadata.getValueType()) {
+        return switch (fieldMetadata.getValueType()) {
             case BOOL:
-                return fromBool(jsonNode.asBoolean());
+                yield fromBool(jsonNode.asBoolean());
             case TEXT:
-                return fromText(jsonNode.asText());
+                yield fromText(jsonNode.asText());
             case INT:
-                return fromInt(jsonNode.asLong());
+                yield fromInt(jsonNode.asLong());
             case FLOAT:
-                return fromDouble(jsonNode.asDouble());
+                yield fromDouble(jsonNode.asDouble());
             case DATE:
                 if (!jsonNode.isTextual() || !isDateFormatValid(jsonNode.asText())) {
                     String formatString = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
@@ -44,7 +44,7 @@ public class Json2Speedy {
                     throw new BadRequestException(msg);
                 }
                 LocalDate localDate = LocalDate.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE);
-                return fromDate(localDate);
+                yield fromDate(localDate);
             case TIME:
                 if (!jsonNode.isTextual() || !isTimeFormatValid(jsonNode.asText())) {
                     String formatString = LocalTime.now().format(DateTimeFormatter.ISO_TIME);
@@ -52,7 +52,7 @@ public class Json2Speedy {
                     throw new BadRequestException(msg);
                 }
                 LocalTime localTime = LocalTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_TIME);
-                return fromTime(localTime);
+                yield fromTime(localTime);
             case DATE_TIME:
                 if (!jsonNode.isTextual() || !isDateTimeFormatValid(jsonNode.asText())) {
                     String formatString = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
@@ -60,7 +60,7 @@ public class Json2Speedy {
                     throw new BadRequestException(msg);
                 }
                 LocalDateTime datetime = LocalDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE_TIME);
-                return fromDateTime(datetime);
+                yield fromDateTime(datetime);
             case ZONED_DATE_TIME:
                 if (!jsonNode.isTextual() || !isZonedDateTimeValid(jsonNode.asText())) {
                     String formatString = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
@@ -68,14 +68,18 @@ public class Json2Speedy {
                     throw new BadRequestException(msg);
                 }
                 ZonedDateTime zonedDateTime = ZonedDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-                return fromZonedDateTime(zonedDateTime);
+                yield fromZonedDateTime(zonedDateTime);
             case NULL:
-                return fromNull();
+                yield fromNull();
             case OBJECT:
             case COLLECTION:
-                throw new BadRequestException("Field " + fieldMetadata.getOutputPropertyName() + " must be a value");
-        }
-        throw new BadRequestException("Field " + fieldMetadata.getOutputPropertyName() + " must be a value");
+                String msg = String
+                        .format("Not able to parse : %s\nfor Field: %s, Value Type: %s ",
+                                jsonNode.toPrettyString(),
+                                fieldMetadata.getOutputPropertyName(),
+                                fieldMetadata.getColumnType());
+                throw new BadRequestException(msg);
+        };
     }
 
     public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {

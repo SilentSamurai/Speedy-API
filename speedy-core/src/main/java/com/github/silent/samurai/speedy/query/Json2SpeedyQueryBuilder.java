@@ -8,7 +8,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
@@ -26,30 +26,30 @@ import java.util.List;
 
 public class Json2SpeedyQueryBuilder {
 
-    final MetaModelProcessor metaModelProcessor;
+    final MetaModel metaModel;
     final JsonNode rootNode;
     final SpeedyQueryImpl speedyQuery;
 
     final ConditionFactory conditionFactory;
 
-    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
-        this.metaModelProcessor = metaModelProcessor;
+    public Json2SpeedyQueryBuilder(MetaModel metaModel, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModel = metaModel;
         this.rootNode = rootNode;
-        this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(from));
+        this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(from));
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
-        this.metaModelProcessor = metaModelProcessor;
+    public Json2SpeedyQueryBuilder(MetaModel metaModel, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, JsonNode rootNode) throws BadRequestException, NotFoundException {
-        this.metaModelProcessor = metaModelProcessor;
+    public Json2SpeedyQueryBuilder(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModel = metaModel;
         this.rootNode = rootNode;
-        this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(getFrom()));
+        this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(getFrom()));
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
@@ -72,10 +72,15 @@ public class Json2SpeedyQueryBuilder {
         }
         // if operator is provided a : { $eq : b }
         if (fieldNode.isObject()) {
+            //  fieldNode = { $eq : b }
             for (Iterator<String> it2 = fieldNode.fieldNames(); it2.hasNext(); ) {
+                // capture operator
                 String operatorSymbol = it2.next();
-                JsonNode valueNode = fieldNode.get(operatorSymbol);
+                // parse operator
                 ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
+                // capture value node after operator
+                JsonNode valueNode = fieldNode.get(operatorSymbol);
+
                 // if operator is $in or $nin and value is an array, a : { $in : [b, c] }
                 if (operator.doesAcceptMultipleValues() && valueNode.isArray()) {
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
@@ -88,7 +93,7 @@ public class Json2SpeedyQueryBuilder {
                     SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
                     return conditionFactory.createBiCondition(queryField, operator, fieldValue);
                 }
-                // if operator is $eq $lte etc , a : { $eq : b }
+                // if operator is $eq $lte $matches , value will be basic a : { $matches : "sup*" }
                 if (valueNode.isValueNode()) {
                     SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) valueNode);
                     return conditionFactory.createBiCondition(queryField, operator, speedyValue);
@@ -99,11 +104,12 @@ public class Json2SpeedyQueryBuilder {
     }
 
     BooleanCondition createAndCondition(ObjectNode objectNode) throws SpeedyHttpException {
-        // create and condtion from object: { a : { $eq : b }, c : d }
+        // create $and condition from object: { a : { $eq : b }, c : d }
         BooleanCondition booleanCondition = new BooleanConditionImpl(ConditionOperator.AND);
         for (Iterator<String> it2 = objectNode.fieldNames(); it2.hasNext(); ) {
             String fieldName = it2.next();
             JsonNode fieldNode = objectNode.get(fieldName);
+            // create a sub query on above $and query
             BinaryCondition binaryCondition = captureSingleBinaryQuery(fieldName, fieldNode);
             booleanCondition.addSubCondition(binaryCondition);
         }
@@ -154,7 +160,7 @@ public class Json2SpeedyQueryBuilder {
                 speedyQuery.setWhere(createBooleanCondition((ObjectNode) jsonNode));
                 return;
             }
-            throw new BadRequestException("where must be an object");
+            throw new BadRequestException("$where must be an object");
         }
     }
 
@@ -204,7 +210,23 @@ public class Json2SpeedyQueryBuilder {
         }
     }
 
+    void buildSelect() {
+        if (rootNode.has("$select")) {
+            JsonNode jsonNode = rootNode.get("$select");
+            if (jsonNode.isArray()) {
+                for (JsonNode node : jsonNode) {
+                    if (node.isTextual()) {
+                        speedyQuery.addSelect(node.asText());
+                    }
+                }
+            } else if (jsonNode.isTextual()) {
+                speedyQuery.addSelect(jsonNode.asText());
+            }
+        }
+    }
+
     public SpeedyQuery build() throws SpeedyHttpException {
+        buildSelect();
         buildWhere();
         buildOrderBy();
         buildPaging();

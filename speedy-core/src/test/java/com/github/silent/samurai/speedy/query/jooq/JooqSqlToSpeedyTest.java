@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import org.jooq.DSLContext;
+import org.jooq.*;
 import org.jooq.Record;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,12 +41,15 @@ class JooqSqlToSpeedyTest {
 
     @BeforeEach
     void setUp() {
+        Mockito.when(dslContext.dialect()).thenReturn(SQLDialect.H2);
         jooqSqlToSpeedy = new JooqSqlToSpeedy(dslContext);
     }
 
     private <T> OngoingStubbing<T> mockRecord(EntityMetadata entityMetadata, String fieldName) throws NotFoundException {
+        FieldMetadata fieldMetadata = entityMetadata.field(fieldName);
+        Field<T> column = JooqUtil.getColumn(fieldMetadata, SQLDialect.H2);
         return Mockito.when(
-                record.get(JooqUtil.getColumn(entityMetadata.field(fieldName)))
+                record.get(column, column.getType())
         );
     }
 
@@ -59,7 +62,7 @@ class JooqSqlToSpeedyTest {
         mockRecord(entityMetadata, "cost").thenReturn(100);
         mockRecord(entityMetadata, "category").thenReturn("cat-2");
 
-        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
+        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, List.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);
 
         assertNotNull(speedyEntity);
@@ -94,7 +97,7 @@ class JooqSqlToSpeedyTest {
 //        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
 //        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
 
-        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
+        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, List.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);
 
         assertNotNull(speedyEntity);

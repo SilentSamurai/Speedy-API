@@ -2,11 +2,12 @@ package com.github.silent.samurai.speedy.interfaces;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Set;
+
+import java.util.List;
 
 public interface IResponseContext {
 
-    MetaModelProcessor getMetaModelProcessor();
+    MetaModel getMetaModel();
 
     HttpServletRequest getRequest();
 
@@ -18,6 +19,6 @@ public interface IResponseContext {
 
     int getPageNo();
 
-    Set<String> getExpand();
+    List<String> getExpand();
 
 }

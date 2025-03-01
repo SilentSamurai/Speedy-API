@@ -66,15 +66,15 @@ public class UpdateDataHandler {
         EventProcessor eventProcessor = context.getEventProcessor();
         SpeedyEntity savedEntity = null;
         if (this.entity != null) {
-            context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entity);
-
+            // trigger b4 validate
             eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
+
+            context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entity);
 
             QueryProcessor queryProcessor = context.getQueryProcessor();
             savedEntity = queryProcessor.update(this.pk, entity);
 
             eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
-
         }
 
         return Optional.ofNullable(savedEntity);

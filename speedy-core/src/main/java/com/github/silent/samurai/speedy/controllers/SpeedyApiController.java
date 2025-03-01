@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.docs.MetaModelSerializer;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -33,8 +33,8 @@ public class SpeedyApiController {
     @Hidden
     @GetMapping(value = "/$metadata", produces = "application/json")
     public String metadata() throws JsonProcessingException {
-        MetaModelProcessor metaModelProcessor = speedyFactory.getMetaModelProcessor();
-        JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModelProcessor);
+        MetaModel metaModel = speedyFactory.getMetaModel();
+        JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModel);
         return CommonUtil.json().writeValueAsString(jsonElement);
     }
 

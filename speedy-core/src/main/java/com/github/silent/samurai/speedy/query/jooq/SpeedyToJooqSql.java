@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class SpeedyToJooqSql {
@@ -31,75 +32,84 @@ public class SpeedyToJooqSql {
     public Result<Record> findByPrimaryKey(SpeedyEntityKey pk) throws SpeedyHttpException {
         EntityMetadata entityMetadata = pk.getMetadata();
         SelectJoinStep<Record> query = dslContext.select()
-                .from(entityMetadata.getDbTableName());
+                .from(JooqUtil.getTable(entityMetadata, dslContext.dialect()));
 
         // Build the where clause for each primary key field
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-            Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                    keyFieldMetadata.getValueType(),
-                    speedyValue
+            Object value = JooqUtil.toJooqType(
+                    speedyValue,
+                    keyFieldMetadata.getColumnType()
             );
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
+            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
 
-            query.where(field.equal(value));
+            query.where(field.eq(value));
         }
 
-        LOGGER.info("findByPrimaryKey query: {}", query);
+        LOGGER.info("Executing findByPrimaryKey query for entity '{}': {}", entityMetadata.getName(), query);
         return query.fetch();
+    }
+
+    private InsertSetMoreStep<Record> handleAssociation(InsertSetStep<Record> insertQuery,
+                                                        FieldMetadata fieldMetadata,
+                                                        SpeedyValue speedyValue) throws SpeedyHttpException {
+        SpeedyEntity associatedEntity = speedyValue.asObject();
+        FieldMetadata associatedFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
+        if (!associatedEntity.has(associatedFieldMetadata)
+                || associatedEntity.get(associatedFieldMetadata).isEmpty()
+                || associatedEntity.get(associatedFieldMetadata).isNull()) {
+            return null;
+        }
+        SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
+        Object value = JooqUtil.toJooqType(innerValue, associatedFieldMetadata.getColumnType());
+        return insertQuery.set(JooqUtil.getColumn(fieldMetadata, dslContext.dialect()), value);
+    }
+
+    private Optional<InsertSetMoreStep<Record>> handleFieldMetadata(FieldMetadata fieldMetadata,
+                                                                    SpeedyEntity entity,
+                                                                    InsertSetStep<Record> insertQuery) throws SpeedyHttpException {
+        InsertSetMoreStep<Record> returnQuery = null;
+        if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
+            UUID value = UUID.randomUUID();
+            Field<String> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
+            returnQuery = insertQuery.set(field, value.toString());
+            entity.put(fieldMetadata, SpeedyValueFactory.fromText(value.toString()));
+        } else {
+            if (!entity.has(fieldMetadata) || entity.get(fieldMetadata).isEmpty() || entity.get(fieldMetadata).isNull()) {
+                // you can throw by checking nullable or db can throw
+                return Optional.empty();
+            }
+            SpeedyValue speedyValue = entity.get(fieldMetadata);
+            if (fieldMetadata.isAssociation()) {
+                returnQuery = handleAssociation(insertQuery, fieldMetadata, speedyValue);
+            } else {
+                Object value = JooqUtil.toJooqType(
+                        speedyValue,
+                        fieldMetadata.getColumnType()
+                );
+                Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
+                returnQuery = insertQuery.set(field, value);
+            }
+        }
+        return Optional.ofNullable(returnQuery);
     }
 
     public void insertEntity(DSLContext context, SpeedyEntity entity) throws SpeedyHttpException {
         EntityMetadata entityMetadata = entity.getMetadata();
         InsertSetStep<Record> insertQuery = context
                 .insertInto(DSL.table(entityMetadata.getDbTableName()));
-
-        InsertSetMoreStep<Record> returnQuery = null;
-
+        Optional<InsertSetMoreStep<Record>> returnQuery = Optional.empty();
         // Build the insert query with field values
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-
-//            String dbColumn = fieldMetadata.getDbColumnName().toUpperCase();
-
-            if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
-                UUID value = UUID.randomUUID();
-                Field<String> field = JooqUtil.getColumn(fieldMetadata);
-                returnQuery = insertQuery.set(field, value.toString());
-                entity.put(fieldMetadata, SpeedyValueFactory.fromText(value.toString()));
-            } else {
-
-                if (!entity.has(fieldMetadata) || entity.get(fieldMetadata).isEmpty() || entity.get(fieldMetadata).isNull()) {
-                    continue;
-                }
-                SpeedyValue speedyValue = entity.get(fieldMetadata);
-
-                if (fieldMetadata.isAssociation()) {
-                    SpeedyEntity associatedEntity = speedyValue.asObject();
-                    FieldMetadata associatedFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
-                    SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
-
-                    Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                            associatedFieldMetadata.getValueType(),
-                            innerValue
-                    );
-
-                    Field<Object> field = JooqUtil.getColumn(fieldMetadata);
-                    returnQuery = insertQuery.set(field, value);
-                } else {
-                    Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                            fieldMetadata.getValueType(),
-                            speedyValue
-                    );
-                    Field<Object> field = JooqUtil.getColumn(fieldMetadata);
-                    returnQuery = insertQuery.set(field, value);
-                }
+            var rq = handleFieldMetadata(fieldMetadata, entity, insertQuery);
+            if (rq.isPresent()) {
+                returnQuery = rq;
             }
         }
-
-        LOGGER.info("Insert query: {}", returnQuery);
-        if (returnQuery != null) {
-            LOGGER.info("bind values: {}", returnQuery.getBindValues());
-            returnQuery.execute();
+        LOGGER.info("Insert query: {}", returnQuery.orElse(null));
+        if (returnQuery.isPresent()) {
+            LOGGER.info("bind values: {}", returnQuery.get().getBindValues());
+            returnQuery.get().execute();
         }
 
     }
@@ -112,46 +122,86 @@ public class SpeedyToJooqSql {
         });
     }
 
-    public boolean updateEntity(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
+    private Optional<UpdateSetMoreStep<Record>> handleAssociation(
+            UpdateSetFirstStep<Record> updateQuery,
+            FieldMetadata fieldMetadata,
+            SpeedyEntity entity) throws SpeedyHttpException {
+        //
+        SpeedyValue val = entity.get(fieldMetadata);
+        SpeedyEntity associatedEntity = val.asObject();
+        FieldMetadata associatedFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
+        if (!associatedEntity.has(associatedFieldMetadata)
+                || associatedEntity.get(associatedFieldMetadata).isEmpty()
+                || associatedEntity.get(associatedFieldMetadata).isNull()) {
+            // you can throw by checking nullable or db can throw
+            return Optional.empty();
+        }
+        SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
+        Object value = JooqUtil.toJooqType(
+                innerValue,
+                associatedFieldMetadata.getColumnType()
+
+        );
+        // update current object with foreign key
+        Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
+        return Optional.of(updateQuery.set(field, value));
+    }
+
+
+    private Optional<UpdateSetMoreStep<Record>> handleFieldMetadata(
+            FieldMetadata fieldMetadata,
+            SpeedyEntity entity,
+            UpdateSetFirstStep<Record> updateQuery) throws SpeedyHttpException {
+        if (entity.has(fieldMetadata)
+                && !entity.get(fieldMetadata).isEmpty()
+                && !entity.get(fieldMetadata).isNull()) {
+            if (fieldMetadata.isAssociation()) {
+                return handleAssociation(updateQuery, fieldMetadata, entity);
+            } else {
+                SpeedyValue val = entity.get(fieldMetadata);
+                Object value = JooqUtil.toJooqType(
+                        val,
+                        fieldMetadata.getColumnType()
+                );
+                Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
+                return Optional.of(updateQuery.set(field, value));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private void updateEntityInTransaction(DSLContext dsl, SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
         EntityMetadata entityMetadata = entity.getMetadata();
-        UpdateSetFirstStep<Record> updateQuery = dslContext.update(DSL.table(entityMetadata.getDbTableName()));
-        UpdateSetMoreStep<Record> returnQuery = null;
+        UpdateSetFirstStep<Record> updateQuery = dsl.update(DSL.table(entityMetadata.getDbTableName()));
+        Optional<UpdateSetMoreStep<Record>> returnQuery = Optional.empty();
 
         // Set values to be updated
-        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (entity.has(fieldMetadata) &&
-                    !entity.get(fieldMetadata).isEmpty() && !entity.get(fieldMetadata).isNull()) {
-
-                SpeedyValue val = entity.get(fieldMetadata);
-                Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                        fieldMetadata.getValueType(),
-                        val
-                );
-                Field<Object> field = JooqUtil.getColumn(fieldMetadata);
-
-                returnQuery = updateQuery.set(field, value);
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllNonKeyFields()) {
+            var rq = handleFieldMetadata(fieldMetadata, entity, updateQuery);
+            if (rq.isPresent()) {
+                returnQuery = rq;
             }
         }
-
         // Build where clause based on primary key fields
-        if (returnQuery != null) {
+        if (returnQuery.isPresent()) {
             for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
-
                 SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-                Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                        keyFieldMetadata.getValueType(),
-                        speedyValue
+                Object value = JooqUtil.toJooqType(
+                        speedyValue,
+                        keyFieldMetadata.getColumnType()
                 );
-
-                Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
-
-                returnQuery.where(field.equal(value));
+                Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
+                returnQuery.get().where(field.equal(value));
             }
-            returnQuery.execute();
+            returnQuery.get().execute();
         }
         LOGGER.info("Update query: {}", returnQuery);
+    }
 
-        return true;
+    public void updateEntity(SpeedyEntityKey pk, SpeedyEntity entity) {
+        dslContext.transaction(conf -> {
+            updateEntityInTransaction(conf.dsl(), pk, entity);
+        });
     }
 
     private boolean deleteEntity(DSLContext context, SpeedyEntityKey pk) throws SpeedyHttpException {
@@ -163,12 +213,12 @@ public class SpeedyToJooqSql {
         // Add where conditions based on primary key fields
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-            Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                    keyFieldMetadata.getValueType(),
-                    speedyValue
+            Object value = JooqUtil.toJooqType(
+                    speedyValue,
+                    keyFieldMetadata.getColumnType()
             );
 
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
+            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
 
             deleteQuery.addConditions(field.equal(value));
             isConditionProvided = true;

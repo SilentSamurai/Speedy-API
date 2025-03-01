@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SpeedyAction {
 
-    ActionType value() default ActionType.ALL;
+    ActionType[] value() default {ActionType.ALL};
 }

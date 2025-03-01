@@ -5,7 +5,7 @@ import com.github.silent.samurai.speedy.data.ComposedProduct;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
@@ -30,7 +30,7 @@ public class SpeedyParserAssociationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyParserAssociationTest.class);
 
     @Mock
-    MetaModelProcessor metaModelProcessor;
+    MetaModel metaModel;
 
     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
 
@@ -38,9 +38,9 @@ public class SpeedyParserAssociationTest {
 
     @Test
     void processRequest1_1() throws Exception {
-        Mockito.when(metaModelProcessor.findEntityMetadata("ComposedProduct")).thenReturn(entityMetadata);
+        Mockito.when(metaModel.findEntityMetadata("ComposedProduct")).thenReturn(entityMetadata);
 
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/ComposedProduct(productItem.id='1')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ComposedProduct(productItem.id='1')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 

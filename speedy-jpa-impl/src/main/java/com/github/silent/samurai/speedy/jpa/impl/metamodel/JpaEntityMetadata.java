@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import jakarta.persistence.metamodel.EntityType;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +28,7 @@ public class JpaEntityMetadata implements IJpaEntityMetadata {
     private EntityType<?> jpaEntityType;
     private Class<?> entityClass;
     private Class<?> keyClass;
-    private ActionType actionType = ActionType.ALL;
+    private Set<ActionType> actionType = Set.of(ActionType.ALL);
 
     public void addFieldMetadata(JpaFieldMetadata metadata) {
         this.fieldMap.put(metadata.getClassFieldName(), metadata);

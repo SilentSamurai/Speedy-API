@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
+
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -158,7 +159,7 @@ class SpeedyEntityTest {
 
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/$create")
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         MvcResult mvcResult = mvc.perform(getRequest)
                 .andExpect(status().isOk())
@@ -227,7 +228,7 @@ class SpeedyEntityTest {
         String dateTimeInstant = Instant.now().toString();
         createCustomerRequest.createdAt(dateTimeInstant)
                 .altPhoneNo("0984738260")
-                .createdBy("asfasf")
+//                .createdBy("asfasf")
                 .phoneNo("0984738269")
                 .email("aksmfaksmf@sad.cc")
                 .name("New Customer")
@@ -377,11 +378,12 @@ class SpeedyEntityTest {
 
         Assertions.assertNotNull(updateCurrency200Response);
         Assertions.assertNotNull(updateCurrency200Response.getPayload());
-        Currency updatedCurrency = updateCurrency200Response.getPayload();
+        List<Currency> updatedCurrency = updateCurrency200Response.getPayload();
 
         Assertions.assertNotNull(updatedCurrency);
-        Assertions.assertNotNull(updatedCurrency.getCountry());
-        Assertions.assertEquals("Earth2", updatedCurrency.getCountry());
+        Assertions.assertFalse(updatedCurrency.isEmpty());
+        Assertions.assertNotNull(updatedCurrency.get(0).getCountry());
+        Assertions.assertEquals("Earth2", updatedCurrency.get(0).getCountry());
 
 
         filteredCurrencyResponse = currencyApi.getCurrency(currencyKey.getId());
@@ -393,7 +395,7 @@ class SpeedyEntityTest {
 
         Assertions.assertNotNull(currency);
         Assertions.assertNotNull(currency.getCountry());
-        Assertions.assertEquals("Earth2", updatedCurrency.getCountry());
+        Assertions.assertEquals("Earth2", updatedCurrency.get(0).getCountry());
 
         BulkDeleteCurrencyResponse bulkDeleteCurrencyResponse = currencyApi.bulkDeleteCurrency(Lists.newArrayList(currencyKey));
 

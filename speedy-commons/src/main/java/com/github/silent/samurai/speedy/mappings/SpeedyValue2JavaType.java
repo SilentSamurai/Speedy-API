@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.io;
+package com.github.silent.samurai.speedy.mappings;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.ConversionException;
@@ -7,20 +7,22 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-public class Speedy2JavaTypeConverter {
+public class SpeedyValue2JavaType {
 
     private static final Map<String, ThrowingBiFunction<SpeedyValue, ValueType, Object, SpeedyHttpException>> converters = new HashMap<>();
 
     static {
         initConverters();
     }
-
 
     public static <T> ThrowingBiFunction<SpeedyValue, ValueType, Object, SpeedyHttpException> get(ValueType valueType, Class<T> clazz) {
         String key = clazz.getName() + valueType.name();
@@ -43,6 +45,9 @@ public class Speedy2JavaTypeConverter {
         put(ValueType.TEXT, String.class, (speedyValue, type) -> {
             return ((SpeedyText) speedyValue).getValue();
         });
+        put(ValueType.TEXT, UUID.class, (speedyValue, type) -> {
+            return UUID.fromString(speedyValue.asText());
+        });
         put(ValueType.INT, int.class, (speedyValue, type) -> {
             SpeedyInt speedyInt = (SpeedyInt) speedyValue;
             return speedyInt.getValue().intValue();
@@ -60,6 +65,14 @@ public class Speedy2JavaTypeConverter {
             SpeedyInt speedyInt = (SpeedyInt) speedyValue;
             return speedyInt.getValue();
         });
+        put(ValueType.INT, BigInteger.class, (speedyValue, type) -> {
+            SpeedyInt speedyInt = (SpeedyInt) speedyValue;
+            return BigInteger.valueOf(speedyInt.getValue());
+        });
+        put(ValueType.INT, BigDecimal.class, (speedyValue, type) -> {
+            SpeedyInt speedyInt = (SpeedyInt) speedyValue;
+            return BigDecimal.valueOf(speedyInt.getValue());
+        });
         put(ValueType.FLOAT, float.class, (speedyValue, type) -> {
             SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
             return speedyDouble.getValue().floatValue();
@@ -75,6 +88,14 @@ public class Speedy2JavaTypeConverter {
         put(ValueType.FLOAT, Double.class, (speedyValue, type) -> {
             SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
             return speedyDouble.getValue();
+        });
+        put(ValueType.FLOAT, BigDecimal.class, (speedyValue, type) -> {
+            SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
+            return BigDecimal.valueOf(speedyDouble.getValue());
+        });
+        put(ValueType.FLOAT, BigInteger.class, (speedyValue, type) -> {
+            SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
+            return BigInteger.valueOf(speedyDouble.getValue().longValue());
         });
         put(ValueType.BOOL, boolean.class, (speedyValue, type) -> {
             SpeedyBoolean speedyBoolean = (SpeedyBoolean) speedyValue;
@@ -185,4 +206,6 @@ public class Speedy2JavaTypeConverter {
                 );
         }
     }
+
+
 }
