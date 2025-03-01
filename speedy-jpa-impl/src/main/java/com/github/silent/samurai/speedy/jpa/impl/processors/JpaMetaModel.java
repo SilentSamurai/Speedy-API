@@ -30,6 +30,9 @@ public class JpaMetaModel implements MetaModel {
     public JpaMetaModel(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {
         this.configuration = configuration;
         this.entityManagerFactory = entityManagerFactory;
+    }
+
+    public void process() {
         Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
         for (EntityType<?> entityType : entities) {
             JpaEntityMetadata entityMetadata = JpaEntityProcessor.processEntity(entityType);

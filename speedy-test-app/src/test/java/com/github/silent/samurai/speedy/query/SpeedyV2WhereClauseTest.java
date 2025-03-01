@@ -337,7 +337,7 @@ public class SpeedyV2WhereClauseTest {
        {
            "from": "Inventory",
            "where": {
-               "cost": { "gt" : 15 }
+               "cost": { "$gt" : 15 }
            }
        }
        */

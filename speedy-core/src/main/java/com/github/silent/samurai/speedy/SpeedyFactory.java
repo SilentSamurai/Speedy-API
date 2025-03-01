@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.query.Json2SpeedyQueryBuilder;
@@ -58,7 +59,11 @@ public class SpeedyFactory {
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this.speedyConfiguration = speedyConfiguration;
-        this.metaModel = speedyConfiguration.createMetaModelProcessor();
+
+        MetaModelProcessor metaModelProcessor = speedyConfiguration.metaModelProcessor();
+        metaModelProcessor.processMetaModel(MetadataBuilder.builder());
+        this.metaModel = metaModelProcessor.getMetaModel();
+
         new MetaModelVerifier(metaModel).verify();
 
         // events

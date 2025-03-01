@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.jpa.impl.processors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
-import com.github.silent.samurai.speedy.annotations.SpeedySqlType;
+import com.github.silent.samurai.speedy.annotations.SpeedyType;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
@@ -174,8 +174,6 @@ public class JpaFieldProcessor {
             if (fieldMetadata instanceof KeyFieldMetadata && isUuidGenerationRequired) {
                 JpaKeyFieldMetadata keyFieldMetadata = (JpaKeyFieldMetadata) fieldMetadata;
                 keyFieldMetadata.setGenerateIdKeys(true);
-                // uuid is not required to be present inside the speedy framework, string is enough.
-                fieldMetadata.setFieldType(String.class);
             }
             fieldMetadata.setInsertable(false);
             fieldMetadata.setUpdatable(false);
@@ -238,9 +236,9 @@ public class JpaFieldProcessor {
         }
 
         Enumerated enumerated = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Enumerated.class);
-        SpeedySqlType speedySqlType = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedySqlType.class);
-        if (speedySqlType != null) {
-            fieldMetadata.setColumnType(speedySqlType.value());
+        SpeedyType speedyType = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedyType.class);
+        if (speedyType != null) {
+            fieldMetadata.setColumnType(speedyType.value());
         } else if (enumerated != null) {
             EnumType value = enumerated.value();
             switch (value) {
@@ -249,7 +247,7 @@ public class JpaFieldProcessor {
             }
         } else {
             try {
-                fieldMetadata.setColumnType(JavaType2ColumnType.fromClass(fieldMetadata.getFieldType()));
+                fieldMetadata.setColumnType(JavaType2ColumnType.fromClass(attribute.getJavaType()));
             } catch (NotFoundException e) {
                 // ignore if association
                 if (attribute.isAssociation()) {

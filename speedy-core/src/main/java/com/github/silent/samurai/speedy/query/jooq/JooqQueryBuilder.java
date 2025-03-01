@@ -42,7 +42,7 @@ public class JooqQueryBuilder {
         QueryField queryField = bCondition.getField();
         if (queryField.isAssociated()) {
             FieldMetadata associatedMetadata = queryField.getAssociatedFieldMetadata();
-            joins.put(queryField.getFieldMetadata().getEntityMetadata().getDbTableName(),
+            joins.put(associatedMetadata.getEntityMetadata().getDbTableName(),
                     queryField.getFieldMetadata());
 
             return JooqUtil.getColumn(associatedMetadata, dialect);
@@ -264,7 +264,7 @@ public class JooqQueryBuilder {
             Table<?> table = JooqUtil.getTable(join.getAssociationMetadata(), dialect);
             // foreign key field
             Field<?> fromField = JooqUtil.getColumn(join, dialect);
-            // primary key field, from foreign key
+            // primary key field, from foreign table
             Field joinField = JooqUtil.getColumn(join.getAssociatedFieldMetadata(), dialect);
             query.join(table)
                     .on(fromField.eq(joinField));

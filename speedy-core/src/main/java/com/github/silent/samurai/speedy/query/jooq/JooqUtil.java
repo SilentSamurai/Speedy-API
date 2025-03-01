@@ -104,9 +104,9 @@ public class JooqUtil {
                 name
         );
 
-        if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
-            return (Field<T>) DSL.field(columnName, SQLDataType.VARCHAR(36));
-        }
+//        if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
+//            return (Field<T>) DSL.field(columnName, SQLDataType.VARCHAR(36));
+//        }
         return (Field<T>) DSL.field(columnName, sqlDataType);
     }
 

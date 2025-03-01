@@ -27,7 +27,7 @@ create table currencies
     id              varchar(255) not null,
     country         varchar(32),
     created_at      timestamp default CURRENT_TIMESTAMP,
-    currency_abbr varchar(10) not null unique,
+    currency_abbr   varchar(10)  not null unique,
     currency_name   varchar(64)  not null,
     currency_symbol varchar(10)  not null,
     primary key (id)
@@ -158,14 +158,14 @@ CREATE TABLE value_test_table
     local_time      time NULL,
     instant_time    datetime NULL,
     zoned_date_time TIMESTAMP WITH TIME ZONE NULL,
-    boolean_value boolean NULL,
+    boolean_value   boolean NULL,
     CONSTRAINT pk_value_test_table PRIMARY KEY (id)
 );
 
 create table PK_UUID_TEST
 (
-    id   uuid not null,
-    name varchar(250) not null,
+    id          uuid         not null,
+    name        varchar(250) not null,
     description varchar(250) not null,
     primary key (id)
 );
@@ -273,6 +273,16 @@ INSERT INTO suppliers (ID, NAME, ADDRESS, EMAIL, PHONE_NO, ALT_PHONE_NO, CREATED
 VALUES ('3', 'Supplier 3', '789 Oak St., Anytown, USA', 'supplier3@example.com', '555-3456', '555-7890',
         '2022-04-30 10:00:00',
         'admin');
+
+-- Insert sample suppliers
+INSERT INTO suppliers (id, name, address, email, phone_no, alt_phone_no, created_at, created_by)
+VALUES ('5', 'ABC Electronics', '123 Tech Street, NY', 'contact@abcelectronics.com', '1234567890', '0987654321',
+        NOW(), 'admin'),
+       ('6', 'Global Furniture', '456 Home Ave, LA', 'support@globalfurniture.com', '9876543210', '0123456789',
+        NOW(), 'admin'),
+       ('7', 'Urban Clothing Co.', '789 Fashion Blvd, TX', 'info@urbanclothing.com', '5432109876', '6789012345',
+        NOW(), 'admin');
+
 
 
 INSERT INTO procurements (ID, PRODUCT_ID, supplier_id, amount, due_amount, purchase_date, created_at, created_by,
