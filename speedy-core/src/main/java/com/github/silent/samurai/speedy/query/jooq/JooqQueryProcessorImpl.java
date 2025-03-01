@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.query.jooq;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -21,7 +22,6 @@ import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class JooqQueryProcessorImpl implements QueryProcessor {
 
@@ -32,6 +32,8 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     private final Settings settings = new Settings()
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
             .withRenderNameStyle(RenderNameStyle.AS_IS);
+
+    private final Converter converter = new JooqConversionImpl();
 
     private final DSLContext dslContext;
 
@@ -140,5 +142,10 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
         } catch (Exception e) {
             throw new BadRequestException(e);
         }
+    }
+
+    @Override
+    public JooqConversionImpl getConversionProcessor() {
+        return new JooqConversionImpl();
     }
 }

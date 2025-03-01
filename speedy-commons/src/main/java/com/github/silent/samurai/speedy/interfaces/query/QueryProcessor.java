@@ -21,5 +21,6 @@ public interface QueryProcessor {
 
     List<SpeedyEntity> delete(List<SpeedyEntityKey> entityKeys) throws SpeedyHttpException;
 
+    ConversionProcessor getConversionProcessor();
 
 }
