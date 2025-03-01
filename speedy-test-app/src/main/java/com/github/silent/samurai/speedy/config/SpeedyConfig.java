@@ -5,8 +5,8 @@ import com.github.silent.samurai.speedy.docs.SpeedyOpenApiCustomizer;
 import com.github.silent.samurai.speedy.events.EntityEvents;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModel;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +45,8 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     }
 
     @Override
-    public MetaModelProcessor createMetaModelProcessor() {
-        return new JpaMetaModelProcessor(this, entityManagerFactory);
+    public MetaModel createMetaModelProcessor() {
+        return new JpaMetaModel(this, entityManagerFactory);
     }
 
     @Override

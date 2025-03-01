@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.jpa.impl.util;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.jpa.impl.data.ComposedProduct;
 import com.github.silent.samurai.speedy.jpa.impl.data.Product;
 import com.github.silent.samurai.speedy.jpa.impl.data.ProductItem;
@@ -31,7 +31,7 @@ class CommonUtilTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonUtilTest.class);
 
     @Mock
-    MetaModelProcessor metaModelProcessor;
+    MetaModel metaModel;
 
     @Mock
     EntityManager entityManager;
@@ -46,7 +46,7 @@ class CommonUtilTest {
     void combine() throws Exception {
 
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        Mockito.when(metaModelProcessor.findEntityMetadata("Product")).thenReturn(entityMetadata);
+        Mockito.when(metaModel.findEntityMetadata("Product")).thenReturn(entityMetadata);
 
         Product product = new Product();
         product.setId("1");

@@ -55,7 +55,7 @@ public class JSONSerializer implements IResponseSerializer {
 
     public void writeResponse(SinglePayload requestedPayload) throws Exception {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
-                context.getMetaModelProcessor(), fieldPredicate);
+                context.getMetaModel(), fieldPredicate);
 
         SpeedyEntity payload = (SpeedyEntity) requestedPayload.getPayload();
         JsonNode jsonElement = selectiveSpeedy2Json.fromSpeedyEntity(payload, context.getEntityMetadata(), context.getExpand());
@@ -64,7 +64,7 @@ public class JSONSerializer implements IResponseSerializer {
 
     public void writeResponse(MultiPayload multiPayload) throws Exception {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
-                context.getMetaModelProcessor(),
+                context.getMetaModel(),
                 fieldPredicate
         );
         List<? extends SpeedyValue> resultList = multiPayload.getPayload();

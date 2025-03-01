@@ -32,16 +32,16 @@ public class SpeedyToJooqSql {
     public Result<Record> findByPrimaryKey(SpeedyEntityKey pk) throws SpeedyHttpException {
         EntityMetadata entityMetadata = pk.getMetadata();
         SelectJoinStep<Record> query = dslContext.select()
-                .from(JooqUtil.getTable(entityMetadata));
+                .from(JooqUtil.getTable(entityMetadata, dslContext.dialect()));
 
         // Build the where clause for each primary key field
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-            Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                    keyFieldMetadata.getValueType(),
-                    speedyValue
+            Object value = JooqUtil.toJooqType(
+                    speedyValue,
+                    keyFieldMetadata.getColumnType()
             );
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
+            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
 
             query.where(field.eq(value));
         }
@@ -61,8 +61,8 @@ public class SpeedyToJooqSql {
             return null;
         }
         SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
-        Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(associatedFieldMetadata.getValueType(), innerValue);
-        return insertQuery.set(JooqUtil.getColumn(fieldMetadata), value);
+        Object value = JooqUtil.toJooqType(innerValue, associatedFieldMetadata.getColumnType());
+        return insertQuery.set(JooqUtil.getColumn(fieldMetadata, dslContext.dialect()), value);
     }
 
     private Optional<InsertSetMoreStep<Record>> handleFieldMetadata(FieldMetadata fieldMetadata,
@@ -71,7 +71,7 @@ public class SpeedyToJooqSql {
         InsertSetMoreStep<Record> returnQuery = null;
         if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
             UUID value = UUID.randomUUID();
-            Field<String> field = JooqUtil.getColumn(fieldMetadata);
+            Field<String> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
             returnQuery = insertQuery.set(field, value.toString());
             entity.put(fieldMetadata, SpeedyValueFactory.fromText(value.toString()));
         } else {
@@ -83,11 +83,11 @@ public class SpeedyToJooqSql {
             if (fieldMetadata.isAssociation()) {
                 returnQuery = handleAssociation(insertQuery, fieldMetadata, speedyValue);
             } else {
-                Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                        fieldMetadata.getValueType(),
-                        speedyValue
+                Object value = JooqUtil.toJooqType(
+                        speedyValue,
+                        fieldMetadata.getColumnType()
                 );
-                Field<Object> field = JooqUtil.getColumn(fieldMetadata);
+                Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
                 returnQuery = insertQuery.set(field, value);
             }
         }
@@ -137,12 +137,13 @@ public class SpeedyToJooqSql {
             return Optional.empty();
         }
         SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
-        Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                associatedFieldMetadata.getValueType(),
-                innerValue
+        Object value = JooqUtil.toJooqType(
+                innerValue,
+                associatedFieldMetadata.getColumnType()
+
         );
         // update current object with foreign key
-        Field<Object> field = JooqUtil.getColumn(fieldMetadata);
+        Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
         return Optional.of(updateQuery.set(field, value));
     }
 
@@ -158,11 +159,11 @@ public class SpeedyToJooqSql {
                 return handleAssociation(updateQuery, fieldMetadata, entity);
             } else {
                 SpeedyValue val = entity.get(fieldMetadata);
-                Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                        fieldMetadata.getValueType(),
-                        val
+                Object value = JooqUtil.toJooqType(
+                        val,
+                        fieldMetadata.getColumnType()
                 );
-                Field<Object> field = JooqUtil.getColumn(fieldMetadata);
+                Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
                 return Optional.of(updateQuery.set(field, value));
             }
         }
@@ -185,11 +186,11 @@ public class SpeedyToJooqSql {
         if (returnQuery.isPresent()) {
             for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
                 SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-                Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                        keyFieldMetadata.getValueType(),
-                        speedyValue
+                Object value = JooqUtil.toJooqType(
+                        speedyValue,
+                        keyFieldMetadata.getColumnType()
                 );
-                Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
+                Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
                 returnQuery.get().where(field.equal(value));
             }
             returnQuery.get().execute();
@@ -212,12 +213,12 @@ public class SpeedyToJooqSql {
         // Add where conditions based on primary key fields
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-            Object value = SpeedyValueFactory.toJavaTypeOnlyViaValueType(
-                    keyFieldMetadata.getValueType(),
-                    speedyValue
+            Object value = JooqUtil.toJooqType(
+                    speedyValue,
+                    keyFieldMetadata.getColumnType()
             );
 
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata);
+            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
 
             deleteQuery.addConditions(field.equal(value));
             isConditionProvided = true;

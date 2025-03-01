@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
@@ -33,7 +33,7 @@ class SpeedyUriContextTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyUriContextTest.class);
 
     @Mock
-    MetaModelProcessor metaModelProcessor;
+    MetaModel metaModel;
 
     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
 
@@ -41,12 +41,12 @@ class SpeedyUriContextTest {
 
     @BeforeEach
     void setUp() throws NotFoundException {
-        Mockito.when(metaModelProcessor.findEntityMetadata("Product")).thenReturn(entityMetadata);
+        Mockito.when(metaModel.findEntityMetadata("Product")).thenReturn(entityMetadata);
     }
 
     @Test
     void processRequest() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
         assertEquals("Product", speedyQuery.getFrom().getName());
@@ -55,7 +55,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest_1() {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "Product");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "Product");
         try {
             parser.parse();
         } catch (RuntimeException e) {
@@ -67,7 +67,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product('1')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product('1')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -80,7 +80,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product/");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product/");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -90,7 +90,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product('1')/");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product('1')/");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -102,7 +102,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest6() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(id='1')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(id='1')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -114,7 +114,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest6_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(id='1', name='apple')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(id='1', name='apple')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -130,7 +130,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest6_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(id='fdc0bff1-8cc6-446e-a74e-5295039a92dd')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(id='fdc0bff1-8cc6-446e-a74e-5295039a92dd')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -143,7 +143,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest7() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name='apple')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(name='apple')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -156,7 +156,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest7_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name='apple?&*')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(name='apple?&*')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -169,7 +169,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name='Test-01%42')");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(name='Test-01%42')");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -182,7 +182,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost < 0)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost < 0)");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -199,7 +199,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost <= 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost <= 25)");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -215,7 +215,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost == 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost == 25)");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -231,7 +231,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost = 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost = 25)");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -247,7 +247,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_5() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost > 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost > 25)");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -263,7 +263,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_6() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(cost >= 25)");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost >= 25)");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -280,7 +280,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest9() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?$format='JSON'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$format='JSON'");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -292,7 +292,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?$format='JSON'&$metadata='true'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$format='JSON'&$metadata='true'");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -305,7 +305,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?$format='JSON&'&$metadata='true'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$format='JSON&'&$metadata='true'");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -318,7 +318,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal='2'&doubleVal='2.0'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?intVal='2'&doubleVal='2.0'");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -331,7 +331,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?intVal");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -343,7 +343,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal=2");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?intVal=2");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -355,7 +355,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_5() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?intVal=2&doubleVal='2.0'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?intVal=2&doubleVal='2.0'");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -368,7 +368,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest11() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?orderBy='name,id'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?orderBy='name,id'");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -380,7 +380,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest11_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?orderBy='name'&orderBy='id'");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?orderBy='name'&orderBy='id'");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -393,7 +393,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest11_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product?orderBy=['name','id']");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?orderBy=['name','id']");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -406,7 +406,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest12_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product");
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product");
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -415,7 +415,7 @@ class SpeedyUriContextTest {
 
         assertTrue(condition.isEmpty());
 
-        parser = new SpeedyUriContext(metaModelProcessor, UriRoot + "/Product(name == 'koil')");
+        parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(name == 'koil')");
         speedyQuery = parser.parse();
         speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 

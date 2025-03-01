@@ -4,8 +4,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +18,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 
-public class JpaMetaModelProcessor implements MetaModelProcessor {
+public class JpaMetaModel implements MetaModel {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModelProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModel.class);
 
     private ISpeedyConfiguration configuration;
     private final Map<String, JpaEntityMetadata> entityMap = new HashMap<>();
     private final Map<Class<?>, JpaEntityMetadata> typeMap = new HashMap<>();
     private EntityManagerFactory entityManagerFactory;
 
-    public JpaMetaModelProcessor(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {
+    public JpaMetaModel(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {
         this.configuration = configuration;
         this.entityManagerFactory = entityManagerFactory;
         Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
@@ -52,12 +51,12 @@ public class JpaMetaModelProcessor implements MetaModelProcessor {
         return entityMap.values().stream().map(em -> (EntityMetadata) em).collect(Collectors.toUnmodifiableList());
     }
 
-    @Override
+//    @Override
     public boolean hasEntityMetadata(Class<?> entityType) {
         return typeMap.containsKey(entityType);
     }
 
-    @Override
+//    @Override
     public EntityMetadata findEntityMetadata(Class<?> entityType) throws NotFoundException {
         return typeMap.get(entityType);
     }

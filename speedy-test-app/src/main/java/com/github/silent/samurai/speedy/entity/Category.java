@@ -7,10 +7,11 @@ import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Setter
-@Table(name = "categories", indexes = {
+@Table(name = "CATEGORIES", indexes = {
         @Index(name = "categories_name_key", columnList = "name", unique = true)
 })
 @Entity
@@ -18,10 +19,10 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id")
+    @Column(name = "ID")
     protected String id;
 
-    @Column(name = "name", nullable = false, length = 250)
+    @Column(name = "NAME", nullable = false, length = 250)
     private String name;
 
     @OneToMany(mappedBy = "category")

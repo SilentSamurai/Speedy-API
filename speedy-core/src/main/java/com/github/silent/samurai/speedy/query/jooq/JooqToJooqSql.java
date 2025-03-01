@@ -28,13 +28,13 @@ public class JooqToJooqSql {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associationFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
 
-        Optional<?> optional = JooqUtil.getValueFromRecord(entityRecord, fieldMetadata);
+        Optional<?> optional = JooqUtil.getValueFromRecord(entityRecord, fieldMetadata, dslContext.dialect());
         if (optional.isEmpty()) {
             LOGGER.error("foreign key not found: {}", fieldMetadata.getOutputPropertyName());
             return Optional.empty();
         }
 
-        Field<Object> field = JooqUtil.getColumn(associationFieldMetadata);
+        Field<Object> field = JooqUtil.getColumn(associationFieldMetadata, dslContext.dialect());
 
         SelectConditionStep<Record> query = dslContext
                 .select()

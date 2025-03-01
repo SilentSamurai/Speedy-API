@@ -3,15 +3,16 @@ package com.github.silent.samurai.speedy.jpa.impl.processors;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.annotations.SpeedySqlType;
 import com.github.silent.samurai.speedy.enums.ActionType;
-import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.enums.ColumnType;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaKeyFieldMetadata;
-import com.github.silent.samurai.speedy.mappings.JavaType2ValueType;
-import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
+import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Formula;
 import org.slf4j.Logger;
@@ -94,6 +95,7 @@ public class JpaFieldProcessor {
                         .findAny()
                         .orElse(null);
                 fieldMetadata.setAssociatedFieldMetadata(keyFieldMetadata);
+                fieldMetadata.setColumnType(keyFieldMetadata.getColumnType());
             } else {
                 throw new RuntimeException("Entity not found " + fieldType);
             }
@@ -236,14 +238,27 @@ public class JpaFieldProcessor {
         }
 
         Enumerated enumerated = AnnotationUtils.getAnnotation(fieldMetadata.getField(), Enumerated.class);
-        if (enumerated != null) {
+        SpeedySqlType speedySqlType = AnnotationUtils.getAnnotation(fieldMetadata.getField(), SpeedySqlType.class);
+        if (speedySqlType != null) {
+            fieldMetadata.setColumnType(speedySqlType.value());
+        } else if (enumerated != null) {
             EnumType value = enumerated.value();
             switch (value) {
-                case STRING -> fieldMetadata.setValueType(ValueType.TEXT);
-                case ORDINAL -> fieldMetadata.setValueType(ValueType.INT);
+                case STRING -> fieldMetadata.setColumnType(ColumnType.VARCHAR);
+                case ORDINAL -> fieldMetadata.setColumnType(ColumnType.INTEGER);
             }
         } else {
-            fieldMetadata.setValueType(JavaType2ValueType.fromClass(fieldMetadata.getFieldType()));
+            try {
+                fieldMetadata.setColumnType(JavaType2ColumnType.fromClass(fieldMetadata.getFieldType()));
+            } catch (NotFoundException e) {
+                // ignore if association
+                if (attribute.isAssociation()) {
+                    // later update with correct sql type
+                    fieldMetadata.setColumnType(ColumnType.VARCHAR);
+                } else {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
         if (!fieldMetadata.isNullable() && fieldMetadata.isDeserializable()) {

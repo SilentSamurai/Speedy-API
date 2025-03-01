@@ -6,7 +6,7 @@ import javax.sql.DataSource;
 
 public interface ISpeedyConfiguration {
 
-    MetaModelProcessor createMetaModelProcessor();
+    MetaModel createMetaModelProcessor();
 
     void register(ISpeedyRegistry registry);
 

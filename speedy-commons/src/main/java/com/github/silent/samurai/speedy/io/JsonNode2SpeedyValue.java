@@ -77,7 +77,7 @@ public class JsonNode2SpeedyValue {
                         .format("Not able to parse : %s\nfor Field: %s, Value Type: %s ",
                                 jsonNode.toPrettyString(),
                                 fieldMetadata.getOutputPropertyName(),
-                                fieldMetadata.getValueType());
+                                fieldMetadata.getColumnType());
                 throw new BadRequestException(msg);
         };
     }

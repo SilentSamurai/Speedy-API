@@ -11,7 +11,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.mappings.JavaType2SpeedyValue;
 import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
-import com.github.silent.samurai.speedy.mappings.JavaType2ValueType;
+import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
 import com.github.silent.samurai.speedy.mappings.SpeedyValue2JavaType;
 import com.github.silent.samurai.speedy.models.*;
 
@@ -68,12 +68,12 @@ public class SpeedyValueFactory {
         return new SpeedyEntity(entityMetadata);
     }
 
-    public static <T> SpeedyValue fromJavaTypes(ValueType valueType, Object instance) throws SpeedyHttpException {
+    public static <T> SpeedyValue toSpeedyValue(ValueType valueType, T instance) throws SpeedyHttpException {
         return JavaType2SpeedyValue.convert(instance.getClass(), valueType, instance);
     }
 
-    public static SpeedyValue fromJavaTypes(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
-        return JavaType2SpeedyValue.convert(instance.getClass(), fieldMetadata.getValueType(), instance);
+    public static SpeedyValue toSpeedyValue(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
+        return JavaType2SpeedyValue.convert(instance.getClass(), fieldMetadata.getColumnType().getValueType(), instance);
     }
 
     public static SpeedyValue fromQuotedString(FieldMetadata fieldMetadata, String quotedValue) throws SpeedyHttpException {
@@ -102,13 +102,13 @@ public class SpeedyValueFactory {
     }
 
     public static <T> T toJavaType(FieldMetadata fieldMetadata, SpeedyValue speedyValue) throws SpeedyHttpException {
-        Class<T> basicClass = (Class<T>) JavaType2ValueType.toBasicStandardJavaType(fieldMetadata.getValueType());
+        Class<T> basicClass = (Class<T>) JavaType2ColumnType.toBasicStandardJavaType(fieldMetadata.getValueType());
         return (T) SpeedyValue2JavaType.convert(speedyValue, basicClass);
     }
 
-    public static <T> T toJavaTypeOnlyViaValueType(ValueType valueType, SpeedyValue speedyValue) throws SpeedyHttpException {
-        return SpeedyValue2JavaType.convert(speedyValue, valueType);
-    }
+//    public static <T> T toJavaTypeOnlyViaValueType(ValueType valueType, SpeedyValue speedyValue) throws SpeedyHttpException {
+//        return SpeedyValue2JavaType.convert(speedyValue, valueType);
+//    }
 
     public static SpeedyEntityKey createEntityKey(EntityMetadata entityMetadata) {
         return new SpeedyEntityKey(entityMetadata);

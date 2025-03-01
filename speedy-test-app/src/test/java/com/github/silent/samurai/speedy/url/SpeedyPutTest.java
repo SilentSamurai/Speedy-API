@@ -70,7 +70,7 @@ public class SpeedyPutTest {
 
         MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.patch(SpeedyConstant.URI + "/Category/$update")
                 .content(CommonUtil.json().createObjectNode()
-                        .put("id", category.getId())
+                        .put("id", String.valueOf(category.getId()))
                         .put("name", "generated-category-update-modified")
                         .toPrettyString())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);

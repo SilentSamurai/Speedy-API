@@ -206,4 +206,6 @@ public class SpeedyValue2JavaType {
                 );
         }
     }
+
+
 }

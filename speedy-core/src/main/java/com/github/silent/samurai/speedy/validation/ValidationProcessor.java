@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
@@ -25,15 +25,15 @@ public class ValidationProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidationProcessor.class);
 
     private final List<ISpeedyCustomValidation> validationList;
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
     private final Map<String, Pair<? extends ISpeedyCustomValidation, Method>> createValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, Method>> updateValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, Method>> deleteValidationMethods = new HashMap<>();
     private final Validator validator;
 
-    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModelProcessor metaModelProcessor) {
+    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel) {
         this.validationList = validationList;
-        this.metaModelProcessor = metaModelProcessor;
+        this.metaModel = metaModel;
         this.validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
@@ -45,7 +45,7 @@ public class ValidationProcessor {
                     if (declaredMethod.isAnnotationPresent(SpeedyValidator.class)) {
                         SpeedyValidator annotation = declaredMethod.getAnnotation(SpeedyValidator.class);
                         String entityName = annotation.entity();
-                        EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entityName);
+                        EntityMetadata entityMetadata = this.metaModel.findEntityMetadata(entityName);
                         if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.CREATE)) {
                             createValidationMethods.put(entityMetadata.getName(), Pair.of(instance, declaredMethod));
                         }

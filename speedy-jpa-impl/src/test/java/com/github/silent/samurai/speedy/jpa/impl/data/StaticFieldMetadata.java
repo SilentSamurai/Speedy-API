@@ -1,17 +1,16 @@
 package com.github.silent.samurai.speedy.jpa.impl.data;
 
-import com.github.silent.samurai.speedy.enums.ActionType;
-import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
-import com.github.silent.samurai.speedy.mappings.JavaType2ValueType;
-import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
+import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
 import lombok.Data;
 import lombok.SneakyThrows;
 
 import jakarta.persistence.Id;
+
 import java.lang.reflect.Field;
 
 @Data
@@ -26,9 +25,10 @@ public class StaticFieldMetadata implements IJpaKeyFieldMetadata {
         return fieldMetadata;
     }
 
+    @SneakyThrows
     @Override
-    public ValueType getValueType() {
-        return JavaType2ValueType.fromClass(field.getType());
+    public ColumnType getColumnType() {
+        return JavaType2ColumnType.fromClass(field.getType());
     }
 
     @SneakyThrows

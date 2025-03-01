@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.utils;
 
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
@@ -45,4 +46,7 @@ public class Speedy {
         return new SpeedyZonedDateTime(zonedDateTime);
     }
 
+    public static SpeedyNull fromNull() {
+        return SpeedyNull.SPEEDY_NULL;
+    }
 }

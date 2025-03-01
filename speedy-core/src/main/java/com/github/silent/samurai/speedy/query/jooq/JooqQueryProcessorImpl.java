@@ -55,7 +55,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     public List<SpeedyEntity> executeMany(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
             JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext);
-            Result<Record> result = qb.executeQuery();
+            Result<? extends Record> result = qb.executeQuery();
             List<SpeedyEntity> list = new ArrayList<>();
             JooqSqlToSpeedy jooqSQLToSpeedy = new JooqSqlToSpeedy(dslContext);
             for (Record record : result) {

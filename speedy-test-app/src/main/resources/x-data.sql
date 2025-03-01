@@ -162,6 +162,14 @@ CREATE TABLE value_test_table
     CONSTRAINT pk_value_test_table PRIMARY KEY (id)
 );
 
+create table PK_UUID_TEST
+(
+    id   uuid not null,
+    name varchar(250) not null,
+    description varchar(250) not null,
+    primary key (id)
+);
+
 alter table categories
     add constraint categories_name_key unique (name);
 alter table companies

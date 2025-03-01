@@ -15,14 +15,14 @@ import java.util.List;
 
 public class SpeedyOpenApiCustomizer {
 
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
 
     public SpeedyOpenApiCustomizer(SpeedyFactory speedyFactory) {
-        this.metaModelProcessor = speedyFactory.getMetaModelProcessor();
+        this.metaModel = speedyFactory.getMetaModel();
     }
 
     public void generate(OpenAPI openApi) {
-        Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
+        Collection<EntityMetadata> allEntityMetadata = metaModel.getAllEntityMetadata();
 
         for (EntityMetadata entityMetadata : allEntityMetadata) {
 

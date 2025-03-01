@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
-import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import lombok.Getter;
@@ -20,7 +20,7 @@ public class JpaFieldMetadata implements IJpaFieldMetadata {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaFieldMetadata.class);
 
-    private ValueType valueType;
+    private ColumnType columnType;
     private String dbColumnName;
     private String outputPropertyName;
     private String classFieldName;

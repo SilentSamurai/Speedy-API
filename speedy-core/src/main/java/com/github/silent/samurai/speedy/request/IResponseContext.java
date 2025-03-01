@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.request;
 
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import lombok.Getter;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +14,7 @@ import java.util.List;
 @Getter
 public class IResponseContext implements com.github.silent.samurai.speedy.interfaces.IResponseContext {
 
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
     private final HttpServletRequest request;
     private final HttpServletResponse response;
     private final EntityMetadata entityMetadata;
@@ -25,11 +25,11 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
     public IResponseContext(EntityMetadata entityMetadata,
                             HttpServletResponse response,
                             HttpServletRequest request,
-                            MetaModelProcessor metaModelProcessor) {
+                            MetaModel metaModel) {
         this.entityMetadata = entityMetadata;
         this.response = response;
         this.request = request;
-        this.metaModelProcessor = metaModelProcessor;
+        this.metaModel = metaModel;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
 
 
     public static final class ResponseContextBuilder {
-        private MetaModelProcessor metaModelProcessor;
+        private MetaModel metaModel;
         private HttpServletRequest request;
         private HttpServletResponse response;
         private EntityMetadata entityMetadata;
@@ -69,8 +69,8 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
             return new ResponseContextBuilder();
         }
 
-        public ResponseContextBuilder metaModelProcessor(MetaModelProcessor metaModelProcessor) {
-            this.metaModelProcessor = metaModelProcessor;
+        public ResponseContextBuilder metaModelProcessor(MetaModel metaModel) {
+            this.metaModel = metaModel;
             return this;
         }
 
@@ -105,7 +105,7 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
         }
 
         public IResponseContext build() {
-            IResponseContext responseContext = new IResponseContext(entityMetadata, response, request, metaModelProcessor);
+            IResponseContext responseContext = new IResponseContext(entityMetadata, response, request, metaModel);
             responseContext.serializationType = this.serializationType;
             responseContext.pageNo = this.pageNo;
             responseContext.expands = this.expands;

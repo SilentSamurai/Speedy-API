@@ -20,7 +20,7 @@ public class SelectiveSpeedy2Json {
     private final Predicate<FieldMetadata> fieldPredicate;
     private static final ObjectMapper json = CommonUtil.json();
 
-    public SelectiveSpeedy2Json(MetaModelProcessor metaModelProcessor, Predicate<FieldMetadata> fieldPredicate) {
+    public SelectiveSpeedy2Json(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate) {
         this.fieldPredicate = fieldPredicate;
     }
 

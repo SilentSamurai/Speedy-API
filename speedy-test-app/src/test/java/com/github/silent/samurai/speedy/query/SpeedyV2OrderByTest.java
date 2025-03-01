@@ -102,7 +102,7 @@ public class SpeedyV2OrderByTest {
         List<String> expectedNames = categories.stream()
                 .map(Category::getName)
                 .sorted() // ASC order
-                .collect(Collectors.toList());
+                .toList();
         List<String> reverseName = new ArrayList<>(expectedNames);
         Collections.reverse(reverseName);
 

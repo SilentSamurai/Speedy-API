@@ -8,7 +8,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
@@ -26,30 +26,30 @@ import java.util.List;
 
 public class Json2SpeedyQueryBuilder {
 
-    final MetaModelProcessor metaModelProcessor;
+    final MetaModel metaModel;
     final JsonNode rootNode;
     final SpeedyQueryImpl speedyQuery;
 
     final ConditionFactory conditionFactory;
 
-    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
-        this.metaModelProcessor = metaModelProcessor;
+    public Json2SpeedyQueryBuilder(MetaModel metaModel, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModel = metaModel;
         this.rootNode = rootNode;
-        this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(from));
+        this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(from));
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
-        this.metaModelProcessor = metaModelProcessor;
+    public Json2SpeedyQueryBuilder(MetaModel metaModel, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public Json2SpeedyQueryBuilder(MetaModelProcessor metaModelProcessor, JsonNode rootNode) throws BadRequestException, NotFoundException {
-        this.metaModelProcessor = metaModelProcessor;
+    public Json2SpeedyQueryBuilder(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        this.metaModel = metaModel;
         this.rootNode = rootNode;
-        this.speedyQuery = new SpeedyQueryImpl(metaModelProcessor.findEntityMetadata(getFrom()));
+        this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(getFrom()));
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 

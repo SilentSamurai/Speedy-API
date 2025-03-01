@@ -24,28 +24,31 @@ public class JooqQueryBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryBuilder.class);
 
-    private final SpeedyQuery speedyQuery;
-    private final EntityMetadata entityMetadata;
-    private final DSLContext dslContext;
-    private final List<FieldMetadata> joins = new LinkedList<>();
-    private SelectJoinStep<? extends Record> query;
+    final SpeedyQuery speedyQuery;
+    final EntityMetadata entityMetadata;
+    final DSLContext dslContext;
+    final Map<String, FieldMetadata> joins = new HashMap<>();
+    SelectJoinStep<? extends Record> query;
+    final SQLDialect dialect;
 
     public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
         this.speedyQuery = speedyQuery;
         this.entityMetadata = speedyQuery.getFrom();
         this.dslContext = dslContext;
+        this.dialect = dslContext.dialect();
     }
 
     Field<Object> getPath(BinaryCondition bCondition) {
         QueryField queryField = bCondition.getField();
         if (queryField.isAssociated()) {
             FieldMetadata associatedMetadata = queryField.getAssociatedFieldMetadata();
-            joins.add(queryField.getFieldMetadata());
+            joins.put(queryField.getFieldMetadata().getEntityMetadata().getDbTableName(),
+                    queryField.getFieldMetadata());
 
-            return JooqUtil.getColumn(associatedMetadata);
+            return JooqUtil.getColumn(associatedMetadata, dialect);
         } else {
             FieldMetadata fieldMetadata = queryField.getFieldMetadata();
-            return JooqUtil.getColumn(fieldMetadata);
+            return JooqUtil.getColumn(fieldMetadata, dialect);
         }
     }
 
@@ -236,7 +239,7 @@ public class JooqQueryBuilder {
     void captureOrderBy() {
         for (OrderBy orderBy : speedyQuery.getOrderByList()) {
             FieldMetadata fieldMetadata = orderBy.getFieldMetadata();
-            Field<Object> field = JooqUtil.getColumn(fieldMetadata);
+            Field<Object> field = JooqUtil.getColumn(fieldMetadata, dialect);
             OrderByOperator operator = orderBy.getOperator();
             if (operator == OrderByOperator.ASC) {
                 query.orderBy(field.asc());
@@ -256,22 +259,21 @@ public class JooqQueryBuilder {
     }
 
     private void joins() {
-        for (FieldMetadata join : joins) {
+        for (FieldMetadata join : joins.values()) {
             // the foreign key table to join
-            Table<?> table = JooqUtil.getTable(join.getAssociationMetadata());
+            Table<?> table = JooqUtil.getTable(join.getAssociationMetadata(), dialect);
             // foreign key field
-            Field<?> fromField = JooqUtil.getColumn(join);
+            Field<?> fromField = JooqUtil.getColumn(join, dialect);
             // primary key field, from foreign key
-            Field joinField = JooqUtil.getColumn(join.getAssociatedFieldMetadata());
+            Field joinField = JooqUtil.getColumn(join.getAssociatedFieldMetadata(), dialect);
             query.join(table)
                     .on(fromField.eq(joinField));
         }
     }
 
-    public Result<Record> executeQuery() throws Exception {
-
+    void prepareQuery() throws Exception {
         SelectJoinStep<Record> from = this.dslContext.select()
-                .from(JooqUtil.getTable(speedyQuery.getFrom()));
+                .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
 
         this.query = from;
 
@@ -284,13 +286,17 @@ public class JooqQueryBuilder {
         joins();
 
         LOGGER.info("SQL Query: {} ", query.toString());
-        return from.fetch();
+    }
+
+    public Result<? extends Record> executeQuery() throws Exception {
+        prepareQuery();
+        return query.fetch();
     }
 
 
     public BigInteger executeCountQuery() throws Exception {
         SelectJoinStep<Record1<Integer>> from = this.dslContext.select(DSL.count())
-                .from(JooqUtil.getTable(speedyQuery.getFrom()));
+                .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
 
         this.query = from;
 

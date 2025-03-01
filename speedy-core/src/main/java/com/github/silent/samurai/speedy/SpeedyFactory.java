@@ -28,7 +28,6 @@ import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.speedy.validation.MetaModelVerifier;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.Getter;
-import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
@@ -50,7 +49,7 @@ public class SpeedyFactory {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyFactory.class);
 
     private final ISpeedyConfiguration speedyConfiguration;
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
     private final ValidationProcessor validationProcessor;
     private final EventProcessor eventProcessor;
     private final RegistryImpl eventRegistry;
@@ -59,16 +58,16 @@ public class SpeedyFactory {
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this.speedyConfiguration = speedyConfiguration;
-        this.metaModelProcessor = speedyConfiguration.createMetaModelProcessor();
-        new MetaModelVerifier(metaModelProcessor).verify();
+        this.metaModel = speedyConfiguration.createMetaModelProcessor();
+        new MetaModelVerifier(metaModel).verify();
 
         // events
         this.eventRegistry = new RegistryImpl();
         speedyConfiguration.register(eventRegistry);
-        this.eventProcessor = new EventProcessor(metaModelProcessor, eventRegistry);
+        this.eventProcessor = new EventProcessor(metaModel, eventRegistry);
         this.eventProcessor.processRegistry();
 
-        this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModelProcessor);
+        this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel);
         this.validationProcessor.process();
 
         DataSource dataSource = speedyConfiguration.getDataSource();
@@ -105,7 +104,7 @@ public class SpeedyFactory {
         // get query from request body
         JsonNode jsonBody = json.readTree(context.getRequest().getReader());
         // create JSON Query parser
-        Json2SpeedyQueryBuilder json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModelProcessor, resourceMetadata, jsonBody);
+        Json2SpeedyQueryBuilder json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModel, resourceMetadata, jsonBody);
         // build speedy query
         SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
 
@@ -163,13 +162,13 @@ public class SpeedyFactory {
 
         try {
 
-            SpeedyUriContext parser = new SpeedyUriContext(metaModelProcessor, requestURI);
+            SpeedyUriContext parser = new SpeedyUriContext(metaModel, requestURI);
             SpeedyQuery uriSpeedyQuery = parser.parse();
 
             EntityMetadata resourceMetadata = uriSpeedyQuery.getFrom();
 
             IRequestContextImpl context = new IRequestContextImpl(request,
-                    response, metaModelProcessor,
+                    response, metaModel,
                     validationProcessor, eventProcessor, queryProcessor, resourceMetadata);
 
 

@@ -6,21 +6,21 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 
 import java.util.Objects;
 
 public class MetaModelVerifier {
 
 
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
 
-    public MetaModelVerifier(MetaModelProcessor metaModelProcessor) {
-        this.metaModelProcessor = metaModelProcessor;
+    public MetaModelVerifier(MetaModel metaModel) {
+        this.metaModel = metaModel;
     }
 
     public boolean verify() throws SpeedyHttpException {
-        for (EntityMetadata entityMetadata : metaModelProcessor.getAllEntityMetadata()) {
+        for (EntityMetadata entityMetadata : metaModel.getAllEntityMetadata()) {
             Objects.requireNonNull(entityMetadata);
             Objects.requireNonNull(entityMetadata.getName(), "Entity Name not found");
             Objects.requireNonNull(entityMetadata.getDbTableName(), entityMetadata.getName() + " Db Table Name not found");
