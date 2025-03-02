@@ -9,3 +9,4 @@
 * [PUT Operations](put-operation.md)
 * [DELETE Operations](delete-operation.md)
 * [Speedy Events](speedy-events.md)
+* [Speedy Jpa](speedy-jpa.md)
