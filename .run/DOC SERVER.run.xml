@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="DOC SERVER" type="PowerShellRunType" factoryName="PowerShell" scriptUrl="C:\Users\soura\Documents\Personal\Speedy-API\start-doc-server.ps1" executablePath="$PROJECT_DIR$/../../../../../Windows/System32/WindowsPowerShell/v1.0/powershell.exe">
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>

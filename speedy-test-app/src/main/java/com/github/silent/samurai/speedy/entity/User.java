@@ -1,17 +1,26 @@
 package com.github.silent.samurai.speedy.entity;
 
+import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import lombok.Data;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Setter
+@Getter
 @Table(name = "users", indexes = {
         @Index(name = "users_phone_no_key", columnList = "phone_no", unique = true),
         @Index(name = "users_email_key", columnList = "email", unique = true)
 })
 @Entity
 public class User extends AbstractBaseEntity {
+
     @Column(name = "name", nullable = false, length = 250)
     private String name;
 
@@ -21,19 +30,25 @@ public class User extends AbstractBaseEntity {
     @Column(name = "email", nullable = false, length = 250)
     private String email;
 
-    @Column(name = "profile_pic", nullable = false, length = 512)
-    private String profilePic;
+    @Column(name = "type", nullable = false, length = 512)
+    private String type;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "company_id", nullable = false)
-    private Company company;
-
+    @SpeedyAction(ActionType.READ)
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @SpeedyAction(ActionType.READ)
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @SpeedyAction(ActionType.READ)
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "last_login_at")
+    private LocalDate lastLoginDate;
+
+    @Column(name = "login_count")
+    private Integer loginCount;
+
 }

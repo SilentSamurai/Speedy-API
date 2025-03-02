@@ -27,6 +27,23 @@ also include the open api ui as well
 </dependency>
 ```
 
+create an open api customizer so that speedy can add api documentation.
+
+```java
+@Configuration
+public class SpeedyConfig implements ISpeedyConfiguration {
+
+    ...
+
+    @Bean
+    public OpenApiCustomizer customizer(SpeedyOpenApiCustomizer speedyOpenApiCustomizer) {
+        return speedyOpenApiCustomizer::generate;
+    }
+
+    ...
+}
+```
+
 speedy will generate the api docs of all the entity present in the spring project
 
 apis create per entity are

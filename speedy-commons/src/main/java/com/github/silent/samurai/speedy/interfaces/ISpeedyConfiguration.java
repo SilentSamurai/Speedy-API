@@ -10,7 +10,7 @@ public interface ISpeedyConfiguration {
 
     void register(ISpeedyRegistry registry);
 
-    DataSource getDataSource();
+    DataSource dataSourcePerReq();
 
     SpeedyDialect getDialect();
 

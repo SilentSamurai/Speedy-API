@@ -75,7 +75,7 @@ public class SpeedyFactory {
         this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel);
         this.validationProcessor.process();
 
-        DataSource dataSource = speedyConfiguration.getDataSource();
+        DataSource dataSource = speedyConfiguration.dataSourcePerReq();
         SpeedyDialect dialect = speedyConfiguration.getDialect();
         this.queryProcessor = new JooqQueryProcessorImpl(dataSource, dialect);
     }

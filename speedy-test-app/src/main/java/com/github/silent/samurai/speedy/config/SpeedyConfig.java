@@ -26,20 +26,19 @@ import java.util.Set;
 @Configuration
 public class SpeedyConfig implements ISpeedyConfiguration {
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
+    private final EntityManagerFactory entityManagerFactory;
+    private final SpeedyValidation speedyValidation;
+    private final EntityEvents entityEvents;
+    private final DataSource dataSource;
+    private final Environment environment;
 
-    @Autowired
-    SpeedyValidation speedyValidation;
-
-    @Autowired
-    EntityEvents entityEvents;
-
-    @Autowired
-    DataSource dataSource;
-
-    @Autowired
-    private Environment environment;
+    public SpeedyConfig(EntityManagerFactory entityManagerFactory, SpeedyValidation speedyValidation, EntityEvents entityEvents, DataSource dataSource, Environment environment) {
+        this.entityManagerFactory = entityManagerFactory;
+        this.speedyValidation = speedyValidation;
+        this.entityEvents = entityEvents;
+        this.dataSource = dataSource;
+        this.environment = environment;
+    }
 
     @Bean
     public OpenApiCustomizer customizer(SpeedyOpenApiCustomizer speedyOpenApiCustomizer) {
@@ -58,7 +57,7 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     }
 
     @Override
-    public DataSource getDataSource() {
+    public DataSource dataSourcePerReq() {
         return dataSource;
     }
 
