@@ -35,22 +35,11 @@ import jakarta.persistence.EntityManagerFactory;
 @Configuration
 public class SpeedyConfig implements ISpeedyConfiguration {
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
+    
     @Autowired
     EntityEvents entityEvents;
-
-    @Override
-    public EntityManager createEntityManager() {
-        return entityManagerFactory.createEntityManager();
-    }
-
-    @Override
-    public MetaModelProcessor createMetaModelProcessor() {
-        return new JpaMetaModelProcessor(entityManagerFactory);
-    }
-
+    ...
+    
     @Override
     public void register(ISpeedyRegistry registry) {
         registry.registerEventHandler(entityEvents);
@@ -77,9 +66,22 @@ public class EntityEvents implements ISpeedyEventHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityEvents.class);
 
-    @SpeedyEvent(value = Category.class, eventType = {SpeedyEventType.POST_INSERT, SpeedyEventType.PRE_INSERT})
-    public void categoryPostInsertEvent(Category category) throws Exception {
-        LOGGER.info("Category Post Insert Event");
+    @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_INSERT})
+    public void userInsert(SpeedyEntity user) throws Exception {
+        LOGGER.info("User Insert Event");
+        user.put("createdAt", Speedy.from(LocalDateTime.now()));
+    }
+
+    @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_UPDATE})
+    public void userUpdate(SpeedyEntity user) throws Exception {
+        LOGGER.info("User Update Event");
+        user.put("updateAt", Speedy.from(LocalDateTime.now()));
+    }
+
+    @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_DELETE})
+    public void userDelete(SpeedyEntity user) throws Exception {
+        LOGGER.info("User Delete Event");
+        user.put("deletedAt", Speedy.from(LocalDateTime.now()));
     }
 }
 

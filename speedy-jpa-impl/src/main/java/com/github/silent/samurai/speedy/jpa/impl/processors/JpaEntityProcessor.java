@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.jpa.impl.processors;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
@@ -44,8 +45,16 @@ public class JpaEntityProcessor {
         }
 
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
-            JpaFieldMetadata memberMetadata = JpaFieldProcessor.processField(attribute,
-                    entityType.getJavaType(), entityMetadata);
+            SpeedyIgnore ignoreAnnotation = attribute.getJavaType().getAnnotation(SpeedyIgnore.class);
+            if (ignoreAnnotation != null) {
+                continue;
+            }
+
+            JpaFieldMetadata memberMetadata = JpaFieldProcessor.processField(
+                    attribute,
+                    entityType.getJavaType(),
+                    entityMetadata
+            );
 
             if (memberMetadata.getDbColumnName() == null) {
                 continue;

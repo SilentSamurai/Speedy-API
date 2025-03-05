@@ -278,15 +278,11 @@ class SpeedyEntityTest {
     User crudUser(Company company) {
         String dateTimeInstant = Instant.now().toString();
         CreateUserRequest createUserRequest = new CreateUserRequest();
-        createUserRequest.createdAt(dateTimeInstant)
-                .createdAt(dateTimeInstant)
-                .deletedAt(dateTimeInstant)
-                .updatedAt(dateTimeInstant)
+        createUserRequest
                 .phoneNo("0984738269")
                 .email("aksmfaksmf@sad.cc")
                 .name("New Customer")
-                .company(new CompanyKey().id(company.getId()))
-                .profilePic("gg4g");
+                .type("USER");
 
         UserApi userApi = new UserApi(defaultClient);
 

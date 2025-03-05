@@ -138,15 +138,16 @@ create table suppliers
 
 create table users
 (
-    id          varchar(255) not null,
-    created_at  timestamp,
-    deleted_at  timestamp,
-    email       varchar(250) not null,
-    name        varchar(250) not null,
-    phone_no    varchar(15)  not null,
-    profile_pic varchar(512) not null,
-    updated_at  timestamp,
-    company_id  varchar(255) not null,
+    id            varchar(255) not null,
+    created_at    timestamp,
+    deleted_at    timestamp,
+    email         varchar(250) not null,
+    name          varchar(250) not null,
+    phone_no      varchar(15)  not null,
+    type          varchar(15)  not null,
+    updated_at    timestamp default null,
+    last_login_at timestamp default null,
+    login_count   int default 0,
     primary key (id)
 );
 
@@ -365,6 +366,19 @@ values ('1', 'United States', 'USD', 'US Dollar', 'U$'),
 
 INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time)
 VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00');
+
+
+INSERT INTO users (id, created_at, deleted_at, email, name, phone_no, type, updated_at, last_login_at)
+VALUES ('1a2b3c4d-5678-90ab-cdef-1234567890ab', '2024-02-28 12:00:00', NULL, 'john.doe@example.com', 'John Doe',
+        '9876543210', 'ADMIN', '2024-02-28 15:00:00', NULL),
+       ('2b3c4d5e-6789-01ab-cdef-2345678901bc', '2024-02-28 13:15:00', NULL, 'jane.smith@example.com', 'Jane Smith',
+        '8765432109', 'USER', '2024-02-28 16:30:00', NULL),
+       ('3c4d5e6f-7890-12ab-cdef-3456789012cd', '2024-02-27 09:45:00', NULL, 'michael.johnson@example.com',
+        'Michael Johnson', '7654321098', 'USER', '2024-02-28 14:45:00', NULL),
+       ('4d5e6f7g-8901-23ab-cdef-4567890123de', '2024-02-26 08:30:00', NULL, 'emily.brown@example.com', 'Emily Brown',
+        '6543210987', 'USER', '2024-02-27 10:15:00', NULL),
+       ('5e6f7g8h-9012-34ab-cdef-5678901234ef', '2024-02-25 17:20:00', '2024-02-28 12:00:00',
+        'william.davis@example.com', 'William Davis', '5432109876', 'USER', '2024-02-26 09:00:00', NULL);
 
 
 

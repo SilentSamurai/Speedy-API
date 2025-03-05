@@ -6,12 +6,12 @@ create entity CRUD apis with writing a line of code
 
 #### Bulk Delete
 
-delete multiple transactions
+delete multiple resource
 
 **URL**
 
 ```http
-[DELETE] /speedy/v1/Transaction
+[DELETE] /speedy/v1/User
 ```
 
 **Request Body**
@@ -19,10 +19,10 @@ delete multiple transactions
 ```json
 [
     {
-        "id": "transaction-1"
+        "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab"
     },
     {
-        "id": "transaction-2"
+        "id": "2b3c4d5e-6789-01ab-cdef-2345678901bc"
     }
 ]
 ```
@@ -33,10 +33,10 @@ delete multiple transactions
 {
     "payload": [
         {
-            "id": "transaction-1"
+            "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab"
         },
         {
-            "id": "transaction-2"
+            "id": "2b3c4d5e-6789-01ab-cdef-2345678901bc"
         }
     ],
     "pageCount": 1,

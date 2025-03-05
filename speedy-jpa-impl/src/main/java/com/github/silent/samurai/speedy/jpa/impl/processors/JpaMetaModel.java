@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.jpa.impl.processors;
 
+import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.EntityType;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +37,10 @@ public class JpaMetaModel implements MetaModel {
     public void process() {
         Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
         for (EntityType<?> entityType : entities) {
+            SpeedyIgnore annotation = entityType.getBindableJavaType().getAnnotation(SpeedyIgnore.class);
+            if (annotation != null) {
+                continue;
+            }
             JpaEntityMetadata entityMetadata = JpaEntityProcessor.processEntity(entityType);
             entityMap.put(entityType.getName(), entityMetadata);
             typeMap.put(entityMetadata.getEntityClass(), entityMetadata);
@@ -54,12 +60,12 @@ public class JpaMetaModel implements MetaModel {
         return entityMap.values().stream().map(em -> (EntityMetadata) em).collect(Collectors.toUnmodifiableList());
     }
 
-//    @Override
+    //    @Override
     public boolean hasEntityMetadata(Class<?> entityType) {
         return typeMap.containsKey(entityType);
     }
 
-//    @Override
+    //    @Override
     public EntityMetadata findEntityMetadata(Class<?> entityType) throws NotFoundException {
         return typeMap.get(entityType);
     }
