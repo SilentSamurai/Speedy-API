@@ -147,6 +147,10 @@ public class SpeedyQuery {
         return toJsonNode(values, "$nin");
     }
 
+    public static ObjectNode $matches(Object values) throws JsonProcessingException {
+        return toJsonNode(values, "$matches");
+    }
+
     public static JsonNode $condition(String key, JsonNode value) {
         ObjectNode jsonNodes = CommonUtil.json().createObjectNode();
         jsonNodes.set(key, value);

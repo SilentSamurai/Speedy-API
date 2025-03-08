@@ -2,14 +2,10 @@ package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.models.SpeedyDateTime;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
@@ -83,30 +79,29 @@ public class JooqUtil {
     }
 
     public static <T> Field<T> getColumn(FieldMetadata fieldMetadata, SQLDialect dialect) {
-
         EntityMetadata entityMetadata = fieldMetadata.getEntityMetadata();
-        String name = fieldMetadata.getDbColumnName();
-        Objects.requireNonNull(name);
-
-        name = transformIdentifier(name, dialect);
-
         Table<?> table = JooqUtil.getTable(entityMetadata, dialect);
+        return getTypedField(fieldMetadata, table, dialect);
+    }
+
+    public static <T> Field<T> getColumnWithTableAlias(String tableAlias, FieldMetadata fieldMetadata, SQLDialect dialect) {
+        Table<?> table = DSL.table(DSL.name(tableAlias));
+        return getTypedField(fieldMetadata, table, dialect);
+    }
+
+    private static <T> Field<T> getTypedField(FieldMetadata fieldMetadata, Table<?> table, SQLDialect dialect) {
         DataType<?> sqlDataType;
         if (fieldMetadata.isAssociation()) {
             ColumnType sqlType = fieldMetadata.getAssociatedFieldMetadata().getColumnType();
-            sqlDataType = JooqUtil.getSQLDataType(name, sqlType);
+            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), sqlType);
         } else {
-            sqlDataType = JooqUtil.getSQLDataType(name, fieldMetadata.getColumnType());
+            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), fieldMetadata.getColumnType());
         }
-
+        Objects.requireNonNull(fieldMetadata.getDbColumnName());
         Name columnName = DSL.name(
                 table.getName(),
-                name
+                transformIdentifier(fieldMetadata.getDbColumnName(), dialect)
         );
-
-//        if (fieldMetadata instanceof KeyFieldMetadata && ((KeyFieldMetadata) fieldMetadata).shouldGenerateKey()) {
-//            return (Field<T>) DSL.field(columnName, SQLDataType.VARCHAR(36));
-//        }
         return (Field<T>) DSL.field(columnName, sqlDataType);
     }
 
