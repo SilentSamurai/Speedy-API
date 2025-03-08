@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -72,9 +73,9 @@ class SpeedyV2ForgeinKeyWhereClause {
                         SpeedyRequest
                                 .query("Procurement")
                                 .$where(
-                                        SpeedyQuery.$and(
-                                                SpeedyQuery.$condition("product.id", SpeedyQuery.$eq("1")),
-                                                SpeedyQuery.$condition("supplier.id", SpeedyQuery.$eq("2"))
+                                        $and(
+                                                $condition("product.id", $eq("1")),
+                                                $condition("supplier.id", $eq("2"))
                                         )
                                 )
                                 .prettyPrint()
@@ -88,20 +89,67 @@ class SpeedyV2ForgeinKeyWhereClause {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
                         .value(Matchers.everyItem(Matchers.isA(String.class))))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product").isNotEmpty())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product")
-                        .value(Matchers.everyItem(Matchers.isA(String.class))))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product")
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.id")
                         .value(Matchers.hasItem("1")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier").isNotEmpty())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier").value(Matchers.hasItem("2")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier.id").value(Matchers.hasItem("2")))
+                .andReturn();
+    }
+
+
+    @Test
+    void query_2() throws Exception {
+
+        Procurement procurement = procurementRepository.findById("1").get();
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
+                .content(CommonUtil.json().writeValueAsString(
+                        SpeedyRequest
+                                .query("Procurement")
+                                .$where(
+                                        $and(
+                                                $condition("product.id", $eq("1")),
+                                                $condition("supplier.id", $eq("2")),
+                                                $condition("amount", $gt(100))
+                                        )
+                                )
+                                .prettyPrint()
+                                .build()
+                ))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.id")
+                        .value(Matchers.hasItem("1")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier.id").value(Matchers.hasItem("2")))
                 .andReturn();
     }
 }

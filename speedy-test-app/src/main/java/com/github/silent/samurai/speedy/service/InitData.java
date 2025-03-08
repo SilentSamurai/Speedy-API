@@ -17,6 +17,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 @Service
 public class InitData {
@@ -29,24 +34,27 @@ public class InitData {
     @Autowired
     CategoryRepository categoryRepository;
 
-    public static String[] fetchSql() throws IOException {
+    public static List<String> fetchSql() throws IOException {
         File file = ResourceUtils.getFile("classpath:x-data.sql");
         try (InputStream in = new FileInputStream(file)) {
             String content = StreamUtils.copyToString(in, StandardCharsets.UTF_8);
-            return content.split(";");
+            return Arrays.stream(content.split(";"))
+                    .map(String::trim)
+                    .filter(Predicate.not(String::isEmpty))
+                    .filter(Predicate.not(String::isBlank))
+                    .collect(Collectors.toList());
         }
     }
 
     @PostConstruct
     public void initData() {
         try (Connection connection = dataSource.getConnection()) {
-            String[] sqls = fetchSql();
-            for (String sql : sqls) {
+            for (String sql : fetchSql()) {
                 LOGGER.info("sql : {}", sql);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.executeUpdate();
                 } catch (Exception e) {
-                    LOGGER.error("", e);
+                    LOGGER.error("init-data error", e);
                 }
             }
         } catch (Exception e) {

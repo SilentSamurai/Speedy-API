@@ -20,7 +20,8 @@ public class SecurityConfig {
                     cz.anyRequest().permitAll();
                 })
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable);
+                .cors(AbstractHttpConfigurer::disable)
+                .headers().frameOptions().sameOrigin();
 
         return http.build();
     }

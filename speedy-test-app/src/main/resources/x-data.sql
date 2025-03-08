@@ -208,8 +208,6 @@ alter table procurements
     add constraint FKjff8ahqmnydxc665vew5tp7ul foreign key (supplier_id) references suppliers;
 alter table products
     add constraint FKog2rp4qthbtt2lfyhfo32lsw9 foreign key (category_id) references categories;
-alter table users
-    add constraint FKin8gn4o1hpiwe6qe4ey7ykwq7 foreign key (company_id) references companies;
 
 create
 or replace view product_view as
@@ -305,6 +303,10 @@ VALUES ('4', '2', '2', 400, 200, '2022-01-04', '2022-04-30 10:00:00', 'Admin', N
 INSERT INTO procurements (ID, PRODUCT_ID, supplier_id, amount, due_amount, purchase_date, created_at, created_by,
                           modified_at, modified_by)
 VALUES ('5', '2', '2', 500, 250, '2022-01-05', '2022-04-30 10:00:00', 'Admin', NULL, NULL);
+
+INSERT INTO procurements (ID, PRODUCT_ID, supplier_id, amount, due_amount, purchase_date, created_at, created_by,
+                          modified_at, modified_by)
+VALUES ('6', '1', '2', 500, 250, '2022-01-05', '2022-04-30 10:00:00', 'Admin', NULL, NULL);
 
 INSERT INTO customers (id, name, address, email, phone_no, alt_phone_no, created_at, created_by)
 VALUES ('1', 'John Doe', '123 Main St', 'john.doe@example.com', '555-1234', NULL, '2022-04-30 10:00:00', 'admin'),
