@@ -135,21 +135,22 @@ VALUES ('1', '1', 50.00, 80.00, 100.00, 0.00, '1', '1'),
        ('9', '3', 15.00, 160.00, 200.00, 0.00, '3', '3'),
        ('10', '4', 25.00, 40.00, 50.00, 0.00, '4', '4');
 
-INSERT into currencies (id, country, currency_abbr, currency_name, currency_symbol)
-values ('1', 'United States', 'USD', 'US Dollar', 'U$'),
-       ('2', 'United Kingdom', 'GBP', 'British Pound', '£'),
-       ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$'),
-       ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$'),
-       ('5', 'Japan', 'JPY', 'Japanese Yen', '¥'),
-       ('6', 'India', 'INR', 'Indian Rupee', '₹'),
-       ('7', 'China', 'CNY', 'Chinese Yuan', '¥'),
-       ('8', 'Russia', 'RUB', 'Russian Ruble', '₽'),
-       ('9', 'South Korea', 'KRW', 'South Korean Won', '₩'),
-       ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$'),
-       ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$'),
-       ('12', 'South Africa', 'ZAR', 'South African Rand', 'R'),
-       ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$'),
-       ('14', 'Singapore', 'SGD', 'Singapore', 'S$');
+INSERT INTO currencies (id, country, currency_abbr, currency_name, currency_symbol, created_at)
+VALUES
+    ('1', 'United States', 'USD', 'US Dollar', 'U$', NOW()),
+    ('2', 'United Kingdom', 'GBP', 'British Pound', '£', NOW()),
+    ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$', NOW()),
+    ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$', NOW()),
+    ('5', 'Japan', 'JPY', 'Japanese Yen', '¥', NOW()),
+    ('6', 'India', 'INR', 'Indian Rupee', '₹', NOW()),
+    ('7', 'China', 'CNY', 'Chinese Yuan', '¥', NOW()),
+    ('8', 'Russia', 'RUB', 'Russian Ruble', '₽', NOW()),
+    ('9', 'South Korea', 'KRW', 'South Korean Won', '₩', NOW()),
+    ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$', NOW()),
+    ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$', NOW()),
+    ('12', 'South Africa', 'ZAR', 'South African Rand', 'R', NOW()),
+    ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$', NOW()),
+    ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
 
 INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time)
 VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00');

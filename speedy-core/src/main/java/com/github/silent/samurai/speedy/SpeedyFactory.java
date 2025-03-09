@@ -54,7 +54,9 @@ public class SpeedyFactory {
     private final ValidationProcessor validationProcessor;
     private final EventProcessor eventProcessor;
     private final RegistryImpl eventRegistry;
-    private final QueryProcessor queryProcessor;
+    //    private final QueryProcessor queryProcessor;
+    private final SpeedyDialect dialect;
+    private final ISpeedyConfiguration configuration;
 
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
@@ -75,9 +77,13 @@ public class SpeedyFactory {
         this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel);
         this.validationProcessor.process();
 
+        configuration = speedyConfiguration;
+        dialect = speedyConfiguration.getDialect();
+    }
+
+    private QueryProcessor createQueryProcessor() {
         DataSource dataSource = speedyConfiguration.dataSourcePerReq();
-        SpeedyDialect dialect = speedyConfiguration.getDialect();
-        this.queryProcessor = new JooqQueryProcessorImpl(dataSource, dialect);
+        return new JooqQueryProcessorImpl(dataSource, dialect);
     }
 
     public void processGetRequests(IRequestContextImpl context, SpeedyQuery speedyQuery) throws Exception {
@@ -112,6 +118,8 @@ public class SpeedyFactory {
         Json2SpeedyQueryBuilder json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModel, resourceMetadata, jsonBody);
         // build speedy query
         SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
+
+        QueryProcessor queryProcessor = createQueryProcessor();
 
         if (speedyQuery.getSelect().contains("count")) {
             BigInteger count = queryProcessor.executeCount(speedyQuery);
@@ -171,6 +179,8 @@ public class SpeedyFactory {
             SpeedyQuery uriSpeedyQuery = parser.parse();
 
             EntityMetadata resourceMetadata = uriSpeedyQuery.getFrom();
+
+            QueryProcessor queryProcessor = createQueryProcessor();
 
             IRequestContextImpl context = new IRequestContextImpl(request,
                     response, metaModel,

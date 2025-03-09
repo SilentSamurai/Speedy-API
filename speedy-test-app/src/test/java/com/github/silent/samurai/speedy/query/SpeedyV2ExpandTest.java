@@ -1,9 +1,12 @@
 package com.github.silent.samurai.speedy.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -23,6 +26,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import jakarta.persistence.EntityManagerFactory;
+
+import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -105,14 +110,18 @@ public class SpeedyV2ExpandTest {
        * */
     @Test
     void pagging() throws Exception {
-        ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("$from", "Category");
-        body.putObject("$page")
-                .put("$index", 1)
-                .put("$size", 2);
+
+        List<Category> allSorted = categoryRepository.findAllSorted();
+
+        JsonNode query = SpeedyQuery.builder("Category")
+                .$orderByAsc("name")
+                .$pageNo(1)
+                .$pageSize(2)
+                .prettyPrint()
+                .build();
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
-                .content(CommonUtil.json().writeValueAsString(body))
+                .content(CommonUtil.json().writeValueAsString(query))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
 
@@ -133,8 +142,8 @@ public class SpeedyV2ExpandTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name")
                         .value(Matchers.everyItem(
                                 Matchers.anyOf(
-                                        Matchers.equalTo("cat-3-3"),
-                                        Matchers.equalTo("cat-4-4")
+                                        Matchers.equalTo(allSorted.get(2).getName()),
+                                        Matchers.equalTo(allSorted.get(3).getName())
                                 )
                         )))
                 .andReturn();
