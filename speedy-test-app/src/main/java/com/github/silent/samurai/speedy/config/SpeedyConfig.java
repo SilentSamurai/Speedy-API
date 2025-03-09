@@ -64,7 +64,7 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     @Override
     public SpeedyDialect getDialect() {
         Set<String> profiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
-        if (profiles.contains("prod")) {
+        if (profiles.contains("postgres")) {
             return SpeedyDialect.POSTGRES;
         }
         return SpeedyDialect.H2;

@@ -98,10 +98,9 @@ public class SpeedyV2OrderByTest {
     @Test
     void check_order_by_with_actual_names() throws Exception {
         // Get actual categories from repository and sort them
-        List<Category> categories = (List<Category>) categoryRepository.findAll();
+        List<Category> categories = (List<Category>) categoryRepository.findAllSorted();
         List<String> expectedNames = categories.stream()
                 .map(Category::getName)
-                .sorted() // ASC order
                 .toList();
         List<String> reverseName = new ArrayList<>(expectedNames);
         Collections.reverse(reverseName);
