@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-@Table(name = "CATEGORIES", indexes = {
+@Table(name = "categories", indexes = {
         @Index(name = "categories_name_key", columnList = "name", unique = true)
 })
 @Entity

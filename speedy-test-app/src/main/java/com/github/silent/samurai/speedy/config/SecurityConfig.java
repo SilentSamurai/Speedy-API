@@ -26,15 +26,15 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    DataSource dataSource() {
-        HikariConfig config = new HikariConfig();
-        config.setDriverClassName("org.h2.Driver");
-        config.setJdbcUrl("jdbc:h2:mem:bootapp;DB_CLOSE_DELAY=-1");
-        config.setUsername("sa");
-        config.setPassword("");
-        config.setAutoCommit(true);
-        return new HikariDataSource(config);
-    }
+//    @Bean
+//    DataSource dataSource() {
+//        HikariConfig config = new HikariConfig();
+//        config.setDriverClassName("org.h2.Driver");
+//        config.setJdbcUrl("jdbc:h2:mem:bootapp;DB_CLOSE_DELAY=-1");
+//        config.setUsername("sa");
+//        config.setPassword("");
+//        config.setAutoCommit(true);
+//        return new HikariDataSource(config);
+//    }
 
 }

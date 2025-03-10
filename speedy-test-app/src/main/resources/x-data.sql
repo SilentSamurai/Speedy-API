@@ -1,218 +1,3 @@
-create table categories
-(
-    id   varchar(255) not null,
-    name varchar(250) not null,
-    primary key (id)
-);
-create table companies
-(
-    id                varchar(255)  not null,
-    address           varchar(1024) not null,
-    created_at        timestamp,
-    currency          varchar(8)    not null,
-    default_generator integer,
-    deleted_at        timestamp,
-    details_top       varchar(1024),
-    email             varchar(255),
-    extra             varchar(1024),
-    invoice_no        integer,
-    name              varchar(255)  not null,
-    phone             varchar(15)   not null,
-    updated_at        timestamp,
-    primary key (id)
-);
-
-create table currencies
-(
-    id              varchar(255) not null,
-    country         varchar(32),
-    created_at      timestamp default CURRENT_TIMESTAMP,
-    currency_abbr   varchar(10)  not null unique,
-    currency_name   varchar(64)  not null,
-    currency_symbol varchar(10)  not null,
-    primary key (id)
-);
-
-create table customers
-(
-    id           varchar(255) not null,
-    address      varchar(1024),
-    alt_phone_no varchar(15),
-    created_at   timestamp,
-    created_by   varchar(255),
-    email        varchar(255),
-    name         varchar(255) not null,
-    phone_no     varchar(15)  not null,
-    primary key (id)
-);
-
-create table exchange_rates
-(
-    id                  varchar(255) not null,
-    created_at          timestamp,
-    exchange_rate double not null,
-    inv_exchange_rate double not null,
-    base_currency_id    varchar(255) not null,
-    foreign_currency_id varchar(255) not null,
-    primary key (id)
-);
-
-create table inventory
-(
-    id             varchar(255) not null,
-    cost double not null,
-    discount double not null,
-    listing_price double not null,
-    sold_price double not null,
-    invoice_id     varchar(255) not null,
-    procurement_id varchar(255) not null,
-    product_id     varchar(255) not null,
-    primary key (id)
-);
-
-create table invoices
-(
-    id           varchar(255) not null,
-    adjustment double not null,
-    created_at   timestamp,
-    created_by   varchar(255),
-    discount double not null,
-    due_amount double not null,
-    invoice_date timestamp    not null,
-    modified_at  timestamp,
-    modified_by  varchar(255),
-    notes        varchar(1024),
-    paid double not null,
-    customer_id  varchar(255) not null,
-    primary key (id)
-);
-
-create table orders
-(
-    product_id  varchar(250) not null,
-    supplier_id varchar(250) not null,
-    discount double,
-    order_date  timestamp,
-    price double,
-    primary key (product_id, supplier_id)
-);
-
-create table procurements
-(
-    id            varchar(255) not null,
-    amount double not null,
-    created_at    timestamp,
-    created_by    varchar(255),
-    due_amount double not null,
-    modified_at   timestamp,
-    modified_by   varchar(255),
-    purchase_date timestamp    not null,
-    product_id    varchar(255) not null,
-    supplier_id   varchar(255) not null,
-    primary key (id)
-);
-
-
-
-create table products
-(
-    id          varchar(255) not null,
-    description varchar(1024),
-    name        varchar(255) not null,
-    category_id varchar(255) not null,
-    primary key (id)
-);
-
-create table suppliers
-(
-    id           varchar(255) not null,
-    address      varchar(1024),
-    alt_phone_no varchar(15)  not null,
-    created_at   timestamp,
-    created_by   varchar(255),
-    email        varchar(255),
-    name         varchar(255) not null,
-    phone_no     varchar(15)  not null,
-    primary key (id)
-);
-
-create table users
-(
-    id            varchar(255) not null,
-    created_at    timestamp,
-    deleted_at    timestamp,
-    email         varchar(250) not null,
-    name          varchar(250) not null,
-    phone_no      varchar(15)  not null,
-    type          varchar(15)  not null,
-    updated_at    timestamp default null,
-    last_login_at timestamp default null,
-    login_count   int default 0,
-    primary key (id)
-);
-
-CREATE TABLE value_test_table
-(
-    id              VARCHAR(255) NOT NULL,
-    local_date_time datetime NULL,
-    local_date      date NULL,
-    local_time      time NULL,
-    instant_time    datetime NULL,
-    zoned_date_time TIMESTAMP WITH TIME ZONE NULL,
-    boolean_value   boolean NULL,
-    CONSTRAINT pk_value_test_table PRIMARY KEY (id)
-);
-
-create table PK_UUID_TEST
-(
-    id          uuid         not null,
-    name        varchar(250) not null,
-    description varchar(250) not null,
-    primary key (id)
-);
-
-alter table categories
-    add constraint categories_name_key unique (name);
-alter table companies
-    add constraint companies_phone_key unique (phone);
-alter table customers
-    add constraint customers_alt_phone_no_key unique (alt_phone_no);
-alter table customers
-    add constraint customers_phone_no_key unique (phone_no);
-
-alter table products
-    add constraint UK_o61fmio5yukmmiqgnxf8pnavn unique (name);
-alter table suppliers
-    add constraint suppliers_alt_phone_no_key unique (alt_phone_no);
-alter table suppliers
-    add constraint suppliers_phone_no_key unique (phone_no);
-alter table users
-    add constraint users_phone_no_key unique (phone_no);
-alter table users
-    add constraint users_email_key unique (email);
-alter table exchange_rates
-    add constraint FKrqnh6pk2bh3emod0btk37g0fp foreign key (base_currency_id) references currencies;
-alter table exchange_rates
-    add constraint FKpafehxlj8ac40i364hbg1shu2 foreign key (foreign_currency_id) references currencies;
-alter table inventory
-    add constraint FK3ocy6yq5a8ys904nuk2ubh8nw foreign key (invoice_id) references invoices;
-alter table inventory
-    add constraint FKewrm1ymgyu6eyyidx0xaj2gva foreign key (procurement_id) references procurements;
-alter table inventory
-    add constraint FKq2yge7ebtfuvwufr6lwfwqy9l foreign key (product_id) references products;
-alter table invoices
-    add constraint FKq2w4hmh6l9othnp6cepp0cfe2 foreign key (customer_id) references customers;
-alter table procurements
-    add constraint FK4dbsmywcrfynicyvso8b28utc foreign key (product_id) references products;
-alter table procurements
-    add constraint FKjff8ahqmnydxc665vew5tp7ul foreign key (supplier_id) references suppliers;
-alter table products
-    add constraint FKog2rp4qthbtt2lfyhfo32lsw9 foreign key (category_id) references categories;
-
-create
-or replace view product_view as
-SELECT *
-FROM products;
 
 
 INSERT INTO categories(ID, NAME)
@@ -350,21 +135,22 @@ VALUES ('1', '1', 50.00, 80.00, 100.00, 0.00, '1', '1'),
        ('9', '3', 15.00, 160.00, 200.00, 0.00, '3', '3'),
        ('10', '4', 25.00, 40.00, 50.00, 0.00, '4', '4');
 
-INSERT into currencies (id, country, currency_abbr, currency_name, currency_symbol)
-values ('1', 'United States', 'USD', 'US Dollar', 'U$'),
-       ('2', 'United Kingdom', 'GBP', 'British Pound', '£'),
-       ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$'),
-       ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$'),
-       ('5', 'Japan', 'JPY', 'Japanese Yen', '¥'),
-       ('6', 'India', 'INR', 'Indian Rupee', '₹'),
-       ('7', 'China', 'CNY', 'Chinese Yuan', '¥'),
-       ('8', 'Russia', 'RUB', 'Russian Ruble', '₽'),
-       ('9', 'South Korea', 'KRW', 'South Korean Won', '₩'),
-       ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$'),
-       ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$'),
-       ('12', 'South Africa', 'ZAR', 'South African Rand', 'R'),
-       ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$'),
-       ('14', 'Singapore', 'SGD', 'Singapore', 'S$');
+INSERT INTO currencies (id, country, currency_abbr, currency_name, currency_symbol, created_at)
+VALUES
+    ('1', 'United States', 'USD', 'US Dollar', 'U$', NOW()),
+    ('2', 'United Kingdom', 'GBP', 'British Pound', '£', NOW()),
+    ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$', NOW()),
+    ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$', NOW()),
+    ('5', 'Japan', 'JPY', 'Japanese Yen', '¥', NOW()),
+    ('6', 'India', 'INR', 'Indian Rupee', '₹', NOW()),
+    ('7', 'China', 'CNY', 'Chinese Yuan', '¥', NOW()),
+    ('8', 'Russia', 'RUB', 'Russian Ruble', '₽', NOW()),
+    ('9', 'South Korea', 'KRW', 'South Korean Won', '₩', NOW()),
+    ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$', NOW()),
+    ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$', NOW()),
+    ('12', 'South Africa', 'ZAR', 'South African Rand', 'R', NOW()),
+    ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$', NOW()),
+    ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
 
 INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time)
 VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00');

@@ -74,7 +74,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
-            Result<Record> result = new SpeedyToJooqSql(dslContext)
+            Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect)
                     .findByPrimaryKey(entityKey);
             return !result.isEmpty();
         } catch (Exception e) {
@@ -85,15 +85,14 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public List<SpeedyEntity> create(List<SpeedyEntity> entities) throws SpeedyHttpException {
         try {
-            SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
-
-            speedyToJooqSql.insertEntity(entities);
+            SpeedyInsertQuery speedyInsertQuery = new SpeedyInsertQuery(dslContext, dialect);
+            speedyInsertQuery.insertEntity(entities);
 
             List<SpeedyEntity> entityList = new ArrayList<>(entities.size());
 
             for (SpeedyEntity entity : entities) {
                 SpeedyEntityKey entityKey = SpeedyEntityUtil.toEntityKey(entity);
-                Result<Record> result = speedyToJooqSql.findByPrimaryKey(entityKey);
+                Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect).findByPrimaryKey(entityKey);
 
                 SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dslContext)
                         .fromRecord(result.get(0), entity.getMetadata(), List.of());
@@ -110,11 +109,10 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
         try {
-            SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
+            SpeedyUpdateQuery speedyUpdateQuery = new SpeedyUpdateQuery(dslContext, dialect);
+            speedyUpdateQuery.updateEntity(pk, entity);
 
-            speedyToJooqSql.updateEntity(pk, entity);
-
-            Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
+            Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect).findByPrimaryKey(pk);
 
             return new JooqSqlToSpeedy(dslContext)
                     .fromRecord(result.get(0), entity.getMetadata(), List.of());
@@ -127,17 +125,17 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     public List<SpeedyEntity> delete(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
         try {
             List<SpeedyEntity> entities = new ArrayList<>(pks.size());
-            SpeedyToJooqSql speedyToJooqSql = new SpeedyToJooqSql(dslContext);
+            JooqPkQueryBuilder jooqPkQueryBuilder = new JooqPkQueryBuilder(dslContext, dialect);
 
             for (SpeedyEntityKey pk : pks) {
-                Result<Record> result = speedyToJooqSql.findByPrimaryKey(pk);
+                Result<Record> result = jooqPkQueryBuilder.findByPrimaryKey(pk);
                 SpeedyEntity entity = new JooqSqlToSpeedy(dslContext)
                         .fromRecord(result.get(0), pk.getMetadata(), List.of());
 
                 entities.add(entity);
             }
 
-            speedyToJooqSql.deleteEntity(pks);
+            new SpeedyDeleteQuery(dslContext, dialect).deleteEntity(pks);
             return entities;
         } catch (Exception e) {
             throw new BadRequestException(e);

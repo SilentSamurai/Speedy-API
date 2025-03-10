@@ -260,6 +260,255 @@
                 }
             }
         },
+        "/speedy/v1/ValueTestEntity": {},
+        "/speedy/v1/ValueTestEntity/$query": {
+            "post": {
+                "tags": [
+                    "ValueTestEntity"
+                ],
+                "summary": "Filter ValueTestEntity",
+                "operationId": "QueryValueTestEntity",
+                "requestBody": {
+                    "description": "Fields needed for creation",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "example": "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful fetch.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "FilteredValueTestEntityResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ValueTestEntity"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/ValueTestEntity(id=\"{id}\")": {
+            "get": {
+                "tags": [
+                    "ValueTestEntity"
+                ],
+                "summary": "Get a(n) ValueTestEntity",
+                "operationId": "GetValueTestEntity",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id field value.",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful fetch.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "FilteredValueTestEntityResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ValueTestEntity"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/ValueTestEntity/$create": {
+            "post": {
+                "tags": [
+                    "ValueTestEntity"
+                ],
+                "summary": "Bulk create ValueTestEntity",
+                "operationId": "BulkCreateValueTestEntity",
+                "requestBody": {
+                    "description": "Fields needed for creation",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CreateValueTestEntityRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful creation.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "BulkCreateValueTestEntityResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ValueTestEntityKey"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/ValueTestEntity/$update": {
+            "put": {
+                "tags": [
+                    "ValueTestEntity"
+                ],
+                "summary": "Update a(n) ValueTestEntity",
+                "operationId": "UpdateValueTestEntity",
+                "requestBody": {
+                    "description": "Fields needed for update",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateValueTestEntityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful update.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "UpdateValueTestEntityResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ValueTestEntity"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/ValueTestEntity/$delete": {
+            "delete": {
+                "tags": [
+                    "ValueTestEntity"
+                ],
+                "summary": "Bulk delete ValueTestEntity",
+                "operationId": "BulkDeleteValueTestEntity",
+                "requestBody": {
+                    "description": "Fields needed for deletion",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/ValueTestEntityKey"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful deletion.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "BulkDeleteValueTestEntityResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ValueTestEntityKey"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/speedy/v1/Order": {},
         "/speedy/v1/Order/$query": {
             "post": {
@@ -501,255 +750,6 @@
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/components/schemas/OrderKey"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/ValueTestEntity": {},
-        "/speedy/v1/ValueTestEntity/$query": {
-            "post": {
-                "tags": [
-                    "ValueTestEntity"
-                ],
-                "summary": "Filter ValueTestEntity",
-                "operationId": "QueryValueTestEntity",
-                "requestBody": {
-                    "description": "Fields needed for creation",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "example": "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful fetch.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "FilteredValueTestEntityResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ValueTestEntity"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/ValueTestEntity(id=\"{id}\")": {
-            "get": {
-                "tags": [
-                    "ValueTestEntity"
-                ],
-                "summary": "Get a(n) ValueTestEntity",
-                "operationId": "GetValueTestEntity",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id field value.",
-                        "required": true,
-                        "allowEmptyValue": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "successful fetch.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "FilteredValueTestEntityResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ValueTestEntity"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/ValueTestEntity/$create": {
-            "post": {
-                "tags": [
-                    "ValueTestEntity"
-                ],
-                "summary": "Bulk create ValueTestEntity",
-                "operationId": "BulkCreateValueTestEntity",
-                "requestBody": {
-                    "description": "Fields needed for creation",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/CreateValueTestEntityRequest"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful creation.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "BulkCreateValueTestEntityResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ValueTestEntityKey"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/ValueTestEntity/$update": {
-            "put": {
-                "tags": [
-                    "ValueTestEntity"
-                ],
-                "summary": "Update a(n) ValueTestEntity",
-                "operationId": "UpdateValueTestEntity",
-                "requestBody": {
-                    "description": "Fields needed for update",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateValueTestEntityRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful update.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "UpdateValueTestEntityResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ValueTestEntity"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/ValueTestEntity/$delete": {
-            "delete": {
-                "tags": [
-                    "ValueTestEntity"
-                ],
-                "summary": "Bulk delete ValueTestEntity",
-                "operationId": "BulkDeleteValueTestEntity",
-                "requestBody": {
-                    "description": "Fields needed for deletion",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/ValueTestEntityKey"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful deletion.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "BulkDeleteValueTestEntityResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/ValueTestEntityKey"
                                             }
                                         },
                                         "pageSize": {
@@ -1266,255 +1266,6 @@
                 }
             }
         },
-        "/speedy/v1/Category": {},
-        "/speedy/v1/Category/$query": {
-            "post": {
-                "tags": [
-                    "Category"
-                ],
-                "summary": "Filter Category",
-                "operationId": "QueryCategory",
-                "requestBody": {
-                    "description": "Fields needed for creation",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "example": "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful fetch.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "FilteredCategoryResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Category"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Category(id=\"{id}\")": {
-            "get": {
-                "tags": [
-                    "Category"
-                ],
-                "summary": "Get a(n) Category",
-                "operationId": "GetCategory",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "id field value.",
-                        "required": true,
-                        "allowEmptyValue": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "successful fetch.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "FilteredCategoryResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Category"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Category/$create": {
-            "post": {
-                "tags": [
-                    "Category"
-                ],
-                "summary": "Bulk create Category",
-                "operationId": "BulkCreateCategory",
-                "requestBody": {
-                    "description": "Fields needed for creation",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/CreateCategoryRequest"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful creation.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "BulkCreateCategoryResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/CategoryKey"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Category/$update": {
-            "put": {
-                "tags": [
-                    "Category"
-                ],
-                "summary": "Update a(n) Category",
-                "operationId": "UpdateCategory",
-                "requestBody": {
-                    "description": "Fields needed for update",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpdateCategoryRequest"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful update.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "UpdateCategoryResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/Category"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Category/$delete": {
-            "delete": {
-                "tags": [
-                    "Category"
-                ],
-                "summary": "Bulk delete Category",
-                "operationId": "BulkDeleteCategory",
-                "requestBody": {
-                    "description": "Fields needed for deletion",
-                    "content": {
-                        "application/json;charset=UTF-8": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/CategoryKey"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "successful deletion.",
-                        "content": {
-                            "application/json;charset=UTF-8": {
-                                "schema": {
-                                    "title": "BulkDeleteCategoryResponse",
-                                    "type": "object",
-                                    "properties": {
-                                        "payload": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/components/schemas/CategoryKey"
-                                            }
-                                        },
-                                        "pageSize": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        },
-                                        "pageIndex": {
-                                            "type": "integer",
-                                            "format": "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/speedy/v1/User": {},
         "/speedy/v1/User/$query": {
             "post": {
@@ -1746,6 +1497,255 @@
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/components/schemas/UserKey"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Category": {},
+        "/speedy/v1/Category/$query": {
+            "post": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Filter Category",
+                "operationId": "QueryCategory",
+                "requestBody": {
+                    "description": "Fields needed for creation",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "example": "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful fetch.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "FilteredCategoryResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Category"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Category(id=\"{id}\")": {
+            "get": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Get a(n) Category",
+                "operationId": "GetCategory",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "id field value.",
+                        "required": true,
+                        "allowEmptyValue": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful fetch.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "FilteredCategoryResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Category"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Category/$create": {
+            "post": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Bulk create Category",
+                "operationId": "BulkCreateCategory",
+                "requestBody": {
+                    "description": "Fields needed for creation",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CreateCategoryRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful creation.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "BulkCreateCategoryResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CategoryKey"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Category/$update": {
+            "put": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Update a(n) Category",
+                "operationId": "UpdateCategory",
+                "requestBody": {
+                    "description": "Fields needed for update",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateCategoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful update.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "UpdateCategoryResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Category"
+                                            }
+                                        },
+                                        "pageSize": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        },
+                                        "pageIndex": {
+                                            "type": "integer",
+                                            "format": "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Category/$delete": {
+            "delete": {
+                "tags": [
+                    "Category"
+                ],
+                "summary": "Bulk delete Category",
+                "operationId": "BulkDeleteCategory",
+                "requestBody": {
+                    "description": "Fields needed for deletion",
+                    "content": {
+                        "application/json;charset=UTF-8": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/CategoryKey"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "successful deletion.",
+                        "content": {
+                            "application/json;charset=UTF-8": {
+                                "schema": {
+                                    "title": "BulkDeleteCategoryResponse",
+                                    "type": "object",
+                                    "properties": {
+                                        "payload": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CategoryKey"
                                             }
                                         },
                                         "pageSize": {
@@ -3612,8 +3612,30 @@
             "Procurement": {
                 "type": "object",
                 "properties": {
+                    "product": {
+                        "$ref": "#/components/schemas/Product"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/Supplier"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
                     "createdBy": {
                         "type": "string"
+                    },
+                    "purchaseDate": {
+                        "type": "string"
+                    },
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
                     },
                     "createdAt": {
                         "type": "string"
@@ -3621,28 +3643,6 @@
                     "amount": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "purchaseDate": {
-                        "type": "string"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedAt": {
-                        "type": "string"
-                    },
-                    "supplier": {
-                        "$ref": "#/components/schemas/Supplier"
-                    },
-                    "product": {
-                        "$ref": "#/components/schemas/Product"
-                    },
-                    "id": {
-                        "type": "string"
                     }
                 }
             },
@@ -3656,16 +3656,35 @@
             },
             "CreateProcurementRequest": {
                 "required": [
-                    "amount",
+                    "product",
+                    "supplier",
                     "purchaseDate",
                     "dueAmount",
-                    "supplier",
-                    "product"
+                    "amount"
                 ],
                 "type": "object",
                 "properties": {
+                    "product": {
+                        "$ref": "#/components/schemas/ProductKey"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/SupplierKey"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string"
+                    },
                     "createdBy": {
                         "type": "string"
+                    },
+                    "purchaseDate": {
+                        "type": "string"
+                    },
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
                     },
                     "createdAt": {
                         "type": "string"
@@ -3673,40 +3692,43 @@
                     "amount": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "purchaseDate": {
-                        "type": "string"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedAt": {
-                        "type": "string"
-                    },
-                    "supplier": {
-                        "$ref": "#/components/schemas/SupplierKey"
-                    },
-                    "product": {
-                        "$ref": "#/components/schemas/ProductKey"
                     }
                 }
             },
             "UpdateProcurementRequest": {
                 "required": [
-                    "amount",
+                    "product",
+                    "supplier",
                     "purchaseDate",
                     "dueAmount",
-                    "supplier",
-                    "product"
+                    "amount"
                 ],
                 "type": "object",
                 "properties": {
+                    "product": {
+                        "$ref": "#/components/schemas/ProductKey"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/SupplierKey"
+                    },
+                    "modifiedBy": {
+                        "type": "string"
+                    },
+                    "modifiedAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
                     "createdBy": {
                         "type": "string"
+                    },
+                    "purchaseDate": {
+                        "type": "string"
+                    },
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
                     },
                     "createdAt": {
                         "type": "string"
@@ -3714,149 +3736,32 @@
                     "amount": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "purchaseDate": {
-                        "type": "string"
-                    },
-                    "modifiedBy": {
-                        "type": "string"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedAt": {
-                        "type": "string"
-                    },
-                    "supplier": {
-                        "$ref": "#/components/schemas/SupplierKey"
-                    },
-                    "product": {
-                        "$ref": "#/components/schemas/ProductKey"
-                    },
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "Order": {
-                "type": "object",
-                "properties": {
-                    "supplier": {
-                        "$ref": "#/components/schemas/Supplier"
-                    },
-                    "supplierId": {
-                        "type": "string"
-                    },
-                    "productId": {
-                        "type": "string"
-                    },
-                    "discount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "price": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "product": {
-                        "$ref": "#/components/schemas/Product"
-                    },
-                    "orderDate": {
-                        "type": "string"
-                    }
-                }
-            },
-            "OrderKey": {
-                "required": [
-                    "supplierId",
-                    "productId"
-                ],
-                "type": "object",
-                "properties": {
-                    "supplierId": {
-                        "type": "string"
-                    },
-                    "productId": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CreateOrderRequest": {
-                "required": [
-                    "supplierId",
-                    "productId"
-                ],
-                "type": "object",
-                "properties": {
-                    "supplierId": {
-                        "type": "string"
-                    },
-                    "productId": {
-                        "type": "string"
-                    },
-                    "discount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "price": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "orderDate": {
-                        "type": "string"
-                    }
-                }
-            },
-            "UpdateOrderRequest": {
-                "required": [
-                    "supplierId",
-                    "productId"
-                ],
-                "type": "object",
-                "properties": {
-                    "supplierId": {
-                        "type": "string"
-                    },
-                    "productId": {
-                        "type": "string"
-                    },
-                    "discount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "price": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "orderDate": {
-                        "type": "string"
                     }
                 }
             },
             "ValueTestEntity": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "localDateTime": {
-                        "type": "string"
+                    "booleanValue": {
+                        "type": "boolean"
                     },
                     "zonedDateTime": {
-                        "type": "string"
-                    },
-                    "localDate": {
                         "type": "string"
                     },
                     "instantTime": {
                         "type": "string"
                     },
+                    "localDate": {
+                        "type": "string"
+                    },
                     "localTime": {
                         "type": "string"
                     },
-                    "booleanValue": {
-                        "type": "boolean"
+                    "localDateTime": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
                     }
                 }
             },
@@ -3871,49 +3776,144 @@
             "CreateValueTestEntityRequest": {
                 "type": "object",
                 "properties": {
-                    "localDateTime": {
-                        "type": "string"
+                    "booleanValue": {
+                        "type": "boolean"
                     },
                     "zonedDateTime": {
-                        "type": "string"
-                    },
-                    "localDate": {
                         "type": "string"
                     },
                     "instantTime": {
                         "type": "string"
                     },
+                    "localDate": {
+                        "type": "string"
+                    },
                     "localTime": {
                         "type": "string"
                     },
-                    "booleanValue": {
-                        "type": "boolean"
+                    "localDateTime": {
+                        "type": "string"
                     }
                 }
             },
             "UpdateValueTestEntityRequest": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "string"
-                    },
-                    "localDateTime": {
-                        "type": "string"
+                    "booleanValue": {
+                        "type": "boolean"
                     },
                     "zonedDateTime": {
-                        "type": "string"
-                    },
-                    "localDate": {
                         "type": "string"
                     },
                     "instantTime": {
                         "type": "string"
                     },
+                    "localDate": {
+                        "type": "string"
+                    },
                     "localTime": {
                         "type": "string"
                     },
-                    "booleanValue": {
-                        "type": "boolean"
+                    "localDateTime": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "Order": {
+                "type": "object",
+                "properties": {
+                    "productId": {
+                        "type": "string"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/Product"
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "orderDate": {
+                        "type": "string"
+                    },
+                    "supplier": {
+                        "$ref": "#/components/schemas/Supplier"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "supplierId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "OrderKey": {
+                "required": [
+                    "productId",
+                    "supplierId"
+                ],
+                "type": "object",
+                "properties": {
+                    "productId": {
+                        "type": "string"
+                    },
+                    "supplierId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreateOrderRequest": {
+                "required": [
+                    "productId",
+                    "supplierId"
+                ],
+                "type": "object",
+                "properties": {
+                    "productId": {
+                        "type": "string"
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "orderDate": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "supplierId": {
+                        "type": "string"
+                    }
+                }
+            },
+            "UpdateOrderRequest": {
+                "required": [
+                    "productId",
+                    "supplierId"
+                ],
+                "type": "object",
+                "properties": {
+                    "productId": {
+                        "type": "string"
+                    },
+                    "discount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "orderDate": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "supplierId": {
+                        "type": "string"
                     }
                 }
             },
@@ -3927,18 +3927,18 @@
                         "type": "number",
                         "format": "double"
                     },
+                    "id": {
+                        "type": "string"
+                    },
+                    "foreignCurrency": {
+                        "$ref": "#/components/schemas/Currency"
+                    },
                     "createdAt": {
                         "type": "string"
                     },
                     "exchangeRate": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "foreignCurrency": {
-                        "$ref": "#/components/schemas/Currency"
-                    },
-                    "id": {
-                        "type": "string"
                     }
                 }
             },
@@ -3954,8 +3954,8 @@
                 "required": [
                     "baseCurrency",
                     "invExchangeRate",
-                    "exchangeRate",
-                    "foreignCurrency"
+                    "foreignCurrency",
+                    "exchangeRate"
                 ],
                 "type": "object",
                 "properties": {
@@ -3966,12 +3966,12 @@
                         "type": "number",
                         "format": "double"
                     },
+                    "foreignCurrency": {
+                        "$ref": "#/components/schemas/CurrencyKey"
+                    },
                     "exchangeRate": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "foreignCurrency": {
-                        "$ref": "#/components/schemas/CurrencyKey"
                     }
                 }
             },
@@ -3979,8 +3979,8 @@
                 "required": [
                     "baseCurrency",
                     "invExchangeRate",
-                    "exchangeRate",
-                    "foreignCurrency"
+                    "foreignCurrency",
+                    "exchangeRate"
                 ],
                 "type": "object",
                 "properties": {
@@ -3991,44 +3991,41 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "exchangeRate": {
-                        "type": "number",
-                        "format": "double"
+                    "id": {
+                        "type": "string"
                     },
                     "foreignCurrency": {
                         "$ref": "#/components/schemas/CurrencyKey"
                     },
-                    "id": {
-                        "type": "string"
+                    "exchangeRate": {
+                        "type": "number",
+                        "format": "double"
                     }
                 }
             },
             "Company": {
                 "type": "object",
                 "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
                     "detailsTop": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
                         "type": "string"
                     },
                     "invoiceNo": {
                         "type": "integer",
                         "format": "int64"
                     },
-                    "extra": {
+                    "deletedAt": {
                         "type": "string"
                     },
-                    "updatedAt": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "email": {
                         "type": "string"
                     },
                     "currency": {
+                        "type": "string"
+                    },
+                    "phone": {
                         "type": "string"
                     },
                     "address": {
@@ -4038,13 +4035,16 @@
                         "type": "integer",
                         "format": "int64"
                     },
-                    "createdAt": {
+                    "updatedAt": {
+                        "type": "string"
+                    },
+                    "name": {
                         "type": "string"
                     },
                     "id": {
                         "type": "string"
                     },
-                    "name": {
+                    "extra": {
                         "type": "string"
                     }
                 }
@@ -4059,36 +4059,33 @@
             },
             "CreateCompanyRequest": {
                 "required": [
-                    "phone",
                     "currency",
+                    "phone",
                     "address",
                     "name"
                 ],
                 "type": "object",
                 "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
                     "detailsTop": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
                         "type": "string"
                     },
                     "invoiceNo": {
                         "type": "integer",
                         "format": "int64"
                     },
-                    "extra": {
+                    "deletedAt": {
                         "type": "string"
                     },
-                    "updatedAt": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "email": {
                         "type": "string"
                     },
                     "currency": {
+                        "type": "string"
+                    },
+                    "phone": {
                         "type": "string"
                     },
                     "address": {
@@ -4098,46 +4095,46 @@
                         "type": "integer",
                         "format": "int64"
                     },
-                    "createdAt": {
+                    "updatedAt": {
                         "type": "string"
                     },
                     "name": {
+                        "type": "string"
+                    },
+                    "extra": {
                         "type": "string"
                     }
                 }
             },
             "UpdateCompanyRequest": {
                 "required": [
-                    "phone",
                     "currency",
+                    "phone",
                     "address",
                     "name"
                 ],
                 "type": "object",
                 "properties": {
-                    "phone": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
                     "detailsTop": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
                         "type": "string"
                     },
                     "invoiceNo": {
                         "type": "integer",
                         "format": "int64"
                     },
-                    "extra": {
+                    "deletedAt": {
                         "type": "string"
                     },
-                    "updatedAt": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "email": {
                         "type": "string"
                     },
                     "currency": {
+                        "type": "string"
+                    },
+                    "phone": {
                         "type": "string"
                     },
                     "address": {
@@ -4147,24 +4144,134 @@
                         "type": "integer",
                         "format": "int64"
                     },
-                    "createdAt": {
+                    "updatedAt": {
+                        "type": "string"
+                    },
+                    "name": {
                         "type": "string"
                     },
                     "id": {
                         "type": "string"
                     },
+                    "extra": {
+                        "type": "string"
+                    }
+                }
+            },
+            "User": {
+                "type": "object",
+                "properties": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "deletedAt": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "lastLoginDate": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
                     "name": {
                         "type": "string"
+                    },
+                    "loginCount": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "UserKey": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            },
+            "CreateUserRequest": {
+                "required": [
+                    "phoneNo",
+                    "email",
+                    "type",
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "lastLoginDate": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "loginCount": {
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                }
+            },
+            "UpdateUserRequest": {
+                "required": [
+                    "phoneNo",
+                    "email",
+                    "type",
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "lastLoginDate": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "loginCount": {
+                        "type": "integer",
+                        "format": "int64"
                     }
                 }
             },
             "Category": {
                 "type": "object",
                 "properties": {
-                    "name": {
+                    "id": {
                         "type": "string"
                     },
-                    "id": {
+                    "name": {
                         "type": "string"
                     }
                 }
@@ -4194,117 +4301,10 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "User": {
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "updatedAt": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "lastLoginDate": {
-                        "type": "string"
-                    },
-                    "deletedAt": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
                     "id": {
                         "type": "string"
                     },
-                    "loginCount": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    }
-                }
-            },
-            "UserKey": {
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "type": "string"
-                    }
-                }
-            },
-            "CreateUserRequest": {
-                "required": [
-                    "name",
-                    "email",
-                    "type",
-                    "phoneNo"
-                ],
-                "type": "object",
-                "properties": {
                     "name": {
-                        "type": "string"
-                    },
-                    "lastLoginDate": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "loginCount": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    }
-                }
-            },
-            "UpdateUserRequest": {
-                "required": [
-                    "name",
-                    "email",
-                    "type",
-                    "phoneNo"
-                ],
-                "type": "object",
-                "properties": {
-                    "name": {
-                        "type": "string"
-                    },
-                    "lastLoginDate": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "loginCount": {
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    "phoneNo": {
                         "type": "string"
                     }
                 }
@@ -4312,10 +4312,28 @@
             "Invoice": {
                 "type": "object",
                 "properties": {
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "adjustment": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "paid": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
                     "modifiedBy": {
                         "type": "string"
                     },
-                    "invoiceDate": {
+                    "modifiedAt": {
                         "type": "string"
                     },
                     "customer": {
@@ -4324,30 +4342,12 @@
                     "createdBy": {
                         "type": "string"
                     },
+                    "invoiceDate": {
+                        "type": "string"
+                    },
                     "discount": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "paid": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "adjustment": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedAt": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
                     },
                     "notes": {
                         "type": "string"
@@ -4364,19 +4364,34 @@
             },
             "CreateInvoiceRequest": {
                 "required": [
-                    "invoiceDate",
-                    "customer",
-                    "discount",
                     "dueAmount",
+                    "adjustment",
                     "paid",
-                    "adjustment"
+                    "customer",
+                    "invoiceDate",
+                    "discount"
                 ],
                 "type": "object",
                 "properties": {
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "adjustment": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "paid": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
                     "modifiedBy": {
                         "type": "string"
                     },
-                    "invoiceDate": {
+                    "modifiedAt": {
                         "type": "string"
                     },
                     "customer": {
@@ -4385,27 +4400,12 @@
                     "createdBy": {
                         "type": "string"
                     },
+                    "invoiceDate": {
+                        "type": "string"
+                    },
                     "discount": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "paid": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "adjustment": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedAt": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
                     },
                     "notes": {
                         "type": "string"
@@ -4414,19 +4414,37 @@
             },
             "UpdateInvoiceRequest": {
                 "required": [
-                    "invoiceDate",
-                    "customer",
-                    "discount",
                     "dueAmount",
+                    "adjustment",
                     "paid",
-                    "adjustment"
+                    "customer",
+                    "invoiceDate",
+                    "discount"
                 ],
                 "type": "object",
                 "properties": {
+                    "dueAmount": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "adjustment": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "paid": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
                     "modifiedBy": {
                         "type": "string"
                     },
-                    "invoiceDate": {
+                    "modifiedAt": {
                         "type": "string"
                     },
                     "customer": {
@@ -4435,30 +4453,12 @@
                     "createdBy": {
                         "type": "string"
                     },
+                    "invoiceDate": {
+                        "type": "string"
+                    },
                     "discount": {
                         "type": "number",
                         "format": "double"
-                    },
-                    "dueAmount": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "paid": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "adjustment": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "modifiedAt": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
                     },
                     "notes": {
                         "type": "string"
@@ -4468,7 +4468,10 @@
             "Customer": {
                 "type": "object",
                 "properties": {
-                    "address": {
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "createdBy": {
                         "type": "string"
                     },
                     "name": {
@@ -4477,19 +4480,16 @@
                     "id": {
                         "type": "string"
                     },
-                    "email": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
                         "type": "string"
                     },
                     "altPhoneNo": {
                         "type": "string"
                     },
-                    "createdBy": {
-                        "type": "string"
-                    },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
+                    "email": {
                         "type": "string"
                     }
                 }
@@ -4509,22 +4509,22 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "address": {
+                    "createdAt": {
                         "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "email": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
                         "type": "string"
                     },
                     "altPhoneNo": {
                         "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
+                    "email": {
                         "type": "string"
                     }
                 }
@@ -4536,7 +4536,7 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "address": {
+                    "createdAt": {
                         "type": "string"
                     },
                     "name": {
@@ -4545,16 +4545,16 @@
                     "id": {
                         "type": "string"
                     },
-                    "email": {
+                    "address": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
                         "type": "string"
                     },
                     "altPhoneNo": {
                         "type": "string"
                     },
-                    "createdAt": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
+                    "email": {
                         "type": "string"
                     }
                 }
@@ -4562,13 +4562,13 @@
             "PkUuidTest": {
                 "type": "object",
                 "properties": {
-                    "description": {
+                    "id": {
                         "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "id": {
+                    "description": {
                         "type": "string"
                     }
                 }
@@ -4587,10 +4587,10 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "description": {
+                    "name": {
                         "type": "string"
                     },
-                    "name": {
+                    "description": {
                         "type": "string"
                     }
                 }
@@ -4601,13 +4601,13 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "description": {
+                    "id": {
                         "type": "string"
                     },
                     "name": {
                         "type": "string"
                     },
-                    "id": {
+                    "description": {
                         "type": "string"
                     }
                 }
@@ -4615,16 +4615,16 @@
             "Product": {
                 "type": "object",
                 "properties": {
-                    "category": {
-                        "$ref": "#/components/schemas/Category"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
                     "description": {
                         "type": "string"
                     },
                     "id": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/Category"
+                    },
+                    "name": {
                         "type": "string"
                     }
                 }
@@ -4644,13 +4644,13 @@
                 ],
                 "type": "object",
                 "properties": {
+                    "description": {
+                        "type": "string"
+                    },
                     "category": {
                         "$ref": "#/components/schemas/CategoryKey"
                     },
                     "name": {
-                        "type": "string"
-                    },
-                    "description": {
                         "type": "string"
                     }
                 }
@@ -4662,16 +4662,16 @@
                 ],
                 "type": "object",
                 "properties": {
-                    "category": {
-                        "$ref": "#/components/schemas/CategoryKey"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
                     "description": {
                         "type": "string"
                     },
                     "id": {
+                        "type": "string"
+                    },
+                    "category": {
+                        "$ref": "#/components/schemas/CategoryKey"
+                    },
+                    "name": {
                         "type": "string"
                     }
                 }
@@ -4735,22 +4735,22 @@
             "Currency": {
                 "type": "object",
                 "properties": {
-                    "currencyAbbr": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
                     "country": {
-                        "type": "string"
-                    },
-                    "createdAt": {
                         "type": "string"
                     },
                     "currencyName": {
                         "type": "string"
                     },
                     "currencySymbol": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "currencyAbbr": {
+                        "type": "string"
+                    },
+                    "id": {
                         "type": "string"
                     }
                 }
@@ -4764,11 +4764,11 @@
                 }
             },
             "CreateCurrencyRequest": {
+                "required": [
+                    "createdAt"
+                ],
                 "type": "object",
                 "properties": {
-                    "currencyAbbr": {
-                        "type": "string"
-                    },
                     "country": {
                         "type": "string"
                     },
@@ -4776,19 +4776,22 @@
                         "type": "string"
                     },
                     "currencySymbol": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "currencyAbbr": {
                         "type": "string"
                     }
                 }
             },
             "UpdateCurrencyRequest": {
+                "required": [
+                    "createdAt"
+                ],
                 "type": "object",
                 "properties": {
-                    "currencyAbbr": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
                     "country": {
                         "type": "string"
                     },
@@ -4796,6 +4799,15 @@
                         "type": "string"
                     },
                     "currencySymbol": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string"
+                    },
+                    "currencyAbbr": {
+                        "type": "string"
+                    },
+                    "id": {
                         "type": "string"
                     }
                 }
@@ -4803,28 +4815,28 @@
             "Supplier": {
                 "type": "object",
                 "properties": {
-                    "altPhoneNo": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
                     "email": {
                         "type": "string"
                     },
                     "address": {
                         "type": "string"
                     },
-                    "createdBy": {
-                        "type": "string"
-                    },
                     "createdAt": {
                         "type": "string"
                     },
                     "name": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "altPhoneNo": {
                         "type": "string"
                     }
                 }
@@ -4839,65 +4851,65 @@
             },
             "CreateSupplierRequest": {
                 "required": [
-                    "altPhoneNo",
+                    "name",
                     "phoneNo",
-                    "name"
+                    "altPhoneNo"
                 ],
                 "type": "object",
                 "properties": {
-                    "altPhoneNo": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    },
                     "email": {
                         "type": "string"
                     },
                     "address": {
                         "type": "string"
                     },
-                    "createdBy": {
-                        "type": "string"
-                    },
                     "createdAt": {
                         "type": "string"
                     },
                     "name": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "altPhoneNo": {
                         "type": "string"
                     }
                 }
             },
             "UpdateSupplierRequest": {
                 "required": [
-                    "altPhoneNo",
+                    "name",
                     "phoneNo",
-                    "name"
+                    "altPhoneNo"
                 ],
                 "type": "object",
                 "properties": {
-                    "altPhoneNo": {
-                        "type": "string"
-                    },
-                    "phoneNo": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
                     "email": {
                         "type": "string"
                     },
                     "address": {
                         "type": "string"
                     },
-                    "createdBy": {
-                        "type": "string"
-                    },
                     "createdAt": {
                         "type": "string"
                     },
                     "name": {
+                        "type": "string"
+                    },
+                    "createdBy": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "phoneNo": {
+                        "type": "string"
+                    },
+                    "altPhoneNo": {
                         "type": "string"
                     }
                 }
@@ -4905,8 +4917,19 @@
             "Inventory": {
                 "type": "object",
                 "properties": {
-                    "procurement": {
-                        "$ref": "#/components/schemas/Procurement"
+                    "invoice": {
+                        "$ref": "#/components/schemas/Invoice"
+                    },
+                    "listingPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "soldPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/Product"
                     },
                     "cost": {
                         "type": "number",
@@ -4916,22 +4939,11 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "product": {
-                        "$ref": "#/components/schemas/Product"
-                    },
-                    "soldPrice": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "invoice": {
-                        "$ref": "#/components/schemas/Invoice"
-                    },
                     "id": {
                         "type": "string"
                     },
-                    "listingPrice": {
-                        "type": "number",
-                        "format": "double"
+                    "procurement": {
+                        "$ref": "#/components/schemas/Procurement"
                     }
                 }
             },
@@ -4945,18 +4957,29 @@
             },
             "CreateInventoryRequest": {
                 "required": [
-                    "procurement",
+                    "invoice",
+                    "listingPrice",
+                    "soldPrice",
+                    "product",
                     "cost",
                     "discount",
-                    "product",
-                    "soldPrice",
-                    "invoice",
-                    "listingPrice"
+                    "procurement"
                 ],
                 "type": "object",
                 "properties": {
-                    "procurement": {
-                        "$ref": "#/components/schemas/ProcurementKey"
+                    "invoice": {
+                        "$ref": "#/components/schemas/InvoiceKey"
+                    },
+                    "listingPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "soldPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/ProductKey"
                     },
                     "cost": {
                         "type": "number",
@@ -4966,36 +4989,36 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "product": {
-                        "$ref": "#/components/schemas/ProductKey"
-                    },
-                    "soldPrice": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "invoice": {
-                        "$ref": "#/components/schemas/InvoiceKey"
-                    },
-                    "listingPrice": {
-                        "type": "number",
-                        "format": "double"
+                    "procurement": {
+                        "$ref": "#/components/schemas/ProcurementKey"
                     }
                 }
             },
             "UpdateInventoryRequest": {
                 "required": [
-                    "procurement",
+                    "invoice",
+                    "listingPrice",
+                    "soldPrice",
+                    "product",
                     "cost",
                     "discount",
-                    "product",
-                    "soldPrice",
-                    "invoice",
-                    "listingPrice"
+                    "procurement"
                 ],
                 "type": "object",
                 "properties": {
-                    "procurement": {
-                        "$ref": "#/components/schemas/ProcurementKey"
+                    "invoice": {
+                        "$ref": "#/components/schemas/InvoiceKey"
+                    },
+                    "listingPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "soldPrice": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "product": {
+                        "$ref": "#/components/schemas/ProductKey"
                     },
                     "cost": {
                         "type": "number",
@@ -5005,22 +5028,11 @@
                         "type": "number",
                         "format": "double"
                     },
-                    "product": {
-                        "$ref": "#/components/schemas/ProductKey"
-                    },
-                    "soldPrice": {
-                        "type": "number",
-                        "format": "double"
-                    },
-                    "invoice": {
-                        "$ref": "#/components/schemas/InvoiceKey"
-                    },
                     "id": {
                         "type": "string"
                     },
-                    "listingPrice": {
-                        "type": "number",
-                        "format": "double"
+                    "procurement": {
+                        "$ref": "#/components/schemas/ProcurementKey"
                     }
                 }
             }

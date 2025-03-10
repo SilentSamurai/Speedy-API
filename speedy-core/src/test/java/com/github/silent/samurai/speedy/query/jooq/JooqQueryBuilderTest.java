@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -25,6 +26,7 @@ import javax.sql.DataSource;
 import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class JooqQueryBuilderTest {

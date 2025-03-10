@@ -7,6 +7,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
+
 import java.time.LocalDateTime;
 
 @Getter
@@ -27,10 +32,11 @@ public class Currency extends AbstractBaseEntity {
     @Column(name = "currency_abbr", length = 10)
     private String currencyAbbr;
 
-    @Column(name = "country", length = 10)
+    @Column(name = "country", length = 32)
     private String country;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @Generated(value = GenerationTime.ALWAYS)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
 }

@@ -10,6 +10,7 @@ import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
+import org.springframework.data.util.ParsingUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -71,7 +72,7 @@ public class JooqUtil {
         };
     }
 
-    public static Table<?> getTable(EntityMetadata entityMetadata, SQLDialect dialect) {
+    public static Table<Record> getTable(EntityMetadata entityMetadata, SQLDialect dialect) {
         String name = entityMetadata.getDbTableName();
         Objects.requireNonNull(name);
         name = transformIdentifier(name, dialect);
@@ -138,8 +139,8 @@ public class JooqUtil {
 
     public static String transformIdentifier(String identifier, SQLDialect sqlDialect) {
         return switch (sqlDialect) {
-            case POSTGRES -> identifier.toLowerCase();
-            default -> identifier.toUpperCase();
+            case H2 -> identifier.toUpperCase();
+            default -> ParsingUtils.reconcatenateCamelCase(identifier, "_");
         };
     }
 

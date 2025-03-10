@@ -32,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -326,6 +327,7 @@ class SpeedyEntityTest {
         createCurrencyRequest.currencyAbbr("CED")
                 .currencyName("Core Demo Currency")
                 .currencySymbol("yhd")
+                .createdAt(LocalDateTime.now().toString())
                 .country("Earth");
 
         BulkCreateCurrencyResponse bulkCreateCurrency200Response = currencyApi
