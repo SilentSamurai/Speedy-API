@@ -8,21 +8,18 @@ import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.query.Json2SpeedyQueryBuilder;
+import com.github.silent.samurai.speedy.query.JsonQueryBuilder;
 import com.github.silent.samurai.speedy.query.jooq.JooqQueryProcessorImpl;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.request.*;
 import com.github.silent.samurai.speedy.request.IResponseContext;
-import com.github.silent.samurai.speedy.request.DeleteDataHandler;
-import com.github.silent.samurai.speedy.request.GetDataHandler;
-import com.github.silent.samurai.speedy.request.IRequestContextImpl;
-import com.github.silent.samurai.speedy.request.PostDataHandler;
-import com.github.silent.samurai.speedy.request.UpdateDataHandler;
 import com.github.silent.samurai.speedy.serializers.JSONSerializer;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
@@ -57,6 +54,7 @@ public class SpeedyFactory {
     //    private final QueryProcessor queryProcessor;
     private final SpeedyDialect dialect;
     private final ISpeedyConfiguration configuration;
+    Handler chain = createHandlerChain();
 
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
@@ -115,9 +113,9 @@ public class SpeedyFactory {
         // get query from request body
         JsonNode jsonBody = json.readTree(context.getRequest().getReader());
         // create JSON Query parser
-        Json2SpeedyQueryBuilder json2SpeedyQueryBuilder = new Json2SpeedyQueryBuilder(metaModel, resourceMetadata, jsonBody);
+        JsonQueryBuilder jsonQueryBuilder = new JsonQueryBuilder(metaModel, resourceMetadata, jsonBody);
         // build speedy query
-        SpeedyQuery speedyQuery = json2SpeedyQueryBuilder.build();
+        SpeedyQuery speedyQuery = jsonQueryBuilder.build();
 
         QueryProcessor queryProcessor = createQueryProcessor();
 
@@ -230,6 +228,57 @@ public class SpeedyFactory {
         } finally {
             response.getWriter().flush();
         }
+    }
+
+
+    public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        RequestContext requestContext = new RequestContext(
+                configuration,
+                dialect,
+                metaModel,
+                request,
+                response,
+                eventProcessor,
+                validationProcessor
+        );
+        try {
+            this.chain.process(requestContext);
+        } catch (SpeedyHttpException e) {
+            ExceptionUtils.writeException(response, e);
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
+        } catch (Exception e) {
+            response.setStatus(ExceptionUtils.getStatusFromException(e));
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
+        } catch (Throwable e) {
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } finally {
+            response.getWriter().flush();
+        }
+    }
+
+    private Handler createHandlerChain() {
+        Handler tail = new TailHandler();
+
+        Handler rw = new SpeedyResponseWriterHandler(tail);
+
+        // switch
+
+        Handler gh = new GetHandler(rw);
+        Handler qh = new QueryHandler(rw);
+
+        Handler ch = new CreateHandler(rw);
+        Handler uh = new UpdateHandler(rw);
+        Handler dh = new DeleteHandler(rw);
+
+        // switch
+        Handler sh = new SwitchHandler(gh, qh, ch, uh, dh);
+
+        Handler queryProcessorInit = new CreateQueryProcessorHandler(sh);
+        Handler ech = new EntityCaptureHandler(queryProcessorInit);
+        Handler requestParserHandler = new RequestParserHandler(ech);
+        Handler head = new HeadHandler(requestParserHandler);
+        return head;
     }
 
 
