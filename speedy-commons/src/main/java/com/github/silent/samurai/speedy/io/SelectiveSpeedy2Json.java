@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -26,7 +27,7 @@ public class SelectiveSpeedy2Json {
 
     public ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity,
                                        EntityMetadata entityMetadata,
-                                       List<String> expand) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+                                       List<String> expand) throws SpeedyHttpException {
         ObjectNode jsonObject = json.createObjectNode();
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
@@ -97,7 +98,8 @@ public class SelectiveSpeedy2Json {
         return jsonObject;
     }
 
-    public ArrayNode onlyKeyCollection(Collection<SpeedyValue> collection, EntityMetadata entityMetadata) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+    public ArrayNode onlyKeyCollection(Collection<SpeedyValue> collection, EntityMetadata entityMetadata)
+            throws SpeedyHttpException {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue speedyValue : collection) {
             if (speedyValue.isObject()) {
@@ -180,7 +182,7 @@ public class SelectiveSpeedy2Json {
 
     public ArrayNode formCollection(Collection<? extends SpeedyValue> collection,
                                     EntityMetadata entityMetadata,
-                                    List<String> expands) throws InvocationTargetException, IllegalAccessException, NotFoundException {
+                                    List<String> expands) throws SpeedyHttpException {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue object : collection) {
             if (object.isObject()) {

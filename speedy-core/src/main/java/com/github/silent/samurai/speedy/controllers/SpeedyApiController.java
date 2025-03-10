@@ -41,6 +41,7 @@ public class SpeedyApiController {
     @Hidden
     @RequestMapping(value = {"*", "/**", "*/*"})
     public void process(HttpServletRequest request, HttpServletResponse response) throws IOException, InvocationTargetException, IllegalAccessException {
-        speedyFactory.processRequest(request, response);
+//        speedyFactory.processRequest(request, response);
+        speedyFactory.processReqV2(request, response);
     }
 }

@@ -99,7 +99,7 @@ public class CommonUtil {
         return null;
     }
 
-    public static String getRequestURI(HttpServletRequest request) throws UnsupportedEncodingException {
+    public static String getRequestURI(HttpServletRequest request) {
         String requestURI = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
         if (request.getQueryString() != null) {
             requestURI += "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8);

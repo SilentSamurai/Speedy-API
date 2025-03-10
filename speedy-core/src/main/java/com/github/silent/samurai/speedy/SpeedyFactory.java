@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
@@ -230,6 +231,50 @@ public class SpeedyFactory {
         } finally {
             response.getWriter().flush();
         }
+    }
+
+
+    public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        RequestContext requestContext = new RequestContext(metaModel, request, response);
+        Handler chain = createHandlerChain();
+        try {
+            chain.process(requestContext);
+        } catch (SpeedyHttpException e) {
+            ExceptionUtils.writeException(response, e);
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
+        } catch (Exception e) {
+            response.setStatus(ExceptionUtils.getStatusFromException(e));
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
+        } catch (Throwable e) {
+            LOGGER.error("Exception {} ", request.getRequestURI(), e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } finally {
+            response.getWriter().flush();
+        }
+    }
+
+    private Handler createHandlerChain() {
+        Handler tail = new TailHandler();
+
+        Handler rw = new ResponseWriterHandler(tail);
+
+        // switch
+
+        Handler gh = new GetHandler(rw);
+        Handler qh = new QueryHandler(rw);
+
+        Handler ch = new CreateHandler(rw);
+        Handler uh = new UpdateHandler(rw);
+        Handler dh = new DeleteHandler(rw);
+
+        // switch
+        Handler sh = new SwitchHandler(gh, qh, ch, uh, dh);
+
+        Handler queryProcessorInit = new CreateQueryProcessorHandler(sh, speedyConfiguration);
+        Handler speedyUriHandler = new SpeedyUriHandler(queryProcessorInit);
+        Handler requestParserHandler = new RequestParserHandler(speedyUriHandler);
+        Handler head = new HeadHandler(requestParserHandler);
+        return head;
     }
 
 

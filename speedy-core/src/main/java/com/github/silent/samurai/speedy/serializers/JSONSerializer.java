@@ -3,6 +3,8 @@ package com.github.silent.samurai.speedy.serializers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.exceptions.InternalServerError;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -43,17 +45,21 @@ public class JSONSerializer implements IResponseSerializer {
         return context;
     }
 
-    private void commonCode(JsonNode jsonElement, long pageIndex, long pageSize, long totalPageCount) throws IOException {
+    private void commonCode(JsonNode jsonElement, long pageIndex, long pageSize, long totalPageCount) throws SpeedyHttpException {
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();
         basePayload.set("payload", jsonElement);
         basePayload.put("pageIndex", pageIndex);
         basePayload.put("pageSize", pageSize);
         basePayload.put("totalPageCount", totalPageCount);
-        json.writeValue(context.getResponse().getWriter(), basePayload);
+        try {
+            json.writeValue(context.getResponse().getWriter(), basePayload);
+        } catch (IOException e) {
+            throw new InternalServerError(e);
+        }
     }
 
-    public void writeResponse(SinglePayload requestedPayload) throws Exception {
+    public void writeResponse(SinglePayload requestedPayload) throws SpeedyHttpException {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
                 context.getMetaModel(), fieldPredicate);
 
@@ -62,7 +68,7 @@ public class JSONSerializer implements IResponseSerializer {
         commonCode(jsonElement, requestedPayload.getPageIndex(), requestedPayload.getPageSize(), requestedPayload.getTotalPageCount());
     }
 
-    public void writeResponse(MultiPayload multiPayload) throws Exception {
+    public void writeResponse(MultiPayload multiPayload) throws SpeedyHttpException {
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
                 context.getMetaModel(),
                 fieldPredicate
@@ -77,7 +83,7 @@ public class JSONSerializer implements IResponseSerializer {
     }
 
     @Override
-    public void write(List<SpeedyEntity> speedyEntities) throws Exception {
+    public void write(List<SpeedyEntity> speedyEntities) throws SpeedyHttpException {
         MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(speedyEntities);
         responseWrapper.setPageIndex(getContext().getPageNo());
 //        responseWrapper.setPageSize(getContext().getPageSize());
@@ -88,7 +94,7 @@ public class JSONSerializer implements IResponseSerializer {
     }
 
     @Override
-    public void write(SpeedyEntity speedyEntity) throws Exception {
+    public void write(SpeedyEntity speedyEntity) throws SpeedyHttpException {
         SinglePayloadWrapper responseWrapper = SinglePayloadWrapper.wrapperInResponse(speedyEntity);
         responseWrapper.setPageIndex(getContext().getPageNo());
 //        responseWrapper.setPageSize(getContext().getPageSize());
@@ -99,14 +105,18 @@ public class JSONSerializer implements IResponseSerializer {
     }
 
     @Override
-    public void write(BigInteger count) throws Exception {
-        HttpServletResponse response = getContext().getResponse();
-        response.setContentType(this.getContentType());
-        response.setStatus(HttpServletResponse.SC_OK);
-        ObjectMapper json = CommonUtil.json();
-        ObjectNode basePayload = json.createObjectNode();
-        basePayload.set("count", json.valueToTree(count));
-        json.writeValue(context.getResponse().getWriter(), basePayload);
+    public void write(BigInteger count) throws SpeedyHttpException {
+        try {
+            HttpServletResponse response = getContext().getResponse();
+            response.setContentType(this.getContentType());
+            response.setStatus(HttpServletResponse.SC_OK);
+            ObjectMapper json = CommonUtil.json();
+            ObjectNode basePayload = json.createObjectNode();
+            basePayload.set("count", json.valueToTree(count));
+            json.writeValue(context.getResponse().getWriter(), basePayload);
+        } catch (IOException e) {
+            throw new InternalServerError(e);
+        }
     }
 
 
