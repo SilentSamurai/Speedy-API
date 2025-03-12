@@ -16,9 +16,9 @@ public class ConversionException extends SpeedyHttpRuntimeException {
         super(HttpServletResponse.SC_BAD_REQUEST, message, cause);
     }
 
-    public ConversionException(Throwable cause) {
-        super(HttpServletResponse.SC_BAD_REQUEST, cause);
-    }
+//    public ConversionException(Throwable cause) {
+//        super(HttpServletResponse.SC_BAD_REQUEST, cause);
+//    }
 
     public ConversionException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(HttpServletResponse.SC_BAD_REQUEST, message, cause, enableSuppression, writableStackTrace);

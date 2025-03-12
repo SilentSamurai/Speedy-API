@@ -43,7 +43,7 @@ public class JSONCountSerializerV2 implements IResponseSerializerV2 {
             basePayload.set("count", json.valueToTree(count));
             json.writeValue(context.getResponse().getWriter(), basePayload);
         } catch (IOException e) {
-            throw new InternalServerError(e);
+            throw new InternalServerError("Internal Server Error", e);
         }
     }
 

@@ -155,6 +155,13 @@ class ValueTest {
 
         // Step 5: Query entities where instantTime < now
         queryInstantTimeLessThan(Instant.now());
+
+        query_double_value(1.5430434);
+        query_double_value(0.000023);
+        query_double_value(0.4545);
+        query_double_value(909999.094);
+        query_double_value(909999.5);
+
     }
 
     private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) throws Exception {
@@ -164,6 +171,7 @@ class ValueTest {
                 .addField("localTime", localTime)
                 .addField("instantTime", instantTime)
                 .addField("booleanValue", true)
+                .addField("doubleValue", 1.5430434)
                 .build();
 
         SpeedyResponse createResponse = speedyApi.create(createRequest);
@@ -215,6 +223,33 @@ class ValueTest {
         assertFalse(queryResponse.getPayload().isEmpty());
         for (JsonNode entity : queryResponse.getPayload()) {
             assertTrue(Instant.parse(entity.get("instantTime").asText()).isBefore(instant));
+        }
+    }
+
+    private void query_double_value(Double doubleValue) throws Exception {
+        SpeedyCreateRequest createRequest = SpeedyCreateRequest.builder("ValueTestEntity")
+                .addField("localDateTime", LocalDateTime.now())
+                .addField("localDate", LocalDate.now())
+                .addField("localTime", LocalTime.now())
+                .addField("instantTime", Instant.now())
+                .addField("booleanValue", true)
+                .addField("doubleValue", doubleValue)
+                .build();
+
+        SpeedyResponse createResponse = speedyApi.create(createRequest);
+        assertFalse(createResponse.getPayload().isEmpty());
+        JsonNode payload = createResponse.getPayload();
+
+
+
+        SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
+                .$where($condition("doubleValue", $eq(doubleValue)));
+
+        SpeedyResponse queryResponse = speedyApi.query(query);
+
+        assertFalse(queryResponse.getPayload().isEmpty());
+        for (JsonNode entity : queryResponse.getPayload()) {
+            assertEquals(entity.get("doubleValue").asDouble(), doubleValue);
         }
     }
 }

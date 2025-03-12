@@ -31,7 +31,7 @@ public class String2JavaType {
                 return (T) obj;
             }
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
         return null;
     }
@@ -43,7 +43,7 @@ public class String2JavaType {
                 return (T) obj;
             }
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
         return null;
     }

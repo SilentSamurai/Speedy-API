@@ -72,7 +72,7 @@ public class SpeedyUriContext {
         try {
             this.process();
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid URL", e);
         }
         return speedyQuery;
     }

@@ -75,7 +75,7 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
         try {
             json.writeValue(response.getWriter(), basePayload);
         } catch (IOException e) {
-            throw new InternalServerError(e);
+            throw new InternalServerError("Internal Server Error",e);
         }
     }
 

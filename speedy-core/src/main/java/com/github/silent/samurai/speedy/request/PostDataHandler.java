@@ -74,7 +74,7 @@ public class PostDataHandler {
         } catch (SpeedyHttpException throwable) {
             throw throwable;
         } catch (Exception e) {
-            throw new InternalServerError(e);
+            throw new InternalServerError("Internal Server Error", e);
         }
         return savedObjects;
     }
