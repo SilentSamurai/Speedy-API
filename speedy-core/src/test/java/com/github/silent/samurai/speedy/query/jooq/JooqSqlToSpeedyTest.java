@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -126,12 +127,13 @@ class JooqSqlToSpeedyTest {
 
         FieldMetadata productItem = entityMetadata.field("productItem");
 
-        SpeedyEntityKey speedyKeyFromFK = jooqSqlToSpeedy.createSpeedyKeyFromFK(record, productItem);
+        Optional<SpeedyEntityKey> optional = jooqSqlToSpeedy.createSpeedyKeyFromFK(record, productItem);
+        SpeedyEntityKey speedyEntityKey = optional.get();
 
-        LOGGER.info("speedyKeyFromFK: {}", speedyKeyFromFK);
+        LOGGER.info("speedyKeyFromFK: {}", optional);
 
-        assertTrue(speedyKeyFromFK.get(entityMetadata.field("id")).isText());
-        assertEquals("1", speedyKeyFromFK.get(entityMetadata.field("id")).asText());
+        assertTrue(speedyEntityKey.get(entityMetadata.field("id")).isText());
+        assertEquals("1", speedyEntityKey.get(entityMetadata.field("id")).asText());
 
     }
 }
