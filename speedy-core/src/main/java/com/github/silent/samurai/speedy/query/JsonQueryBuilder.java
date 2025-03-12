@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Json2SpeedyQueryBuilder {
+public class JsonQueryBuilder {
 
     final MetaModel metaModel;
     final JsonNode rootNode;
@@ -32,21 +32,21 @@ public class Json2SpeedyQueryBuilder {
 
     final ConditionFactory conditionFactory;
 
-    public Json2SpeedyQueryBuilder(MetaModel metaModel, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
+    public JsonQueryBuilder(MetaModel metaModel, String from, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(from));
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public Json2SpeedyQueryBuilder(MetaModel metaModel, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
+    public JsonQueryBuilder(MetaModel metaModel, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public Json2SpeedyQueryBuilder(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
+    public JsonQueryBuilder(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(getFrom()));

@@ -16,9 +16,9 @@ public class BadRequestException extends SpeedyHttpException {
         super(HttpServletResponse.SC_BAD_REQUEST, message, cause);
     }
 
-    public BadRequestException(Throwable cause) {
-        super(HttpServletResponse.SC_BAD_REQUEST, cause);
-    }
+//    public BadRequestException(Throwable cause) {
+//        super(HttpServletResponse.SC_BAD_REQUEST, cause);
+//    }
 
     public BadRequestException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(HttpServletResponse.SC_BAD_REQUEST, message, cause, enableSuppression, writableStackTrace);

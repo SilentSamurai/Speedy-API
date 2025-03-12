@@ -33,5 +33,8 @@ public class ValueTestEntity extends AbstractBaseEntity {
     @Column(name = "boolean_value")
     private Boolean booleanValue;
 
+    @Column(name = "double_value")
+    private Double doubleValue;
+
 
 }

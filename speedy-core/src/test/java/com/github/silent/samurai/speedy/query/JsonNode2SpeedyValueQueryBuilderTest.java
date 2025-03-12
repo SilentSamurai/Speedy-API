@@ -29,7 +29,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
     private MetaModel metaModel;
     private ObjectMapper objectMapper;
     private JsonNode rootNode;
-    private Json2SpeedyQueryBuilder builder;
+    private JsonQueryBuilder builder;
 
 
     @BeforeEach
@@ -61,7 +61,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         // Initialize the builder
-        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
 
         // Build the query
         SpeedyQuery query = builder.build();
@@ -103,7 +103,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to invalid where clause
         assertThrows(BadRequestException.class, builder::build);
@@ -128,7 +128,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -159,7 +159,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to invalid order clause
         assertThrows(BadRequestException.class, builder::build);
@@ -184,7 +184,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -211,7 +211,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -236,7 +236,7 @@ class JsonNode2SpeedyValueQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new Json2SpeedyQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -255,6 +255,6 @@ class JsonNode2SpeedyValueQueryBuilderTest {
 
         rootNode = objectMapper.readTree(json);
 
-        assertThrows(BadRequestException.class, () -> new Json2SpeedyQueryBuilder(metaModel, rootNode));
+        assertThrows(BadRequestException.class, () -> new JsonQueryBuilder(metaModel, rootNode));
     }
 }

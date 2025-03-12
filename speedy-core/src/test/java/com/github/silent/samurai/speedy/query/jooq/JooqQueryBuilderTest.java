@@ -9,7 +9,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.query.Json2SpeedyQueryBuilder;
+import com.github.silent.samurai.speedy.query.JsonQueryBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
 import org.jooq.impl.DSL;
@@ -51,7 +51,7 @@ class JooqQueryBuilderTest {
 
     String json2SqlQuery(JsonNode jsonQuery) throws SpeedyHttpException {
         EntityMetadata entityMetadata = metaModel.findEntityMetadata(jsonQuery.get("$from").asText());
-        Json2SpeedyQueryBuilder builder = new Json2SpeedyQueryBuilder(metaModel, entityMetadata, jsonQuery);
+        JsonQueryBuilder builder = new JsonQueryBuilder(metaModel, entityMetadata, jsonQuery);
         JooqQueryBuilder qb = new JooqQueryBuilder(builder.build(), dslContext);
         qb.prepareQuery();
         String sql = qb.query.toString();

@@ -49,7 +49,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             JooqQueryBuilder qb = new JooqQueryBuilder(query, dslContext);
             return qb.executeCountQuery();
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
     }
 
@@ -67,7 +67,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             }
             return list;
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
     }
 
@@ -78,7 +78,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                     .findByPrimaryKey(entityKey);
             return !result.isEmpty();
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
     }
 
@@ -102,7 +102,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
 
             return entityList;
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
     }
 
@@ -117,7 +117,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             return new JooqSqlToSpeedy(dslContext)
                     .fromRecord(result.get(0), entity.getMetadata(), List.of());
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
     }
 
@@ -138,7 +138,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             new SpeedyDeleteQuery(dslContext, dialect).deleteEntity(pks);
             return entities;
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid Request", e);
         }
     }
 

@@ -152,8 +152,8 @@ VALUES
     ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$', NOW()),
     ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
 
-INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time)
-VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00');
+INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time, boolean_value, double_value)
+VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00', true, 0.59393);
 
 
 INSERT INTO users (id, created_at, deleted_at, email, name, phone_no, type, updated_at, last_login_at)
