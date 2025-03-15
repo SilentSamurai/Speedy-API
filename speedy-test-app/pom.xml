@@ -40,11 +40,11 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>${project.parent.groupId}</groupId>-->
-<!--            <artifactId>speedy-static-impl</artifactId>-->
-<!--            <version>${project.parent.version}</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>${project.parent.groupId}</groupId>-->
+        <!--            <artifactId>speedy-static-impl</artifactId>-->
+        <!--            <version>${project.parent.version}</version>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -87,9 +87,18 @@
             <scope>runtime</scope>
         </dependency>
 
-
-
-
+<!--        for coverage aggregator-->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-commons</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <!--        for coverage aggregator-->
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-core</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
 
 
     </dependencies>
@@ -138,7 +147,6 @@
                     </execution>
                 </executions>
             </plugin>
-
 
 
             <plugin>
