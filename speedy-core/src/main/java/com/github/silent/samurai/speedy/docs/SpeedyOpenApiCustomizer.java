@@ -213,20 +213,20 @@ public class SpeedyOpenApiCustomizer {
     private String getIdentifierPath(EntityMetadata entityMetadata) {
         StringBuilder sb = new StringBuilder();
         sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
-        sb.append("(");
-        Iterator<KeyFieldMetadata> iterator = entityMetadata.getKeyFields().iterator();
-        while (iterator.hasNext()) {
-            KeyFieldMetadata keyField = iterator.next();
-            sb.append(keyField.getOutputPropertyName())
-                    .append("=")
-                    .append("\"{")
-                    .append(keyField.getOutputPropertyName())
-                    .append("}\"");
-            if (iterator.hasNext()) {
-                sb.append(",");
-            }
-        }
-        sb.append(")");
+//        sb.append("(");
+//        Iterator<KeyFieldMetadata> iterator = entityMetadata.getKeyFields().iterator();
+//        while (iterator.hasNext()) {
+//            KeyFieldMetadata keyField = iterator.next();
+//            sb.append(keyField.getOutputPropertyName())
+//                    .append("=")
+//                    .append("\"{")
+//                    .append(keyField.getOutputPropertyName())
+//                    .append("}\"");
+//            if (iterator.hasNext()) {
+//                sb.append(",");
+//            }
+//        }
+//        sb.append(")");
         return sb.toString();
     }
 

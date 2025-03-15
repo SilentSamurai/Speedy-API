@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
+import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -13,6 +14,7 @@ import com.github.silent.samurai.speedy.mappings.JavaType2SpeedyValue;
 import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
 import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
 import com.github.silent.samurai.speedy.mappings.SpeedyValue2JavaType;
+import com.github.silent.samurai.speedy.mappings.String2JavaType;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
@@ -112,5 +114,11 @@ public class SpeedyValueFactory {
 
     public static SpeedyEntityKey createEntityKey(EntityMetadata entityMetadata) {
         return new SpeedyEntityKey(entityMetadata);
+    }
+
+    public static SpeedyValue basicFromString(FieldMetadata fieldMetadata, String quotedValue) throws SpeedyHttpException {
+        Class<?> aClass = JavaType2ColumnType.toBasicStandardJavaType(fieldMetadata.getValueType());
+        Object instance = String2JavaType.quotedStringToPrimitive(quotedValue, aClass);
+        return toSpeedyValue(fieldMetadata, instance);
     }
 }

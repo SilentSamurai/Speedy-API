@@ -6,10 +6,7 @@ import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
@@ -93,6 +90,10 @@ public class String2JavaType {
             }
         });
         converters.put(Instant.class, Instant::parse);
+        converters.put(LocalTime.class, value -> {
+            LocalTime localDate = LocalTime.parse(value, DateTimeFormatter.ISO_TIME);
+            return localDate;
+        });
         converters.put(LocalDate.class, value -> {
             LocalDate localDate = LocalDate.parse(value, DateTimeFormatter.ISO_DATE);
             return localDate;

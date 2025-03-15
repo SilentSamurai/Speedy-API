@@ -29,6 +29,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private PageInfoImpl pageInfo = new PageInfoImpl();
     private List<String> expand = new ArrayList<>();
     private Set<String> select = new HashSet<>();
+    private String responseFormat;
 
     public SpeedyQueryImpl(EntityMetadata from) {
         this.from = from;
@@ -65,6 +66,10 @@ public class SpeedyQueryImpl implements SpeedyQuery {
 
     public void addSelect(String select) {
         this.select.add(select);
+    }
+
+    public void addFormat(String format) {
+        this.responseFormat = format;
     }
 
 

@@ -1,17 +1,19 @@
-package com.github.silent.samurai.speedy.api.client;
+package com.github.silent.samurai.speedy.api.client.tester;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.api.client.models.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.core.ParameterizedTypeReference;
+import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,14 +22,14 @@ import java.util.stream.StreamSupport;
 
 @Getter
 @Setter
-public class SpeedyApi {
+public class SpeedyApiTester {
 
-    private final ApiClient apiClient;
+    private final MockMvc mockMvc;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String baseUrl;
 
-    public SpeedyApi(ApiClient apiClient) {
-        this.apiClient = apiClient;
+    public SpeedyApiTester(MockMvc mockMvc) {
+        this.mockMvc = mockMvc;
         this.baseUrl = "/speedy/v1/";
     }
 
@@ -36,14 +38,14 @@ public class SpeedyApi {
         // pull metadata
     }
 
-    public SpeedyResponse create(SpeedyCreateRequest speedyCreateRequest) {
+    public ResultActions create(SpeedyCreateRequest speedyCreateRequest) {
         ArrayNode arrayNode = objectMapper.createArrayNode();
         arrayNode.add(speedyCreateRequest.getBody());
         speedyCreateRequest.setBody(arrayNode);
         return createMany(speedyCreateRequest);
     }
 
-    public SpeedyResponse createMany(SpeedyCreateRequest speedyCreateRequest) {
+    public ResultActions createMany(SpeedyCreateRequest speedyCreateRequest) {
         return invokeAPI(
                 this.baseUrl + speedyCreateRequest.getEntity() + "/$create",
                 HttpMethod.POST,
@@ -51,7 +53,7 @@ public class SpeedyApi {
         );
     }
 
-    public SpeedyResponse update(SpeedyUpdateRequest speedyUpdateRequest) {
+    public ResultActions update(SpeedyUpdateRequest speedyUpdateRequest) {
         String path = this.baseUrl + speedyUpdateRequest.getEntity() + "/$update";
 
         return invokeAPI(
@@ -61,7 +63,7 @@ public class SpeedyApi {
         );
     }
 
-    public SpeedyResponse delete(SpeedyDeleteRequest request) {
+    public ResultActions delete(SpeedyDeleteRequest request) {
         String path = this.baseUrl + request.getEntity() + "/$delete";
 
         return invokeAPI(
@@ -71,7 +73,7 @@ public class SpeedyApi {
         );
     }
 
-    public SpeedyResponse get(SpeedyGetRequest request) {
+    public ResultActions get(SpeedyGetRequest request) {
         String path = this.baseUrl + request.getEntity() + formatPrimaryKey(request.getPk());
 
         return invokeAPI(
@@ -81,7 +83,7 @@ public class SpeedyApi {
         );
     }
 
-    public SpeedyResponse query(SpeedyQuery speedyQuery) {
+    public ResultActions query(SpeedyQuery speedyQuery) {
         String path = this.baseUrl + speedyQuery.getFrom() + "/$query/";
         JsonNode body = speedyQuery.build();
 
@@ -92,29 +94,15 @@ public class SpeedyApi {
         );
     }
 
+    @SneakyThrows
     // Utility method to reduce code duplication in API invocations
-    private SpeedyResponse invokeAPI(String path,
-                                     HttpMethod method,
-                                     JsonNode body) {
-
-        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
-        final HttpHeaders headerParams = createHeaders();
-        final MultiValueMap<String, String> cookieParams = new LinkedMultiValueMap<>();
-        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<>();
-
-        final String[] localVarAccepts = {"application/json;charset=UTF-8"};
-        final List<MediaType> localVarAccept = apiClient.selectHeaderAccept(localVarAccepts);
-
-        final String[] localVarContentTypes = {"application/json;charset=UTF-8"};
-        final MediaType localVarContentType = apiClient.selectHeaderContentType(localVarContentTypes);
-
-        ParameterizedTypeReference<SpeedyResponse> returnType = new ParameterizedTypeReference<>() {
-        };
-
-        return apiClient.invokeAPI(
-                path, method, Collections.emptyMap(), queryParams, body,
-                headerParams, cookieParams, formParams, localVarAccept, localVarContentType,
-                new String[]{}, returnType).getBody();
+    public ResultActions invokeAPI(String path, HttpMethod method, JsonNode body) {
+        return mockMvc.perform(
+                MockMvcRequestBuilders.request(method, path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body))
+        );
     }
 
     // Helper method to format primary key fields
@@ -130,9 +118,9 @@ public class SpeedyApi {
 
         String formattedPk = stream
                 .map(e -> String.format("%s='%s'", e.getKey(), e.getValue().asText()))
-                .collect(Collectors.joining("&"));
+                .collect(Collectors.joining(","));
 
-        return "?" + formattedPk ;
+        return "(" + formattedPk + ")";
     }
 
     // Helper method to create common headers

@@ -167,7 +167,7 @@ public class OASGenerator {
                     new Parameter()
                             .name(keyField.getOutputPropertyName())
                             .description(keyField.getOutputPropertyName() + " field value.")
-                            .in("path")
+                            .in("query")
                             .allowEmptyValue(false)
                             .schema(OASGenerator.generateBasicSchema(keyField))
             );

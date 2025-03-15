@@ -43,6 +43,7 @@ public class JooqSqlToSpeedy {
                     expands.remove(fieldMetadata.getAssociationMetadata().getName());
                     // extract FK from current record, then query foreign table rows
                     Optional<Result<Record>> associatedRecord = jooqToJooqSql.findByFK(fieldMetadata, record);
+                    // if fk is null
                     if (associatedRecord.isEmpty() || associatedRecord.get().isEmpty()) {
                         speedyEntity.put(fieldMetadata, Speedy.fromNull());
                         continue;
@@ -62,8 +63,12 @@ public class JooqSqlToSpeedy {
                     if (fieldMetadata.isCollection()) {
                         throw new BadRequestException("operation not supported");
                     } else {
-                        SpeedyEntityKey associatedEntityKey = createSpeedyKeyFromFK(record, fieldMetadata);
-                        speedyEntity.put(fieldMetadata, associatedEntityKey);
+                        Optional<SpeedyEntityKey> associatedEntityKey = createSpeedyKeyFromFK(record, fieldMetadata);
+                        if (associatedEntityKey.isEmpty() || associatedEntityKey.get().isEmpty()) {
+                            speedyEntity.put(fieldMetadata, Speedy.fromNull());
+                            continue;
+                        }
+                        speedyEntity.put(fieldMetadata, associatedEntityKey.get());
                     }
                 }
             } else {
@@ -95,22 +100,19 @@ public class JooqSqlToSpeedy {
         return speedyEntity;
     }
 
-    public SpeedyEntityKey createSpeedyKeyFromFK(Record record, FieldMetadata fieldMetadata) throws SpeedyHttpException {
+    public Optional<SpeedyEntityKey> createSpeedyKeyFromFK(Record record, FieldMetadata fieldMetadata) throws SpeedyHttpException {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-
-        SpeedyEntityKey speedyEntityKey = SpeedyValueFactory.createEntityKey(associationMetadata);
-
         KeyFieldMetadata keyFieldMetadata = associationMetadata.getKeyFields().stream().findAny().orElseThrow();
         // foreign key column
         Optional<Object> optional = JooqUtil.getValueFromRecord(record, fieldMetadata, dialect);
         if (optional.isEmpty()) {
-            speedyEntityKey.put(keyFieldMetadata, SpeedyValueFactory.fromNull());
-        } else {
-            SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(keyFieldMetadata, optional.get());
-            speedyEntityKey.put(keyFieldMetadata, speedyValue);
+            return Optional.empty();
         }
+        SpeedyEntityKey speedyEntityKey = SpeedyValueFactory.createEntityKey(associationMetadata);
+        SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(keyFieldMetadata, optional.get());
+        speedyEntityKey.put(keyFieldMetadata, speedyValue);
 
-        return speedyEntityKey;
+        return Optional.of(speedyEntityKey);
     }
 
 }

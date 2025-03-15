@@ -111,7 +111,7 @@ class MetadataUtilTest {
     void createEntityKeyFromMap() throws Exception {
         EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(id='1234')");
+        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'");
         SpeedyQuery speedyQuery = speedyUriContext.parse();
         SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
         FieldMetadata id = productMetadata.field("id");
@@ -122,7 +122,7 @@ class MetadataUtilTest {
     void createEntityKeyFromMap1() throws Exception {
         EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
         Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(id='1234', name='na')");
+        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'&name='na'");
         SpeedyQuery speedyQuery = speedyUriContext.parse();
 
         SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
