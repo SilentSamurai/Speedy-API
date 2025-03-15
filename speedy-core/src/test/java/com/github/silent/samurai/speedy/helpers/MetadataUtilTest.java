@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.persistence.EntityManager;
-import java.util.HashSet;
+
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,7 +38,7 @@ class MetadataUtilTest {
     EntityManager entityManager;
 
     @Mock
-    MetaModelProcessor metaModelProcessor;
+    MetaModel metaModel;
 
     @BeforeEach
     void setUp() throws NotFoundException {
@@ -110,8 +110,8 @@ class MetadataUtilTest {
     @Test
     void createEntityKeyFromMap() throws Exception {
         EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(id='1234')");
+        Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
+        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'");
         SpeedyQuery speedyQuery = speedyUriContext.parse();
         SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
         FieldMetadata id = productMetadata.field("id");
@@ -121,8 +121,8 @@ class MetadataUtilTest {
     @Test
     void createEntityKeyFromMap1() throws Exception {
         EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
-        Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(id='1234', name='na')");
+        Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
+        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'&name='na'");
         SpeedyQuery speedyQuery = speedyUriContext.parse();
 
         SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
@@ -137,8 +137,8 @@ class MetadataUtilTest {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
                     EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-                    Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(name='1234')");
+                    Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
+                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(name='1234')");
                     SpeedyQuery speedyQuery = speedyUriContext.parse();
                     MetadataUtil.createIdentifierFromQuery(speedyQuery);
                 }
@@ -150,8 +150,8 @@ class MetadataUtilTest {
         BadRequestException badRequestException = assertThrows(BadRequestException.class,
                 () -> {
                     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
-                    Mockito.when(metaModelProcessor.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
-                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModelProcessor, "/Category(name='na')");
+                    Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
+                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(name='na')");
                     SpeedyQuery speedyQuery = speedyUriContext.parse();
                     MetadataUtil.createIdentifierFromQuery(speedyQuery);
                 }

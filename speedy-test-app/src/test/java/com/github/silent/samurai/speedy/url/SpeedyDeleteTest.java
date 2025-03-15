@@ -56,7 +56,7 @@ public class SpeedyDeleteTest {
 
         MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$delete")
                 .content("[{'id':'" + category.getId() + "'}]")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(deleteRequest)
                 .andExpect(status().isOk());
@@ -69,7 +69,7 @@ public class SpeedyDeleteTest {
     void incompleteKey() throws Exception {
         MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$update")
                 .content("[{'name':'1'}]")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isBadRequest());
@@ -78,14 +78,14 @@ public class SpeedyDeleteTest {
     @Test
     void emptyContent() throws Exception {
         MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$delete")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isBadRequest());
 
         updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
                 .content("")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isBadRequest());

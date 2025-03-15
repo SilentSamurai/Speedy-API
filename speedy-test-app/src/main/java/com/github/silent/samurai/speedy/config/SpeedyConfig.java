@@ -1,35 +1,44 @@
 package com.github.silent.samurai.speedy.config;
 
+import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.docs.SpeedyOpenApiCustomizer;
 import com.github.silent.samurai.speedy.events.EntityEvents;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModel;
 import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessor;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
-import org.jooq.SQLDialect;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import jakarta.persistence.EntityManagerFactory;
+import org.springframework.core.env.Environment;
+
 import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 @Configuration
 public class SpeedyConfig implements ISpeedyConfiguration {
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
+    private final EntityManagerFactory entityManagerFactory;
+    private final SpeedyValidation speedyValidation;
+    private final EntityEvents entityEvents;
+    private final DataSource dataSource;
+    private final Environment environment;
 
-    @Autowired
-    SpeedyValidation speedyValidation;
-
-    @Autowired
-    EntityEvents entityEvents;
-
-    @Autowired
-    DataSource dataSource;
+    public SpeedyConfig(EntityManagerFactory entityManagerFactory, SpeedyValidation speedyValidation, EntityEvents entityEvents, DataSource dataSource, Environment environment) {
+        this.entityManagerFactory = entityManagerFactory;
+        this.speedyValidation = speedyValidation;
+        this.entityEvents = entityEvents;
+        this.dataSource = dataSource;
+        this.environment = environment;
+    }
 
     @Bean
     public OpenApiCustomizer customizer(SpeedyOpenApiCustomizer speedyOpenApiCustomizer) {
@@ -37,24 +46,29 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     }
 
     @Override
-    public MetaModelProcessor createMetaModelProcessor() {
+    public MetaModelProcessor metaModelProcessor() {
         return new JpaMetaModelProcessor(this, entityManagerFactory);
     }
 
     @Override
     public void register(ISpeedyRegistry registry) {
         registry.registerEventHandler(entityEvents)
-                .registerVirtualEntity("VirtualEntity")
                 .registerValidator(speedyValidation);
     }
 
     @Override
-    public DataSource getDataSource() {
+    public DataSource dataSourcePerReq() {
         return dataSource;
     }
 
     @Override
-    public String getDialect() {
-        return SQLDialect.H2.getName();
+    public SpeedyDialect getDialect() {
+        Set<String> profiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
+        if (profiles.contains("postgres")) {
+            return SpeedyDialect.POSTGRES;
+        } else if (profiles.contains("mysql")) {
+            return SpeedyDialect.MYSQL;
+        }
+        return SpeedyDialect.H2;
     }
 }

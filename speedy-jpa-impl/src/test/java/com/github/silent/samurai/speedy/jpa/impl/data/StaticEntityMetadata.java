@@ -12,6 +12,8 @@ import lombok.SneakyThrows;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import org.assertj.core.util.Sets;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Optional;
@@ -142,7 +144,7 @@ public class StaticEntityMetadata implements IJpaEntityMetadata {
     }
 
     @Override
-    public ActionType getActionType() {
-        return ActionType.ALL;
+    public Set<ActionType> getActionType() {
+        return Sets.set(ActionType.ALL);
     }
 }

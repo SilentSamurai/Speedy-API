@@ -6,12 +6,12 @@ create entity CRUD apis with writing a line of code
 
 #### Bulk Create Resources
 
-create multiple transaction
+create multiple User
 
 **URL**
 
 ```http
-[POST] /speedy/v1/Transaction
+[POST] /speedy/v1/User
 ```
 
 **Request Body**
@@ -19,21 +19,10 @@ create multiple transaction
 ```json
 [
     {
-        "type": "DEBIT",
-        "amount": 250,
-        "currency": "INR",
-        "date": "2023-04-27T13:53:49+00:00",
-        "quantity": 10,
-        "product": {
-            "id": "product-1"
-        },
-        "vendor": {
-            "id": "vendor-1"
-        },
-        "customer": {
-            "id": "customer-1"
-        },
-        "notes": ""
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "type": "ADMIN",
+        "phoneNo": "9876543210"
     }
     // other resource of same type
 ]
@@ -45,10 +34,10 @@ create multiple transaction
 {
     "payload": [
         {
-            "id": "transaction-3"
+            "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab"
         },
         {
-            "id": "transaction-4"
+            "id": "2b3c4d5e-6789-01ab-cdef-2345678901bc"
         }
     ],
     "pageCount": 1,

@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.jpa.impl.processors;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
+import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -10,7 +12,11 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
+
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class JpaEntityProcessor {
 
@@ -34,12 +40,21 @@ public class JpaEntityProcessor {
 
         SpeedyAction annotation = entityType.getBindableJavaType().getAnnotation(SpeedyAction.class);
         if (annotation != null) {
-            entityMetadata.setActionType(annotation.value());
+            Set<ActionType> sets = Arrays.stream(annotation.value()).collect(Collectors.toSet());
+            entityMetadata.setActionType(sets);
         }
 
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
-            JpaFieldMetadata memberMetadata = JpaFieldProcessor.processField(attribute,
-                    entityType.getJavaType(), entityMetadata);
+            SpeedyIgnore ignoreAnnotation = attribute.getJavaType().getAnnotation(SpeedyIgnore.class);
+            if (ignoreAnnotation != null) {
+                continue;
+            }
+
+            JpaFieldMetadata memberMetadata = JpaFieldProcessor.processField(
+                    attribute,
+                    entityType.getJavaType(),
+                    entityMetadata
+            );
 
             if (memberMetadata.getDbColumnName() == null) {
                 continue;

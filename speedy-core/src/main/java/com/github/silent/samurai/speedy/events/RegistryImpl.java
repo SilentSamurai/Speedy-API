@@ -26,12 +26,6 @@ public class RegistryImpl implements ISpeedyRegistry {
     }
 
     @Override
-    public ISpeedyRegistry registerVirtualEntity(String entity) {
-        virtualEntities.add(entity);
-        return this;
-    }
-
-    @Override
     public ISpeedyRegistry registerValidator(ISpeedyCustomValidation validator) {
         validators.add(validator);
         return this;

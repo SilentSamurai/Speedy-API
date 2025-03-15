@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface IRequestContext {
 
-    MetaModelProcessor getMetaModelProcessor();
+    MetaModel getMetaModel();
 
     HttpServletRequest getRequest();
 

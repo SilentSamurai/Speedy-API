@@ -6,15 +6,16 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.util.Collection;
 
 public class MetaModelSerializer {
 
-    public static JsonNode serializeMetaModel(MetaModelProcessor metaModelProcessor) {
-        Collection<EntityMetadata> allEntityMetadata = metaModelProcessor.getAllEntityMetadata();
+    public static JsonNode serializeMetaModel(MetaModel metaModel) {
+        Collection<EntityMetadata> allEntityMetadata = metaModel.getAllEntityMetadata();
         ArrayNode entityArray = CommonUtil.json().createArrayNode();
         allEntityMetadata.stream()
                 .map(MetaModelSerializer::serializeEntityMetaModel)
@@ -50,6 +51,11 @@ public class MetaModelSerializer {
         fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
 //        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
         fieldMetadataJson.put("isAssociation", fieldMetadata.isAssociation());
+
+        if (fieldMetadata instanceof KeyFieldMetadata keyFieldMetadata) {
+            fieldMetadataJson.put("isKeyField", keyFieldMetadata.isKeyField());
+            fieldMetadataJson.put("isKeyGenerated", keyFieldMetadata.shouldGenerateKey());
+        }
 
         if (fieldMetadata.isAssociation()) {
             fieldMetadataJson.put("associatedWith", fieldMetadata.getAssociationMetadata().getName());

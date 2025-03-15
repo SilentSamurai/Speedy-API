@@ -13,10 +13,7 @@ import com.github.silent.samurai.speedy.parser.ConditionFactory;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -30,8 +27,9 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private BooleanCondition having;
     private List<OrderBy> orderByList = new LinkedList<>();
     private PageInfoImpl pageInfo = new PageInfoImpl();
-    private Set<String> expand = new HashSet<>();
+    private List<String> expand = new ArrayList<>();
     private Set<String> select = new HashSet<>();
+    private String responseFormat;
 
     public SpeedyQueryImpl(EntityMetadata from) {
         this.from = from;
@@ -68,6 +66,10 @@ public class SpeedyQueryImpl implements SpeedyQuery {
 
     public void addSelect(String select) {
         this.select.add(select);
+    }
+
+    public void addFormat(String format) {
+        this.responseFormat = format;
     }
 
 

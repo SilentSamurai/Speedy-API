@@ -13,7 +13,7 @@ docs
 <dependency>
     <groupId>com.github.SilentSamurai</groupId>
     <artifactId>spring-boot-starter-speedy-open-api</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 
@@ -25,6 +25,23 @@ also include the open api ui as well
     <artifactId>springdoc-openapi-ui</artifactId>
     <version>1.6.4</version>
 </dependency>
+```
+
+create an open api customizer so that speedy can add api documentation.
+
+```java
+@Configuration
+public class SpeedyConfig implements ISpeedyConfiguration {
+
+    ...
+
+    @Bean
+    public OpenApiCustomizer customizer(SpeedyOpenApiCustomizer speedyOpenApiCustomizer) {
+        return speedyOpenApiCustomizer::generate;
+    }
+
+    ...
+}
 ```
 
 speedy will generate the api docs of all the entity present in the spring project

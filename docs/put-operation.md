@@ -11,28 +11,17 @@ update transaction object using primary key
 **URL**
 
 ```http
-[PUT] /speedy/v1/Transaction(id = 'transaction-1')
+[PUT] /speedy/v1/User/2b3c4d5e-6789-01ab-cdef-2345678901bc
 ```
 
 **Request Body**
 
 ```json
- {
-    "type": "DEBIT",
-    "amount": 250,
-    "currency": "INR",
-    "date": "2023-04-27T13:53:49+00:00",
-    "quantity": 10,
-    "product": {
-        "id": "product-1"
-    },
-    "vendor": {
-        "id": "vendor-1"
-    },
-    "customer": {
-        "id": "customer-1"
-    },
-    "notes": ""
+{
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "type": "ADMIN",
+    "phoneNo": "9876543210"
 }
 // only non key fields allowed
 ```
@@ -41,27 +30,20 @@ update transaction object using primary key
 
 ```json
 {
-    "payload": {
-        "id": "transaction-1",
-        "type": "DEBIT",
-        "amount": 250,
-        "currency": "INR",
-        "date": "2023-04-27T13:53:49+00:00",
-        "quantity": 10,
-        "product": {
-            "id": "product-1",
-            "name": "Product 1"
-        },
-        "vendor": {
-            "id": "vendor-1",
-            "name": "Vendor 1"
-        },
-        "customer": {
-            "id": "customer-1",
-            "name": "Customer 1"
-        },
-        "notes": ""
-    },
+    "payload": [
+        {
+            "lastLoginDate": null,
+            "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab",
+            "name": "John Doe",
+            "updatedAt": "2024-02-28T15:00:00",
+            "email": "john.doe@example.com",
+            "loginCount": 0,
+            "type": "ADMIN",
+            "phoneNo": "9876543210",
+            "createdAt": "2024-02-28T12:00:00",
+            "deletedAt": null
+        }
+    ],
     "pageCount": 1,
     "pageIndex": 0
 }

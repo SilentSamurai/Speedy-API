@@ -1,17 +1,19 @@
 package com.github.silent.samurai.speedy.data;
 
-import com.github.silent.samurai.speedy.enums.ActionType;
-import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
+import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
+import jakarta.persistence.*;
 import lombok.Data;
 
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import lombok.SneakyThrows;
+
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 
 @Data
 public class StaticFieldMetadata implements KeyFieldMetadata {
@@ -25,20 +27,28 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return fieldMetadata;
     }
 
+    @SneakyThrows
     @Override
-    public ValueType getValueType() {
-        return ValueTypeUtil.fromClass(field.getType());
+    public ColumnType getColumnType() {
+        if (isAssociation()) {
+            return getAssociatedFieldMetadata().getColumnType();
+        }
+        return JavaType2ColumnType.fromClass(field.getType());
     }
-
-//    @SneakyThrows
-//    @Override
-//    public Object getEntityFieldValue(Object entity) {
-//        return field.get(entity);
-//    }
 
     @Override
     public boolean isAssociation() {
-        return field.getType().isAssignableFrom(ProductItem.class);
+        Object[] annotations = {
+                field.getAnnotation(OneToMany.class),
+                field.getAnnotation(ManyToOne.class),
+                field.getAnnotation(ManyToMany.class),
+                field.getAnnotation(OneToOne.class)
+        };
+        Optional<Object> isAnnotationPresent = Arrays.stream(annotations).filter(Objects::nonNull).findAny();
+        if (isAnnotationPresent.isPresent()) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -119,15 +129,15 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 //        return field.get(idInstance);
 //    }
 
-    @Override
-    public ActionType getIgnoreProperty() {
-        return ActionType.ALL;
-    }
-
-    @Override
-    public Class<?> getFieldType() {
-        return field.getType();
-    }
+//    @Override
+//    public ActionType getIgnoreProperty() {
+//        return ActionType.ALL;
+//    }
+//
+//    @Override
+//    public Class<?> getFieldType() {
+//        return field.getType();
+//    }
 
     @Override
     public EntityMetadata getEntityMetadata() {
@@ -148,10 +158,7 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     @Override
     public FieldMetadata getAssociatedFieldMetadata() {
         EntityMetadata associationMetadata = getAssociationMetadata();
-        return associationMetadata.getAllFields()
-                .stream()
-                .filter(fm -> fm.getOutputPropertyName().equals("id"))
-                .findAny().orElse(null);
+        return associationMetadata.getAllFields().stream().filter(fm -> fm.getOutputPropertyName().equals("id")).findAny().orElse(null);
     }
 
 //    @SneakyThrows
@@ -159,5 +166,10 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
 //    public boolean setEntityFieldWithValue(Object entity, Object value) {
 //        field.set(entity, value);
 //        return false;
+//    }
+
+//    @SneakyThrows
+//    public Object getEntityFieldValue(Object entity) {
+//        return field.get(entity);
 //    }
 }

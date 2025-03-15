@@ -5,7 +5,7 @@ import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ public class EventProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EventProcessor.class);
 
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
     private final RegistryImpl eventRegistry;
 
     /*
@@ -36,8 +36,8 @@ public class EventProcessor {
      */
     private final Map<SpeedyEventType, Map<String, EventHandlerMetadata>> eventMap = new HashMap<>();
 
-    public EventProcessor(MetaModelProcessor metaModelProcessor, RegistryImpl eventRegistry) {
-        this.metaModelProcessor = metaModelProcessor;
+    public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry) {
+        this.metaModel = metaModel;
         this.eventRegistry = eventRegistry;
     }
 
@@ -54,7 +54,7 @@ public class EventProcessor {
                 if (declaredMethod.isAnnotationPresent(SpeedyEvent.class)) {
                     SpeedyEvent annotation = declaredMethod.getAnnotation(SpeedyEvent.class);
                     String entity = annotation.value();
-                    EntityMetadata entityMetadata = this.metaModelProcessor.findEntityMetadata(entity);
+                    EntityMetadata entityMetadata = this.metaModel.findEntityMetadata(entity);
                     for (SpeedyEventType event : SpeedyEventType.values()) {
                         eventMap.putIfAbsent(event, new HashMap<>());
                         Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(event);
@@ -72,7 +72,7 @@ public class EventProcessor {
 
     public Object triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
-        if (eventEntityMap != null && eventEntityMap.containsKey(entityMetadata.getName())) {
+        if (isEventPresent(eventType, entityMetadata)) {
             EventHandlerMetadata metadata = eventEntityMap.get(entityMetadata.getName());
             return metadata.invokeEventHandler(entity);
         }

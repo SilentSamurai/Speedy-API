@@ -55,7 +55,7 @@ class SpeedyGetMetadataTest {
     void getMetadata() throws Exception {
 
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + "/$metadata")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
                 .andExpect(status().isOk())
@@ -86,7 +86,7 @@ class SpeedyGetMetadataTest {
     void getApiDocs() throws Exception {
 
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get("/v3/api-docs")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
                 .andExpect(status().isOk())

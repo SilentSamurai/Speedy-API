@@ -43,7 +43,7 @@ public class CommonUtil {
         return standardMapper.treeToValue(jsonNode, type);
     }
 
-    public static List<String> inQuotesSplitter(String input, String regex) {
+    public static List<String> inQuotesSplitter(String input, String matches) {
         List<String> tokens = new ArrayList<>();
         int start = 0;
         boolean inQuotes = false;
@@ -99,11 +99,21 @@ public class CommonUtil {
         return null;
     }
 
-    public static String getRequestURI(HttpServletRequest request) throws UnsupportedEncodingException {
+    public static String getRequestURI(HttpServletRequest request) {
         String requestURI = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
         if (request.getQueryString() != null) {
             requestURI += "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8);
         }
         return requestURI.replaceAll(SpeedyConstant.URI, "");
+    }
+
+    public static String generateString(int length) {
+        StringBuilder builder = new StringBuilder(length);
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        for (int i = 0; i < length; i++) {
+            int index = (int) (Math.random() * characters.length());
+            builder.append(characters.charAt(index));
+        }
+        return builder.toString();
     }
 }

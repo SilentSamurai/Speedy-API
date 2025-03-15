@@ -1,9 +1,7 @@
 package com.github.silent.samurai.speedy.file.impl.metadata;
 
-import com.github.silent.samurai.speedy.enums.ActionType;
-import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.utils.ValueTypeUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +12,7 @@ import java.util.Objects;
 public class FileFieldMetadata implements FieldMetadata {
 
     private String name;
-    private ValueType valueType;
+    private ColumnType columnType;
     private String outputPropertyName;
     private String dbColumnName;
     private String associatedColumn;
@@ -32,17 +30,6 @@ public class FileFieldMetadata implements FieldMetadata {
     private FileEntityMetadata associationMetadata;
 
     private FileFieldMetadata associatedFieldMetadata;
-
-
-    @Override
-    public ActionType getIgnoreProperty() {
-        return null;
-    }
-
-    @Override
-    public Class<?> getFieldType() {
-        return ValueTypeUtil.toClass(valueType);
-    }
 
     @Override
     public boolean equals(Object o) {

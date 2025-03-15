@@ -2,24 +2,24 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>com.github.SilentSamurai</groupId>
-		<artifactId>speedy-api-parent</artifactId>
-		<version>3.0.1</version>
-	</parent>
+    <parent>
+        <groupId>com.github.SilentSamurai</groupId>
+        <artifactId>speedy-api-parent</artifactId>
+        <version>3.1.0</version>
+    </parent>
 
-	<artifactId>speedy-core</artifactId>
-	<packaging>jar</packaging>
+    <artifactId>speedy-core</artifactId>
+    <packaging>jar</packaging>
 
-	<properties>
-		<maven.compiler.release>17</maven.compiler.release>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	</properties>
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
 
-	<dependencies>
+    <dependencies>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>antlr-parser</artifactId>
@@ -46,16 +46,31 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq</artifactId>
-<!--            <version>3.19.8</version>-->
+            <!--            <version>3.19.8</version>-->
             <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-meta</artifactId>
-<!--            <version>3.16.0</version>-->
+            <!--            <version>3.16.0</version>-->
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>4.6</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-java-client</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 

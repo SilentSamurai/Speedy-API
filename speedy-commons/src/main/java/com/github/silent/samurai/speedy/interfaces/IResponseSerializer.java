@@ -1,8 +1,10 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface IResponseSerializer {
@@ -13,7 +15,9 @@ public interface IResponseSerializer {
 
     IResponseContext getContext();
 
-    void write(List<SpeedyEntity> speedyEntities) throws Exception;
+    void write(List<SpeedyEntity> speedyEntities) throws SpeedyHttpException;
 
-    void write(SpeedyEntity speedyEntity) throws Exception;
+    void write(SpeedyEntity speedyEntity) throws SpeedyHttpException;
+
+    void write(BigInteger count) throws SpeedyHttpException;
 }

@@ -4,14 +4,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
+import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.io.JavaType2SpeedyValue;
-import com.github.silent.samurai.speedy.io.Json2Speedy;
-import com.github.silent.samurai.speedy.io.Speedy2JavaTypeConverter;
+import com.github.silent.samurai.speedy.mappings.JavaType2SpeedyValue;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
+import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
+import com.github.silent.samurai.speedy.mappings.SpeedyValue2JavaType;
+import com.github.silent.samurai.speedy.mappings.String2JavaType;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
@@ -67,12 +70,12 @@ public class SpeedyValueFactory {
         return new SpeedyEntity(entityMetadata);
     }
 
-    public static <T> SpeedyValue fromJavaTypes(Class<T> clazz, ValueType valueType, Object instance) throws SpeedyHttpException {
-        return JavaType2SpeedyValue.convert(clazz, valueType, instance);
+    public static <T> SpeedyValue toSpeedyValue(ValueType valueType, T instance) throws SpeedyHttpException {
+        return JavaType2SpeedyValue.convert(instance.getClass(), valueType, instance);
     }
 
-    public static SpeedyValue fromJavaTypes(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
-        return JavaType2SpeedyValue.convert(fieldMetadata.getFieldType(), fieldMetadata.getValueType(), instance);
+    public static SpeedyValue toSpeedyValue(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
+        return JavaType2SpeedyValue.convert(instance.getClass(), fieldMetadata.getColumnType().getValueType(), instance);
     }
 
     public static SpeedyValue fromQuotedString(FieldMetadata fieldMetadata, String quotedValue) throws SpeedyHttpException {
@@ -85,32 +88,37 @@ public class SpeedyValueFactory {
     }
 
     public static SpeedyValue fromJsonValue(FieldMetadata fieldMetadata, ValueNode jsonNode) throws SpeedyHttpException {
-        return Json2Speedy.fromValueNode(fieldMetadata, jsonNode);
+        return JsonNode2SpeedyValue.fromValueNode(fieldMetadata, jsonNode);
     }
 
     public static SpeedyValue fromJsonNode(FieldMetadata fieldMetadata, JsonNode jsonNode) throws SpeedyHttpException {
-        return Json2Speedy.fromFieldMetadata(fieldMetadata, jsonNode);
+        return JsonNode2SpeedyValue.fromFieldMetadata(fieldMetadata, jsonNode);
     }
 
     public static SpeedyEntity fromJsonObject(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
-        return Json2Speedy.fromEntityMetadata(entityMetadata, jsonNode);
+        return JsonNode2SpeedyValue.fromEntityMetadata(entityMetadata, jsonNode);
     }
 
     public static SpeedyEntityKey fromPkJson(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
-        return Json2Speedy.fromPkJson(entityMetadata, jsonNode);
+        return JsonNode2SpeedyValue.fromPkJson(entityMetadata, jsonNode);
     }
 
     public static <T> T toJavaType(FieldMetadata fieldMetadata, SpeedyValue speedyValue) throws SpeedyHttpException {
-        return (T) Speedy2JavaTypeConverter.convert(speedyValue, fieldMetadata.getFieldType());
+        Class<T> basicClass = (Class<T>) JavaType2ColumnType.toBasicStandardJavaType(fieldMetadata.getValueType());
+        return (T) SpeedyValue2JavaType.convert(speedyValue, basicClass);
     }
 
-
-    public static <T> T toJavaTypeOnlyViaValueType(ValueType valueType, SpeedyValue speedyValue) throws SpeedyHttpException {
-        return Speedy2JavaTypeConverter.convert(speedyValue, valueType);
-    }
-
+//    public static <T> T toJavaTypeOnlyViaValueType(ValueType valueType, SpeedyValue speedyValue) throws SpeedyHttpException {
+//        return SpeedyValue2JavaType.convert(speedyValue, valueType);
+//    }
 
     public static SpeedyEntityKey createEntityKey(EntityMetadata entityMetadata) {
         return new SpeedyEntityKey(entityMetadata);
+    }
+
+    public static SpeedyValue basicFromString(FieldMetadata fieldMetadata, String quotedValue) throws SpeedyHttpException {
+        Class<?> aClass = JavaType2ColumnType.toBasicStandardJavaType(fieldMetadata.getValueType());
+        Object instance = String2JavaType.quotedStringToPrimitive(quotedValue, aClass);
+        return toSpeedyValue(fieldMetadata, instance);
     }
 }

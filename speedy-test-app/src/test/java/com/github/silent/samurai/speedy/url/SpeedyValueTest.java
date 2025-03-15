@@ -99,6 +99,7 @@ class SpeedyValueTest {
         List<ValueTestEntity> valueTestEntities = filteredValueTestEntityResponse.getPayload();
 
 
+        assert valueTestEntities != null;
         Assertions.assertEquals(1, valueTestEntities.size());
 
         ValueTestEntity valueTestEntity2 = valueTestEntities.get(0);
@@ -108,6 +109,8 @@ class SpeedyValueTest {
         Assertions.assertEquals("2021-01-01T00:00:00", valueTestEntity2.getLocalDateTime());
         Assertions.assertEquals("2021-01-01", valueTestEntity2.getLocalDate());
         Assertions.assertEquals("00:00:00", valueTestEntity2.getLocalTime());
+
+        Assertions.assertNotNull(valueTestEntity2.getInstantTime());
         Assertions.assertEquals(
                 Instant.parse("2021-01-01T00:00:00Z").atZone(ZoneOffset.UTC),
                 Instant.parse(valueTestEntity2.getInstantTime()).atZone(ZoneOffset.UTC));

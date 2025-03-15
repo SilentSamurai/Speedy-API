@@ -1,180 +1,201 @@
 package com.github.silent.samurai.speedy.parser;
 
-import com.github.silent.samurai.speedy.AntlrParser;
-import com.github.silent.samurai.speedy.io.BasicDeserializer;
+import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.AntlrRequest;
-import com.github.silent.samurai.speedy.models.Filter;
-import com.github.silent.samurai.speedy.models.ResourceRequest;
-import com.github.silent.samurai.speedy.models.UrlQuery;
-import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
+import com.github.silent.samurai.speedy.mappings.String2JavaType;
+import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.utils.Speedy;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 public class SpeedyUriContext {
-
-    private final MetaModelProcessor metaModelProcessor;
+    private final MetaModel metaModel;
     private final String requestURI;
-    private final MultiValueMap<String, String> rawQuery = new LinkedMultiValueMap<>();
-    private String fragment;
-    private final MultiValueMap<String, String> keywords = new LinkedMultiValueMap<>();
     private SpeedyQueryImpl speedyQuery;
-    private List<String> filterConditionChain;
-    private ResourceRequest resourceRequest;
+    private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
 
-
-    public SpeedyUriContext(MetaModelProcessor metaModelProcessor, String requestURI) {
-        this.metaModelProcessor = metaModelProcessor;
+    public SpeedyUriContext(MetaModel metaModel, String requestURI) {
+        this.metaModel = metaModel;
         this.requestURI = requestURI;
-    }
-
-    public boolean hasQuery(String queryName) {
-        return rawQuery.containsKey(queryName);
-    }
-
-    public Set<String> getQueryIdentifiers() {
-        return rawQuery.keySet();
-    }
-
-    public <T> List<T> getQuery(String name, Class<T> type) throws Exception {
-        if (!hasQuery(name)) {
-            throw new NotFoundException("query not found");
-        }
-        List<String> values = rawQuery.get(name);
-        List<T> list = new ArrayList<>();
-        for (String str : values) {
-            T t = BasicDeserializer.quotedStringToPrimitive(str, type);
-            list.add(t);
-        }
-        return list;
-    }
-
-    public <T> T getQueryOrDefault(String name, Class<T> type, T defaultValue) throws BadRequestException {
-        if (hasQuery(name)) {
-            String queryValue = rawQuery.get(name).get(0);
-            return BasicDeserializer.quotedStringToPrimitive(queryValue, type);
-        }
-        return defaultValue;
     }
 
     public SpeedyQuery parse() throws SpeedyHttpException {
         try {
-            this.process();
+            return this.process();
         } catch (Exception e) {
-            throw new BadRequestException(e);
+            throw new BadRequestException("Invalid URL", e);
         }
-        return speedyQuery;
     }
 
-    private void process() throws Exception {
-        String sanitizedURI = requestURI;
-        if (requestURI.contains(SpeedyConstant.URI)) {
-            int indexOf = requestURI.indexOf(SpeedyConstant.URI);
-            sanitizedURI = requestURI.substring(indexOf + SpeedyConstant.URI.length());
-        }
-        AntlrRequest antlrRequest = new AntlrParser(sanitizedURI).parse();
-        this.resourceRequest = antlrRequest.getRequestList().get(0);
+    public SpeedyQuery process() throws Exception {
 
-        String primaryResource = resourceRequest.getResource();
-        EntityMetadata resourceMetadata = this.metaModelProcessor.findEntityMetadata(primaryResource);
-        this.speedyQuery = new SpeedyQueryImpl(resourceMetadata);
-
-        this.filterConditionChain = resourceRequest.getFilterOrder();
-
-        processFilters(resourceRequest);
-        processUrlParams(antlrRequest);
-        addToOrderList("orderBy", false);
-        addToOrderList("orderByDesc", true);
-
-        if (hasQuery("pageSize")) {
-            int pageSize = this.getQueryOrDefault("pageSize", Integer.class, 0);
-            speedyQuery.addPageSize(pageSize);
+        String sanitizedURI = URLDecoder.decode(requestURI, StandardCharsets.UTF_8);
+        if (sanitizedURI.contains(SpeedyConstant.URI)) {
+            int indexOf = sanitizedURI.indexOf(SpeedyConstant.URI);
+            sanitizedURI = sanitizedURI.substring(indexOf + SpeedyConstant.URI.length());
         }
 
-        if (hasQuery("pageNo")) {
-            int pageNo = this.getQueryOrDefault("pageNo", Integer.class, 0);
-            speedyQuery.addPageNo(pageNo);
-        }
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(sanitizedURI)
+                .build();
 
-//        boolean isAllEqualCondition = speedyQuery.getWhere().getConditions()
-//                .stream()
-//                .allMatch(EqCondition.class::isInstance);
-//        if (MetadataUtil.hasOnlyPrimaryKeyFields(resourceMetadata, keywords.keySet()) && isAllEqualCondition) {
-//            onlyIdentifiersPresent = true;
-//        }
+        EntityMetadata entityMetadata = this.extractEntity(uriComponents);
 
+        this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
+
+        captureUrlParams(uriComponents);
+
+        processFilters();
+
+        addToOrderList("$orderBy", false);
+        addToOrderList("$orderByDesc", true);
+
+        extractPageInfo(uriComponents);
+
+
+        return this.speedyQuery;
     }
 
-    private void processUrlParams(AntlrRequest antlrRequest) {
-        if (!antlrRequest.getQueries().isEmpty()) {
-            for (Map.Entry<String, List<UrlQuery>> entry : antlrRequest.getQueries().entrySet()) {
-                String key = entry.getKey();
-                List<String> valueList = entry.getValue().stream()
-                        .flatMap(fv -> fv.getValues().stream())
+    private void extractPageInfo(UriComponents uriComponents) throws BadRequestException {
+        if (uriComponents.getQueryParams().containsKey("$pageSize")) {
+            String $pageSize = uriComponents.getQueryParams().getFirst("$pageSize");
+            try {
+                Integer pageSize = String2JavaType.quotedStringToPrimitive($pageSize, Integer.class);
+                Objects.requireNonNull(pageSize);
+                speedyQuery.addPageSize(pageSize);
+            } catch (NumberFormatException e) {
+                log.error("Invalid value for $pageSize. Must be an integer.");
+            }
+        }
+
+        if (uriComponents.getQueryParams().containsKey("$pageNo")) {
+            String $pageNo = uriComponents.getQueryParams().getFirst("$pageNo");
+            try {
+                Integer pageNo = String2JavaType.quotedStringToPrimitive($pageNo, Integer.class);
+                Objects.requireNonNull(pageNo);
+                speedyQuery.addPageSize(pageNo);
+            } catch (NumberFormatException e) {
+                log.error("Invalid value for $pageNo. Must be an integer.");
+            }
+        }
+
+        if (uriComponents.getQueryParams().containsKey("$format")) {
+            String $format = uriComponents.getQueryParams().getFirst("$format");
+            if ($format != null) {
+                speedyQuery.addFormat(String2JavaType.quotedStringToPrimitive($format, String.class));
+            }
+        }
+    }
+
+    private EntityMetadata extractEntity(UriComponents uriComponents) throws BadRequestException, NotFoundException {
+        List<String> pathSegments = uriComponents.getPathSegments();
+        if (!pathSegments.isEmpty()) {
+            String resourceName = pathSegments.get(0);
+            return metaModel.findEntityMetadata(resourceName);
+        } else {
+            throw new BadRequestException("Invalid URL: Missing resource name in path");
+        }
+    }
+
+    private void captureUrlParams(UriComponents uriComponents) throws SpeedyHttpException {
+        if (!uriComponents.getQueryParams().isEmpty()) {
+            MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
+            for (Map.Entry<String, List<String>> entry : queryParams.entrySet()) {
+                String key = entry.getKey().strip().trim();
+                if (!key.startsWith("$") && speedyQuery.getConditionFactory().createQueryField(key) == null) {
+                    continue;
+                }
+                List<String> valueList = entry.getValue()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .filter(Predicate.not(String::isBlank))
+                        .map(String::trim)
+                        .map(String::strip)
                         .collect(Collectors.toList());
                 if (valueList.isEmpty()) {
                     valueList.add("true");
                 }
-                valueList.forEach(val -> rawQuery.add(key, val));
+                queryParameters.put(key, valueList);
             }
         }
     }
 
-    private void addToOrderList(String queryName,
-                                boolean isDesc) throws Exception {
-        if (this.hasQuery(queryName)) {
-            Map<Boolean, List<String>> collect = this.getQuery(queryName, String.class)
-                    .stream()
-                    .collect(Collectors.partitioningBy(qry -> qry.contains(",")));
-            List<String> withComma = collect.get(true);
-            List<String> withoutComma = collect.get(false);
-            withComma.stream()
-                    .flatMap(qry -> Arrays.stream(qry.split(",")))
-                    .forEach(withoutComma::add);
-            for (String fieldName : withoutComma) {
-                if (isDesc) {
-                    speedyQuery.orderByDesc(fieldName);
-                } else {
-                    speedyQuery.orderByAsc(fieldName);
-                }
-            }
-        }
-    }
-
-    private void processFilters(ResourceRequest resourceRequest) throws SpeedyHttpException {
-        if (!resourceRequest.getFilters().isEmpty()) {
+    private void processFilters() throws SpeedyHttpException {
+        if (!queryParameters.isEmpty()) {
             ConditionFactory conditionFactory = speedyQuery.getConditionFactory();
-            for (Filter filter : resourceRequest.getFilters().values()) {
-                if (filter.isMultiple()) {
-                    BinaryCondition binaryCondition = conditionFactory.createBinaryConditionQuotedString(filter.getField(), filter.getOperator(), filter.getValues());
+            for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
+                String field = entry.getKey();
+                if (field.startsWith("$")) continue;
+
+                QueryField queryField = conditionFactory.createQueryField(field);
+                List<String> valueList = entry.getValue();
+
+                if (valueList.isEmpty()) {
+                    SpeedyValue speedyValue = Speedy.from(true);
+                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, speedyValue);
                     speedyQuery.getWhere().addSubCondition(binaryCondition);
+                } else if (valueList.size() == 1) {
+                    String value = valueList.get(0);
+                    SpeedyValue speedyValue = SpeedyValueFactory.basicFromString(queryField.getMetadataForParsing(), value);
+                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, speedyValue);
+                    speedyQuery.getWhere().addSubCondition(binaryCondition);
+
                 } else {
-                    String value = filter.getValues().get(0);
-                    if (filter.isAssociationPresent()) {
-                        BinaryCondition binaryCondition = conditionFactory.createAssociatedConditionQuotedString(filter.getField(), filter.getAssociationId(), filter.getOperator(), value);
-                        speedyQuery.getWhere().addSubCondition(binaryCondition);
-                    } else {
-                        BinaryCondition binaryCondition = conditionFactory.createBinaryConditionQuotedString(filter.getField(), filter.getOperator(), value);
-                        speedyQuery.getWhere().addSubCondition(binaryCondition);
+
+                    List<SpeedyValue> speedyValueList = new LinkedList<>();
+                    for (String value : valueList) {
+                        SpeedyValue speedyValue = SpeedyValueFactory.basicFromString(queryField.getMetadataForParsing(), value);
+                        speedyValueList.add(speedyValue);
                     }
+                    SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
+                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, fieldValue);
+                    speedyQuery.getWhere().addSubCondition(binaryCondition);
+
                 }
-                // internal
-                String kwd = filter.getField();
-                if (filter.isAssociationPresent()) {
-                    kwd += "." + filter.getAssociationId();
+            }
+        }
+    }
+
+    private void addToOrderList(String queryName, boolean isDesc) throws Exception {
+        MultiValueMap<String, String> queryParams = queryParameters;
+        if (queryParams.containsKey(queryName)) {
+            List<String> values = queryParams.remove(queryName);
+            List<String> fields = values.stream()
+                    .map(item -> {
+                        try {
+                            return String2JavaType.quotedStringToPrimitive(item, String.class);
+                        } catch (BadRequestException e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .flatMap(qry -> Arrays.stream(qry.split(",")))
+                    .toList();
+            for (String field : fields) {
+                if (isDesc) {
+                    speedyQuery.orderByDesc(field);
+                } else {
+                    speedyQuery.orderByAsc(field);
                 }
-                keywords.add(kwd, filter.getInternalId());
             }
         }
     }

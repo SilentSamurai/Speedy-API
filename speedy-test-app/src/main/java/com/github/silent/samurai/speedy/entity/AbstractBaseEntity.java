@@ -1,12 +1,9 @@
 package com.github.silent.samurai.speedy.entity;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
 import java.io.Serializable;
 
 @MappedSuperclass
@@ -14,17 +11,9 @@ public abstract class AbstractBaseEntity implements Serializable {
     protected static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id")
     protected String id;
-
-//    public AbstractBaseEntity() {
-//        this.id = UUID.randomUUID().toString();
-//    }
 
     public String getId() {
         return id;

@@ -1,211 +1,3 @@
-create table categories
-(
-    id   varchar(255) not null,
-    name varchar(250) not null,
-    primary key (id)
-);
-create table companies
-(
-    id                varchar(255)  not null,
-    address           varchar(1024) not null,
-    created_at        timestamp,
-    currency          varchar(8)    not null,
-    default_generator integer,
-    deleted_at        timestamp,
-    details_top       varchar(1024),
-    email             varchar(255),
-    extra             varchar(1024),
-    invoice_no        integer,
-    name              varchar(255)  not null,
-    phone             varchar(15)   not null,
-    updated_at        timestamp,
-    primary key (id)
-);
-
-create table currencies
-(
-    id              varchar(255) not null,
-    country         varchar(32),
-    created_at      timestamp default CURRENT_TIMESTAMP,
-    currency_abbr varchar(10) not null unique,
-    currency_name   varchar(64)  not null,
-    currency_symbol varchar(10)  not null,
-    primary key (id)
-);
-
-create table customers
-(
-    id           varchar(255) not null,
-    address      varchar(1024),
-    alt_phone_no varchar(15),
-    created_at   timestamp,
-    created_by   varchar(255),
-    email        varchar(255),
-    name         varchar(255) not null,
-    phone_no     varchar(15)  not null,
-    primary key (id)
-);
-
-create table exchange_rates
-(
-    id                  varchar(255) not null,
-    created_at          timestamp,
-    exchange_rate double not null,
-    inv_exchange_rate double not null,
-    base_currency_id    varchar(255) not null,
-    foreign_currency_id varchar(255) not null,
-    primary key (id)
-);
-
-create table inventory
-(
-    id             varchar(255) not null,
-    cost double not null,
-    discount double not null,
-    listing_price double not null,
-    sold_price double not null,
-    invoice_id     varchar(255) not null,
-    procurement_id varchar(255) not null,
-    product_id     varchar(255) not null,
-    primary key (id)
-);
-
-create table invoices
-(
-    id           varchar(255) not null,
-    adjustment double not null,
-    created_at   timestamp,
-    created_by   varchar(255),
-    discount double not null,
-    due_amount double not null,
-    invoice_date timestamp    not null,
-    modified_at  timestamp,
-    modified_by  varchar(255),
-    notes        varchar(1024),
-    paid double not null,
-    customer_id  varchar(255) not null,
-    primary key (id)
-);
-
-create table orders
-(
-    product_id  varchar(250) not null,
-    supplier_id varchar(250) not null,
-    discount double,
-    order_date  timestamp,
-    price double,
-    primary key (product_id, supplier_id)
-);
-
-create table procurements
-(
-    id            varchar(255) not null,
-    amount double not null,
-    created_at    timestamp,
-    created_by    varchar(255),
-    due_amount double not null,
-    modified_at   timestamp,
-    modified_by   varchar(255),
-    purchase_date timestamp    not null,
-    product_id    varchar(255) not null,
-    supplier_id   varchar(255) not null,
-    primary key (id)
-);
-
-
-
-create table products
-(
-    id          varchar(255) not null,
-    description varchar(1024),
-    name        varchar(255) not null,
-    category_id varchar(255) not null,
-    primary key (id)
-);
-
-create table suppliers
-(
-    id           varchar(255) not null,
-    address      varchar(1024),
-    alt_phone_no varchar(15)  not null,
-    created_at   timestamp,
-    created_by   varchar(255),
-    email        varchar(255),
-    name         varchar(255) not null,
-    phone_no     varchar(15)  not null,
-    primary key (id)
-);
-
-create table users
-(
-    id          varchar(255) not null,
-    created_at  timestamp,
-    deleted_at  timestamp,
-    email       varchar(250) not null,
-    name        varchar(250) not null,
-    phone_no    varchar(15)  not null,
-    profile_pic varchar(512) not null,
-    updated_at  timestamp,
-    company_id  varchar(255) not null,
-    primary key (id)
-);
-
-CREATE TABLE value_test_table
-(
-    id              VARCHAR(255) NOT NULL,
-    local_date_time datetime NULL,
-    local_date      date NULL,
-    local_time      time NULL,
-    instant_time    datetime NULL,
-    zoned_date_time TIMESTAMP WITH TIME ZONE NULL,
-    boolean_value boolean NULL,
-    CONSTRAINT pk_value_test_table PRIMARY KEY (id)
-);
-
-alter table categories
-    add constraint categories_name_key unique (name);
-alter table companies
-    add constraint companies_phone_key unique (phone);
-alter table customers
-    add constraint customers_alt_phone_no_key unique (alt_phone_no);
-alter table customers
-    add constraint customers_phone_no_key unique (phone_no);
-
-alter table products
-    add constraint UK_o61fmio5yukmmiqgnxf8pnavn unique (name);
-alter table suppliers
-    add constraint suppliers_alt_phone_no_key unique (alt_phone_no);
-alter table suppliers
-    add constraint suppliers_phone_no_key unique (phone_no);
-alter table users
-    add constraint users_phone_no_key unique (phone_no);
-alter table users
-    add constraint users_email_key unique (email);
-alter table exchange_rates
-    add constraint FKrqnh6pk2bh3emod0btk37g0fp foreign key (base_currency_id) references currencies;
-alter table exchange_rates
-    add constraint FKpafehxlj8ac40i364hbg1shu2 foreign key (foreign_currency_id) references currencies;
-alter table inventory
-    add constraint FK3ocy6yq5a8ys904nuk2ubh8nw foreign key (invoice_id) references invoices;
-alter table inventory
-    add constraint FKewrm1ymgyu6eyyidx0xaj2gva foreign key (procurement_id) references procurements;
-alter table inventory
-    add constraint FKq2yge7ebtfuvwufr6lwfwqy9l foreign key (product_id) references products;
-alter table invoices
-    add constraint FKq2w4hmh6l9othnp6cepp0cfe2 foreign key (customer_id) references customers;
-alter table procurements
-    add constraint FK4dbsmywcrfynicyvso8b28utc foreign key (product_id) references products;
-alter table procurements
-    add constraint FKjff8ahqmnydxc665vew5tp7ul foreign key (supplier_id) references suppliers;
-alter table products
-    add constraint FKog2rp4qthbtt2lfyhfo32lsw9 foreign key (category_id) references categories;
-alter table users
-    add constraint FKin8gn4o1hpiwe6qe4ey7ykwq7 foreign key (company_id) references companies;
-
-create
-or replace view product_view as
-SELECT *
-FROM products;
 
 
 INSERT INTO categories(ID, NAME)
@@ -247,6 +39,8 @@ INSERT INTO products (ID, NAME, DESCRIPTION, CATEGORY_ID)
 VALUES ('5', 'Product 5', 'Description 5', '3');
 INSERT INTO products (ID, NAME, DESCRIPTION, CATEGORY_ID)
 VALUES ('6', 'Product 6', 'Description 6', '3');
+INSERT INTO products (ID, NAME, DESCRIPTION, CATEGORY_ID)
+VALUES ('7', 'Product 7', 'Description 7', '3');
 
 
 INSERT INTO suppliers (ID, NAME, ADDRESS, EMAIL, PHONE_NO, ALT_PHONE_NO, CREATED_AT, CREATED_BY)
@@ -263,6 +57,16 @@ INSERT INTO suppliers (ID, NAME, ADDRESS, EMAIL, PHONE_NO, ALT_PHONE_NO, CREATED
 VALUES ('3', 'Supplier 3', '789 Oak St., Anytown, USA', 'supplier3@example.com', '555-3456', '555-7890',
         '2022-04-30 10:00:00',
         'admin');
+
+-- Insert sample suppliers
+INSERT INTO suppliers (id, name, address, email, phone_no, alt_phone_no, created_at, created_by)
+VALUES ('5', 'ABC Electronics', '123 Tech Street, NY', 'contact@abcelectronics.com', '1234567890', '0987654321',
+        NOW(), 'admin'),
+       ('6', 'Global Furniture', '456 Home Ave, LA', 'support@globalfurniture.com', '9876543210', '0123456789',
+        NOW(), 'admin'),
+       ('7', 'Urban Clothing Co.', '789 Fashion Blvd, TX', 'info@urbanclothing.com', '5432109876', '6789012345',
+        NOW(), 'admin');
+
 
 
 INSERT INTO procurements (ID, PRODUCT_ID, supplier_id, amount, due_amount, purchase_date, created_at, created_by,
@@ -284,6 +88,10 @@ VALUES ('4', '2', '2', 400, 200, '2022-01-04', '2022-04-30 10:00:00', 'Admin', N
 INSERT INTO procurements (ID, PRODUCT_ID, supplier_id, amount, due_amount, purchase_date, created_at, created_by,
                           modified_at, modified_by)
 VALUES ('5', '2', '2', 500, 250, '2022-01-05', '2022-04-30 10:00:00', 'Admin', NULL, NULL);
+
+INSERT INTO procurements (ID, PRODUCT_ID, supplier_id, amount, due_amount, purchase_date, created_at, created_by,
+                          modified_at, modified_by)
+VALUES ('6', '1', '2', 500, 250, '2022-01-05', '2022-04-30 10:00:00', 'Admin', NULL, NULL);
 
 INSERT INTO customers (id, name, address, email, phone_no, alt_phone_no, created_at, created_by)
 VALUES ('1', 'John Doe', '123 Main St', 'john.doe@example.com', '555-1234', NULL, '2022-04-30 10:00:00', 'admin'),
@@ -327,24 +135,38 @@ VALUES ('1', '1', 50.00, 80.00, 100.00, 0.00, '1', '1'),
        ('9', '3', 15.00, 160.00, 200.00, 0.00, '3', '3'),
        ('10', '4', 25.00, 40.00, 50.00, 0.00, '4', '4');
 
-INSERT into currencies (id, country, currency_abbr, currency_name, currency_symbol)
-values ('1', 'United States', 'USD', 'US Dollar', 'U$'),
-       ('2', 'United Kingdom', 'GBP', 'British Pound', '£'),
-       ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$'),
-       ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$'),
-       ('5', 'Japan', 'JPY', 'Japanese Yen', '¥'),
-       ('6', 'India', 'INR', 'Indian Rupee', '₹'),
-       ('7', 'China', 'CNY', 'Chinese Yuan', '¥'),
-       ('8', 'Russia', 'RUB', 'Russian Ruble', '₽'),
-       ('9', 'South Korea', 'KRW', 'South Korean Won', '₩'),
-       ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$'),
-       ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$'),
-       ('12', 'South Africa', 'ZAR', 'South African Rand', 'R'),
-       ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$'),
-       ('14', 'Singapore', 'SGD', 'Singapore', 'S$');
+INSERT INTO currencies (id, country, currency_abbr, currency_name, currency_symbol, created_at)
+VALUES
+    ('1', 'United States', 'USD', 'US Dollar', 'U$', NOW()),
+    ('2', 'United Kingdom', 'GBP', 'British Pound', '£', NOW()),
+    ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$', NOW()),
+    ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$', NOW()),
+    ('5', 'Japan', 'JPY', 'Japanese Yen', '¥', NOW()),
+    ('6', 'India', 'INR', 'Indian Rupee', '₹', NOW()),
+    ('7', 'China', 'CNY', 'Chinese Yuan', '¥', NOW()),
+    ('8', 'Russia', 'RUB', 'Russian Ruble', '₽', NOW()),
+    ('9', 'South Korea', 'KRW', 'South Korean Won', '₩', NOW()),
+    ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$', NOW()),
+    ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$', NOW()),
+    ('12', 'South Africa', 'ZAR', 'South African Rand', 'R', NOW()),
+    ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$', NOW()),
+    ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
 
-INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time)
-VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00');
+INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time, boolean_value, double_value)
+VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00', true, 0.59393);
+
+
+INSERT INTO users (id, created_at, deleted_at, email, name, phone_no, type, updated_at, last_login_at)
+VALUES ('1a2b3c4d-5678-90ab-cdef-1234567890ab', '2024-02-28 12:00:00', NULL, 'john.doe@example.com', 'John Doe',
+        '9876543210', 'ADMIN', '2024-02-28 15:00:00', NULL),
+       ('2b3c4d5e-6789-01ab-cdef-2345678901bc', '2024-02-28 13:15:00', NULL, 'jane.smith@example.com', 'Jane Smith',
+        '8765432109', 'USER', '2024-02-28 16:30:00', NULL),
+       ('3c4d5e6f-7890-12ab-cdef-3456789012cd', '2024-02-27 09:45:00', NULL, 'michael.johnson@example.com',
+        'Michael Johnson', '7654321098', 'USER', '2024-02-28 14:45:00', NULL),
+       ('4d5e6f7g-8901-23ab-cdef-4567890123de', '2024-02-26 08:30:00', NULL, 'emily.brown@example.com', 'Emily Brown',
+        '6543210987', 'USER', '2024-02-27 10:15:00', NULL),
+       ('5e6f7g8h-9012-34ab-cdef-5678901234ef', '2024-02-25 17:20:00', '2024-02-28 12:00:00',
+        'william.davis@example.com', 'William Davis', '5432109876', 'USER', '2024-02-26 09:00:00', NULL);
 
 
 

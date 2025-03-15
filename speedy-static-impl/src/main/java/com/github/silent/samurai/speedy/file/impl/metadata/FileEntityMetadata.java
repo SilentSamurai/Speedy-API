@@ -28,7 +28,7 @@ public class FileEntityMetadata implements EntityMetadata {
     private boolean hasCompositeKey;
     private String dbTableName;
     private String keyType;
-    private ActionType actionType = ActionType.ALL;
+    private Set<ActionType> actionType = Set.of(ActionType.ALL);
 
     public Set<FileFieldMetadata> getFields() {
         return new HashSet<>(fieldMap.values());

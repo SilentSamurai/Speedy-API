@@ -7,6 +7,8 @@ import java.util.Set;
 
 public interface SpeedyQuery {
 
+    String getResponseFormat();
+
     EntityMetadata getFrom();
 
     BooleanCondition getWhere();
@@ -19,7 +21,7 @@ public interface SpeedyQuery {
 
     PageInfo getPageInfo();
 
-    Set<String> getExpand();
+    List<String> getExpand();
 
     Set<String> getSelect();
 

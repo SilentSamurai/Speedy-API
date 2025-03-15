@@ -33,12 +33,15 @@ public class ConditionFactory {
             case GTE -> new GreaterThanEqualCondition(field, instance);
             case IN -> new InCondition(field, instance);
             case NOT_IN -> new NotInCondition(field, instance);
-            default -> throw new BadRequestException("");
+            case PATTERN_MATCHING -> new MatchingCondition(field, instance);
+            case AND, OR -> throw new BadRequestException("");
+
         };
     }
 
     public QueryField createQueryField(String fieldName) throws SpeedyHttpException {
         String associatedField = null;
+        // field name is referencing foreign key
         if (fieldName.contains(".")) {
             String[] parts = fieldName.split("\\.");
             if (parts.length == 2) {

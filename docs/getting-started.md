@@ -10,7 +10,7 @@ Speedy spring boot auto configurations
 <dependency>
     <groupId>com.github.SilentSamurai</groupId>
     <artifactId>spring-boot-starter-speedy-api</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 
@@ -20,7 +20,7 @@ include the jpa implementation of the Speedy System
 <dependency>
     <groupId>com.github.SilentSamurai</groupId>
     <artifactId>speedy-jpa-impl</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 
@@ -34,144 +34,98 @@ speedy needs entity manager and meta-model processor
 @Configuration
 public class SpeedyConfig implements ISpeedyConfiguration {
 
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
+    private final EntityManagerFactory entityManagerFactory;
+    private final SpeedyValidation speedyValidation;
+    private final EntityEvents entityEvents;
+    private final DataSource dataSource;
+    private final Environment environment;
 
-    // this is called for every speedy request
-    @Override
-    public EntityManager createEntityManager() {
-        return entityManagerFactory.createEntityManager();
+    public SpeedyConfig(EntityManagerFactory entityManagerFactory, 
+                        SpeedyValidation speedyValidation, 
+                        EntityEvents entityEvents, 
+                        DataSource dataSource, 
+                        Environment environment) {
+        this.entityManagerFactory = entityManagerFactory;
+        this.speedyValidation = speedyValidation;
+        this.entityEvents = entityEvents;
+        this.dataSource = dataSource;
+        this.environment = environment;
     }
 
-    // this is called only on startup
     @Override
-    public MetaModelProcessor createMetaModelProcessor() {
-        return new JpaMetaModelProcessor(entityManagerFactory);
+    public MetaModelProcessor metaModelProcessor() {
+        return new JpaMetaModelProcessor(this, entityManagerFactory);
     }
 
     @Override
-    public ISpeedyCustomValidation getCustomValidator() {
-        return null;
+    public void register(ISpeedyRegistry registry) {
+        registry.registerEventHandler(entityEvents)
+                .registerValidator(speedyValidation);
+    }
+
+    @Override
+    public DataSource dataSourcePerReq() {
+        return dataSource;
+    }
+
+    @Override
+    public SpeedyDialect getDialect() {
+        Set<String> profiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
+        if (profiles.contains("prod")) {
+            return SpeedyDialect.POSTGRES;
+        }
+        return SpeedyDialect.H2;
     }
 }
+
 ```
 
 ### Jpa Entity
 
 Configure Jpa Entity so that speedy can retrieve the resource details
 
-**Transaction Entity**
+**User Entity**
 
 ```java
-@Getter
 @Setter
-@Entity
-@Table(name = "transactions")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Transaction {
-
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(name = "id")
-    protected String id;
-
-    @NotNull
-    @Column(name = "amount", nullable = false)
-    private Double amount;
-
-    @Column(name = "note", length = 250)
-    private String note;
-
-    @Column(name = "comments", length = 1024)
-    private String comments;
-
-    @NotNull
-    @Column(name = "transaction_type", length = 64, nullable = false)
-    @Enumerated(EnumType.STRING)
-    private TransactionType transactionType;
-
-    @NotNull
-    @Column(name = "date", nullable = false)
-    private Date date;
-
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private Account account;
-
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = true)
-    private Category category;
-}
-```
-
-**Category Entity**
-
-```java
 @Getter
-@Setter
-@Table(name = "categories", indexes = {
-        @Index(name = "categories_name_key", columnList = "name", unique = true)
-})
+@Table(name = "users")
 @Entity
-public class Category {
-
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(name = "id")
-    protected String id;
+public class User {
     
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id")
+    protected UUID id;
+
     @Column(name = "name", nullable = false, length = 250)
     private String name;
 
-    @OneToMany(mappedBy = "category")
-    private List<Transaction> transactions;
+    @Column(name = "phone_no", nullable = false, length = 15)
+    private String phoneNo;
 
-}
-```
+    @Column(name = "email", nullable = false, length = 250)
+    private String email;
 
-**Account Entity**
+    @Column(name = "type", nullable = false, length = 512)
+    private String type;
 
-```java
-@Getter
-@Setter
-@Entity
-@Table(name = "accounts")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Account {
+    @SpeedyAction(ActionType.READ)
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
-    @Column(name = "id")
-    protected String id;
+    @SpeedyAction(ActionType.READ)
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-    @NotNull
-    @Column(name = "name", length = 250)
-    private String name;
+    @SpeedyAction(ActionType.READ)
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
-    @NotNull
-    @Column(name = "created_by")
-    private String createdBy;
+    @Column(name = "last_login_at")
+    private LocalDate lastLoginDate;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
-    private Date createdAt;
-
-    @OneToMany(mappedBy = "account")
-    private List<Transaction> transactions;
-
+    @Column(name = "login_count")
+    private Integer loginCount;
 }
 ```
