@@ -60,7 +60,7 @@ retrieve a single resource with primary key
 **URL**
 
 ```http
-[GET] /speedy/v1/User/1a2b3c4d-5678-90ab-cdef-1234567890ab
+[GET] /speedy/v1/User?id=1a2b3c4d-5678-90ab-cdef-1234567890ab
 ```
 
 **Response**

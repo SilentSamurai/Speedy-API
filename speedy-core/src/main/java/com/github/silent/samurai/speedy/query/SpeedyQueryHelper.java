@@ -72,7 +72,7 @@ public class SpeedyQueryHelper {
         return entityMetadata.getKeyFields().stream().allMatch(this::isFilterPresent);
     }
 
-    public <T> T getRawValueOfValue(FieldMetadata fieldMetadata, Class<T> clazz) throws Exception {
+    public <T> T rawValueFromCondition(FieldMetadata fieldMetadata, Class<T> clazz) throws Exception {
         Optional<SpeedyValue> filterValue = getFilterValue(fieldMetadata);
         return SpeedyValueFactory.toJavaType(fieldMetadata, filterValue.get());
     }

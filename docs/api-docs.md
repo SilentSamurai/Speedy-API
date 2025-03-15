@@ -13,7 +13,7 @@ docs
 <dependency>
     <groupId>com.github.SilentSamurai</groupId>
     <artifactId>spring-boot-starter-speedy-open-api</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
 </dependency>
 ```
 

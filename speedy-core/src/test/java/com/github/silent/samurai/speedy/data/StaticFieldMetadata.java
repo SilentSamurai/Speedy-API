@@ -30,6 +30,9 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
     @SneakyThrows
     @Override
     public ColumnType getColumnType() {
+        if (isAssociation()) {
+            return getAssociatedFieldMetadata().getColumnType();
+        }
         return JavaType2ColumnType.fromClass(field.getType());
     }
 

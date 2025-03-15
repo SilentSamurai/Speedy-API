@@ -7,6 +7,8 @@ import java.util.Set;
 
 public interface SpeedyQuery {
 
+    String getResponseFormat();
+
     EntityMetadata getFrom();
 
     BooleanCondition getWhere();

@@ -130,9 +130,9 @@ public class SpeedyApi {
 
         String formattedPk = stream
                 .map(e -> String.format("%s='%s'", e.getKey(), e.getValue().asText()))
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining("&"));
 
-        return "(" + formattedPk + ")";
+        return "?" + formattedPk ;
     }
 
     // Helper method to create common headers
