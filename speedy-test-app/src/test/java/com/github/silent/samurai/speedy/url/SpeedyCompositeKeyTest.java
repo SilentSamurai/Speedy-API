@@ -24,8 +24,8 @@ import jakarta.persistence.EntityManagerFactory;
 import java.time.Instant;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -87,9 +87,9 @@ class SpeedyCompositeKeyTest {
 
         FilteredOrderResponse orderResponse = apiInstance.queryOrder(
                 SpeedyRequest.query()
-                        .$where(
-                                $condition("productId", $eq(orderKey.getProductId())),
-                                $condition("supplierId", $eq(orderKey.getSupplierId()))
+                        .where(
+                                condition("productId", eq(orderKey.getProductId())),
+                                condition("supplierId", eq(orderKey.getSupplierId()))
                         )
                         .build()
         );

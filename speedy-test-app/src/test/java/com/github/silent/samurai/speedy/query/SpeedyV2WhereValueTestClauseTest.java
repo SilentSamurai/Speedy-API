@@ -25,8 +25,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import jakarta.persistence.EntityManagerFactory;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -58,8 +58,8 @@ public class SpeedyV2WhereValueTestClauseTest {
     @Test
     void testQuery0() throws Exception {
         JsonNode body = SpeedyRequest.query("ValueTestEntity")
-                .$where(
-                        $condition("localTime", $eq("10:00:00"))
+                .where(
+                        condition("localTime", eq("10:00:00"))
                 )
                 .prettyPrint()
                 .build();

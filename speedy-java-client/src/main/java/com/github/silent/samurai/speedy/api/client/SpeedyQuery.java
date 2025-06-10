@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +28,8 @@ public class SpeedyQuery {
     private SpeedyQuery() {
     }
 
-    public static SpeedyQuery builder(String entity) {
-        return new SpeedyQuery().$from(entity);
+    public static SpeedyQuery builder(@NotNull String entity) {
+        return new SpeedyQuery().from(entity);
     }
 
     public static SpeedyQuery builder() {
@@ -36,7 +37,7 @@ public class SpeedyQuery {
     }
 
 
-    public SpeedyQuery $from(String from) {
+    public SpeedyQuery from(@NotNull String from) {
         if (from == null || from.isEmpty()) {
             throw new IllegalArgumentException("The 'from' parameter cannot be null or empty.");
         }
@@ -44,7 +45,7 @@ public class SpeedyQuery {
         return this;
     }
 
-    public SpeedyQuery $where(JsonNode... conditionObjs) {
+    public SpeedyQuery where(@NotNull JsonNode... conditionObjs) {
         for (JsonNode conditionObj : conditionObjs) {
             if (conditionObj == null || conditionObj.isEmpty()) {
                 throw new IllegalArgumentException("The 'where' parameter cannot be null or empty.");
@@ -73,18 +74,18 @@ public class SpeedyQuery {
 //        return this;
 //    }
 
-    public SpeedyQuery $orderByAsc(String key) {
+    public SpeedyQuery orderByAsc(@NotNull String key) {
         Objects.requireNonNull(key, "Key must not be null");
         orderBy.set(key, new TextNode("ASC"));
         return this;
     }
 
-    public SpeedyQuery $orderByDesc(String key) {
+    public SpeedyQuery orderByDesc(@NotNull String key) {
         orderBy.set(key, new TextNode("DESC"));
         return this;
     }
 
-    public SpeedyQuery $expand(String key) {
+    public SpeedyQuery expand(@NotNull String key) {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Expand key cannot be null or empty.");
         }
@@ -92,7 +93,7 @@ public class SpeedyQuery {
         return this;
     }
 
-    public SpeedyQuery $pageNo(int pageNo) {
+    public SpeedyQuery pageNo(@NotNull int pageNo) {
         if (pageNo < 0) {
             throw new IllegalArgumentException("Page number must not be less than 0.");
         }
@@ -100,7 +101,7 @@ public class SpeedyQuery {
         return this;
     }
 
-    public SpeedyQuery $pageSize(int pageSize) {
+    public SpeedyQuery pageSize(@NotNull int pageSize) {
         if (pageSize < 1) {
             throw new IllegalArgumentException("Page size must be greater than 0.");
         }
@@ -115,49 +116,49 @@ public class SpeedyQuery {
         return jsonNodes;
     }
 
-    public static ObjectNode $eq(Object value) throws JsonProcessingException {
+    public static ObjectNode eq(@NotNull Object value) throws JsonProcessingException {
         return toJsonNode(value, "$eq");
     }
 
-    public static ObjectNode $ne(Object value) throws JsonProcessingException {
+    public static ObjectNode ne(@NotNull Object value) throws JsonProcessingException {
         return toJsonNode(value, "$ne");
     }
 
-    public static ObjectNode $gt(Object value) throws JsonProcessingException {
+    public static ObjectNode gt(@NotNull Object value) throws JsonProcessingException {
         return toJsonNode(value, "$gt");
     }
 
-    public static ObjectNode $lt(Object value) throws JsonProcessingException {
+    public static ObjectNode lt(@NotNull Object value) throws JsonProcessingException {
         return toJsonNode(value, "$lt");
     }
 
-    public static ObjectNode $gte(Object value) throws JsonProcessingException {
+    public static ObjectNode gte(@NotNull Object value) throws JsonProcessingException {
         return toJsonNode(value, "$gte");
     }
 
-    public static ObjectNode $lte(Object value) throws JsonProcessingException {
+    public static ObjectNode lte(@NotNull Object value) throws JsonProcessingException {
         return toJsonNode(value, "$lte");
     }
 
-    public static ObjectNode $in(Object... values) throws JsonProcessingException {
+    public static ObjectNode in(@NotNull Object... values) throws JsonProcessingException {
         return toJsonNode(values, "$in");
     }
 
-    public static ObjectNode $nin(Object... values) throws JsonProcessingException {
+    public static ObjectNode nin(@NotNull Object... values) throws JsonProcessingException {
         return toJsonNode(values, "$nin");
     }
 
-    public static ObjectNode $matches(Object values) throws JsonProcessingException {
+    public static ObjectNode matches(@NotNull Object values) throws JsonProcessingException {
         return toJsonNode(values, "$matches");
     }
 
-    public static JsonNode $condition(String key, JsonNode value) {
+    public static JsonNode condition(@NotNull String key, @NotNull JsonNode value) {
         ObjectNode jsonNodes = CommonUtil.json().createObjectNode();
         jsonNodes.set(key, value);
         return jsonNodes;
     }
 
-    public static ObjectNode $or(JsonNode... conditions) {
+    public static ObjectNode or(@NotNull JsonNode... conditions) {
         ObjectNode andNode = CommonUtil.json().createObjectNode();
         andNode.set("$or", CommonUtil.json().createArrayNode());
         for (JsonNode condition : conditions) {
@@ -167,7 +168,7 @@ public class SpeedyQuery {
         return andNode;
     }
 
-    public static ObjectNode $and(JsonNode... conditions) {
+    public static ObjectNode and(@NotNull JsonNode... conditions) {
         ObjectNode andNode = CommonUtil.json().createObjectNode();
         andNode.set("$and", CommonUtil.json().createArrayNode());
         for (JsonNode condition : conditions) {
@@ -195,7 +196,7 @@ public class SpeedyQuery {
 //        return this;
 //    }
 
-    public JsonNode build() throws IllegalFormatCodePointException {
+    public JsonNode build() {
         if (!where.isEmpty()) {
             root.set("$where", where);
         }
@@ -242,7 +243,7 @@ public class SpeedyQuery {
         return root.get("$from").asText();
     }
 
-    public SpeedyQuery $select(String... select) {
+    public SpeedyQuery select(@NotNull String... select) {
         this.select.addAll(Arrays.asList(select));
         return this;
     }

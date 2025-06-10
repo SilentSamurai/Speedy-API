@@ -1,13 +1,11 @@
 package com.github.silent.samurai.speedy.url;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.ProductRepository;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.Order;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.CategoryApi;
 import org.openapitools.client.api.ProductApi;
@@ -26,8 +24,8 @@ import jakarta.persistence.EntityManagerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -103,8 +101,8 @@ class SpeedyAssociationTest {
         FilteredProductResponse productResponse = productApi.queryProduct(
                 SpeedyRequest
                         .query()
-                        .$where(
-                                $condition("id", $eq(productKey.getId()))
+                        .where(
+                                condition("id", eq(productKey.getId()))
                         ).build()
         );
         Assertions.assertNotNull(productResponse);

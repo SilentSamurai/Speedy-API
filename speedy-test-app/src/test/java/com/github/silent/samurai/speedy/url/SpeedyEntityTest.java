@@ -36,8 +36,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -407,8 +407,8 @@ class SpeedyEntityTest {
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
                 SpeedyQuery.builder()
-                        .$where(
-                                $condition("currencyAbbr", $eq("NZD"))
+                        .where(
+                                condition("currencyAbbr", eq("NZD"))
                         ).build()
         );
 
@@ -428,8 +428,8 @@ class SpeedyEntityTest {
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
                 SpeedyQuery.builder()
-                        .$where(
-                                $condition("currencyAbbr", $eq("NZD"))
+                        .where(
+                                condition("currencyAbbr", eq("NZD"))
                         ).build()
         );
 
@@ -442,8 +442,8 @@ class SpeedyEntityTest {
 
         someCurrency = currencyApi.queryCurrency(
                 SpeedyQuery.builder()
-                        .$where(
-                                $condition("currencyAbbr", $eq("NZD"))
+                        .where(
+                                condition("currencyAbbr", eq("NZD"))
                         ).build()
         );
         Assertions.assertNotNull(someCurrency);

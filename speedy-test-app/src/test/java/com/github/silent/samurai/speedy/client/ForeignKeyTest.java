@@ -22,8 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -120,8 +120,8 @@ class ForeignKeyTest {
 
         // Query the updated product using the new name
         SpeedyQuery queryRequest = SpeedyRequest.query("Product")
-                .$where(
-                        $condition("name", $eq("updated-client-product"))
+                .where(
+                        condition("name", eq("updated-client-product"))
                 );
 
         SpeedyResponse queryResponse = speedyApi.query(queryRequest);

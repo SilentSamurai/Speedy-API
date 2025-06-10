@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
@@ -63,7 +62,7 @@ public class SpeedyV2ExpandTest {
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyRequest
                                 .query("Product")
-                                .$expand("Category")
+                                .expand("Category")
                                 .prettyPrint()
                                 .build()
                 ))
@@ -114,9 +113,9 @@ public class SpeedyV2ExpandTest {
         List<Category> allSorted = categoryRepository.findAllSorted();
 
         JsonNode query = SpeedyQuery.builder("Category")
-                .$orderByAsc("name")
-                .$pageNo(1)
-                .$pageSize(2)
+                .orderByAsc("name")
+                .pageNo(1)
+                .pageSize(2)
                 .prettyPrint()
                 .build();
 
@@ -160,8 +159,8 @@ public class SpeedyV2ExpandTest {
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyRequest
                                 .query("Procurement")
-                                .$expand("Product")
-                                .$expand("Category")
+                                .expand("Product")
+                                .expand("Category")
                                 .prettyPrint()
                                 .build()
                 ))

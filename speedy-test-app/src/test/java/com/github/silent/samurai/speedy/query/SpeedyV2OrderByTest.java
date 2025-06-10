@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
@@ -30,10 +29,7 @@ import jakarta.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 import static org.hamcrest.Matchers.contains;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -106,8 +102,8 @@ public class SpeedyV2OrderByTest {
         Collections.reverse(reverseName);
 
         JsonNode body = SpeedyRequest.query("Category")
-                .$orderByAsc("name")
-                .$pageSize(50)
+                .orderByAsc("name")
+                .pageSize(50)
                 .prettyPrint()
                 .build();
 

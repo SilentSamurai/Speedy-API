@@ -95,7 +95,7 @@ class OrderByTest {
     private void queryOrderByLocalDateAscending() throws Exception {
         SpeedyQuery query = SpeedyRequest
                 .query("ValueTestEntity")
-                .$orderByAsc("localDate");
+                .orderByAsc("localDate");
 
         SpeedyResponse queryResponse = speedyApi.query(query);
 
@@ -114,7 +114,7 @@ class OrderByTest {
     private void queryOrderByLocalTimeDescending() throws Exception {
         SpeedyQuery query = SpeedyRequest
                 .query("ValueTestEntity")
-                .$orderByDesc("localTime");  // false means descending order
+                .orderByDesc("localTime");  // false means descending order
 
         SpeedyResponse queryResponse = speedyApi.query(query);
 

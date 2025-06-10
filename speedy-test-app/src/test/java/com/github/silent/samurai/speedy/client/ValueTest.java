@@ -113,8 +113,8 @@ class ValueTest {
         // Step 4: Query the entity by ID and verify the updated value
         SpeedyQuery query = SpeedyRequest
                 .query("ValueTestEntity")
-                .$where(
-                        $condition("id", $eq(id))
+                .where(
+                        condition("id", eq(id))
                 );
 
         SpeedyResponse queryResponse = speedyApi.query(query);
@@ -180,7 +180,7 @@ class ValueTest {
 
     private void queryLocalDateGreaterThan(LocalDate date) throws Exception {
         SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("localDate", $gt(date.toString())));
+                .where(condition("localDate", gt(date.toString())));
 
         SpeedyResponse queryResponse = speedyApi.query(query);
 
@@ -192,7 +192,7 @@ class ValueTest {
 
     private void queryLocalDateLessThan(LocalDate date) throws Exception {
         SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("localDate", $lt(date.toString())));
+                .where(condition("localDate", lt(date.toString())));
 
         SpeedyResponse queryResponse = speedyApi.query(query);
 
@@ -204,7 +204,7 @@ class ValueTest {
 
     private void queryLocalTimeGreaterThan(LocalTime time) throws Exception {
         SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("localTime", $gt(time.toString())));
+                .where(condition("localTime", gt(time.toString())));
 
         SpeedyResponse queryResponse = speedyApi.query(query);
 
@@ -216,7 +216,7 @@ class ValueTest {
 
     private void queryInstantTimeLessThan(Instant instant) throws Exception {
         SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("instantTime", $lt(instant.toString())));
+                .where(condition("instantTime", lt(instant.toString())));
 
         SpeedyResponse queryResponse = speedyApi.query(query);
 
@@ -243,7 +243,7 @@ class ValueTest {
 
 
         SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("doubleValue", $eq(doubleValue)));
+                .where(condition("doubleValue", eq(doubleValue)));
 
         SpeedyResponse queryResponse = speedyApi.query(query);
 

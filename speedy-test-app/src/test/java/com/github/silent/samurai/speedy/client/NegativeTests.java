@@ -24,8 +24,8 @@ import jakarta.persistence.EntityManagerFactory;
 
 import java.time.*;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -143,8 +143,8 @@ class NegativeTests {
     void sqlInjectTestInWhereClause() throws Exception {
 
         SpeedyQuery readRequest = SpeedyRequest.query("Customer")
-                .$where(
-                        $condition("name", $eq("John'; DROP TABLE Customer; --"))
+                .where(
+                        condition("name", eq("John'; DROP TABLE Customer; --"))
                 );
 
         SpeedyResponse readResponse = speedyApi.query(readRequest);

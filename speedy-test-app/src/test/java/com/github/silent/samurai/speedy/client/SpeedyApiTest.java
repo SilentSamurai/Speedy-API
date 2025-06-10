@@ -22,8 +22,8 @@ import org.springframework.web.client.RestTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -138,8 +138,8 @@ class SpeedyApiTest {
 
         SpeedyQuery speedyQuery = SpeedyRequest
                 .query("Category")
-                .$where(
-                        $condition("name", $eq(name))
+                .where(
+                        condition("name", eq(name))
                 );
 
         SpeedyResponse speedyResponse = speedyApi.query(speedyQuery);

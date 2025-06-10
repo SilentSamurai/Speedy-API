@@ -1,18 +1,10 @@
 package com.github.silent.samurai.speedy.entity;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.ApiClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyApi;
 import com.github.silent.samurai.speedy.api.client.SpeedyApiTester;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.api.client.models.SpeedyCreateRequest;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
-import com.jayway.jsonpath.JsonPath;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.Matchers;
@@ -23,21 +15,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.JsonPathResultMatchers;
-import org.springframework.test.web.servlet.result.JsonPathResultMatchersDsl;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.client.RestTemplate;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -86,8 +70,8 @@ public class NullAssociationTest {
 
 
         MvcResult mvcResult = apiTester.query(SpeedyQuery.builder("FkNullEntity")
-                        .$where(
-                                $condition("category", $eq(null))
+                        .where(
+                                condition("category", eq(null))
                         )
                 ).andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
@@ -139,9 +123,9 @@ public class NullAssociationTest {
 
 
         MvcResult mvcResult = apiTester.query(SpeedyQuery.builder("FkNullEntity")
-                        .$where(
-                                $condition("name", $eq("TEST")),
-                                $condition("category", $eq(null))
+                        .where(
+                                condition("name", eq("TEST")),
+                                condition("category", eq(null))
                         )
                 ).andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())

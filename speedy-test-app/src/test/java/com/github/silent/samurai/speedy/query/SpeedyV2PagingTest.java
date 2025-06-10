@@ -9,7 +9,6 @@ import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -28,7 +27,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -110,9 +108,9 @@ public class SpeedyV2PagingTest {
         List<Category> allSorted = categoryRepository.findAllSorted();
 
         JsonNode query = SpeedyQuery.builder("Category")
-                .$orderByAsc("name")
-                .$pageNo(0)
-                .$pageSize(2)
+                .orderByAsc("name")
+                .pageNo(0)
+                .pageSize(2)
                 .prettyPrint()
                 .build();
 
@@ -165,9 +163,9 @@ public class SpeedyV2PagingTest {
         List<Category> allSorted = categoryRepository.findAllSorted();
 
         JsonNode query = SpeedyQuery.builder("Category")
-                .$orderByAsc("name")
-                .$pageNo(1)
-                .$pageSize(2)
+                .orderByAsc("name")
+                .pageNo(1)
+                .pageSize(2)
                 .prettyPrint()
                 .build();
 
