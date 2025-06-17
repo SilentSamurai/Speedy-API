@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
@@ -101,7 +101,7 @@ public class SpeedyV2OrderByTest {
         List<String> reverseName = new ArrayList<>(expectedNames);
         Collections.reverse(reverseName);
 
-        JsonNode body = SpeedyRequest.query("Category")
+        JsonNode body = SpeedyQuery.from("Category")
                 .orderByAsc("name")
                 .pageSize(50)
                 .prettyPrint()

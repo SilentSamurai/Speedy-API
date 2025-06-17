@@ -3,12 +3,11 @@ package com.github.silent.samurai.speedy.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.ApiClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyApi;
+import com.github.silent.samurai.speedy.api.client.SpeedyClient;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
-import com.github.silent.samurai.speedy.api.client.models.*;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
 import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -20,14 +19,13 @@ import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.persistence.EntityManagerFactory;
-
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -43,8 +41,7 @@ class OrderByTest {
 
     @Autowired
     ValueTestRepository valueTestRepository;
-    ApiClient defaultClient;
-    SpeedyApi speedyApi;
+    SpeedyClient<SpeedyResponse> speedyClient;
 
     @Autowired
     private MockMvc mvc;
@@ -53,8 +50,7 @@ class OrderByTest {
     void setUp() {
         MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
         RestTemplate restTemplate = new RestTemplate(requestFactory);
-        defaultClient = new ApiClient(restTemplate);
-        speedyApi = new SpeedyApi(defaultClient);
+        speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
     }
 
     @Test
@@ -80,24 +76,24 @@ class OrderByTest {
     }
 
     private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) throws Exception {
-        SpeedyCreateRequest createRequest = SpeedyCreateRequest.builder("ValueTestEntity")
+        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
                 .addField("localDateTime", LocalDateTime.of(localDate, localTime).toString())
                 .addField("localDate", localDate.toString())
                 .addField("localTime", localTime.toString())
                 .addField("instantTime", instantTime.toString())
                 .addField("booleanValue", true)
-                .build();
+                .execute();
 
-        SpeedyResponse createResponse = speedyApi.create(createRequest);
         assertFalse(createResponse.getPayload().isEmpty());
     }
 
     private void queryOrderByLocalDateAscending() throws Exception {
-        SpeedyQuery query = SpeedyRequest
-                .query("ValueTestEntity")
-                .orderByAsc("localDate");
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .orderByAsc("localDate")
+                )
 
-        SpeedyResponse queryResponse = speedyApi.query(query);
+                .execute();
 
         assertFalse(queryResponse.getPayload().isEmpty());
 
@@ -112,11 +108,11 @@ class OrderByTest {
     }
 
     private void queryOrderByLocalTimeDescending() throws Exception {
-        SpeedyQuery query = SpeedyRequest
-                .query("ValueTestEntity")
-                .orderByDesc("localTime");  // false means descending order
-
-        SpeedyResponse queryResponse = speedyApi.query(query);
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .orderByDesc("localTime")
+                )
+                .execute();
 
         assertFalse(queryResponse.getPayload().isEmpty());
 

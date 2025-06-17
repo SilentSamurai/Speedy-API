@@ -61,8 +61,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void executeQuery() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         condition("id", eq("1"))
                 )
@@ -81,8 +81,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void join() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         and(
                                 condition("a.id", eq("1")),
@@ -111,8 +111,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void join_2() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         and(
                                 condition("a.name", eq("product-a")),
@@ -140,8 +140,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_eq() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         condition("id", eq("1"))
                 )
@@ -159,8 +159,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_neq() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         condition("id", ne("1"))
                 )
@@ -179,8 +179,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_gt() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         condition("cost", gt("100"))
                 )
@@ -199,8 +199,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_gte() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         condition("cost", gte("100"))
                 )
@@ -219,8 +219,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_lt() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         condition("cost", lt("100"))
                 )
@@ -239,8 +239,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_lte() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         condition("cost", lte("100"))
                 )
@@ -259,8 +259,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_like() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         condition("name", matches("P*1"))
                 )
@@ -279,8 +279,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_like_with_escape() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         condition("name", matches("P1%"))
                 )
@@ -299,8 +299,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_in() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         condition("category", in("A", "B", "C"))
                 )
@@ -321,8 +321,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_not_in() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         condition("category", nin("A", "B", "C"))
                 )
@@ -343,8 +343,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_is_null() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         condition("a", eq(null))
                 )
@@ -363,8 +363,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_is_not_null() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         condition("a", ne(null))
                 )
@@ -383,8 +383,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_and_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         and(
                                 condition("id", eq("1")),
@@ -410,8 +410,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_or_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .where(
                         or(
                                 condition("id", eq("1")),
@@ -437,8 +437,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_complex_nested_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         and(
                                 or(
@@ -470,8 +470,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_complex_deep_nested_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("Product")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
                 .where(
                         and(
                                 or(
@@ -526,8 +526,8 @@ class JooqQueryBuilderTest {
 
     @Test
     void order_by() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .from("MultipleFk")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
                 .orderByAsc("name")
                 .orderByDesc("id")
                 .prettyPrint()

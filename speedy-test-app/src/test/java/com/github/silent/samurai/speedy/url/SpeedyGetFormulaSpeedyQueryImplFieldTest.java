@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
@@ -49,7 +49,7 @@ class SpeedyGetFormulaSpeedyQueryImplFieldTest {
     void getViaPrimaryKey() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyRequest.query().build()
+                SpeedyQuery.from().build()
         );
         List<Inventory> payload = someInventory.getPayload();
         Inventory inventory = payload.get(0);

@@ -3,12 +3,11 @@ package com.github.silent.samurai.speedy.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.ApiClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyApi;
+import com.github.silent.samurai.speedy.api.client.SpeedyClient;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
-import com.github.silent.samurai.speedy.api.client.models.*;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
 import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -20,12 +19,9 @@ import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.persistence.EntityManagerFactory;
-
 import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
 import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -41,8 +37,7 @@ class SpeedyApiTest {
 
     @Autowired
     ValueTestRepository valueTestRepository;
-    ApiClient defaultClient;
-    SpeedyApi speedyApi;
+    SpeedyClient<SpeedyResponse> speedyClient;
 
     @Autowired
     private MockMvc mvc;
@@ -51,17 +46,13 @@ class SpeedyApiTest {
     void setUp() {
         MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
         RestTemplate restTemplate = new RestTemplate(requestFactory);
-        defaultClient = new ApiClient(restTemplate);
-        speedyApi = new SpeedyApi(defaultClient);
+        speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
     }
 
     String createTest() throws Exception {
-        SpeedyCreateRequest entity = SpeedyRequest
-                .create("Category")
+        SpeedyResponse speedyResponse = speedyClient.create("Category")
                 .addField("name", "cat-client-1")
-                .build();
-
-        SpeedyResponse speedyResponse = speedyApi.create(entity);
+                .execute();
 
         assertFalse(speedyResponse.getPayload().isEmpty());
         JsonNode entityNode = speedyResponse.getPayload().get(0);
@@ -73,15 +64,11 @@ class SpeedyApiTest {
         return entityNode.get("id").asText();
     }
 
-
     void updateTest(String id) throws Exception {
-        SpeedyUpdateRequest request = SpeedyRequest
-                .update("Category")
+        SpeedyResponse speedyResponse = speedyClient.update("Category")
                 .key("id", id)
                 .field("name", "cat-CLIENT-updated-1")
-                .build();
-
-        SpeedyResponse speedyResponse = speedyApi.update(request);
+                .execute();
 
         assertFalse(speedyResponse.getPayload().isEmpty());
         JsonNode entityNode = speedyResponse.getPayload();
@@ -98,11 +85,9 @@ class SpeedyApiTest {
     }
 
     void deleteTest(String id) throws Exception {
-        SpeedyDeleteRequest request = SpeedyRequest.delete("Category")
+        SpeedyResponse speedyResponse = speedyClient.delete("Category")
                 .key("id", id)
-                .build();
-
-        SpeedyResponse speedyResponse = speedyApi.delete(request);
+                .execute();
 
         assertFalse(speedyResponse.getPayload().isEmpty());
         JsonNode entityNode = speedyResponse.getPayload().get(0);
@@ -113,13 +98,9 @@ class SpeedyApiTest {
     }
 
     void getTest(String id, String name) throws Exception {
-        SpeedyGetRequest request = SpeedyGetRequest.builder("Category")
+        SpeedyResponse speedyResponse = speedyClient.get("Category")
                 .key("id", id)
-                .build();
-
-        SpeedyResponse speedyResponse = speedyApi.get(request);
-
-//        assertEquals("1", jsonNode.get(0).get("id").asText());
+                .execute();
 
         assertFalse(speedyResponse.getPayload().isEmpty());
         JsonNode entityNode = speedyResponse.getPayload().get(0);
@@ -133,16 +114,12 @@ class SpeedyApiTest {
         assertEquals(name, entityNode.get("name").asText());
     }
 
-
     void query(String id, String name) throws Exception {
-
-        SpeedyQuery speedyQuery = SpeedyRequest
-                .query("Category")
-                .where(
-                        condition("name", eq(name))
-                );
-
-        SpeedyResponse speedyResponse = speedyApi.query(speedyQuery);
+        SpeedyResponse speedyResponse = speedyClient.query(
+                        SpeedyQuery.from("Category")
+                                .where(condition("name", eq(name)))
+                )
+                .execute();
 
         assertFalse(speedyResponse.getPayload().isEmpty());
         JsonNode entityNode = speedyResponse.getPayload().get(0);
@@ -169,9 +146,6 @@ class SpeedyApiTest {
         query(id, "cat-CLIENT-updated-1");
 
         deleteTest(id);
-
-
     }
-
 }
 

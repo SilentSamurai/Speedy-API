@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.query;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.entity.Procurement;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.ProcurementRepository;
@@ -56,8 +56,8 @@ class SpeedyV2ForgeinKeyWhereClause {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest
-                                .query("Procurement")
+                        SpeedyQuery
+                                .from("Procurement")
                                 .where(
                                         and(
                                                 condition("product.id", eq("1")),
@@ -101,8 +101,8 @@ class SpeedyV2ForgeinKeyWhereClause {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest
-                                .query("Procurement")
+                        SpeedyQuery
+                                .from("Procurement")
                                 .where(
                                         and(
                                                 condition("product.id", eq("1")),

@@ -107,7 +107,7 @@ public class SpeedyV2PagingTest {
 
         List<Category> allSorted = categoryRepository.findAllSorted();
 
-        JsonNode query = SpeedyQuery.builder("Category")
+        JsonNode query = SpeedyQuery.from("Category")
                 .orderByAsc("name")
                 .pageNo(0)
                 .pageSize(2)
@@ -162,7 +162,7 @@ public class SpeedyV2PagingTest {
     void testQuery2() throws Exception {
         List<Category> allSorted = categoryRepository.findAllSorted();
 
-        JsonNode query = SpeedyQuery.builder("Category")
+        JsonNode query = SpeedyQuery.from("Category")
                 .orderByAsc("name")
                 .pageNo(1)
                 .pageSize(2)

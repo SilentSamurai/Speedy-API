@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.ProductRepository;
 import org.junit.jupiter.api.*;
@@ -99,8 +99,7 @@ class SpeedyAssociationTest {
 
 //        String query = String.format("(id='%s')", productKey.getId());
         FilteredProductResponse productResponse = productApi.queryProduct(
-                SpeedyRequest
-                        .query()
+                SpeedyQuery.from()
                         .where(
                                 condition("id", eq(productKey.getId()))
                         ).build()

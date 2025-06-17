@@ -406,7 +406,7 @@ class SpeedyEntityTest {
         Assertions.assertEquals(currencyKey.getId(), deletedCurrencyKey.getId());
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpeedyQuery.builder()
+                SpeedyQuery.from()
                         .where(
                                 condition("currencyAbbr", eq("NZD"))
                         ).build()
@@ -427,7 +427,7 @@ class SpeedyEntityTest {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpeedyQuery.builder()
+                SpeedyQuery.from()
                         .where(
                                 condition("currencyAbbr", eq("NZD"))
                         ).build()
@@ -441,7 +441,7 @@ class SpeedyEntityTest {
         Currency baseCurrency = someCurrency.getPayload().get(0);
 
         someCurrency = currencyApi.queryCurrency(
-                SpeedyQuery.builder()
+                SpeedyQuery.from()
                         .where(
                                 condition("currencyAbbr", eq("NZD"))
                         ).build()

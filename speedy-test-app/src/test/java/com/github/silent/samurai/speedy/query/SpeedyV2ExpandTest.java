@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
@@ -60,8 +59,8 @@ public class SpeedyV2ExpandTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest
-                                .query("Product")
+                        SpeedyQuery
+                                .from("Product")
                                 .expand("Category")
                                 .prettyPrint()
                                 .build()
@@ -112,7 +111,7 @@ public class SpeedyV2ExpandTest {
 
         List<Category> allSorted = categoryRepository.findAllSorted();
 
-        JsonNode query = SpeedyQuery.builder("Category")
+        JsonNode query = SpeedyQuery.from("Category")
                 .orderByAsc("name")
                 .pageNo(1)
                 .pageSize(2)
@@ -157,8 +156,8 @@ public class SpeedyV2ExpandTest {
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
                 .post(SpeedyConstant.URI + "/Procurement/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest
-                                .query("Procurement")
+                        SpeedyQuery
+                                .from("Procurement")
                                 .expand("Product")
                                 .expand("Category")
                                 .prettyPrint()

@@ -13,11 +13,4 @@ public class SpeedyGetRequest {
     private String entity;
     private ObjectNode pk;
 
-    public SpeedyGetRequest() {
-    }
-
-    public static SpeedyGetRequestBuilder builder(String entity) {
-        return new SpeedyGetRequestBuilder(entity);
-    }
-
 }

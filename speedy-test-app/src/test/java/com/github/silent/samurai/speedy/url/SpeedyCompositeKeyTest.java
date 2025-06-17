@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,7 +86,7 @@ class SpeedyCompositeKeyTest {
 //        String query = String.format("(productId=\"%s\",supplierId=\"%s\")", orderKey.getProductId(), orderKey.getSupplierId());
 
         FilteredOrderResponse orderResponse = apiInstance.queryOrder(
-                SpeedyRequest.query()
+                SpeedyQuery.from()
                         .where(
                                 condition("productId", eq(orderKey.getProductId())),
                                 condition("supplierId", eq(orderKey.getSupplierId()))
