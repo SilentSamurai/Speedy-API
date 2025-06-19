@@ -1,18 +1,9 @@
 package com.github.silent.samurai.speedy.entity;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.ApiClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyApi;
-import com.github.silent.samurai.speedy.api.client.SpeedyApiTester;
+import com.github.silent.samurai.speedy.api.client.SpeedyClient;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyCreateRequest;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
-import com.jayway.jsonpath.JsonPath;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.Matchers;
@@ -23,22 +14,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.JsonPathResultMatchers;
-import org.springframework.test.web.servlet.result.JsonPathResultMatchersDsl;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.web.client.RestTemplate;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
@@ -57,23 +40,23 @@ public class NullAssociationTest {
     @Autowired
     private MockMvc mvc;
 
-    private SpeedyApiTester apiTester;
+    private SpeedyClient<ResultActions> speedyClient;
+    @Autowired
+    private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        apiTester = new SpeedyApiTester(mvc);
+        speedyClient = SpeedyClient.mockMvc(mockMvc);
     }
 
     @Test
     void null_fk_with_entity() throws Exception {
 
-        apiTester.create(
-                        SpeedyCreateRequest
-                                .builder("FkNullEntity")
-                                .addField("name", "TEST")
-                                .addField("category", null)
-                                .build()
-                ).andExpect(status().isOk())
+        speedyClient.create("FkNullEntity")
+                .addField("name", "TEST")
+                .addField("category", null)
+                .execute()
+                .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
@@ -85,11 +68,13 @@ public class NullAssociationTest {
                 .andReturn();
 
 
-        MvcResult mvcResult = apiTester.query(SpeedyQuery.builder("FkNullEntity")
-                        .$where(
-                                $condition("category", $eq(null))
-                        )
-                ).andExpect(status().isOk())
+        MvcResult mvcResult = speedyClient.query(
+                        SpeedyQuery.from("FkNullEntity")
+                                .where(
+                                        condition("category", eq(null))
+                                )
+                ).execute()
+                .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
@@ -120,13 +105,11 @@ public class NullAssociationTest {
     // SELECT * FROM FK_NULL_ENTITY LEFT OUTER JOIN CATEGORIES ON FK_NULL_ENTITY.CATEGORY_ID = CATEGORIES.ID WHERE CATEGORIES.ID IS NULL
     @Test
     void filtering_with_null_fk() throws Exception {
-        apiTester.create(
-                        SpeedyCreateRequest
-                                .builder("FkNullEntity")
-                                .addField("name", "TEST")
-                                .addField("category", null)
-                                .build()
-                ).andExpect(status().isOk())
+        speedyClient.create("FkNullEntity")
+                .addField("name", "TEST")
+                .addField("category", null)
+                .execute()
+                .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
@@ -138,12 +121,14 @@ public class NullAssociationTest {
                 .andReturn();
 
 
-        MvcResult mvcResult = apiTester.query(SpeedyQuery.builder("FkNullEntity")
-                        .$where(
-                                $condition("name", $eq("TEST")),
-                                $condition("category", $eq(null))
-                        )
-                ).andExpect(status().isOk())
+        MvcResult mvcResult = speedyClient.query(
+                        SpeedyQuery.from("FkNullEntity")
+                                .where(
+                                        condition("name", eq("TEST")),
+                                        condition("category", eq(null))
+                                )
+                ).execute()
+                .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())

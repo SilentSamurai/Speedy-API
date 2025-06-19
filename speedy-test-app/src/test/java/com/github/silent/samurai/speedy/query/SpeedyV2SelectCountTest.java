@@ -1,16 +1,13 @@
 package com.github.silent.samurai.speedy.query;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.ProductRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.persistence.EntityManagerFactory;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -26,8 +23,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -72,8 +69,8 @@ public class SpeedyV2SelectCountTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest.query("Product")
-                                .$select("count")
+                        SpeedyQuery.from("Product")
+                                .select("count")
                                 .prettyPrint()
                                 .build()
                 ))
@@ -102,10 +99,10 @@ public class SpeedyV2SelectCountTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest.query("Product")
-                                .$select("count")
-                                .$where(
-                                        $condition("id", $eq("1"))
+                        SpeedyQuery.from("Product")
+                                .select("count")
+                                .where(
+                                        condition("id", eq("1"))
                                 )
                                 .prettyPrint()
                                 .build()
@@ -128,10 +125,10 @@ public class SpeedyV2SelectCountTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest.query("Product")
-                                .$select("count")
-                                .$where(
-                                        $condition("category.id", $eq("2"))
+                        SpeedyQuery.from("Product")
+                                .select("count")
+                                .where(
+                                        condition("category.id", eq("2"))
                                 )
                                 .prettyPrint()
                                 .build()
@@ -154,9 +151,9 @@ public class SpeedyV2SelectCountTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest.query("Product")
-                                .$select("count")
-                                .$expand("category")
+                        SpeedyQuery.from("Product")
+                                .select("count")
+                                .expand("category")
                                 .prettyPrint()
                                 .build()
                 ))
@@ -178,10 +175,10 @@ public class SpeedyV2SelectCountTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest.query("Product")
-                                .$select("count")
-                                .$pageNo(2)
-                                .$pageSize(2)
+                        SpeedyQuery.from("Product")
+                                .select("count")
+                                .pageNo(2)
+                                .pageSize(2)
                                 .prettyPrint()
                                 .build()
                 ))
@@ -203,10 +200,10 @@ public class SpeedyV2SelectCountTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest.query("Product")
-                                .$select("count")
-                                .$orderByAsc("id")
-                                .$orderByDesc("name")
+                        SpeedyQuery.from("Product")
+                                .select("count")
+                                .orderByAsc("id")
+                                .orderByDesc("name")
                                 .prettyPrint()
                                 .build()
                 ))

@@ -75,6 +75,7 @@ class SpeedyValueTest {
         ValueTestEntityKey valueTestEntityKey = payload.get(0);
 
 
+        Assertions.assertNotNull(valueTestEntityKey.getId());
         Optional<com.github.silent.samurai.speedy.entity.ValueTestEntity> optionalValueTestEntity =
                 valueTestRepository.findById(valueTestEntityKey.getId());
 

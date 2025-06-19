@@ -1,11 +1,10 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
@@ -30,10 +29,7 @@ import jakarta.persistence.EntityManagerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 import static org.hamcrest.Matchers.contains;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -105,9 +101,9 @@ public class SpeedyV2OrderByTest {
         List<String> reverseName = new ArrayList<>(expectedNames);
         Collections.reverse(reverseName);
 
-        JsonNode body = SpeedyRequest.query("Category")
-                .$orderByAsc("name")
-                .$pageSize(50)
+        JsonNode body = SpeedyQuery.from("Category")
+                .orderByAsc("name")
+                .pageSize(50)
                 .prettyPrint()
                 .build();
 

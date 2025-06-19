@@ -61,10 +61,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void executeQuery() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $condition("id", $eq("1"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("id", eq("1"))
                 )
                 .prettyPrint()
                 .build();
@@ -81,12 +81,12 @@ class JooqQueryBuilderTest {
 
     @Test
     void join() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $and(
-                                $condition("a.id", $eq("1")),
-                                $condition("b.id", $eq("2"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        and(
+                                condition("a.id", eq("1")),
+                                condition("b.id", eq("2"))
                         )
                 )
                 .prettyPrint()
@@ -111,12 +111,12 @@ class JooqQueryBuilderTest {
 
     @Test
     void join_2() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $and(
-                                $condition("a.name", $eq("product-a")),
-                                $condition("b.name", $eq("product-b"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        and(
+                                condition("a.name", eq("product-a")),
+                                condition("b.name", eq("product-b"))
                         )
                 )
                 .prettyPrint()
@@ -140,10 +140,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_eq() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $condition("id", $eq("1"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("id", eq("1"))
                 )
                 .prettyPrint()
                 .build();
@@ -159,10 +159,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_neq() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $condition("id", $ne("1"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("id", ne("1"))
                 )
                 .prettyPrint()
                 .build();
@@ -179,10 +179,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_gt() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $condition("cost", $gt("100"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("cost", gt("100"))
                 )
                 .prettyPrint()
                 .build();
@@ -199,10 +199,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_gte() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $condition("cost", $gte("100"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("cost", gte("100"))
                 )
                 .prettyPrint()
                 .build();
@@ -219,10 +219,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_lt() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $condition("cost", $lt("100"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("cost", lt("100"))
                 )
                 .prettyPrint()
                 .build();
@@ -239,10 +239,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_lte() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $condition("cost", $lte("100"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("cost", lte("100"))
                 )
                 .prettyPrint()
                 .build();
@@ -259,10 +259,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_like() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $condition("name", $matches("P*1"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("name", matches("P*1"))
                 )
                 .prettyPrint()
                 .build();
@@ -279,10 +279,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_like_with_escape() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $condition("name", $matches("P1%"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("name", matches("P1%"))
                 )
                 .prettyPrint()
                 .build();
@@ -299,10 +299,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_in() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $condition("category", $in("A", "B", "C"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("category", in("A", "B", "C"))
                 )
                 .prettyPrint()
                 .build();
@@ -321,10 +321,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_not_in() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $condition("category", $nin("A", "B", "C"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("category", nin("A", "B", "C"))
                 )
                 .prettyPrint()
                 .build();
@@ -343,10 +343,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_is_null() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $condition("a", $eq(null))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("a", eq(null))
                 )
                 .prettyPrint()
                 .build();
@@ -363,10 +363,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_is_not_null() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $condition("a", $ne(null))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("a", ne(null))
                 )
                 .prettyPrint()
                 .build();
@@ -383,12 +383,12 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_and_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $and(
-                                $condition("id", $eq("1")),
-                                $condition("category", $ne("X"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        and(
+                                condition("id", eq("1")),
+                                condition("category", ne("X"))
                         )
                 )
                 .prettyPrint()
@@ -410,12 +410,12 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_or_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$where(
-                        $or(
-                                $condition("id", $eq("1")),
-                                $condition("category", $eq("A"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        or(
+                                condition("id", eq("1")),
+                                condition("category", eq("A"))
                         )
                 )
                 .prettyPrint()
@@ -437,15 +437,15 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_complex_nested_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $and(
-                                $or(
-                                        $condition("id", $eq("1")),
-                                        $condition("category", $eq("A"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        and(
+                                or(
+                                        condition("id", eq("1")),
+                                        condition("category", eq("A"))
                                 ),
-                                $condition("cost", $gt("100"))
+                                condition("cost", gt("100"))
                         )
                 )
                 .prettyPrint()
@@ -470,25 +470,25 @@ class JooqQueryBuilderTest {
 
     @Test
     void where_complex_deep_nested_conditions() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("Product")
-                .$where(
-                        $and(
-                                $or(
-                                        $condition("id", $eq("1")),
-                                        $condition("category", $eq("A")),
-                                        $and(
-                                                $condition("id", $eq("1")),
-                                                $condition("category", $eq("A"))
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        and(
+                                or(
+                                        condition("id", eq("1")),
+                                        condition("category", eq("A")),
+                                        and(
+                                                condition("id", eq("1")),
+                                                condition("category", eq("A"))
                                         )
                                 ),
-                                $condition("cost", $gt("100")),
-                                $and(
-                                        $condition("cost", $gt("100")),
-                                        $condition("cost", $gt("100")),
-                                        $or(
-                                                $condition("id", $eq("1")),
-                                                $condition("category", $eq("A"))
+                                condition("cost", gt("100")),
+                                and(
+                                        condition("cost", gt("100")),
+                                        condition("cost", gt("100")),
+                                        or(
+                                                condition("id", eq("1")),
+                                                condition("category", eq("A"))
                                         )
                                 )
                         )
@@ -526,10 +526,10 @@ class JooqQueryBuilderTest {
 
     @Test
     void order_by() throws Exception {
-        JsonNode jsonQuery = SpeedyQuery.builder()
-                .$from("MultipleFk")
-                .$orderByAsc("name")
-                .$orderByDesc("id")
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .orderByAsc("name")
+                .orderByDesc("id")
                 .prettyPrint()
                 .build();
 

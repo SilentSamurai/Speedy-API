@@ -2,14 +2,13 @@ package com.github.silent.samurai.speedy.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.ApiClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyApi;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
-import com.github.silent.samurai.speedy.api.client.models.*;
+import com.github.silent.samurai.speedy.api.client.SpeedyClient;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
 import com.github.silent.samurai.speedy.entity.ValueTestEntity;
 import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
+import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -20,8 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
-
-import jakarta.persistence.EntityManagerFactory;
 
 import java.time.*;
 
@@ -42,8 +39,7 @@ class ValueTest {
 
     @Autowired
     ValueTestRepository valueTestRepository;
-    ApiClient defaultClient;
-    SpeedyApi speedyApi;
+    SpeedyClient<SpeedyResponse> speedyClient;
 
     @Autowired
     private MockMvc mvc;
@@ -52,25 +48,21 @@ class ValueTest {
     void setUp() {
         MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
         RestTemplate restTemplate = new RestTemplate(requestFactory);
-        defaultClient = new ApiClient(restTemplate);
-        speedyApi = new SpeedyApi(defaultClient);
+        speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
     }
 
     @Test
     void normalTest() throws Exception {
-
         Class<ValueTestEntity> valueTestEntityClass = ValueTestEntity.class;
 
-        SpeedyCreateRequest createRequest = SpeedyRequest.create("ValueTestEntity")
+        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
                 .addField("localDateTime", LocalDateTime.now())
                 .addField("localDate", LocalDate.now())
                 .addField("localTime", LocalTime.now())
                 .addField("instantTime", Instant.now())
                 .addField("zonedDateTime", ZonedDateTime.now())
                 .addField("booleanValue", true)
-                .build();
-
-        SpeedyResponse createResponse = speedyApi.create(createRequest);
+                .execute();
 
         assertFalse(createResponse.getPayload().isEmpty());
         JsonNode createdEntity = createResponse.getPayload().get(0);
@@ -80,27 +72,23 @@ class ValueTest {
         assertNotNull(id);
 
         // Step 2: Get and verify the created entity
-        SpeedyGetRequest getRequest = SpeedyRequest
-                .get("ValueTestEntity")
+        SpeedyResponse getResponse = speedyClient.get("ValueTestEntity")
                 .key("id", id)
-                .build();
+                .execute();
 
-        SpeedyResponse getResponse = speedyApi.get(getRequest);
         JsonNode fetchedEntity = getResponse.getPayload().get(0);
 
         assertTrue(fetchedEntity.has("localDateTime"));
         assertTrue(fetchedEntity.has("booleanValue"));
-        assertEquals(true, fetchedEntity.get("booleanValue").asBoolean());
+        assertTrue(fetchedEntity.get("booleanValue").asBoolean());
 
         // Step 3: Update the entity
-        SpeedyUpdateRequest updateRequest = SpeedyRequest
-                .update("ValueTestEntity")
+        SpeedyResponse updateResponse = speedyClient.update("ValueTestEntity")
                 .key("id", id)
                 .field("booleanValue", false)  // Update the boolean field
                 .field("localDateTime", LocalDateTime.now().plusDays(1).toString()) // Update the date
-                .build();
+                .execute();
 
-        SpeedyResponse updateResponse = speedyApi.update(updateRequest);
         JsonNode updatedEntity = updateResponse.getPayload();
 
         assertTrue(updatedEntity.isArray());
@@ -111,13 +99,12 @@ class ValueTest {
         assertFalse(updatedEntity.get("booleanValue").asBoolean());
 
         // Step 4: Query the entity by ID and verify the updated value
-        SpeedyQuery query = SpeedyRequest
-                .query("ValueTestEntity")
-                .$where(
-                        $condition("id", $eq(id))
-                );
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .where(condition("id", eq(id)))
+                )
+                .execute();
 
-        SpeedyResponse queryResponse = speedyApi.query(query);
         JsonNode queriedEntity = queryResponse.getPayload().get(0);
 
         assertTrue(queriedEntity.has("booleanValue"));
@@ -125,17 +112,15 @@ class ValueTest {
         assertTrue(queriedEntity.has("localDateTime"));
 
         // Step 5: Delete the entity
-        SpeedyDeleteRequest deleteRequest = SpeedyRequest.delete("ValueTestEntity")
+        SpeedyResponse deleteResponse = speedyClient.delete("ValueTestEntity")
                 .key("id", id)
-                .build();
+                .execute();
 
-        SpeedyResponse deleteResponse = speedyApi.delete(deleteRequest);
         JsonNode deletedEntity = deleteResponse.getPayload().get(0);
 
         assertTrue(deletedEntity.has("id"));
         assertEquals(id, deletedEntity.get("id").asText());
     }
-
 
     @Test
     void testQueryWithGreaterThanAndLessThan() throws Exception {
@@ -161,28 +146,27 @@ class ValueTest {
         query_double_value(0.4545);
         query_double_value(909999.094);
         query_double_value(909999.5);
-
     }
 
     private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) throws Exception {
-        SpeedyCreateRequest createRequest = SpeedyCreateRequest.builder("ValueTestEntity")
+        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
                 .addField("localDateTime", LocalDateTime.of(localDate, localTime))
                 .addField("localDate", localDate)
                 .addField("localTime", localTime)
                 .addField("instantTime", instantTime)
                 .addField("booleanValue", true)
                 .addField("doubleValue", 1.5430434)
-                .build();
+                .execute();
 
-        SpeedyResponse createResponse = speedyApi.create(createRequest);
         assertFalse(createResponse.getPayload().isEmpty());
     }
 
     private void queryLocalDateGreaterThan(LocalDate date) throws Exception {
-        SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("localDate", $gt(date.toString())));
-
-        SpeedyResponse queryResponse = speedyApi.query(query);
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .where(condition("localDate", gt(date.toString())))
+                )
+                .execute();
 
         assertFalse(queryResponse.getPayload().isEmpty());
         for (JsonNode entity : queryResponse.getPayload()) {
@@ -191,10 +175,11 @@ class ValueTest {
     }
 
     private void queryLocalDateLessThan(LocalDate date) throws Exception {
-        SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("localDate", $lt(date.toString())));
-
-        SpeedyResponse queryResponse = speedyApi.query(query);
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .where(condition("localDate", lt(date.toString())))
+                )
+                .execute();
 
         assertFalse(queryResponse.getPayload().isEmpty());
         for (JsonNode entity : queryResponse.getPayload()) {
@@ -203,10 +188,11 @@ class ValueTest {
     }
 
     private void queryLocalTimeGreaterThan(LocalTime time) throws Exception {
-        SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("localTime", $gt(time.toString())));
-
-        SpeedyResponse queryResponse = speedyApi.query(query);
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .where(condition("localTime", gt(time.toString())))
+                )
+                .execute();
 
         assertFalse(queryResponse.getPayload().isEmpty());
         for (JsonNode entity : queryResponse.getPayload()) {
@@ -215,10 +201,11 @@ class ValueTest {
     }
 
     private void queryInstantTimeLessThan(Instant instant) throws Exception {
-        SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("instantTime", $lt(instant.toString())));
-
-        SpeedyResponse queryResponse = speedyApi.query(query);
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .where(condition("instantTime", lt(instant.toString())))
+                )
+                .execute();
 
         assertFalse(queryResponse.getPayload().isEmpty());
         for (JsonNode entity : queryResponse.getPayload()) {
@@ -227,25 +214,23 @@ class ValueTest {
     }
 
     private void query_double_value(Double doubleValue) throws Exception {
-        SpeedyCreateRequest createRequest = SpeedyCreateRequest.builder("ValueTestEntity")
+        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
                 .addField("localDateTime", LocalDateTime.now())
                 .addField("localDate", LocalDate.now())
                 .addField("localTime", LocalTime.now())
                 .addField("instantTime", Instant.now())
                 .addField("booleanValue", true)
                 .addField("doubleValue", doubleValue)
-                .build();
+                .execute();
 
-        SpeedyResponse createResponse = speedyApi.create(createRequest);
         assertFalse(createResponse.getPayload().isEmpty());
         JsonNode payload = createResponse.getPayload();
 
-
-
-        SpeedyQuery query = SpeedyQuery.builder("ValueTestEntity")
-                .$where($condition("doubleValue", $eq(doubleValue)));
-
-        SpeedyResponse queryResponse = speedyApi.query(query);
+        SpeedyResponse queryResponse = speedyClient.query(
+                        SpeedyQuery.from("ValueTestEntity")
+                                .where(condition("doubleValue", eq(doubleValue)))
+                )
+                .execute();
 
         assertFalse(queryResponse.getPayload().isEmpty());
         for (JsonNode entity : queryResponse.getPayload()) {
