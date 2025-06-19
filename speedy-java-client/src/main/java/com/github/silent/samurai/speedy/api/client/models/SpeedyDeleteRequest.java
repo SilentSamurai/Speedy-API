@@ -13,11 +13,4 @@ public class SpeedyDeleteRequest {
     private String entity;
     private ArrayNode pkToDelete;
 
-    public SpeedyDeleteRequest() {
-    }
-
-    public static SpeedyDeleteRequestBuilder builder(String entity) {
-        return new SpeedyDeleteRequestBuilder(entity);
-    }
-
 }

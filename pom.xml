@@ -24,6 +24,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <!--        <kotlin.version>1.8.0</kotlin.version>-->
         <springdoc.version>2.5.0</springdoc.version>
         <!--        <junit-jupiter.version>5.7.1</junit-jupiter.version>-->
@@ -185,13 +187,36 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>3.6.3</version>
+                <configuration>
+                    <source>17</source>
+                    <doclint>none</doclint>
+                    <failOnError>false</failOnError>
+                    <show>public</show>
+                    <nohelp>true</nohelp>
+                    <encoding>UTF-8</encoding>
+                    <charset>UTF-8</charset>
+                    <docencoding>UTF-8</docencoding>
+                    <additionalJOption>--enable-preview</additionalJOption>
+                    <additionalJOption>-J--add-opens=jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED</additionalJOption>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                    </execution>
+                    <execution>
+                        <id>javadoc-site</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>javadoc</goal>
+                        </goals>
+                        <configuration>
+                            <reportOutputDirectory>${project.reporting.outputDirectory}/javadoc</reportOutputDirectory>
+                            <destDir>${project.reporting.outputDirectory}/javadoc</destDir>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.entity;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -29,7 +29,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -38,6 +37,10 @@ class PkUuidTestTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PkUuidTestTest.class);
 
+    /// rust like java doc
+    /// ```
+    ///
+    /// ```
     @Autowired
     EntityManagerFactory entityManagerFactory;
 
@@ -99,8 +102,8 @@ class PkUuidTestTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$query")
                 .content(CommonUtil.json().writeValueAsString(
-                        SpeedyRequest
-                                .query("PkUuidTest")
+                        SpeedyQuery
+                                .from("PkUuidTest")
                                 .prettyPrint()
                                 .build()
                 ))

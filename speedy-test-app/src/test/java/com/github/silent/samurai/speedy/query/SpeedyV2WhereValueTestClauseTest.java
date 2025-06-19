@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
+import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -23,10 +24,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import jakarta.persistence.EntityManagerFactory;
-
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -57,9 +56,9 @@ public class SpeedyV2WhereValueTestClauseTest {
        * */
     @Test
     void testQuery0() throws Exception {
-        JsonNode body = SpeedyRequest.query("ValueTestEntity")
-                .$where(
-                        $condition("localTime", $eq("10:00:00"))
+        JsonNode body = SpeedyQuery.from("ValueTestEntity")
+                .where(
+                        condition("localTime", eq("10:00:00"))
                 )
                 .prettyPrint()
                 .build();

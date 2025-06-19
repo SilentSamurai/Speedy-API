@@ -36,8 +36,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -406,9 +406,9 @@ class SpeedyEntityTest {
         Assertions.assertEquals(currencyKey.getId(), deletedCurrencyKey.getId());
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpeedyQuery.builder()
-                        .$where(
-                                $condition("currencyAbbr", $eq("NZD"))
+                SpeedyQuery.from()
+                        .where(
+                                condition("currencyAbbr", eq("NZD"))
                         ).build()
         );
 
@@ -427,9 +427,9 @@ class SpeedyEntityTest {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
-                SpeedyQuery.builder()
-                        .$where(
-                                $condition("currencyAbbr", $eq("NZD"))
+                SpeedyQuery.from()
+                        .where(
+                                condition("currencyAbbr", eq("NZD"))
                         ).build()
         );
 
@@ -441,9 +441,9 @@ class SpeedyEntityTest {
         Currency baseCurrency = someCurrency.getPayload().get(0);
 
         someCurrency = currencyApi.queryCurrency(
-                SpeedyQuery.builder()
-                        .$where(
-                                $condition("currencyAbbr", $eq("NZD"))
+                SpeedyQuery.from()
+                        .where(
+                                condition("currencyAbbr", eq("NZD"))
                         ).build()
         );
         Assertions.assertNotNull(someCurrency);

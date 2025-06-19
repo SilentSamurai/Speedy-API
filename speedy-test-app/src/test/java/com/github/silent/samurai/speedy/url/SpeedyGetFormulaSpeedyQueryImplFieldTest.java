@@ -1,9 +1,8 @@
 package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyRequest;
+import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
@@ -21,9 +20,6 @@ import org.springframework.web.client.RestTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
-
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.$eq;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -53,7 +49,7 @@ class SpeedyGetFormulaSpeedyQueryImplFieldTest {
     void getViaPrimaryKey() throws Exception {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
-                SpeedyRequest.query().build()
+                SpeedyQuery.from().build()
         );
         List<Inventory> payload = someInventory.getPayload();
         Inventory inventory = payload.get(0);
