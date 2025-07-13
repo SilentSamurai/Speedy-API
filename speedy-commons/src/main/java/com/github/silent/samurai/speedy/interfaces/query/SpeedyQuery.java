@@ -21,7 +21,7 @@ public interface SpeedyQuery {
 
     PageInfo getPageInfo();
 
-    List<String> getExpand();
+    Set<String> getExpand();
 
     Set<String> getSelect();
 

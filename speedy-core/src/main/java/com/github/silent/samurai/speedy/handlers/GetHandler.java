@@ -12,8 +12,10 @@ import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class GetHandler implements Handler {
@@ -35,12 +37,11 @@ public class GetHandler implements Handler {
         SpeedyQuery speedyQuery = parser.parse();
 
         SpeedyQueryImpl speedyImpl = (SpeedyQueryImpl) speedyQuery;
-        speedyImpl.setExpand(
-                speedyQuery.getFrom()
-                        .getAssociatedFields().stream().map(
-                                item -> item.getAssociationMetadata().getName()
-                        ).collect(Collectors.toList())
-        );
+        Set<String> allAssociations = speedyQuery.getFrom()
+                .getAssociatedFields().stream().map(
+                        item -> item.getAssociationMetadata().getName()
+                ).collect(Collectors.toSet());
+        speedyImpl.setExpand(allAssociations);
         context.setSpeedyQuery(speedyQuery);
 
         List<SpeedyEntity> result = queryProcessor.executeMany(speedyQuery);

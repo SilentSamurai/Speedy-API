@@ -197,14 +197,33 @@ public class JsonQueryBuilder {
         }
     }
 
-    void buildExpand() {
+    void buildExpand() throws SpeedyHttpException {
         if (rootNode.has("$expand")) {
             JsonNode jsonNode = rootNode.get("$expand");
             if (jsonNode.isArray()) {
                 for (JsonNode node : jsonNode) {
                     if (node.isTextual()) {
-                        speedyQuery.addExpand(node.asText());
+                        String expansion = node.asText();
+                        // Validate dot notation expansion
+                        validateExpansionPath(expansion);
+                        speedyQuery.addExpand(expansion);
                     }
+                }
+            }
+        }
+    }
+    
+    private void validateExpansionPath(String expansion) throws BadRequestException {
+        if (expansion.contains(".")) {
+            String[] parts = expansion.split("\\.");
+            if (parts.length < 2) {
+                throw new BadRequestException("Invalid expansion path: " + expansion);
+            }
+            
+            // Validate that each part is a valid entity/association name
+            for (String part : parts) {
+                if (part.trim().isEmpty()) {
+                    throw new BadRequestException("Invalid expansion path: " + expansion + " - empty segment");
                 }
             }
         }

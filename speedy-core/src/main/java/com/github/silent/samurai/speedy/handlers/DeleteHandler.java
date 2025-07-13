@@ -18,10 +18,7 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 public class DeleteHandler implements Handler {
@@ -50,7 +47,7 @@ public class DeleteHandler implements Handler {
                     KeyFieldMetadata.class::isInstance,
                     speedyEntities.get(),
                     0,
-                    new ArrayList<>()
+                    new HashSet<>()
             ));
         }
         next.process(context);

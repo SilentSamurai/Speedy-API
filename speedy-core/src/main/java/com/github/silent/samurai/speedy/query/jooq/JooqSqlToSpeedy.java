@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
+import com.github.silent.samurai.speedy.models.ExpansionPathTracker;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.Speedy;
@@ -34,18 +35,24 @@ public class JooqSqlToSpeedy {
         this.dialect = dslContext.dialect();
     }
 
-    public SpeedyEntity fromRecord(Record record, EntityMetadata from, List<String> expand) throws SpeedyHttpException {
-        return fromRecordInner(record, from, new ArrayList<>(expand));
+    public SpeedyEntity fromRecord(Record record, EntityMetadata from, Set<String> expand) throws SpeedyHttpException {
+        ExpansionPathTracker pathTracker = new ExpansionPathTracker(expand);
+        return fromRecordInner(record, from, pathTracker);
     }
 
-    private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, List<String> expands) throws SpeedyHttpException {
+    private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, ExpansionPathTracker pathTracker) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = SpeedyValueFactory.fromEntityMetadata(entityMetadata);
+        
+        // Push the current entity onto the path tracker
+        pathTracker.pushEntity(entityMetadata);
+        
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (fieldMetadata.isAssociation()) {
-                if (expands.contains(fieldMetadata.getAssociationMetadata().getName())) {
-                    // remove once expanded, done to remove recursive expand
-                    expands.remove(fieldMetadata.getAssociationMetadata().getName());
-                    // extract FK from current record, then query foreign table rows
+                String associationName = fieldMetadata.getAssociationMetadata().getName();
+                
+                // Check if this specific path should be expanded using dot notation
+                if (pathTracker.shouldExpand(fieldMetadata.getAssociationMetadata())) {
+                    // extract FK from the current record, then query foreign table rows
                     Optional<Result<Record>> associatedRecord = jooqToJooqSql.findByFK(fieldMetadata, record);
                     // if fk is null
                     if (associatedRecord.isEmpty() || associatedRecord.get().isEmpty()) {
@@ -59,7 +66,7 @@ public class JooqSqlToSpeedy {
                         SpeedyEntity associatedEntity = fromRecordInner(
                                 associatedRecord.get().get(0),
                                 associationMetadata,
-                                expands
+                                pathTracker
                         );
                         speedyEntity.put(fieldMetadata, associatedEntity);
                     }
@@ -101,6 +108,9 @@ public class JooqSqlToSpeedy {
                 }
             }
         }
+        
+        // Pop current entity from the path tracker when done processing
+        pathTracker.popEntity();
         return speedyEntity;
     }
 

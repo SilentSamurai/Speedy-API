@@ -37,10 +37,17 @@ class PkUuidTestTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PkUuidTestTest.class);
 
-    /// rust like java doc
+    /// JavaDoc Markdown documentation comment example
+    /// 
+    /// This is an example of using Markdown in JavaDoc comments.
+    /// You can use **bold**, *italic*, and `code` formatting.
+    /// 
+    /// ```java
+    /// // Example code block
+    /// public void example() {
+    ///     System.out.println("Hello World!");
+    /// }
     /// ```
-    ///
-    ///```
     @Autowired
     EntityManagerFactory entityManagerFactory;
 

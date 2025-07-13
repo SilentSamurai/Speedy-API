@@ -149,6 +149,28 @@ VALUES ('1', 'United States', 'USD', 'US Dollar', 'U$', NOW()),
        ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$', NOW()),
        ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
 
+INSERT INTO exchange_rates (id, base_currency_id, foreign_currency_id, exchange_rate, inv_exchange_rate, created_at)
+VALUES ('1', '1', '2', 0.85, 1.18, NOW()),  -- USD to GBP
+       ('2', '1', '3', 1.25, 0.80, NOW()),  -- USD to CAD
+       ('3', '1', '4', 1.35, 0.74, NOW()),  -- USD to AUD
+       ('4', '1', '5', 110.50, 0.009, NOW()), -- USD to JPY
+       ('5', '1', '6', 75.25, 0.013, NOW()),  -- USD to INR
+       ('6', '2', '1', 1.18, 0.85, NOW()),  -- GBP to USD
+       ('7', '2', '3', 1.47, 0.68, NOW()),  -- GBP to CAD
+       ('8', '2', '4', 1.59, 0.63, NOW()),  -- GBP to AUD
+       ('9', '3', '1', 0.80, 1.25, NOW()),  -- CAD to USD
+       ('10', '3', '2', 0.68, 1.47, NOW()), -- CAD to GBP
+       ('11', '4', '1', 0.74, 1.35, NOW()), -- AUD to USD
+       ('12', '4', '2', 0.63, 1.59, NOW()), -- AUD to GBP
+       ('13', '5', '1', 0.009, 110.50, NOW()), -- JPY to USD
+       ('14', '6', '1', 0.013, 75.25, NOW()),  -- INR to USD
+       ('15', '7', '1', 0.15, 6.67, NOW()),   -- CNY to USD
+       ('16', '8', '1', 0.014, 71.43, NOW()), -- RUB to USD
+       ('17', '9', '1', 0.00075, 1333.33, NOW()), -- KRW to USD
+       ('18', '10', '1', 0.05, 20.00, NOW()), -- MXN to USD
+       ('19', '11', '1', 0.20, 5.00, NOW()),  -- BRL to USD
+       ('20', '12', '1', 0.055, 18.18, NOW()); -- ZAR to USD
+
 INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time, boolean_value,
                               double_value)
 VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00', true,

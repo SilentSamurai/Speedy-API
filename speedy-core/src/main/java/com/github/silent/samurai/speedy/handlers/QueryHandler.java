@@ -13,6 +13,7 @@ import com.github.silent.samurai.speedy.serializers.JSONCountSerializerV2;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 public class QueryHandler implements Handler {

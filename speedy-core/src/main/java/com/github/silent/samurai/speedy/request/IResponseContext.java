@@ -8,7 +8,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 public class IResponseContext implements com.github.silent.samurai.speedy.interfaces.IResponseContext {
@@ -19,7 +21,7 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
     private final EntityMetadata entityMetadata;
     int serializationType = IResponseSerializer.MULTIPLE_ENTITY;
     int pageNo = 0;
-    List<String> expands = new ArrayList<>();
+    Set<String> expands = new HashSet<>();
 
     public IResponseContext(EntityMetadata entityMetadata,
                             HttpServletResponse response,
@@ -46,7 +48,7 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
     }
 
     @Override
-    public List<String> getExpand() {
+    public Set<String> getExpand() {
         return expands;
     }
 
@@ -57,7 +59,7 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
         private EntityMetadata entityMetadata;
         private int serializationType = IResponseSerializer.MULTIPLE_ENTITY;
         private int pageNo = 0;
-        private List<String> expands = List.of();
+        private Set<String> expands = new HashSet<>();
 
         private ResponseContextBuilder() {
         }
@@ -96,7 +98,7 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
             return this;
         }
 
-        public ResponseContextBuilder expands(List<String> expands) {
+        public ResponseContextBuilder expands(Set<String> expands) {
             this.expands = expands;
             return this;
         }
