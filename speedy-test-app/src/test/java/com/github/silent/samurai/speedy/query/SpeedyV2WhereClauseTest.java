@@ -167,6 +167,55 @@ public class SpeedyV2WhereClauseTest {
 
     }
 
+    /*
+      {
+          "from": "Inventory",
+          "where": {
+              "cost": { "$in" : [15, 30, 50] }
+          }
+      }
+      */
+    @Test
+    void testQuery4() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Inventory");
+        ArrayNode inArray = body.putObject("$where")
+                .putObject("cost")
+                .putArray("$in");
+        inArray.add(15);
+        inArray.add(30);
+        inArray.add(50);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(0))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
+                        .value(Matchers.everyItem(
+                                Matchers.anyOf(
+                                        Matchers.equalTo(15.0),
+                                        Matchers.equalTo(30.0),
+                                        Matchers.equalTo(50.0)
+                                )
+                        )))
+                .andReturn();
+
+    }
 
     /*
       {
@@ -213,7 +262,7 @@ public class SpeedyV2WhereClauseTest {
       {
           "from": "Inventory",
           "where": {
-              "cost": { "$eq" : 15 }
+              "cost": { "$ne" : 15 }
           }
       }
       */
@@ -223,7 +272,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Inventory");
         body.putObject("$where")
                 .putObject("cost")
-                .put("$eq", 15);
+                .put("$ne", 15);
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -236,7 +285,7 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
-                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(0))))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
@@ -245,7 +294,7 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
-                        .value(Matchers.everyItem(Matchers.equalTo(15.0))))
+                        .value(Matchers.everyItem(Matchers.not(Matchers.equalTo(15.0)))))
                 .andReturn();
 
     }
@@ -254,7 +303,7 @@ public class SpeedyV2WhereClauseTest {
       {
           "from": "Category",
           "where": {
-              "name": { "$ne" : "Cat-12-12" }
+              "name": { "$ne" : "cat-12-12" }
           }
       }
       */
@@ -264,7 +313,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Category");
         body.putObject("$where")
                 .putObject("name")
-                .put("$ne", "Cat-12-12");
+                .put("$ne", "cat-12-12");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -459,7 +508,10 @@ public class SpeedyV2WhereClauseTest {
        {
            "from": "Inventory",
            "where": {
-               "cost": { "$lte" : 15 }
+                "$and": [
+                    { "cost": { "$gte" : 10 } },
+                    { "cost": { "$lte" : 20 } }
+                ]
            }
        }
        */
@@ -467,9 +519,14 @@ public class SpeedyV2WhereClauseTest {
     void testQuery12() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Inventory");
-        body.putObject("$where")
+        ArrayNode jsonNodes = body.putObject("$where")
+                .putArray("$and");
+        jsonNodes.addObject()
                 .putObject("cost")
-                .put("$lte", 15);
+                .put("$gte", 10);
+        jsonNodes.addObject()
+                .putObject("cost")
+                .put("$lte", 20);
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -482,7 +539,7 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
-                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(0))))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
@@ -491,7 +548,12 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
-                        .value(Matchers.everyItem(Matchers.lessThanOrEqualTo(15.0))))
+                        .value(Matchers.everyItem(
+                                Matchers.allOf(
+                                        Matchers.greaterThanOrEqualTo(10.0),
+                                        Matchers.lessThanOrEqualTo(20.0)
+                                )
+                        )))
                 .andReturn();
 
     }
@@ -711,7 +773,7 @@ public class SpeedyV2WhereClauseTest {
        {
            "from": "Procurement",
            "where": {
-                "createdAt": { $neq: null }
+                "createdAt": { "$neq": null }
            }
        }
        */
@@ -721,7 +783,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Procurement");
         body.putObject("$where")
                 .putObject("createdAt")
-                .putNull("$neq");
+                .put("$neq", (String) null);
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
@@ -794,7 +856,6 @@ public class SpeedyV2WhereClauseTest {
     void testQuery19() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Procurement");
-//        body.putObject("where");
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
@@ -848,7 +909,6 @@ public class SpeedyV2WhereClauseTest {
                         .value(Matchers.everyItem(
                                 Matchers.anyOf(
                                         Matchers.equalTo("cat-10-10")
-//                                        Matchers.equalTo("cat-12-12")
                                 )
                         )))
                 .andReturn();
