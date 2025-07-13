@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
+import jakarta.persistence.EntityManagerFactory;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,8 +29,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
-
-import jakarta.persistence.EntityManagerFactory;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

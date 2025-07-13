@@ -1,9 +1,9 @@
 package com.github.silent.samurai.speedy.file.impl.validator;
 
+import jakarta.validation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.validation.*;
 import java.util.Set;
 
 public class JsonValidator {

@@ -8,8 +8,8 @@ import com.github.silent.samurai.speedy.mappings.String2JavaType;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
-
 import jakarta.persistence.EntityManager;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -27,10 +27,6 @@ public class MapEntityDeserializer {
         this.entityMap = entityMap;
         this.entityMetadata = entityMetadata;
         this.entityManager = entityManager;
-    }
-
-    public SpeedyEntity deserialize() throws Exception {
-        return createEntity(this.entityMetadata, entityMap);
     }
 
     private static SpeedyValue fromBasicString(ValueType valueType, String valueAsString) throws Exception {
@@ -52,6 +48,10 @@ public class MapEntityDeserializer {
             default:
                 return SpeedyNull.SPEEDY_NULL;
         }
+    }
+
+    public SpeedyEntity deserialize() throws Exception {
+        return createEntity(this.entityMetadata, entityMap);
     }
 
     private SpeedyEntity createEntity(EntityMetadata entityMetadata, Map<String, String> entityMap) throws Exception {

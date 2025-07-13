@@ -14,6 +14,10 @@ import java.util.Map;
 public class JooqType2SpeedyValue {
     private static final Map<String, ThrowingBiFunction<Object, ColumnType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
 
+    static {
+        initConverters();
+    }
+
     public static <T> ThrowingBiFunction<Object, ColumnType, SpeedyValue, SpeedyHttpException> get(ColumnType columnType, DataType<T> dataType) {
         String key = dataType.getName() + columnType.name();
         return converters.get(key);
@@ -28,10 +32,6 @@ public class JooqType2SpeedyValue {
                                ThrowingBiFunction<T, ColumnType, SpeedyValue, SpeedyHttpException> lambda) {
         String key = dataType.getName() + columnType.name();
         converters.put(key, (ThrowingBiFunction<Object, ColumnType, SpeedyValue, SpeedyHttpException>) lambda);
-    }
-
-    static {
-        initConverters();
     }
 
     public static <T> SpeedyValue convert(DataType<T> dataType, ColumnType columnType, Object instance) throws SpeedyHttpException {

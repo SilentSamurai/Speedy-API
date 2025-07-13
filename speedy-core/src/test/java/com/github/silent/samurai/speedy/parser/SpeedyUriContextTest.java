@@ -187,11 +187,10 @@ class SpeedyUriContextTest {
         SpeedyValue speedyValue = condition.get().getSpeedyValue();
         assertEquals(speedyValue.getValueType(), ValueType.COLLECTION);
         SpeedyCollection speedyCollection = (SpeedyCollection) speedyValue;
-        for(SpeedyValue value: speedyCollection.asCollection()) {
+        for (SpeedyValue value : speedyCollection.asCollection()) {
             assertEquals(value.getValueType(), ValueType.TEXT);
         }
     }
-
 
 
     @Test

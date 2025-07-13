@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 

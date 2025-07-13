@@ -13,50 +13,50 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.web.client.RestTemplate;
 
 /// # SpeedyClient
-/// 
+///
 /// A generic client class that provides a fluent API for interacting with the Speedy API.
 /// This class serves as the main entry point for making CRUD operations and queries against
 /// a Speedy-enabled backend.
-/// 
+///
 /// ## Key Features
-/// 
+///
 /// - **Generic Type Support**: Uses type parameter `T` to handle different response types
 /// - **Builder Pattern**: Provides builder classes for different HTTP operations
 /// - **HTTP Client Abstraction**: Supports different HTTP client implementations
 /// - **Query Support**: Allows execution of custom queries using [SpeedyQuery]
-/// 
+///
 /// ## Usage Examples
-/// 
+///
 /// ### Creating a client with RestTemplate
 /// ```java
 /// RestTemplate restTemplate = new RestTemplate();
 /// SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080");
-/// 
+///
 /// // Create a new user
 /// SpeedyResponse response = client.create("users")
 ///     .withBody(userData)
 ///     .execute();
-/// ```
-/// 
+///```
+///
 /// ### Creating a client with MockMvc for testing
 /// ```java
 /// SpeedyClient<ResultActions> testClient = SpeedyClient.mockMvc(mockMvc);
-/// 
+///
 /// // Test user creation
 /// ResultActions result = testClient.create("users")
 ///     .withBody(userData)
 ///     .execute();
 /// result.andExpect(status().isCreated());
-/// ```
-/// 
+///```
+///
 /// ### Using a custom HTTP client
 /// ```java
 /// HttpClient<CustomResponse> customClient = new CustomHttpClient();
 /// SpeedyClient<CustomResponse> client = SpeedyClient.from(customClient);
-/// ```
-/// 
+///```
+///
 /// ## Available Operations
-/// 
+///
 /// | Operation | Method | Description | Returns |
 /// |-----------|--------|-------------|---------|
 /// | Create | `create(String entityName)` | Create new entities | [SpeedyCreateRequestBuilder] |
@@ -64,22 +64,22 @@ import org.springframework.web.client.RestTemplate;
 /// | Update | `update(String entityName)` | Update existing entities | [SpeedyUpdateRequestBuilder] |
 /// | Delete | `delete(String entityName)` | Delete entities | [SpeedyDeleteRequestBuilder] |
 /// | Query | `query(SpeedyQuery query)` | Execute custom queries | [SpeedyQueryRequest] |
-/// 
+///
 /// ## Factory Methods
-/// 
+///
 /// | Method | Description | Use Case |
 /// |--------|-------------|----------|
 /// `restTemplate(RestTemplate, String)` | Creates client with RestTemplate | Production applications |
 /// `mockMvc(MockMvc)` | Creates client with MockMvc | Unit/integration testing |
 /// `from(HttpClient<T>)` | Creates client with custom HTTP client | Custom implementations |
-/// 
+///
 /// @param <T> the response type for this client
 public class SpeedyClient<T> {
 
     private final SpeedyApi<T> speedyApi;
 
     /// Creates a new SpeedyClient with the specified HTTP client implementation.
-    /// 
+    ///
     /// @param httpClient the HTTP client to use for API requests
     public SpeedyClient(HttpClient<T> httpClient) {
         this.speedyApi = new SpeedyApi<>(httpClient);
@@ -97,10 +97,10 @@ public class SpeedyClient<T> {
     ///
     /// // Use the client
     /// SpeedyResponse response = client.get("users").execute();
-    /// ```
+    ///```
     ///
     /// @param restTemplate the RestTemplate instance to use for HTTP requests
-    /// @param baseUrl the base URL of the Speedy API server
+    /// @param baseUrl      the base URL of the Speedy API server
     /// @return a SpeedyClient configured with RestTemplate
     /// @see [RestTemplateSpeedyClientImpl]
     public static SpeedyClient<SpeedyResponse> restTemplate(RestTemplate restTemplate, String baseUrl) {
@@ -108,43 +108,42 @@ public class SpeedyClient<T> {
     }
 
     /// Creates a SpeedyClient using MockMvc for testing purposes.
-    /// 
+    ///
     /// This factory method is particularly useful for:
     /// - **Unit testing** API endpoints
     /// - **Integration testing** without starting a full web server
     /// - **Performance testing** with fast, in-memory requests
-    /// 
+    ///
     /// ## Example
     /// ```java
-    /// @Test
-    /// public void testUserCreation() {
+    ///
+    ///@parammockMvctheMockMvcinstance to use for HTTP requests
+    ///@returnaSpeedyClientconfiguredwith MockMvc
+    ///@TestpublicvoidtestUserCreation(){
     ///     SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
     ///     ResultActions result = client.create("users")
     ///         .withBody(userData)
     ///         .execute();
     ///     result.andExpect(status().isCreated());
-    /// }
-    /// ```
-    /// 
-    /// @param mockMvc the MockMvc instance to use for HTTP requests
-    /// @return a SpeedyClient configured with MockMvc
+    ///}
+    ///```
     /// @see [MockMvcHttpClient]
     public static SpeedyClient<ResultActions> mockMvc(MockMvc mockMvc) {
         return new SpeedyClient<>(new MockMvcHttpClient(mockMvc));
     }
 
     /// Creates a SpeedyClient from a custom HTTP client implementation.
-    /// 
+    ///
     /// This factory method allows you to use any custom HTTP client that implements
     /// the [HttpClient] interface.
-    /// 
+    ///
     /// ## Example
     /// ```java
     /// HttpClient<CustomResponse> customClient = new CustomHttpClient();
     /// SpeedyClient<CustomResponse> client = SpeedyClient.from(customClient);
-    /// ```
-    /// 
-    /// @param <T> the response type for the custom client
+    ///```
+    ///
+    /// @param <T>        the response type for the custom client
     /// @param httpClient the custom HTTP client implementation
     /// @return a SpeedyClient configured with the custom HTTP client
     public static <T> SpeedyClient<T> from(HttpClient<T> httpClient) {
@@ -152,15 +151,15 @@ public class SpeedyClient<T> {
     }
 
     /// Creates a builder for updating existing entities.
-    /// 
+    ///
     /// ## Example
     /// ```java
     /// SpeedyResponse response = client.update("users")
     ///     .withId(123)
     ///     .withBody(updatedUserData)
     ///     .execute();
-    /// ```
-    /// 
+    ///```
+    ///
     /// @param entityName the name of the entity to update
     /// @return a builder for constructing update requests
     /// @throws IllegalArgumentException if entityName is null or empty
@@ -169,18 +168,18 @@ public class SpeedyClient<T> {
     }
 
     /// Creates a builder for retrieving entities.
-    /// 
+    ///
     /// ## Example
     /// ```java
     /// // Get all users
     /// SpeedyResponse response = client.get("users").execute();
-    /// 
+    ///
     /// // Get user by ID
     /// SpeedyResponse user = client.get("users")
     ///     .withId(123)
     ///     .execute();
-    /// ```
-    /// 
+    ///```
+    ///
     /// @param entityName the name of the entity to retrieve
     /// @return a builder for constructing get requests
     /// @throws IllegalArgumentException if entityName is null or empty
@@ -189,14 +188,14 @@ public class SpeedyClient<T> {
     }
 
     /// Creates a builder for deleting entities.
-    /// 
+    ///
     /// ## Example
     /// ```java
     /// SpeedyResponse response = client.delete("users")
     ///     .withId(123)
     ///     .execute();
-    /// ```
-    /// 
+    ///```
+    ///
     /// @param entityName the name of the entity to delete
     /// @return a builder for constructing delete requests
     /// @throws IllegalArgumentException if entityName is null or empty
@@ -205,14 +204,14 @@ public class SpeedyClient<T> {
     }
 
     /// Creates a builder for creating new entities.
-    /// 
+    ///
     /// ## Example
     /// ```java
     /// SpeedyResponse response = client.create("users")
     ///     .withBody(newUserData)
     ///     .execute();
-    /// ```
-    /// 
+    ///```
+    ///
     /// @param entityName the name of the entity to create
     /// @return a builder for constructing create requests
     /// @throws IllegalArgumentException if entityName is null or empty
@@ -221,7 +220,7 @@ public class SpeedyClient<T> {
     }
 
     /// Creates a query request for executing custom queries.
-    /// 
+    ///
     /// ## Example
     /// ```java
     /// import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
@@ -229,11 +228,11 @@ public class SpeedyClient<T> {
     /// SpeedyQuery query = from("users")
     ///     .where(condition("active", eq(true)))
     ///     .build();
-    /// 
+    ///
     /// SpeedyQueryRequest<T> request = client.query(query);
     /// SpeedyResponse response = request.execute();
-    /// ```
-    /// 
+    ///```
+    ///
     /// @param query the custom query to execute
     /// @return a query request for executing the specified query
     /// @throws IllegalArgumentException if query is null

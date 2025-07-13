@@ -28,8 +28,8 @@ public class JooqQueryBuilder {
     final DSLContext dslContext;
     final Map<String, FieldMetadata> joins = new HashMap<>();
     final Map<String, String> joinAlias = new HashMap<>();
-    SelectJoinStep<? extends Record> query;
     final SQLDialect dialect;
+    SelectJoinStep<? extends Record> query;
 
     public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
         this.speedyQuery = speedyQuery;
@@ -295,7 +295,7 @@ public class JooqQueryBuilder {
     }
 
     void prepareQuery() throws SpeedyHttpException {
-        this.query =  this.dslContext.select()
+        this.query = this.dslContext.select()
                 .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
         if (Objects.nonNull(speedyQuery.getWhere())) {
             var predicates = conditionToPredicate(this.speedyQuery.getWhere());

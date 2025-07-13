@@ -1,10 +1,10 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 

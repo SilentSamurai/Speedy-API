@@ -2,15 +2,19 @@ package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.interfaces.query.Converter;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
-import org.jooq.*;
+import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

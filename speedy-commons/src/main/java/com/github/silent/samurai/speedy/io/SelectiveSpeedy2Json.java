@@ -4,22 +4,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class SelectiveSpeedy2Json {
 
-    private final Predicate<FieldMetadata> fieldPredicate;
     private static final ObjectMapper json = CommonUtil.json();
+    private final Predicate<FieldMetadata> fieldPredicate;
 
     public SelectiveSpeedy2Json(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate) {
         this.fieldPredicate = fieldPredicate;

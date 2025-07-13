@@ -6,18 +6,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class CommonUtil {
 

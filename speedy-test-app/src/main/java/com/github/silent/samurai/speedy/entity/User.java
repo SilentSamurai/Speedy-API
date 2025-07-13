@@ -2,15 +2,15 @@ package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.enums.ActionType;
-import lombok.Data;
-
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Setter
 @Getter

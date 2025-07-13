@@ -40,7 +40,7 @@ class PkUuidTestTest {
     /// rust like java doc
     /// ```
     ///
-    /// ```
+    ///```
     @Autowired
     EntityManagerFactory entityManagerFactory;
 
@@ -52,25 +52,6 @@ class PkUuidTestTest {
 
     @Autowired
     private MockMvc mvc;
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @Test
-    void save() throws Exception {
-        ArrayNode arrayNode = CommonUtil.json()
-                .createArrayNode();
-        arrayNode.add(CommonUtil.json().createObjectNode()
-                .put("name", "test")
-                .put("description", "test des"));
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$create")
-                .content(arrayNode.toPrettyString())
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-
-        mvc.perform(createRequest)
-                .andExpect(status().isOk());
-    }
 
     public static Matcher<String> isValidUUID() {
         return new TypeSafeMatcher<>() {
@@ -89,6 +70,25 @@ class PkUuidTestTest {
                 description.appendText("a valid UUID");
             }
         };
+    }
+
+    @BeforeEach
+    void setUp() {
+    }
+
+    @Test
+    void save() throws Exception {
+        ArrayNode arrayNode = CommonUtil.json()
+                .createArrayNode();
+        arrayNode.add(CommonUtil.json().createObjectNode()
+                .put("name", "test")
+                .put("description", "test des"));
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$create")
+                .content(arrayNode.toPrettyString())
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(createRequest)
+                .andExpect(status().isOk());
     }
 
     @Test

@@ -7,7 +7,10 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.*;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class JavaType2ColumnType {
 

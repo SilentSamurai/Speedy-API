@@ -1,8 +1,6 @@
-
 package com.github.silent.samurai.speedy.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
@@ -18,7 +16,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

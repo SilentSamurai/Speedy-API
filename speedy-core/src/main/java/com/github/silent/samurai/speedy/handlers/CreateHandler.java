@@ -1,4 +1,3 @@
-
 package com.github.silent.samurai.speedy.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,22 +11,19 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.request.IResponseContext;
-import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.request.PostDataHandler;
-import com.github.silent.samurai.speedy.serializers.JSONSerializer;
+import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 @Slf4j
 public class CreateHandler implements Handler {

@@ -12,7 +12,8 @@ import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.mappings.String2JavaType;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.models.SpeedyCollection;
+import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +32,8 @@ import java.util.stream.Collectors;
 public class SpeedyUriContext {
     private final MetaModel metaModel;
     private final String requestURI;
-    private SpeedyQueryImpl speedyQuery;
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
+    private SpeedyQueryImpl speedyQuery;
 
     public SpeedyUriContext(MetaModel metaModel, String requestURI) {
         this.metaModel = metaModel;

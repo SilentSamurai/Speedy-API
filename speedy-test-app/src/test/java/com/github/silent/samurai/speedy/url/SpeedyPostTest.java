@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.entity.Customer;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
+import jakarta.persistence.EntityManagerFactory;
 import net.bytebuddy.utility.RandomString;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import jakarta.persistence.EntityManagerFactory;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;

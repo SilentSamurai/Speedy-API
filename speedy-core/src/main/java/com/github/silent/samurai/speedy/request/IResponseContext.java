@@ -3,10 +3,9 @@ package com.github.silent.samurai.speedy.request;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import lombok.Getter;
-
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,10 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
         this.metaModel = metaModel;
     }
 
+    public static ResponseContextBuilder builder() {
+        return new ResponseContextBuilder();
+    }
+
     @Override
     public int getSerializationType() {
         return serializationType;
@@ -46,12 +49,6 @@ public class IResponseContext implements com.github.silent.samurai.speedy.interf
     public List<String> getExpand() {
         return expands;
     }
-
-
-    public static ResponseContextBuilder builder() {
-        return new ResponseContextBuilder();
-    }
-
 
     public static final class ResponseContextBuilder {
         private MetaModel metaModel;

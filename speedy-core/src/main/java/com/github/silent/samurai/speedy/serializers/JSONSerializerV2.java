@@ -5,17 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.IResponseContext;
+import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.responses.MultiPayloadWrapper;
-import com.github.silent.samurai.speedy.responses.SinglePayloadWrapper;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -75,7 +74,7 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
         try {
             json.writeValue(response.getWriter(), basePayload);
         } catch (IOException e) {
-            throw new InternalServerError("Internal Server Error",e);
+            throw new InternalServerError("Internal Server Error", e);
         }
     }
 

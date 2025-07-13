@@ -1,5 +1,3 @@
-
-
 INSERT INTO categories(ID, NAME)
 VALUES ('1', 'cat-1-1');
 INSERT INTO categories(ID, NAME)
@@ -136,24 +134,25 @@ VALUES ('1', '1', 50.00, 80.00, 100.00, 0.00, '1', '1'),
        ('10', '4', 25.00, 40.00, 50.00, 0.00, '4', '4');
 
 INSERT INTO currencies (id, country, currency_abbr, currency_name, currency_symbol, created_at)
-VALUES
-    ('1', 'United States', 'USD', 'US Dollar', 'U$', NOW()),
-    ('2', 'United Kingdom', 'GBP', 'British Pound', '£', NOW()),
-    ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$', NOW()),
-    ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$', NOW()),
-    ('5', 'Japan', 'JPY', 'Japanese Yen', '¥', NOW()),
-    ('6', 'India', 'INR', 'Indian Rupee', '₹', NOW()),
-    ('7', 'China', 'CNY', 'Chinese Yuan', '¥', NOW()),
-    ('8', 'Russia', 'RUB', 'Russian Ruble', '₽', NOW()),
-    ('9', 'South Korea', 'KRW', 'South Korean Won', '₩', NOW()),
-    ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$', NOW()),
-    ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$', NOW()),
-    ('12', 'South Africa', 'ZAR', 'South African Rand', 'R', NOW()),
-    ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$', NOW()),
-    ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
+VALUES ('1', 'United States', 'USD', 'US Dollar', 'U$', NOW()),
+       ('2', 'United Kingdom', 'GBP', 'British Pound', '£', NOW()),
+       ('3', 'Canada', 'CAD', 'Canadian Dollar', 'C$', NOW()),
+       ('4', 'Australia', 'AUD', 'Australian Dollar', 'A$', NOW()),
+       ('5', 'Japan', 'JPY', 'Japanese Yen', '¥', NOW()),
+       ('6', 'India', 'INR', 'Indian Rupee', '₹', NOW()),
+       ('7', 'China', 'CNY', 'Chinese Yuan', '¥', NOW()),
+       ('8', 'Russia', 'RUB', 'Russian Ruble', '₽', NOW()),
+       ('9', 'South Korea', 'KRW', 'South Korean Won', '₩', NOW()),
+       ('10', 'Mexico', 'MXN', 'Mexican Peso', 'M$', NOW()),
+       ('11', 'Brazil', 'BRL', 'Brazilian Real', 'R$', NOW()),
+       ('12', 'South Africa', 'ZAR', 'South African Rand', 'R', NOW()),
+       ('13', 'New Zealand', 'NZD', 'New Zealand Dollar', 'N$', NOW()),
+       ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
 
-INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time, boolean_value, double_value)
-VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00', true, 0.59393);
+INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time, boolean_value,
+                              double_value)
+VALUES ('1', '2022-04-30 10:00:00', '2022-04-30', '10:00:00', '2022-04-30 10:00:00', '2022-04-30 10:00:00', true,
+        0.59393);
 
 
 INSERT INTO users (id, created_at, deleted_at, email, name, phone_no, type, updated_at, last_login_at)

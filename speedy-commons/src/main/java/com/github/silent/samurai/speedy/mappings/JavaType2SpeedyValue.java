@@ -19,6 +19,10 @@ import java.util.UUID;
 public class JavaType2SpeedyValue {
     private static final Map<String, ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
 
+    static {
+        initConverters();
+    }
+
     public static <T> ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException> get(ValueType valueType, Class<T> clazz) {
         String key = clazz.getName() + valueType.name();
         return converters.get(key);
@@ -33,10 +37,6 @@ public class JavaType2SpeedyValue {
                                ThrowingBiFunction<T, ValueType, SpeedyValue, SpeedyHttpException> lambda) {
         String key = clazz.getName() + valueType.name();
         converters.put(key, (ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>) lambda);
-    }
-
-    static {
-        initConverters();
     }
 
     public static <T> SpeedyValue convert(Class<T> clazz, ValueType valueType, Object instance) throws SpeedyHttpException {

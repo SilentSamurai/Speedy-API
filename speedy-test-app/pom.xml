@@ -87,7 +87,7 @@
             <scope>runtime</scope>
         </dependency>
 
-<!--        for coverage aggregator-->
+        <!--        for coverage aggregator-->
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-commons</artifactId>

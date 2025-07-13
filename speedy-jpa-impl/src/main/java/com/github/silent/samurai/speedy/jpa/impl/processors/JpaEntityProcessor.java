@@ -5,13 +5,12 @@ import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
-import org.springframework.core.annotation.AnnotationUtils;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
+import org.springframework.core.annotation.AnnotationUtils;
 
 import java.util.Arrays;
 import java.util.Map;

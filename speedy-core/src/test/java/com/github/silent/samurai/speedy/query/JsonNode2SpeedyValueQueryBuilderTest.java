@@ -8,7 +8,6 @@ import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
@@ -21,7 +20,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JsonNode2SpeedyValueQueryBuilderTest {

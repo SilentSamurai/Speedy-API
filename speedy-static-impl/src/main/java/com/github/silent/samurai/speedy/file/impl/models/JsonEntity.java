@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.file.impl.models;
 
 import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 public class JsonEntity {

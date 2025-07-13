@@ -5,10 +5,6 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 public enum ConditionOperator {
     EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR, PATTERN_MATCHING;
 
-    public boolean doesAcceptMultipleValues() {
-        return this == IN || this == NOT_IN;
-    }
-
     public static ConditionOperator fromSymbol(String symbol) throws BadRequestException {
         if (symbol.equals("=") || symbol.equals("==") || symbol.equals("$eq")) {
             return EQ;
@@ -35,5 +31,9 @@ public enum ConditionOperator {
         } else {
             throw new BadRequestException("Operator not recognized: " + symbol);
         }
+    }
+
+    public boolean doesAcceptMultipleValues() {
+        return this == IN || this == NOT_IN;
     }
 }
