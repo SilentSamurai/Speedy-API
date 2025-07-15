@@ -9,6 +9,10 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
+import com.github.silent.samurai.speedy.models.conditions.EqCondition;
+import com.github.silent.samurai.speedy.models.conditions.InCondition;
+import com.github.silent.samurai.speedy.models.conditions.MatchingCondition;
+import com.github.silent.samurai.speedy.models.conditions.NotInCondition;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
@@ -66,94 +70,148 @@ public class JooqQueryBuilder {
                 .reduce(DSL.noCondition(), org.jooq.Condition::and);
     }
 
-    org.jooq.Condition matchPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+    org.jooq.Condition matchPredicate(MatchingCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = bCondition.getExpression().value();
         if (!speedyValue.isText()) {
             throw new BadRequestException("only text values are supported for $matches.");
         }
-        Field<Object> path = getPath(bCondition);
+        Field<Object> path = getPath(bCondition.getField());
         String rawValue = speedyValue.asText()
                 .replaceAll("%", "\\\\%")
                 .replaceAll("\\*", "%");
         return path.like(DSL.value(rawValue)).escape('\\');
     }
 
-    org.jooq.Condition equalPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        if (!speedyValue.isValue()) {
-            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
-        }
-        if (speedyValue.isNull()) {
-            Field<?> field = getPath(bCondition);
-            return field.isNull();
+    org.jooq.Condition equalPredicate(EqCondition bCondition) throws SpeedyHttpException {
+        Expression expression = bCondition.getExpression();
+        if (expression instanceof Literal l) {
+            SpeedyValue speedyValue = l.value();
+            if (!speedyValue.isValue()) {
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            }
+            if (speedyValue.isNull()) {
+                Field<?> field = getPath(bCondition.getField());
+                return field.isNull();
+            } else {
+                Field<Object> path = getPath(bCondition.getField());
+                Object rawValue = toJooqType(bCondition, speedyValue);
+                return path.equal(DSL.value(rawValue));
+            }
+        } else if (expression instanceof Identifier identifier) {
+            Field<Object> path = getPath(bCondition.getField());
+            Field<Object> value = getPath(identifier.field());
+            return path.equal(value);
         } else {
-            Field<Object> path = getPath(bCondition);
-            Object rawValue = toJooqType(bCondition, speedyValue);
-            return path.equal(DSL.value(rawValue));
+            throw new BadRequestException("Not Reachable");
         }
     }
 
     org.jooq.Condition notEqualPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        if (!speedyValue.isValue()) {
-            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
-        }
-        if (speedyValue.isNull()) {
-            Field<Object> field = getPath(bCondition);
-            return field.isNotNull();
+        Expression expression = bCondition.getExpression();
+        if (expression instanceof Literal l) {
+            SpeedyValue speedyValue = l.value();
+            if (!speedyValue.isValue()) {
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            }
+            if (speedyValue.isNull()) {
+                Field<Object> field = getPath(bCondition.getField());
+                return field.isNotNull();
+            } else {
+                Field<Object> path = getPath(bCondition.getField());
+                Object rawValue = toJooqType(bCondition, speedyValue);
+                return path.notEqual(DSL.value(rawValue));
+            }
+        } else if (expression instanceof Identifier identifier) {
+            Field<Object> path = getPath(bCondition.getField());
+            Field<Object> value = getPath(identifier.field());
+            return path.notEqual(value);
         } else {
-            Field<Object> path = getPath(bCondition);
-            Object rawValue = toJooqType(bCondition, speedyValue);
-            return path.notEqual(DSL.value(rawValue));
+            throw new BadRequestException("Not Reachable");
         }
     }
 
     org.jooq.Condition lessThanPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        if (!speedyValue.isValue()) {
-            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+        Expression expression = bCondition.getExpression();
+        if (expression instanceof Literal l) {
+            SpeedyValue speedyValue = l.value();
+            if (!speedyValue.isValue()) {
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            }
+            Field<Object> path = getPath(bCondition.getField());
+            Object rawValue = toJooqType(bCondition, speedyValue);
+            return path.lessThan(DSL.value(rawValue));
+        } else if (expression instanceof Identifier identifier) {
+            Field<Object> path = getPath(bCondition.getField());
+            Field<Object> value = getPath(identifier.field());
+            return path.lessThan(value);
+        } else {
+            throw new BadRequestException("Not Reachable");
         }
-        Field<Object> path = getPath(bCondition);
-        Object rawValue = toJooqType(bCondition, speedyValue);
-        return path.lessThan(DSL.value(rawValue));
     }
 
     org.jooq.Condition greaterThanPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        if (!speedyValue.isValue()) {
-            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+        Expression expression = bCondition.getExpression();
+        if (expression instanceof Literal l) {
+            SpeedyValue speedyValue = l.value();
+            if (!speedyValue.isValue()) {
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            }
+            Field<Object> path = getPath(bCondition.getField());
+            Object rawValue = toJooqType(bCondition, speedyValue);
+            return path.greaterThan(DSL.value(rawValue));
+        } else if (expression instanceof Identifier identifier) {
+            Field<Object> path = getPath(bCondition.getField());
+            Field<Object> value = getPath(identifier.field());
+            return path.greaterThan(value);
+        } else {
+            throw new BadRequestException("Not Reachable");
         }
-        Field<Object> path = getPath(bCondition);
-        Object rawValue = toJooqType(bCondition, speedyValue);
-        return path.greaterThan(DSL.value(rawValue));
     }
 
     org.jooq.Condition lessThanOrEqualToPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        if (!speedyValue.isValue()) {
-            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+        Expression expression = bCondition.getExpression();
+        if (expression instanceof Literal l) {
+            SpeedyValue speedyValue = l.value();
+            if (!speedyValue.isValue()) {
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            }
+            Field<Object> path = getPath(bCondition.getField());
+            Object rawValue = toJooqType(bCondition, speedyValue);
+            return path.lessOrEqual(DSL.value(rawValue));
+        } else if (expression instanceof Identifier identifier) {
+            Field<Object> path = getPath(bCondition.getField());
+            Field<Object> value = getPath(identifier.field());
+            return path.lessOrEqual(value);
+        } else {
+            throw new BadRequestException("Not Reachable");
         }
-        Field<Object> path = getPath(bCondition);
-        Object rawValue = toJooqType(bCondition, speedyValue);
-        return path.lessOrEqual(DSL.value(rawValue));
     }
 
     org.jooq.Condition greaterThanOrEqualToPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
-        if (!speedyValue.isValue()) {
-            throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+        Expression expression = bCondition.getExpression();
+        if (expression instanceof Literal l) {
+            SpeedyValue speedyValue = l.value();
+            if (!speedyValue.isValue()) {
+                throw new BadRequestException("OBJECT & COLLECTION Operation not supported");
+            }
+            Field<Object> path = getPath(bCondition.getField());
+            Object rawValue = toJooqType(bCondition, speedyValue);
+            return path.greaterOrEqual(DSL.value(rawValue));
+        } else if (expression instanceof Identifier identifier) {
+            Field<Object> path = getPath(bCondition.getField());
+            Field<Object> value = getPath(identifier.field());
+            return path.greaterOrEqual(value);
+        } else {
+            throw new BadRequestException("Not Reachable");
         }
-        Field<Object> path = getPath(bCondition);
-        Object rawValue = toJooqType(bCondition, speedyValue);
-        return path.greaterOrEqual(DSL.value(rawValue));
     }
 
-    org.jooq.Condition inPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+    org.jooq.Condition inPredicate(InCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = bCondition.getExpression().value();
         if (speedyValue.isCollection()) {
             FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
             if (!fieldMetadata.isAssociation()) {
-                Field<Object> path = getPath(bCondition);
+                Field<Object> path = getPath(bCondition.getField());
                 Collection<SpeedyValue> collection = speedyValue.asCollection();
                 Collection<Param<Object>> objects = new ArrayList<>(collection.size());
                 for (SpeedyValue sv : collection) {
@@ -167,17 +225,17 @@ public class JooqQueryBuilder {
         if (!speedyValue.isValue()) {
             throw new BadRequestException("OBJECT Operation not supported");
         }
-        Field<Object> path = getPath(bCondition);
+        Field<Object> path = getPath(bCondition.getField());
         Object rawValue = toJooqType(bCondition, speedyValue);
         return path.in(DSL.value(rawValue));
     }
 
-    org.jooq.Condition notInPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getSpeedyValue();
+    org.jooq.Condition notInPredicate(NotInCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = bCondition.getExpression().value();
         if (speedyValue.isCollection()) {
             FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
             if (!fieldMetadata.isAssociation()) {
-                Field<Object> path = getPath(bCondition);
+                Field<Object> path = getPath(bCondition.getField());
                 Collection<SpeedyValue> collection = speedyValue.asCollection();
                 Collection<Param<Object>> objects = new ArrayList<>(collection.size());
                 for (SpeedyValue sv : collection) {
@@ -191,7 +249,7 @@ public class JooqQueryBuilder {
         if (!speedyValue.isValue()) {
             throw new BadRequestException("OBJECT Operation not supported");
         }
-        Field<Object> path = getPath(bCondition);
+        Field<Object> path = getPath(bCondition.getField());
         Object rawValue = toJooqType(bCondition, speedyValue);
         return path.notIn(List.of(DSL.value(rawValue)));
     }
@@ -206,7 +264,7 @@ public class JooqQueryBuilder {
 
         return switch (condition.getOperator()) {
             case EQ:
-                yield equalPredicate(bCondition);
+                yield equalPredicate((EqCondition) bCondition);
             case NEQ:
                 yield notEqualPredicate(bCondition);
             case LT:
@@ -218,11 +276,11 @@ public class JooqQueryBuilder {
             case GTE:
                 yield greaterThanOrEqualToPredicate(bCondition);
             case IN:
-                yield inPredicate(bCondition);
+                yield inPredicate((InCondition) bCondition);
             case NOT_IN:
-                yield notInPredicate(bCondition);
+                yield notInPredicate((NotInCondition) bCondition);
             case PATTERN_MATCHING:
-                yield matchPredicate(bCondition);
+                yield matchPredicate((MatchingCondition) bCondition);
             case AND:
             case OR:
                 throw new BadRequestException("Unknown Operator");
@@ -260,8 +318,7 @@ public class JooqQueryBuilder {
         return String.format("%s_%s", fkEntityMetadata.getName(), joinAlias.size() + 1);
     }
 
-    Field<Object> getPath(BinaryCondition bCondition) {
-        QueryField queryField = bCondition.getField();
+    Field<Object> getPath(QueryField queryField) {
         if (queryField.isAssociated()) {
             FieldMetadata fkMetadata = queryField.getAssociatedFieldMetadata();
             String key = getJoinKey(fkMetadata.getEntityMetadata(), queryField.getFieldMetadata());

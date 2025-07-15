@@ -5,6 +5,8 @@
 * [Open-Api Integration](api-docs.md)
 * [GET Operations](get-operation.md)
 * [QUERY Operations](query-operation.md)
+* [Field References](field-references.md)
+* [Multi-Level Expansions](multi-level-expansions.md)
 * [POST Operations](post-operation.md)
 * [PUT Operations](put-operation.md)
 * [DELETE Operations](delete-operation.md)

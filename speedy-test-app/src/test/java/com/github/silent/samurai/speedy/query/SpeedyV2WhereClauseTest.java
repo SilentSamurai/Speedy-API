@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
@@ -24,6 +25,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -978,6 +981,122 @@ public class SpeedyV2WhereClauseTest {
                                 )
                         )))
                 .andReturn();
+
+    }
+
+    @Test
+    void query_with_field_reference() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Invoice");
+        body.putObject("$where")
+                .putObject("discount")
+                .put("$lt", "$dueAmount");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].discount").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].discount").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].dueAmount").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].dueAmount").isNotEmpty())
+                .andReturn();
+
+        String content = mvcResult.getResponse().getContentAsString();
+        JsonNode root = CommonUtil.json().readTree(content);
+        JsonNode payload = root.get("payload");
+
+        // Assert: discount < dueAmount
+        for (JsonNode item : payload) {
+            double discount = item.get("discount").asDouble();
+            double dueAmount = item.get("dueAmount").asDouble();
+            assertTrue(discount < dueAmount,
+                    String.format("Expected discount < dueAmount but got discount=%s, dueAmount=%s", discount, dueAmount));
+        }
+
+    }
+
+    @Test
+    void query_with_field_reference_with_missing_field() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Invoice");
+        body.putObject("$where")
+                .putObject("invoiceDate")
+                .put("$eq", "$created_at");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
+                        Matchers.allOf(
+                                Matchers.containsString("created_at"),
+                                Matchers.containsString("not found")
+                        )
+                ))
+                .andReturn();
+
+    }
+
+    @Test
+    void query_with_field_reference_with_date() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Invoice");
+        body.putObject("$where")
+                .putObject("invoiceDate")
+                .put("$eq", "$createdAt");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].invoiceDate").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].invoiceDate").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdAt").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdAt").isNotEmpty())
+                .andReturn();
+
+        String content = mvcResult.getResponse().getContentAsString();
+        JsonNode root = CommonUtil.json().readTree(content);
+        JsonNode payload = root.get("payload");
+
+        // Assert: discount < dueAmount
+        for (JsonNode item : payload) {
+            double invoiceDate = item.get("invoiceDate").asDouble();
+            double createdAt = item.get("createdAt").asDouble();
+            assertEquals(invoiceDate, createdAt, String.format("Expected discount < dueAmount but got invoiceDate=%s, createdAt=%s", invoiceDate, createdAt));
+        }
 
     }
 

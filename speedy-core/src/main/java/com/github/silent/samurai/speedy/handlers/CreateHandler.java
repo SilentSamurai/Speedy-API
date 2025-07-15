@@ -67,7 +67,7 @@ public class CreateHandler implements Handler {
         try {
             for (SpeedyEntity parsedObject : jsonBody) {
                 // trigger should go first, then validate the entire thing
-                // trigger pre insert event
+                // trigger pre-insert event
                 eventProcessor.triggerEvent(
                         SpeedyEventType.PRE_INSERT,
                         entityMetadata,
@@ -91,7 +91,7 @@ public class CreateHandler implements Handler {
                 if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
                     throw new BadRequestException("Incomplete Key after save");
                 }
-                // trigger post insert event
+                // trigger the post-insert event
                 eventProcessor.triggerEvent(
                         SpeedyEventType.POST_INSERT,
                         entityMetadata,

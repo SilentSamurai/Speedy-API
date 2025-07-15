@@ -11,6 +11,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
@@ -184,7 +185,7 @@ class SpeedyUriContextTest {
 
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
-        SpeedyValue speedyValue = condition.get().getSpeedyValue();
+        SpeedyValue speedyValue = ((Literal)condition.get().getExpression()).value();
         assertEquals(speedyValue.getValueType(), ValueType.COLLECTION);
         SpeedyCollection speedyCollection = (SpeedyCollection) speedyValue;
         for (SpeedyValue value : speedyCollection.asCollection()) {

@@ -219,3 +219,66 @@ order the request with different columns
     "pageIndex": 0
 }
 ```
+
+<hr>
+
+#### Entity Expansion
+
+include related entities in your results using the `$expand` parameter
+
+**Simple Expansion**
+
+```http
+[GET] /speedy/v1/Inventory ? $expand = 'Product'
+```
+
+**Multi-Level Expansion**
+
+```http
+[GET] /speedy/v1/Inventory ? $expand = 'Product' & $expand = 'Product.Category'
+```
+
+**Complex Multi-Level Expansion**
+
+```http
+[GET] /speedy/v1/Inventory ? $expand = 'Product' & $expand = 'Product.Category' & $expand = 'Product.Category.Supplier' & $expand = 'Procurement' & $expand = 'Procurement.Product'
+```
+
+**Response with Expanded Entities**
+
+```json
+{
+    "payload": [
+        {
+            "id": "inventory-1",
+            "quantity": 100,
+            "location": "Warehouse A",
+            "product": {
+                "id": "product-1",
+                "name": "Laptop",
+                "price": 999.99,
+                "category": {
+                    "id": "category-1",
+                    "name": "Electronics",
+                    "supplier": {
+                        "id": "supplier-1",
+                        "name": "TechCorp"
+                    }
+                }
+            },
+            "procurement": {
+                "id": "procurement-1",
+                "amount": 50000,
+                "product": {
+                    "id": "product-1",
+                    "name": "Laptop"
+                }
+            }
+        }
+    ],
+    "pageCount": 1,
+    "pageIndex": 0
+}
+```
+
+For detailed information about multi-level expansions, see [Multi-Level Expansions](multi-level-expansions.md).

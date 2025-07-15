@@ -4,13 +4,8 @@ import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
-import com.github.silent.samurai.speedy.interfaces.query.QueryField;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.mappings.String2JavaType;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
@@ -38,6 +33,16 @@ public class SpeedyUriContext {
     public SpeedyUriContext(MetaModel metaModel, String requestURI) {
         this.metaModel = metaModel;
         this.requestURI = requestURI;
+    }
+
+    Expression buildExpression(FieldMetadata metadata, String symbol) throws SpeedyHttpException {
+        if (symbol.startsWith("$")) {
+            String field = symbol.substring(1);
+            QueryField queryField = this.speedyQuery.getConditionFactory().createQueryField(field);
+            return new Identifier(queryField);
+        } else {
+            return new Literal(SpeedyValueFactory.basicFromString(metadata, symbol));
+        }
     }
 
     public SpeedyQuery parse() throws SpeedyHttpException {
@@ -145,6 +150,7 @@ public class SpeedyUriContext {
             ConditionFactory conditionFactory = speedyQuery.getConditionFactory();
             for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
                 String field = entry.getKey();
+                // TODO check this condition
                 if (field.startsWith("$")) continue;
 
                 QueryField queryField = conditionFactory.createQueryField(field);
@@ -152,12 +158,11 @@ public class SpeedyUriContext {
 
                 if (valueList.isEmpty()) {
                     SpeedyValue speedyValue = Speedy.from(true);
-                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, speedyValue);
+                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, new Literal(speedyValue));
                     speedyQuery.getWhere().addSubCondition(binaryCondition);
                 } else if (valueList.size() == 1) {
-                    String value = valueList.get(0);
-                    SpeedyValue speedyValue = SpeedyValueFactory.basicFromString(queryField.getMetadataForParsing(), value);
-                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, speedyValue);
+                    Expression expression = buildExpression(queryField.getMetadataForParsing(), valueList.get(0));
+                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, expression);
                     speedyQuery.getWhere().addSubCondition(binaryCondition);
 
                 } else {
@@ -168,7 +173,7 @@ public class SpeedyUriContext {
                         speedyValueList.add(speedyValue);
                     }
                     SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
-                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, fieldValue);
+                    BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, new Literal(fieldValue));
                     speedyQuery.getWhere().addSubCondition(binaryCondition);
 
                 }

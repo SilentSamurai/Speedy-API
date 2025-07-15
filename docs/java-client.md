@@ -75,7 +75,33 @@ class CategoryControllerTest {
 The main client class that provides CRUD operations and query execution.
 
 ### [SpeedyQuery](speedy-query.md)
-A fluent query builder for constructing complex database queries with conditions, ordering, and pagination.
+A fluent query builder for constructing complex database queries with conditions, ordering, pagination, and entity expansions.
+
+### Entity Expansions
+
+The Java client supports both simple and multi-level entity expansions:
+
+```java
+// Simple expansion
+SpeedyQuery query = SpeedyQuery.from("inventory")
+    .expand("Product")
+    .expand("Procurement")
+    .build();
+
+// Multi-level expansion with dot notation
+SpeedyQuery query = SpeedyQuery.from("inventory")
+    .expand("Product")
+    .expand("Product.Category")
+    .expand("Product.Category.Supplier")
+    .expand("Procurement")
+    .expand("Procurement.Product")
+    .build();
+
+// Execute the query
+SpeedyResponse response = client.query(query).execute();
+```
+
+For detailed information about multi-level expansions, see [Multi-Level Expansions](multi-level-expansions.md).
 
 ## HTTP Client Support
 
@@ -96,11 +122,26 @@ The Java client supports multiple HTTP client implementations:
 
 2. **Handle responses properly**:
    ```java
+   import com.fasterxml.jackson.databind.JsonNode;
+   import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
+   
    SpeedyResponse response = client.get("users").execute();
-   if (response.isSuccess()) {
-       List<User> users = response.getData();
+   JsonNode payload = response.getPayload();
+   
+   if (payload != null && !payload.isEmpty()) {
+       // Process data from payload
+       if (payload.isArray()) {
+           // Handle array of entities
+           for (JsonNode user : payload) {
+               // Process each user
+           }
+       } else if (payload.isObject()) {
+           // Handle single entity
+           // Process the user object
+       }
    } else {
-       // Handle error appropriately
+       // Handle empty or null response
+       log.warn("No data returned from API");
    }
    ```
 

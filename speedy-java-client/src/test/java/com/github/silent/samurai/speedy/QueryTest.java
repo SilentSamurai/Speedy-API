@@ -68,10 +68,4 @@ public class QueryTest {
         System.out.println(build);
     }
 
-    @Test
-    void test3() throws JsonProcessingException {
-        RestTemplate restTemplate = new RestTemplate();
-        SpeedyClient speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
-
-    }
 }
