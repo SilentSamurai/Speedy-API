@@ -1,12 +1,10 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

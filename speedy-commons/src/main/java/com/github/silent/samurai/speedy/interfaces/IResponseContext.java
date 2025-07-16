@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
+import java.util.Set;
 
 public interface IResponseContext {
 
@@ -19,6 +20,6 @@ public interface IResponseContext {
 
     int getPageNo();
 
-    List<String> getExpand();
+    Set<String> getExpand();
 
 }

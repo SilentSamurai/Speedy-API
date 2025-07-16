@@ -7,10 +7,9 @@ import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
+import jakarta.persistence.metamodel.EntityType;
 import lombok.Getter;
 import lombok.Setter;
-
-import jakarta.persistence.metamodel.EntityType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,10 +20,10 @@ import java.util.stream.Collectors;
 @Setter
 public class JpaEntityMetadata implements IJpaEntityMetadata {
 
+    boolean hasCompositeKey;
     private String name;
     private String tableName;
     private Map<String, JpaFieldMetadata> fieldMap = new HashMap<>();
-    boolean hasCompositeKey;
     private EntityType<?> jpaEntityType;
     private Class<?> entityClass;
     private Class<?> keyClass;

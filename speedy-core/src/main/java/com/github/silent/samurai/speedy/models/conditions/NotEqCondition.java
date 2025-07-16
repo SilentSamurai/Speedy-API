@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.models.conditions;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.Expression;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import lombok.Getter;
 
@@ -10,11 +10,11 @@ import lombok.Getter;
 public class NotEqCondition implements BinaryCondition {
 
     private final QueryField field;
-    private final SpeedyValue speedyValue;
+    private final Expression expression;
     private final ConditionOperator operator = ConditionOperator.NEQ;
 
-    public NotEqCondition(QueryField field, SpeedyValue speedyValue) {
+    public NotEqCondition(QueryField field, Expression expression) {
         this.field = field;
-        this.speedyValue = speedyValue;
+        this.expression = expression;
     }
 }

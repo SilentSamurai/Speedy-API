@@ -6,10 +6,9 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
 import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
+import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.SneakyThrows;
-
-import jakarta.persistence.Id;
 
 import java.lang.reflect.Field;
 

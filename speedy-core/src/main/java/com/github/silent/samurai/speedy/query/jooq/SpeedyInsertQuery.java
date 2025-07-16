@@ -19,9 +19,8 @@ import java.util.UUID;
 public class SpeedyInsertQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyInsertQuery.class);
-
-    private final DSLContext dslContext;
     final SQLDialect dialect;
+    private final DSLContext dslContext;
 
     public SpeedyInsertQuery(DSLContext dslContext, SQLDialect dialect) {
         this.dslContext = dslContext;

@@ -9,7 +9,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +17,8 @@ import java.util.Optional;
 public class SpeedyUpdateQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyUpdateQuery.class);
-
-    private final DSLContext dslContext;
     final SQLDialect dialect;
+    private final DSLContext dslContext;
 
     public SpeedyUpdateQuery(DSLContext dslContext, SQLDialect dialect) {
         this.dslContext = dslContext;

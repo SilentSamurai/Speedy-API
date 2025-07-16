@@ -1,12 +1,7 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import com.sun.jdi.BooleanValue;
 import lombok.SneakyThrows;
 import net.sf.jsqlparser.expression.*;
@@ -66,13 +61,13 @@ public class SelectVerifier {
         if (expression instanceof Parenthesis parenthesis) {
             // Recursively handle AND conditions
             extractBinaryExpressions(parenthesis.getExpression());
-        }  else if (expression instanceof AndExpression andExpression) {
+        } else if (expression instanceof AndExpression andExpression) {
             extractBinaryExpressions(andExpression.getLeftExpression());
             extractBinaryExpressions(andExpression.getRightExpression());
         } else if (expression instanceof OrExpression orExpression) {
             extractBinaryExpressions(orExpression.getLeftExpression());
             extractBinaryExpressions(orExpression.getRightExpression());
-        }else if (expression instanceof InExpression inExpression) {
+        } else if (expression instanceof InExpression inExpression) {
             whereCondition.add(inExpression);
         } else if (expression instanceof IsNullExpression isNullExpression) {
             whereCondition.add(isNullExpression);

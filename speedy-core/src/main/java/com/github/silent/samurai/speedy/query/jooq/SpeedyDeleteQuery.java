@@ -7,7 +7,6 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.*;
 import org.jooq.Record;
-import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,9 +15,8 @@ import java.util.List;
 public class SpeedyDeleteQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyDeleteQuery.class);
-
-    private final DSLContext dslContext;
     final SQLDialect dialect;
+    private final DSLContext dslContext;
 
     public SpeedyDeleteQuery(DSLContext dslContext, SQLDialect dialect) {
         this.dslContext = dslContext;

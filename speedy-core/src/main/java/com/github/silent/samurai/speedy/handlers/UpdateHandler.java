@@ -1,4 +1,3 @@
-
 package com.github.silent.samurai.speedy.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,20 +11,16 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.request.IResponseContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.request.UpdateDataHandler;
-import com.github.silent.samurai.speedy.serializers.JSONSerializer;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,7 +53,7 @@ public class UpdateHandler implements Handler {
         context.setResponseSerializer(new JSONSerializerV2(
                 speedyEntities,
                 0,
-                new ArrayList<>()
+                new HashSet<>()
         ));
 
         next.process(context);

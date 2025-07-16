@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.events;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
-import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -10,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Component

@@ -11,9 +11,8 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.responses.MultiPayloadWrapper;
 import com.github.silent.samurai.speedy.responses.SinglePayloadWrapper;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import org.springframework.http.MediaType;
-
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -55,7 +54,7 @@ public class JSONSerializer implements IResponseSerializer {
         try {
             json.writeValue(context.getResponse().getWriter(), basePayload);
         } catch (IOException e) {
-            throw new InternalServerError("Internal Server Error",e);
+            throw new InternalServerError("Internal Server Error", e);
         }
     }
 
@@ -115,7 +114,7 @@ public class JSONSerializer implements IResponseSerializer {
             basePayload.set("count", json.valueToTree(count));
             json.writeValue(context.getResponse().getWriter(), basePayload);
         } catch (IOException e) {
-            throw new InternalServerError("Internal Server Error",e);
+            throw new InternalServerError("Internal Server Error", e);
         }
     }
 

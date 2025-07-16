@@ -94,6 +94,10 @@ SpeedyQuery query = SpeedyQuery.from("users")
 
 ### Entity Expansion
 
+SpeedyQuery supports both simple entity expansions and multi-level nested expansions using dot notation.
+
+#### Simple Entity Expansion
+
 ```java
 SpeedyQuery query = SpeedyQuery.from("users")
     .expand("profile")
@@ -102,6 +106,67 @@ SpeedyQuery query = SpeedyQuery.from("users")
     .where(condition("active", eq(true)))
     .build();
 ```
+
+#### Multi-Level Expansion
+
+Use dot notation to expand nested relationships:
+
+```java
+// Expand product and its category
+SpeedyQuery query = SpeedyQuery.from("inventory")
+    .expand("Product")
+    .expand("Product.Category")
+    .where(condition("quantity", gt(0)))
+    .build();
+
+// Deep nested expansion
+SpeedyQuery query = SpeedyQuery.from("inventory")
+    .expand("Product")
+    .expand("Product.Category")
+    .expand("Product.Category.Supplier")
+    .expand("Product.Category.Supplier.Address")
+    .where(condition("quantity", gt(0)))
+    .build();
+```
+
+#### Complex Multi-Level Expansion Examples
+
+```java
+// Multiple expansion paths at different levels
+SpeedyQuery query = SpeedyQuery.from("inventory")
+    .expand("Product")
+    .expand("Product.Category")
+    .expand("Procurement")
+    .expand("Procurement.Product")
+    .expand("Procurement.Product.Category")
+    .where(condition("quantity", gt(0)))
+    .build();
+
+// Expansion with field selection
+SpeedyQuery query = SpeedyQuery.from("inventory")
+    .select("id", "quantity", "location")
+    .expand("Product")
+    .expand("Product.Category")
+    .expand("Product.Category.Supplier")
+    .where(condition("quantity", gt(0)))
+    .build();
+```
+
+#### Multi-Level Expansion Rules
+
+- **Dot Notation**: Use dots (`.`) to separate entity levels in the expansion path
+- **Path Validation**: Each segment in the path must be a valid entity association
+- **Performance**: Deep expansions may impact query performance
+- **Validation**: Invalid expansion paths will result in a `BadRequestException`
+
+#### Multi-Level Expansion Examples
+
+| Use Case | Query | Description |
+|----------|-------|-------------|
+| Product with Category | `.expand("Product").expand("Product.Category")` | Include product and its category |
+| Deep Supplier Chain | `.expand("Product.Category.Supplier.Address")` | Include complete supplier chain |
+| Multiple Paths | `.expand("Product.Category").expand("Procurement.Product")` | Different expansion paths |
+| Selective Expansion | `.expand("Product").expand("Product.Category")` | Only expand specific paths |
 
 ### Ordering
 
@@ -179,11 +244,82 @@ SpeedyQuery query = SpeedyQuery.from("users")
 ### Pattern Matching
 
 ```java
-// Pattern matching (regex)
+// Pattern matching (wildcard)
 SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("name", matches("john.*")))
+    .where(condition("name", matches("*john*")))
     .build();
 ```
+
+**Wildcard Syntax:**
+- `*` = 0 or more characters/spaces
+- `?` = exactly 1 character/space
+- Examples:
+  - `"*john*"` matches "john", "johnny", "john doe", "my john", etc.
+  - `"john*"` matches "john", "johnny", "john doe", etc.
+  - `"*john"` matches "john", "my john", "the john", etc.
+  - `"j?hn"` matches "john", "jahn", etc.
+
+### Field References
+
+SpeedyQuery supports field-to-field comparisons using the `field()` method. This allows you to compare values between different fields in the same entity.
+
+#### Basic Field Reference
+
+```java
+// Compare two fields for equality
+SpeedyQuery query = SpeedyQuery.from("products")
+    .where(condition("salePrice", eq("$regularPrice")))
+    .build();
+```
+
+#### Field Reference with Comparison Operators
+
+```java
+// Find products where sale price is less than regular price
+SpeedyQuery query = SpeedyQuery.from("products")
+    .where(condition("salePrice", lt("$regularPrice")))
+    .build();
+
+// Find orders where start date is before end date
+SpeedyQuery query = SpeedyQuery.from("orders")
+    .where(condition("startDate", lte("$endDate")))
+    .build();
+```
+
+#### Complex Field Reference Examples
+
+```java
+// Compare user tracking fields
+SpeedyQuery query = SpeedyQuery.from("users")
+    .where(condition("createdBy", eq("$updatedBy")))
+    .build();
+
+// Inventory check with field reference
+SpeedyQuery query = SpeedyQuery.from("products")
+    .where(
+        and(
+            condition("currentStock", gte(field("minimumStock"))),
+            condition("salePrice", lt(field("regularPrice")))
+        )
+    )
+    .build();
+```
+
+#### Field Reference Rules
+
+- **Method**: Use `"$fieldName"` to reference another field
+- **Field Names**: Use the exact field names as defined in your entity
+- **Supported Operators**: All comparison operators support field references
+- **Validation**: Invalid field references will result in a `NotFoundException`
+
+#### Field Reference Examples
+
+| Use Case | Query | Description |
+|----------|-------|-------------|
+| Price Comparison | `condition("salePrice", lt("$regularPrice"))` | Find products on sale |
+| Date Range | `condition("startDate", lte("$endDate"))` | Valid date ranges |
+| User Tracking | `condition("createdBy", eq("$updatedBy"))` | Self-updated records |
+| Inventory Check | `condition("currentStock", gte("$minimumStock"))` | Sufficient inventory |
 
 ## Logical Operators
 
@@ -245,8 +381,8 @@ SpeedyQuery query = SpeedyQuery.from("users")
         and(
             condition("active", eq(true)),
             or(
-                condition("name", matches("john.*")),
-                condition("email", matches(".*john.*"))
+                condition("name", matches("*john*")),
+                condition("email", matches("*john*"))
             ),
             condition("age", gte(18))
         )
@@ -296,6 +432,48 @@ SpeedyQuery query = SpeedyQuery.from("orders")
     .expand("items", "shipping")
     .orderByDesc("createdAt")
     .pageSize(100)
+    .build();
+```
+
+### Product Inventory Management
+
+```java
+SpeedyQuery query = SpeedyQuery.from("products")
+    .where(
+        and(
+            // Find products where sale price is less than regular price
+            condition("salePrice", lt(field("regularPrice"))),
+            // Ensure current stock is above minimum threshold
+            condition("currentStock", gte(field("minimumStock"))),
+            // Only active products
+            condition("active", eq(true)),
+            // In specific categories
+            condition("category", in("electronics", "computers"))
+        )
+    )
+    .select("id", "name", "salePrice", "regularPrice", "currentStock", "minimumStock")
+    .orderByAsc("currentStock")  // Show low stock first
+    .pageSize(50)
+    .build();
+```
+
+### Date Range Validation
+
+```java
+SpeedyQuery query = SpeedyQuery.from("events")
+    .where(
+        and(
+            // Ensure start date is before end date
+            condition("startDate", lte(field("endDate"))),
+            // Events in the future
+            condition("startDate", gte(LocalDate.now().toString())),
+            // Active events only
+            condition("status", eq("active"))
+        )
+    )
+    .select("id", "title", "startDate", "endDate", "location")
+    .orderByAsc("startDate")
+    .pageSize(20)
     .build();
 ```
 
@@ -462,7 +640,7 @@ SpeedyQuery adminQuery = UserQueries.usersByRole("admin");
 | `$lte` | `lte(Object)` | Less than or equal | `lte(10)` |
 | `$in` | `in(Object...)` | In array of values | `in("A", "B", "C")` |
 | `$nin` | `nin(Object...)` | Not in array | `nin("deleted", "archived")` |
-| `$matches` | `matches(Object)` | Pattern matching | `matches("john.*")` |
+| `$matches` | `matches(Object)` | Pattern matching | `matches("*john*")` |
 
 ### Logical Operators
 

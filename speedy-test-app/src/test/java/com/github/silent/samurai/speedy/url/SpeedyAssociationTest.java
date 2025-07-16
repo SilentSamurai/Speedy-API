@@ -5,7 +5,10 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.ProductRepository;
-import org.junit.jupiter.api.*;
+import jakarta.persistence.EntityManagerFactory;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.CategoryApi;
 import org.openapitools.client.api.ProductApi;
@@ -18,8 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
-
-import jakarta.persistence.EntityManagerFactory;
 
 import java.util.Arrays;
 import java.util.List;

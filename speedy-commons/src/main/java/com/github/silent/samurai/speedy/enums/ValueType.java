@@ -1,12 +1,5 @@
 package com.github.silent.samurai.speedy.enums;
 
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-
-import java.sql.Date;
-import java.sql.Time;
-import java.time.*;
-import java.util.Collection;
-
 public enum ValueType {
     BOOL,
     TEXT,

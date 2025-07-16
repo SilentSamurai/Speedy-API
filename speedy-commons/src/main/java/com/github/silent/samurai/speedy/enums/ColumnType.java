@@ -21,11 +21,6 @@ public enum ColumnType {
     CLOB,
     UUID;
 
-    public ValueType getValueType() {
-        return toValueType(this);
-    }
-
-
     public static ColumnType valueOrDefault(String value, ColumnType defVal) {
         if (value == null || value.isBlank()) {
             return defVal;
@@ -53,7 +48,6 @@ public enum ColumnType {
             default -> defVal;
         };
     }
-
 
     public static ValueType toValueType(ColumnType columnType) {
         return switch (columnType) {
@@ -86,6 +80,10 @@ public enum ColumnType {
             case TIMESTAMP_WITH_ZONE:
                 yield ValueType.ZONED_DATE_TIME; // Mapping for the new type
         };
+    }
+
+    public ValueType getValueType() {
+        return toValueType(this);
     }
 
 }

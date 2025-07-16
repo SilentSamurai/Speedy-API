@@ -1,9 +1,9 @@
 package com.github.silent.samurai.speedy.entity;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.Column;
 import java.io.Serializable;
 
 @Getter

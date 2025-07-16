@@ -25,5 +25,4 @@ public class FkNullEntity {
     private Category category;
 
 
-
 }

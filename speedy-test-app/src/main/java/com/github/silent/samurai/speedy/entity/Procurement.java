@@ -1,9 +1,9 @@
 package com.github.silent.samurai.speedy.entity;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 

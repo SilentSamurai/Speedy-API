@@ -1,8 +1,6 @@
 package com.github.silent.samurai.speedy.entity;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.io.Serializable;
 

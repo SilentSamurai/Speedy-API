@@ -2,13 +2,12 @@ package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.enums.ActionType;
-import lombok.Getter;
-import lombok.Setter;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @SpeedyAction(ActionType.READ)
 @Getter

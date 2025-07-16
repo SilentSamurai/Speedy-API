@@ -25,6 +25,7 @@ public class SpeedyDateTime implements SpeedyValue {
     public boolean isEmpty() {
         return value == null;
     }
+
     @Override
     public LocalDateTime asDateTime() {
         return getValue();

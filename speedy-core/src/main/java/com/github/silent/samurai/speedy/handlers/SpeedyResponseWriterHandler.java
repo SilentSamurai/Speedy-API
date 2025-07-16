@@ -2,14 +2,9 @@ package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializer;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
-import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.request.IResponseContext;
-import com.github.silent.samurai.speedy.serializers.JSONSerializer;
-
-import java.util.List;
+import com.github.silent.samurai.speedy.request.RequestContext;
 
 public class SpeedyResponseWriterHandler implements Handler {
 

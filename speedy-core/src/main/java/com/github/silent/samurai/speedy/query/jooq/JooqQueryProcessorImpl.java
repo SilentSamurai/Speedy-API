@@ -9,8 +9,10 @@ import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
-import org.jooq.*;
+import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.Result;
+import org.jooq.SQLDialect;
 import org.jooq.conf.RenderNameStyle;
 import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
@@ -22,6 +24,7 @@ import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class JooqQueryProcessorImpl implements QueryProcessor {
 
@@ -95,7 +98,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                 Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect).findByPrimaryKey(entityKey);
 
                 SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dslContext)
-                        .fromRecord(result.get(0), entity.getMetadata(), List.of());
+                        .fromRecord(result.get(0), entity.getMetadata(), Set.of());
 
                 entityList.add(speedyEntity);
             }
@@ -115,7 +118,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect).findByPrimaryKey(pk);
 
             return new JooqSqlToSpeedy(dslContext)
-                    .fromRecord(result.get(0), entity.getMetadata(), List.of());
+                    .fromRecord(result.get(0), entity.getMetadata(), Set.of());
         } catch (Exception e) {
             throw new BadRequestException("Invalid Request", e);
         }
@@ -130,7 +133,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             for (SpeedyEntityKey pk : pks) {
                 Result<Record> result = jooqPkQueryBuilder.findByPrimaryKey(pk);
                 SpeedyEntity entity = new JooqSqlToSpeedy(dslContext)
-                        .fromRecord(result.get(0), pk.getMetadata(), List.of());
+                        .fromRecord(result.get(0), pk.getMetadata(), Set.of());
 
                 entities.add(entity);
             }

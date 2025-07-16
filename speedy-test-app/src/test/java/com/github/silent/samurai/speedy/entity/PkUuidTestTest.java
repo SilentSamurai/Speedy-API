@@ -37,9 +37,16 @@ class PkUuidTestTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PkUuidTestTest.class);
 
-    /// rust like java doc
-    /// ```
-    ///
+    /// JavaDoc Markdown documentation comment example
+    /// 
+    /// This is an example of using Markdown in JavaDoc comments.
+    /// You can use **bold**, *italic*, and `code` formatting.
+    /// 
+    /// ```java
+    /// // Example code block
+    /// public void example() {
+    ///     System.out.println("Hello World!");
+    /// }
     /// ```
     @Autowired
     EntityManagerFactory entityManagerFactory;
@@ -52,25 +59,6 @@ class PkUuidTestTest {
 
     @Autowired
     private MockMvc mvc;
-
-    @BeforeEach
-    void setUp() {
-    }
-
-    @Test
-    void save() throws Exception {
-        ArrayNode arrayNode = CommonUtil.json()
-                .createArrayNode();
-        arrayNode.add(CommonUtil.json().createObjectNode()
-                .put("name", "test")
-                .put("description", "test des"));
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$create")
-                .content(arrayNode.toPrettyString())
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-
-        mvc.perform(createRequest)
-                .andExpect(status().isOk());
-    }
 
     public static Matcher<String> isValidUUID() {
         return new TypeSafeMatcher<>() {
@@ -89,6 +77,25 @@ class PkUuidTestTest {
                 description.appendText("a valid UUID");
             }
         };
+    }
+
+    @BeforeEach
+    void setUp() {
+    }
+
+    @Test
+    void save() throws Exception {
+        ArrayNode arrayNode = CommonUtil.json()
+                .createArrayNode();
+        arrayNode.add(CommonUtil.json().createObjectNode()
+                .put("name", "test")
+                .put("description", "test des"));
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$create")
+                .content(arrayNode.toPrettyString())
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(createRequest)
+                .andExpect(status().isOk());
     }
 
     @Test

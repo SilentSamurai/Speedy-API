@@ -1,9 +1,8 @@
 package com.github.silent.samurai.speedy.jpa.impl.data;
 
 
-import lombok.Data;
-
 import jakarta.persistence.Id;
+import lombok.Data;
 
 
 @Data

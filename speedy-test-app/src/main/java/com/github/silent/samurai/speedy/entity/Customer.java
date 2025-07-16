@@ -3,12 +3,12 @@ package com.github.silent.samurai.speedy.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.enums.ActionType;
-import lombok.Data;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.util.List;
 

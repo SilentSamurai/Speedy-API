@@ -14,9 +14,8 @@ import org.slf4j.LoggerFactory;
 public class JooqPkQueryBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqPkQueryBuilder.class);
-
-    private final DSLContext dslContext;
     final SQLDialect dialect;
+    private final DSLContext dslContext;
 
     public JooqPkQueryBuilder(DSLContext dslContext, SQLDialect dialect) {
         this.dslContext = dslContext;

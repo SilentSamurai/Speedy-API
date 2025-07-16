@@ -3,11 +3,9 @@ package com.github.silent.samurai.speedy.query;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,9 +44,9 @@ public class SpeedyQueryHelper {
         return Optional.empty();
     }
 
-    public Optional<SpeedyValue> getFilterValue(FieldMetadata fieldMetadata) {
+    public Optional<Expression> getFilterValue(FieldMetadata fieldMetadata) {
         if (isFilterPresent(fieldMetadata)) {
-            return Optional.of(conditionMap.get(fieldMetadata.getOutputPropertyName()).getSpeedyValue());
+            return Optional.of(conditionMap.get(fieldMetadata.getOutputPropertyName()).getExpression());
         }
         return Optional.empty();
     }
@@ -73,8 +71,13 @@ public class SpeedyQueryHelper {
     }
 
     public <T> T rawValueFromCondition(FieldMetadata fieldMetadata, Class<T> clazz) throws Exception {
-        Optional<SpeedyValue> filterValue = getFilterValue(fieldMetadata);
-        return SpeedyValueFactory.toJavaType(fieldMetadata, filterValue.get());
+        Expression filterValue = getFilterValue(fieldMetadata).orElseThrow();
+        if (filterValue instanceof Literal literal) {
+            return SpeedyValueFactory.toJavaType(fieldMetadata, literal.value());
+        } else if (filterValue instanceof Identifier identifier) {
+            return (T) identifier.field().getFieldMetadata().getDbColumnName();
+        }
+        throw new Exception("invalid filter value for field: " + fieldMetadata.getOutputPropertyName());
     }
 
 }
