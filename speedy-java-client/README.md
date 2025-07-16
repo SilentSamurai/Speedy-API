@@ -4,7 +4,8 @@ A library-agnostic Java client for Speedy API that allows you to use any HTTP cl
 
 ## Architecture
 
-The Speedy Java Client now uses an interface-based approach that allows you to plug in your own HTTP client implementation:
+The Speedy Java Client now uses an interface-based approach that allows you to plug in your own HTTP client
+implementation:
 
 - **`HttpClient` interface**: Defines the contract for HTTP operations
 - **`ApiClient` class**: Default implementation using Spring's RestTemplate
@@ -118,6 +119,7 @@ SpeedyResponse response = speedyApi.delete(deleteRequest);
 ## Dependencies
 
 The client has minimal dependencies:
+
 - Jackson for JSON processing
 - Jakarta Validation for annotations
 - Lombok for reducing boilerplate (optional)

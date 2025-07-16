@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
+import com.github.silent.samurai.speedy.interfaces.query.PageInfo;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
 import com.github.silent.samurai.speedy.models.orderby.OrderByImpl;
@@ -27,7 +28,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private BooleanCondition having;
     private List<OrderBy> orderByList = new LinkedList<>();
     private PageInfoImpl pageInfo = new PageInfoImpl();
-    private List<String> expand = new ArrayList<>();
+    private Set<String> expand = new HashSet<>();
     private Set<String> select = new HashSet<>();
     private String responseFormat;
 

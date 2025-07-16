@@ -7,6 +7,9 @@ import com.github.silent.samurai.speedy.file.impl.metadata.FileFieldMetadata;
 import com.github.silent.samurai.speedy.file.impl.models.JsonEntity;
 import com.github.silent.samurai.speedy.file.impl.models.JsonField;
 import com.github.silent.samurai.speedy.file.impl.validator.JsonValidator;
+import com.github.silent.samurai.speedy.metadata.MetadataBuilder.EntityBuilder;
+import com.github.silent.samurai.speedy.metadata.MetadataBuilder.FieldBuilder;
+import com.github.silent.samurai.speedy.metadata.MetadataBuilder.MetaModelBuilder;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.io.IOException;
@@ -14,8 +17,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.github.silent.samurai.speedy.metadata.MetadataBuilder.*;
 
 
 public class FileProcessor {

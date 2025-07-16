@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.mappings.String2JavaType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.mappings.String2JavaType;
 
 import java.util.Map;
 import java.util.Optional;

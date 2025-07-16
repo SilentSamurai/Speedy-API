@@ -3,11 +3,8 @@ package com.github.silent.samurai.speedy.interfaces.query;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.mappings.JavaType2SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
-
-import java.math.BigInteger;
 
 public interface ConversionProcessor
         <ZonedTimestampType, TimeType, TimestampType, DateType, NumericType,

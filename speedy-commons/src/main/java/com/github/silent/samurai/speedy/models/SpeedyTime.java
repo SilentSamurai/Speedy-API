@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
 
 import java.time.LocalTime;
+
 @Getter
 public class SpeedyTime implements SpeedyValue {
 

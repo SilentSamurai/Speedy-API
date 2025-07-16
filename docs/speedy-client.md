@@ -255,35 +255,98 @@ class UserControllerTest {
 
 ## Response Handling
 
-### Basic Response Handling
+### SpeedyResponse Structure
+
+The `SpeedyResponse` class contains the following fields:
 
 ```java
-SpeedyResponse response = client.get("users").execute();
-
-if (response.isSuccess()) {
-    List<User> users = response.getData();
-    System.out.println("Found " + users.size() + " users");
-} else {
-    System.err.println("Error: " + response.getError());
+public class SpeedyResponse {
+    private Integer pageIndex;        // Current page index (0-based)
+    private Integer pageSize;         // Number of items per page
+    private Integer totalPageCount;   // Total number of pages
+    private JsonNode payload;         // The actual response data
 }
 ```
 
-### Typed Response Handling
+### Basic Response Handling
 
 ```java
-// For custom response types
-CustomResponse response = client.get("users").execute();
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
 
-if (response.getStatus() == 200) {
-    List<User> users = response.getUsers();
-    // Process users
-} else {
-    // Handle error
-    String error = response.getErrorMessage();
+SpeedyResponse response = client.get("users").execute();
+
+// Access pagination information
+Integer pageIndex = response.getPageIndex();
+Integer pageSize = response.getPageSize();
+Integer totalPageCount = response.getTotalPageCount();
+
+// Access the payload as JsonNode
+JsonNode payload = response.getPayload();
+
+// Check if payload contains data
+if (payload != null && !payload.isEmpty()) {
+    System.out.println("Found data in response");
+    // Process the payload based on your needs
+}
+```
+
+### Working with Payload Data
+
+```java
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
+
+SpeedyResponse response = client.get("users").execute();
+JsonNode payload = response.getPayload();
+
+// For single entity responses
+if (payload.isObject()) {
+    // Handle single entity
+    String userId = payload.get("id").asText();
+    String userName = payload.get("name").asText();
+}
+
+// For multiple entity responses
+if (payload.isArray()) {
+    // Handle array of entities
+    for (JsonNode user : payload) {
+        String userId = user.get("id").asText();
+        String userName = user.get("name").asText();
+    }
 }
 ```
 
 ## Error Handling
+
+### HTTP Status and Exceptions
+
+The SpeedyClient throws exceptions for HTTP errors and network issues:
+
+```java
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.silent.samurai.speedy.api.client.SpeedyClient;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+
+try {
+    SpeedyResponse response = client.get("users").execute();
+    // Process successful response
+} catch (SpeedyClientException e) {
+    // Handle Speedy-specific client errors
+    log.error("Client error: {}", e.getMessage());
+} catch (HttpClientErrorException e) {
+    // Handle HTTP 4xx errors (Bad Request, Not Found, etc.)
+    log.error("HTTP client error: {} - {}", e.getStatusCode(), e.getMessage());
+} catch (HttpServerErrorException e) {
+    // Handle HTTP 5xx errors (Internal Server Error, etc.)
+    log.error("HTTP server error: {} - {}", e.getStatusCode(), e.getMessage());
+} catch (Exception e) {
+    // Handle other unexpected errors
+    log.error("Unexpected error: {}", e.getMessage());
+}
+```
 
 ### Exception Handling
 
@@ -294,8 +357,12 @@ try {
         .addField("email", "john@example.com")
         .execute();
         
-    if (!response.isSuccess()) {
-        log.error("API Error: {}", response.getError());
+    // Check if the operation was successful by examining the payload
+    JsonNode payload = response.getPayload();
+    if (payload != null && !payload.isEmpty()) {
+        log.info("User created successfully");
+    } else {
+        log.warn("No data returned from create operation");
     }
 } catch (SpeedyClientException e) {
     log.error("Client error: {}", e.getMessage());
@@ -307,18 +374,24 @@ try {
 ### Validation Errors
 
 ```java
-SpeedyResponse response = client.create("users")
-    .addField("name", "")  // Invalid empty name
-    .addField("email", "invalid-email")  // Invalid email format
-    .execute();
-
-if (!response.isSuccess()) {
-    ValidationError error = response.getValidationError();
-    if (error != null) {
-        error.getFieldErrors().forEach(fieldError -> {
-            log.error("Field {}: {}", fieldError.getField(), fieldError.getMessage());
-        });
+try {
+    SpeedyResponse response = client.create("users")
+        .addField("name", "")  // Invalid empty name
+        .addField("email", "invalid-email")  // Invalid email format
+        .execute();
+        
+    // Check response payload for validation errors
+    JsonNode payload = response.getPayload();
+    if (payload != null && payload.has("errors")) {
+        JsonNode errors = payload.get("errors");
+        if (errors.isArray()) {
+            for (JsonNode error : errors) {
+                log.error("Validation error: {}", error.asText());
+            }
+        }
     }
+} catch (Exception e) {
+    log.error("Request failed: {}", e.getMessage());
 }
 ```
 
@@ -339,10 +412,22 @@ SpeedyQuery query = from("users")
 
 ```java
 SpeedyResponse response = client.get("users").execute();
-if (response.isSuccess()) {
-    // Process data
+JsonNode payload = response.getPayload();
+
+if (payload != null && !payload.isEmpty()) {
+    // Process data from payload
+    if (payload.isArray()) {
+        // Handle array of entities
+        for (JsonNode user : payload) {
+            // Process each user
+        }
+    } else if (payload.isObject()) {
+        // Handle single entity
+        // Process the user object
+    }
 } else {
-    // Handle error appropriately
+    // Handle empty or null response
+    log.warn("No data returned from API");
 }
 ```
 
@@ -370,6 +455,14 @@ SpeedyQuery badQuery = from("users").build();  // Gets everything!
 
 ```java
 // Good: Reuse client instance
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.silent.samurai.speedy.api.client.SpeedyClient;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 @Service
 public class UserService {
     private final SpeedyClient<SpeedyResponse> client;
@@ -378,11 +471,20 @@ public class UserService {
         this.client = SpeedyClient.restTemplate(restTemplate, "https://api.example.com");
     }
     
-    public List<User> getActiveUsers() {
+    public List<JsonNode> getActiveUsers() {
         SpeedyQuery query = from("users")
             .where(condition("active", eq(true)))
             .build();
-        return client.query(query).execute().getData();
+        SpeedyResponse response = client.query(query).execute();
+        JsonNode payload = response.getPayload();
+        
+        List<JsonNode> users = new ArrayList<>();
+        if (payload != null && payload.isArray()) {
+            for (JsonNode user : payload) {
+                users.add(user);
+            }
+        }
+        return users;
     }
 }
 ```

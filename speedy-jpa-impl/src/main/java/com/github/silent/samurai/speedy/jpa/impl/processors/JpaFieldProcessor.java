@@ -14,13 +14,12 @@ import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaKeyFieldMetadata;
 import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
 import jakarta.persistence.*;
+import jakarta.persistence.metamodel.Attribute;
+import jakarta.persistence.metamodel.SingularAttribute;
 import org.hibernate.annotations.Formula;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
-
-import jakarta.persistence.metamodel.Attribute;
-import jakarta.persistence.metamodel.SingularAttribute;
 
 import java.lang.reflect.*;
 import java.util.Arrays;

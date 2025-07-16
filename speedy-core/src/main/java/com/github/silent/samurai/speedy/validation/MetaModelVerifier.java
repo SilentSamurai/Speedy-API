@@ -35,8 +35,8 @@ public class MetaModelVerifier {
                     Objects.requireNonNull(fieldMetadata.getAssociatedFieldMetadata());
                 }
 
-                if (fieldMetadata.getValueType() == ValueType.OBJECT || fieldMetadata.getValueType() == ValueType.COLLECTION ) {
-                    if(!fieldMetadata.isAssociation()) {
+                if (fieldMetadata.getValueType() == ValueType.OBJECT || fieldMetadata.getValueType() == ValueType.COLLECTION) {
+                    if (!fieldMetadata.isAssociation()) {
                         String msg = String.format(
                                 "field %s in entity %s is derived as speedy object type which is not supported",
                                 fieldMetadata.getOutputPropertyName(), entityMetadata.getName());

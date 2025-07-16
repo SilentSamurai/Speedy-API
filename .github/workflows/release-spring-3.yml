@@ -9,6 +9,9 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v2
+                with:
+                    token: ${{ secrets.GITHUB_TOKEN }}
+            
             -   name: Set up Maven Central Repository
                 uses: actions/setup-java@v4
                 with:
@@ -18,11 +21,24 @@ jobs:
                     server-username: MAVEN_USERNAME
                     server-password: MAVEN_PASSWORD
                     gpg-passphrase: MAVEN_GPG_PASSPHRASE
+            
+            -   name: Configure Git
+                run: |
+                    git config --global user.name "github-actions[bot]"
+                    git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            
+            -   name: Bump patch version
+                run: |
+                    chmod +x ./update-patch-version.sh
+                    # Run the script (now fully automated)
+                    ./update-patch-version.sh
+            
             -   id: install-secret-key
                 name: Install gpg secret key
                 run: |
                     cat <(echo -e "${{ secrets.GPG_SIGNING_KEY }}") | gpg --batch --import
                     gpg --list-secret-keys --keyid-format LONG
+            
             -   id: publish-to-central
                 name: Publish to Central Repository
                 env:
@@ -31,3 +47,16 @@ jobs:
                     MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
                 run: |
                     mvn --no-transfer-progress --batch-mode clean deploy -P=ossrh
+            
+            -   name: Commit and push version changes
+                run: |
+                    # Get the new version from pom.xml
+                    NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+                    # Commit and push changes
+                    git add .
+                    git commit -m "Bump version to $NEW_VERSION"
+                    # Create and push tag
+                    git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
+                    # Push tag 
+                    git push origin "v$NEW_VERSION"
+                    echo "✅ Successfully committed version $NEW_VERSION and pushed tag v$NEW_VERSION"

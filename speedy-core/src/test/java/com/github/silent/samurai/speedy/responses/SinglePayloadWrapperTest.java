@@ -18,9 +18,9 @@ public class SinglePayloadWrapperTest {
     public void test_constructor_initializes_with_valid_payload() {
         EntityMetadata metadata = mock(EntityMetadata.class);
         SpeedyEntity payload = new SpeedyEntity(metadata);
-    
+
         SinglePayloadWrapper wrapper = new SinglePayloadWrapper(payload);
-    
+
         assertNotNull(wrapper);
         assertEquals(payload, wrapper.getPayload());
         assertEquals(0, wrapper.getPageIndex());
@@ -32,7 +32,7 @@ public class SinglePayloadWrapperTest {
     @Test
     public void test_constructor_handles_null_payload() {
         SinglePayloadWrapper wrapper = new SinglePayloadWrapper(null);
-    
+
         assertNotNull(wrapper);
         assertNull(wrapper.getPayload());
         assertEquals(0, wrapper.getPageIndex());

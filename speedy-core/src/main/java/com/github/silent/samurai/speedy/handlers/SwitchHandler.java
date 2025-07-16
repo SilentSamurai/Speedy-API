@@ -14,8 +14,8 @@ public class SwitchHandler implements Handler {
     final Handler updateHandler;
     final Handler deleteHandler;
 
-    public SwitchHandler(Handler getRequestHandler, Handler queryHandler, Handler createHandler, Handler updateHandler, Handler deleteHandler) {
-        this.getRequestHandler = getRequestHandler;
+    public SwitchHandler(Handler getHandler, Handler queryHandler, Handler createHandler, Handler updateHandler, Handler deleteHandler) {
+        this.getRequestHandler = getHandler;
         this.queryHandler = queryHandler;
         this.createHandler = createHandler;
         this.updateHandler = updateHandler;

@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 public class SpeedyQueryHandler implements Handler {
 
     final Handler next;
+
     public SpeedyQueryHandler(Handler handler) {
         this.next = handler;
     }

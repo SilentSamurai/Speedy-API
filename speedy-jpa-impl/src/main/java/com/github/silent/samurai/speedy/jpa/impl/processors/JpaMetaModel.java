@@ -7,11 +7,10 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.metamodel.EntityType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,10 +22,9 @@ import java.util.stream.Collectors;
 public class JpaMetaModel implements MetaModel {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModel.class);
-
-    private ISpeedyConfiguration configuration;
     private final Map<String, JpaEntityMetadata> entityMap = new HashMap<>();
     private final Map<Class<?>, JpaEntityMetadata> typeMap = new HashMap<>();
+    private ISpeedyConfiguration configuration;
     private EntityManagerFactory entityManagerFactory;
 
     public JpaMetaModel(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {

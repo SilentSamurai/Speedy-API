@@ -7,7 +7,6 @@ import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
 import jakarta.persistence.*;
 import lombok.Data;
-
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;

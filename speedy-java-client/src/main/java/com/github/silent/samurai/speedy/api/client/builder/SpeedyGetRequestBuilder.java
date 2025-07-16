@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.api.client.SpeedyApi;
 import com.github.silent.samurai.speedy.api.client.models.SpeedyGetRequest;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
 import com.github.silent.samurai.speedy.api.client.utils.JsonUtil;
 import lombok.Getter;
 

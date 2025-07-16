@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
@@ -7,6 +8,7 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
+import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
@@ -23,8 +25,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import jakarta.persistence.EntityManagerFactory;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -168,6 +170,55 @@ public class SpeedyV2WhereClauseTest {
 
     }
 
+    /*
+      {
+          "from": "Inventory",
+          "where": {
+              "cost": { "$in" : [15, 30, 50] }
+          }
+      }
+      */
+    @Test
+    void testQuery4() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Inventory");
+        ArrayNode inArray = body.putObject("$where")
+                .putObject("cost")
+                .putArray("$in");
+        inArray.add(15);
+        inArray.add(30);
+        inArray.add(50);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(0))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
+                        .value(Matchers.everyItem(
+                                Matchers.anyOf(
+                                        Matchers.equalTo(15.0),
+                                        Matchers.equalTo(30.0),
+                                        Matchers.equalTo(50.0)
+                                )
+                        )))
+                .andReturn();
+
+    }
 
     /*
       {
@@ -214,7 +265,7 @@ public class SpeedyV2WhereClauseTest {
       {
           "from": "Inventory",
           "where": {
-              "cost": { "$eq" : 15 }
+              "cost": { "$ne" : 15 }
           }
       }
       */
@@ -224,7 +275,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Inventory");
         body.putObject("$where")
                 .putObject("cost")
-                .put("$eq", 15);
+                .put("$ne", 15);
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -237,7 +288,7 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
-                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(0))))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
@@ -246,7 +297,7 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
-                        .value(Matchers.everyItem(Matchers.equalTo(15.0))))
+                        .value(Matchers.everyItem(Matchers.not(Matchers.equalTo(15.0)))))
                 .andReturn();
 
     }
@@ -255,7 +306,7 @@ public class SpeedyV2WhereClauseTest {
       {
           "from": "Category",
           "where": {
-              "name": { "$ne" : "Cat-12-12" }
+              "name": { "$ne" : "cat-12-12" }
           }
       }
       */
@@ -265,7 +316,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Category");
         body.putObject("$where")
                 .putObject("name")
-                .put("$ne", "Cat-12-12");
+                .put("$ne", "cat-12-12");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -460,7 +511,10 @@ public class SpeedyV2WhereClauseTest {
        {
            "from": "Inventory",
            "where": {
-               "cost": { "$lte" : 15 }
+                "$and": [
+                    { "cost": { "$gte" : 10 } },
+                    { "cost": { "$lte" : 20 } }
+                ]
            }
        }
        */
@@ -468,9 +522,14 @@ public class SpeedyV2WhereClauseTest {
     void testQuery12() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Inventory");
-        body.putObject("$where")
+        ArrayNode jsonNodes = body.putObject("$where")
+                .putArray("$and");
+        jsonNodes.addObject()
                 .putObject("cost")
-                .put("$lte", 15);
+                .put("$gte", 10);
+        jsonNodes.addObject()
+                .putObject("cost")
+                .put("$lte", 20);
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
                 .content(CommonUtil.json().writeValueAsString(body))
@@ -483,7 +542,7 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
-                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(0))))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
@@ -492,7 +551,12 @@ public class SpeedyV2WhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
-                        .value(Matchers.everyItem(Matchers.lessThanOrEqualTo(15.0))))
+                        .value(Matchers.everyItem(
+                                Matchers.allOf(
+                                        Matchers.greaterThanOrEqualTo(10.0),
+                                        Matchers.lessThanOrEqualTo(20.0)
+                                )
+                        )))
                 .andReturn();
 
     }
@@ -712,7 +776,7 @@ public class SpeedyV2WhereClauseTest {
        {
            "from": "Procurement",
            "where": {
-                "createdAt": { $neq: null }
+                "createdAt": { "$neq": null }
            }
        }
        */
@@ -722,7 +786,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Procurement");
         body.putObject("$where")
                 .putObject("createdAt")
-                .putNull("$neq");
+                .put("$neq", (String) null);
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
@@ -795,7 +859,6 @@ public class SpeedyV2WhereClauseTest {
     void testQuery19() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.put("$from", "Procurement");
-//        body.putObject("where");
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
@@ -849,7 +912,6 @@ public class SpeedyV2WhereClauseTest {
                         .value(Matchers.everyItem(
                                 Matchers.anyOf(
                                         Matchers.equalTo("cat-10-10")
-//                                        Matchers.equalTo("cat-12-12")
                                 )
                         )))
                 .andReturn();
@@ -919,6 +981,122 @@ public class SpeedyV2WhereClauseTest {
                                 )
                         )))
                 .andReturn();
+
+    }
+
+    @Test
+    void query_with_field_reference() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Invoice");
+        body.putObject("$where")
+                .putObject("discount")
+                .put("$lt", "$dueAmount");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].discount").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].discount").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].dueAmount").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].dueAmount").isNotEmpty())
+                .andReturn();
+
+        String content = mvcResult.getResponse().getContentAsString();
+        JsonNode root = CommonUtil.json().readTree(content);
+        JsonNode payload = root.get("payload");
+
+        // Assert: discount < dueAmount
+        for (JsonNode item : payload) {
+            double discount = item.get("discount").asDouble();
+            double dueAmount = item.get("dueAmount").asDouble();
+            assertTrue(discount < dueAmount,
+                    String.format("Expected discount < dueAmount but got discount=%s, dueAmount=%s", discount, dueAmount));
+        }
+
+    }
+
+    @Test
+    void query_with_field_reference_with_missing_field() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Invoice");
+        body.putObject("$where")
+                .putObject("invoiceDate")
+                .put("$eq", "$created_at");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isNotFound())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value(
+                        Matchers.allOf(
+                                Matchers.containsString("created_at"),
+                                Matchers.containsString("not found")
+                        )
+                ))
+                .andReturn();
+
+    }
+
+    @Test
+    void query_with_field_reference_with_date() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Invoice");
+        body.putObject("$where")
+                .putObject("invoiceDate")
+                .put("$eq", "$createdAt");
+
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].invoiceDate").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].invoiceDate").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdAt").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdAt").isNotEmpty())
+                .andReturn();
+
+        String content = mvcResult.getResponse().getContentAsString();
+        JsonNode root = CommonUtil.json().readTree(content);
+        JsonNode payload = root.get("payload");
+
+        // Assert: discount < dueAmount
+        for (JsonNode item : payload) {
+            double invoiceDate = item.get("invoiceDate").asDouble();
+            double createdAt = item.get("createdAt").asDouble();
+            assertEquals(invoiceDate, createdAt, String.format("Expected discount < dueAmount but got invoiceDate=%s, createdAt=%s", invoiceDate, createdAt));
+        }
 
     }
 

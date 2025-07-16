@@ -4,12 +4,12 @@ import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
+import jakarta.persistence.metamodel.Attribute;
 import lombok.Getter;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.persistence.metamodel.Attribute;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 

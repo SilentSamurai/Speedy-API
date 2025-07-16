@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.data;
 
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;

@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.api.client.models;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.api.client.builder.SpeedyGetRequestBuilder;
 import lombok.Getter;
 import lombok.Setter;
 

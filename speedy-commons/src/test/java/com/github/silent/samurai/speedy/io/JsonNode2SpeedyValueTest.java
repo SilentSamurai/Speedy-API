@@ -1,4 +1,3 @@
-
 package com.github.silent.samurai.speedy.io;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -22,7 +21,8 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JsonNode2SpeedyValueTest {

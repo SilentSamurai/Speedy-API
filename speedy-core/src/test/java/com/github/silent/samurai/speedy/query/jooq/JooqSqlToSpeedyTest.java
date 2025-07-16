@@ -10,8 +10,10 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import org.jooq.*;
+import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,7 +66,7 @@ class JooqSqlToSpeedyTest {
         mockRecord(entityMetadata, "cost").thenReturn(100);
         mockRecord(entityMetadata, "category").thenReturn("cat-2");
 
-        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, List.of());
+        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);
 
         assertNotNull(speedyEntity);
@@ -98,7 +101,7 @@ class JooqSqlToSpeedyTest {
 //        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
 //        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
 
-        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, List.of());
+        SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);
 
         assertNotNull(speedyEntity);

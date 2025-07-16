@@ -1,45 +1,28 @@
 package com.github.silent.samurai.speedy;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.events.RegistryImpl;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
-import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
-import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.query.JsonQueryBuilder;
-import com.github.silent.samurai.speedy.query.jooq.JooqQueryProcessorImpl;
-import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.request.*;
-import com.github.silent.samurai.speedy.request.IResponseContext;
-import com.github.silent.samurai.speedy.serializers.JSONSerializer;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
+import com.github.silent.samurai.speedy.query.jooq.JooqQueryProcessorImpl;
+import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.speedy.validation.MetaModelVerifier;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Getter
 public class SpeedyFactory {
@@ -83,153 +66,6 @@ public class SpeedyFactory {
         DataSource dataSource = speedyConfiguration.dataSourcePerReq();
         return new JooqQueryProcessorImpl(dataSource, dialect);
     }
-
-    public void processGetRequests(IRequestContextImpl context, SpeedyQuery speedyQuery) throws Exception {
-
-        SpeedyQueryImpl speedyImpl = (SpeedyQueryImpl) speedyQuery;
-        speedyImpl.setExpand(
-                speedyQuery.getFrom()
-                        .getAssociatedFields().stream().map(
-                                item -> item.getAssociationMetadata().getName()
-                        ).collect(Collectors.toList())
-        );
-
-        Optional<List<SpeedyEntity>> requestedData = new GetDataHandler(context).processMany(speedyQuery);
-        if (requestedData.isEmpty()) {
-            throw new NotFoundException();
-        }
-        List<SpeedyEntity> speedyEntities = requestedData.get();
-        IResponseContext responseContext = context.createResponseContext()
-                .expands(speedyQuery.getExpand())
-                .build();
-        IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
-        jsonSerializer.write(speedyEntities);
-    }
-
-    public void processQueryRequest(IRequestContextImpl context) throws Exception {
-        // get entity metadata
-        EntityMetadata resourceMetadata = context.getEntityMetadata();
-        ObjectMapper json = CommonUtil.json();
-        // get query from request body
-        JsonNode jsonBody = json.readTree(context.getRequest().getReader());
-        // create JSON Query parser
-        JsonQueryBuilder jsonQueryBuilder = new JsonQueryBuilder(metaModel, resourceMetadata, jsonBody);
-        // build speedy query
-        SpeedyQuery speedyQuery = jsonQueryBuilder.build();
-
-        QueryProcessor queryProcessor = createQueryProcessor();
-
-        if (speedyQuery.getSelect().contains("count")) {
-            BigInteger count = queryProcessor.executeCount(speedyQuery);
-            new JSONSerializer(context.createResponseContext().build()).write(count);
-        } else {
-            List<SpeedyEntity> speedyEntities = queryProcessor.executeMany(speedyQuery);
-            IResponseContext responseContext = context.createResponseContext()
-                    .pageNo(speedyQuery.getPageInfo().getPageNo())
-                    .expands(speedyQuery.getExpand())
-                    .build();
-            IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
-            jsonSerializer.write(speedyEntities);
-        }
-    }
-
-    public void processCreateRequests(IRequestContextImpl context) throws Exception {
-        EntityMetadata resourceMetadata = context.getEntityMetadata();
-        ObjectMapper json = CommonUtil.json();
-        JsonNode jsonBody = json.readTree(context.getRequest().getReader());
-        Optional<List<SpeedyEntity>> savedEntities = new PostDataHandler(context).process(resourceMetadata, jsonBody);
-        IResponseContext responseContext = context.createResponseContext().build();
-        IResponseSerializer jsonSerializer = new JSONSerializer(responseContext, KeyFieldMetadata.class::isInstance);
-        jsonSerializer.write(savedEntities.orElse(Collections.emptyList()));
-
-    }
-
-    public void processPutRequests(IRequestContextImpl context) throws Exception {
-        Optional<SpeedyEntity> savedEntity = new UpdateDataHandler(context).process();
-        if (savedEntity.isEmpty()) {
-            throw new NotFoundException();
-        }
-        IResponseContext responseContext = context.createResponseContext().build();
-        IResponseSerializer jsonSerializer = new JSONSerializer(responseContext);
-        SpeedyEntity speedyEntity = savedEntity.get();
-        jsonSerializer.write(List.of(speedyEntity));
-    }
-
-    public void processDeleteRequests(IRequestContextImpl context) throws Exception {
-
-        Optional<List<SpeedyEntity>> removedEntities = new DeleteDataHandler(context).process();
-        IResponseContext responseContext = context.createResponseContext().build();
-
-        IResponseSerializer jsonSerializer = new JSONSerializer(responseContext, KeyFieldMetadata.class::isInstance);
-        List<SpeedyEntity> speedyEntities = removedEntities.get();
-
-        jsonSerializer.write(speedyEntities);
-    }
-
-    public void processRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        String requestURI = CommonUtil.getRequestURI(request);
-        String method = request.getMethod();
-
-        try {
-
-            SpeedyUriContext parser = new SpeedyUriContext(metaModel, requestURI);
-            SpeedyQuery uriSpeedyQuery = parser.parse();
-
-            EntityMetadata resourceMetadata = uriSpeedyQuery.getFrom();
-
-            QueryProcessor queryProcessor = createQueryProcessor();
-
-            IRequestContextImpl context = new IRequestContextImpl(request,
-                    response, metaModel,
-                    validationProcessor, eventProcessor, queryProcessor, resourceMetadata);
-
-
-            if (method.equals(HttpMethod.GET.name())) {
-                processGetRequests(context, uriSpeedyQuery);
-            } else if (method.equals(HttpMethod.POST.name())) {
-
-                if (requestURI.contains("$query")) {
-                    processQueryRequest(context);
-                } else if (requestURI.contains("$create")) {
-                    processCreateRequests(context);
-                } else {
-                    throw new BadRequestException("not a valid request");
-                }
-
-            } else if (method.equals(HttpMethod.PUT.name()) || method.equals(HttpMethod.PATCH.name())) {
-
-                if (requestURI.contains("$update")) {
-                    processPutRequests(context);
-                } else {
-                    throw new BadRequestException("not a valid request");
-                }
-
-            } else if (method.equals(HttpMethod.DELETE.name())) {
-
-                if (requestURI.contains("$delete")) {
-                    processDeleteRequests(context);
-                } else {
-                    throw new BadRequestException("not a valid request");
-                }
-
-            } else {
-                response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-            }
-        } catch (SpeedyHttpException e) {
-            ExceptionUtils.writeException(response, e);
-            LOGGER.error("Exception {} ", request.getRequestURI(), e);
-        } catch (Exception e) {
-            response.setStatus(ExceptionUtils.getStatusFromException(e));
-            LOGGER.error("Exception {} ", request.getRequestURI(), e);
-        } catch (Throwable e) {
-            LOGGER.error("Exception {} ", request.getRequestURI(), e);
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        } finally {
-            response.getWriter().flush();
-        }
-    }
-
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
         RequestContext requestContext = new RequestContext(
@@ -277,8 +113,7 @@ public class SpeedyFactory {
         Handler queryProcessorInit = new CreateQueryProcessorHandler(sh);
         Handler ech = new EntityCaptureHandler(queryProcessorInit);
         Handler requestParserHandler = new RequestParserHandler(ech);
-        Handler head = new HeadHandler(requestParserHandler);
-        return head;
+        return new HeadHandler(requestParserHandler);
     }
 
 

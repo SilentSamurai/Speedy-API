@@ -5,11 +5,10 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import lombok.Data;
-import lombok.SneakyThrows;
-
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import lombok.Data;
+import lombok.SneakyThrows;
 import org.mockito.internal.util.collections.Sets;
 
 import java.lang.reflect.Field;

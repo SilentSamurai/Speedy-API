@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.jpa.impl.metamodel;
 
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaKeyFieldMetadata;
 import lombok.Getter;
 import lombok.Setter;

@@ -3,10 +3,7 @@ package com.github.silent.samurai.speedy.file.impl;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.file.impl.metadata.FileEntityMetadata;
 import com.github.silent.samurai.speedy.file.impl.processor.FileProcessor;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import org.slf4j.Logger;
@@ -14,12 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.ResourceUtils;
 
-
 import java.io.*;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class FileMetaModelProcessor implements MetaModelProcessor {
 

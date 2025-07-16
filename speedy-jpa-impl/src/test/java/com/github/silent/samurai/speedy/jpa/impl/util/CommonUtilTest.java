@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.jpa.impl.data.Product;
 import com.github.silent.samurai.speedy.jpa.impl.data.ProductItem;
 import com.github.silent.samurai.speedy.jpa.impl.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,6 @@ import org.mockito.quality.Strictness;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.persistence.EntityManager;
 import java.util.Collections;
 
 @ExtendWith(MockitoExtension.class)

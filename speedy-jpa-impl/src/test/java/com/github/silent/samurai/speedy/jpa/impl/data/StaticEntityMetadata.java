@@ -7,11 +7,10 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaEntityMetadata;
 import com.github.silent.samurai.speedy.jpa.impl.interfaces.IJpaFieldMetadata;
-import lombok.Data;
-import lombok.SneakyThrows;
-
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
+import lombok.Data;
+import lombok.SneakyThrows;
 import org.assertj.core.util.Sets;
 
 import java.lang.reflect.Field;

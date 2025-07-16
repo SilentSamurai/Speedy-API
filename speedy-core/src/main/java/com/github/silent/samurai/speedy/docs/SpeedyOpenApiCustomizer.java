@@ -2,7 +2,6 @@ package com.github.silent.samurai.speedy.docs;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.interfaces.*;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -10,11 +9,58 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 public class SpeedyOpenApiCustomizer {
 
+    final String QUERY_EXAMPLE = "{\n" +
+            "    \"$from\": \"Resource\",\n" +
+            "    \"$where\": {\n" +
+            "        \"id\": \"abcd-efgh\",\n" +
+            "        \"cost\": {\n" +
+            "            \"$eq\": \"0\",\n" +
+            "            \"$ne\": \"0\",\n" +
+            "            \"$lt\": \"0\",\n" +
+            "            \"$gt\": \"0\",\n" +
+            "            \"$matches\": \"cat*\",\n" +
+            "            \"$in\": [\n" +
+            "                0,\n" +
+            "                2,\n" +
+            "                1\n" +
+            "            ],\n" +
+            "            \"$nin\": [\n" +
+            "                0,\n" +
+            "                1\n" +
+            "            ]\n" +
+            "        },\n" +
+            "        \"$and\": [\n" +
+            "            {\n" +
+            "                \"id\": \"1\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"desc\": \"desc1\"\n" +
+            "            }\n" +
+            "        ],\n" +
+            "        \"$or\": [\n" +
+            "            {\n" +
+            "                \"id\": \"1\"\n" +
+            "            },\n" +
+            "            {\n" +
+            "                \"desc\": \"desc1\"\n" +
+            "            }\n" +
+            "        ]\n" +
+            "    },\n" +
+            "    \"$orderBy\": {\n" +
+            "        \"id\": \"ASC\"\n" +
+            "    },\n" +
+            "    \"$expand\": [\n" +
+            "        \"relation\"\n" +
+            "    ],\n" +
+            "    \"$page\": {\n" +
+            "        \"$index\": 0,\n" +
+            "        \"$size\": 100\n" +
+            "    }\n" +
+            "}";
     private final MetaModel metaModel;
 
     public SpeedyOpenApiCustomizer(SpeedyFactory speedyFactory) {
@@ -171,7 +217,6 @@ public class SpeedyOpenApiCustomizer {
         identifierPathItem.put(operation);
     }
 
-
     private void getWithPrimaryFields(EntityMetadata entityMetadata, PathItem identifierPathItem) {
         Operation operation = new Operation();
         operation.operationId("Get" + entityMetadata.getName());
@@ -229,55 +274,6 @@ public class SpeedyOpenApiCustomizer {
 //        sb.append(")");
         return sb.toString();
     }
-
-    final String QUERY_EXAMPLE = "{\n" +
-            "    \"$from\": \"Resource\",\n" +
-            "    \"$where\": {\n" +
-            "        \"id\": \"abcd-efgh\",\n" +
-            "        \"cost\": {\n" +
-            "            \"$eq\": \"0\",\n" +
-            "            \"$ne\": \"0\",\n" +
-            "            \"$lt\": \"0\",\n" +
-            "            \"$gt\": \"0\",\n" +
-            "            \"$matches\": \"cat*\",\n" +
-            "            \"$in\": [\n" +
-            "                0,\n" +
-            "                2,\n" +
-            "                1\n" +
-            "            ],\n" +
-            "            \"$nin\": [\n" +
-            "                0,\n" +
-            "                1\n" +
-            "            ]\n" +
-            "        },\n" +
-            "        \"$and\": [\n" +
-            "            {\n" +
-            "                \"id\": \"1\"\n" +
-            "            },\n" +
-            "            {\n" +
-            "                \"desc\": \"desc1\"\n" +
-            "            }\n" +
-            "        ],\n" +
-            "        \"$or\": [\n" +
-            "            {\n" +
-            "                \"id\": \"1\"\n" +
-            "            },\n" +
-            "            {\n" +
-            "                \"desc\": \"desc1\"\n" +
-            "            }\n" +
-            "        ]\n" +
-            "    },\n" +
-            "    \"$orderBy\": {\n" +
-            "        \"id\": \"ASC\"\n" +
-            "    },\n" +
-            "    \"$expand\": [\n" +
-            "        \"relation\"\n" +
-            "    ],\n" +
-            "    \"$page\": {\n" +
-            "        \"$index\": 0,\n" +
-            "        \"$size\": 100\n" +
-            "    }\n" +
-            "}";
 
 }
 
