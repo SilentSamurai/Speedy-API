@@ -58,6 +58,6 @@ jobs:
                     # Create and push tag
                     git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
                     # Push both branch changes and tag
-                    # git push origin release-spring-3
-                    # git push origin "v$NEW_VERSION"
+                    git push origin release-spring-3-tmp
+                    git push origin "v$NEW_VERSION"
                     echo "✅ Successfully committed and pushed version $NEW_VERSION with tag v$NEW_VERSION"
