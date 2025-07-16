@@ -28,7 +28,6 @@ jobs:
                     git config --global user.email "github-actions[bot]@users.noreply.github.com"
             
             -   name: Bump patch version
-                if: ${{ github.event.inputs.bump_patch != 'false' }}
                 run: |
                     chmod +x ./update-patch-version.sh
                     # Run the script (now fully automated)
@@ -50,7 +49,6 @@ jobs:
                     mvn --no-transfer-progress --batch-mode clean deploy -P=ossrh
             
             -   name: Commit and push version changes
-                if: ${{ github.event.inputs.bump_patch != 'false' && success() }}
                 run: |
                     # Get the new version from pom.xml
                     NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
