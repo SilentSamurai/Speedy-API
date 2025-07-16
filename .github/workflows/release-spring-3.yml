@@ -57,7 +57,6 @@ jobs:
                     git commit -m "Bump version to $NEW_VERSION"
                     # Create and push tag
                     git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
-                    # Push both branch changes and tag
-                    git push origin release-spring-3
+                    # Push tag 
                     git push origin "v$NEW_VERSION"
-                    echo "✅ Successfully committed and pushed version $NEW_VERSION with tag v$NEW_VERSION"
+                    echo "✅ Successfully committed version $NEW_VERSION and pushed tag v$NEW_VERSION"
