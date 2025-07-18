@@ -12,11 +12,11 @@ jobs:
                 with:
                     token: ${{ secrets.GITHUB_TOKEN }}
             
-            -   name: Set up Maven Central Repository
+            -   name: Set up Central Portal Repository
                 uses: actions/setup-java@v1
                 with:
                     java-version: 11
-                    server-id: ossrh
+                    server-id: central-portal
                     server-username: MAVEN_USERNAME
                     server-password: MAVEN_PASSWORD
                     gpg-passphrase: MAVEN_GPG_PASSPHRASE
@@ -46,7 +46,7 @@ jobs:
                     MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
                     MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
                 run: |
-                    mvn --no-transfer-progress --batch-mode clean deploy -P=ossrh
+                    mvn --no-transfer-progress --batch-mode clean deploy -P=central-portal
             
             -   name: Commit and push version changes
                 if: ${{ github.event.inputs.bump_patch != 'false' && success() }}
