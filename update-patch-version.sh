@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # === CONFIGURATION ===
-GROUP_ID="com.github.SilentSamurai"       # Replace with your groupId
+GROUP_ID="com.github.silentsamurai"       # Replace with your groupId
 ARTIFACT_ID="speedy-api-parent"  # Replace with your artifactId
 
 # URL encode the groupId and artifactId
@@ -25,13 +25,28 @@ if ! command -v mvn &> /dev/null; then
 fi
 
 # === FETCH LATEST VERSION FROM MAVEN CENTRAL ===
-LATEST_VERSION=$(curl -s "https://search.maven.org/solrsearch/select?q=g:%22$ENCODED_GROUP_ID%22+AND+a:%22$ENCODED_ARTIFACT_ID%22&rows=1&wt=json" \
+SEARCH_URL="https://search.maven.org/solrsearch/select?q=g:%22$ENCODED_GROUP_ID%22+AND+a:%22$ENCODED_ARTIFACT_ID%22&rows=1&wt=json"
+echo $SEARCH_URL
+LATEST_VERSION=$(curl -s "$SEARCH_URL" \
   | jq -r '.response.docs[0].latestVersion')
 
 if [[ -z "$LATEST_VERSION" || "$LATEST_VERSION" == "null" ]]; then
-  echo "❌ Could not fetch latest version from Maven Central."
+  echo "⚠️  Could not fetch latest version from Maven Central."
   echo "   This might be the first release or the artifact doesn't exist yet."
-  exit 1
+  echo "   Using current local version as base..."
+  
+  # Get current local version
+  CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout 2>/dev/null)
+  if [[ $? -ne 0 ]]; then
+    echo "❌ Error: Could not read current project version from pom.xml"
+    exit 1
+  fi
+  
+  echo "Current local version: $CURRENT_VERSION"
+  echo "Using this as the base version for incrementing..."
+  
+  # Use current version as the base
+  LATEST_VERSION=$CURRENT_VERSION
 fi
 
 echo "Latest version found: $LATEST_VERSION"

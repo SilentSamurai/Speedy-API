@@ -5,12 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.github.SilentSamurai</groupId>
+        <groupId>com.github.silentsamurai</groupId>
         <artifactId>speedy-api-parent</artifactId>
         <version>3.1.1</version>
     </parent>
 
     <artifactId>spring-boot-starter-speedy-api</artifactId>
+    <name>spring-boot-starter-speedy-api</name>
     <packaging>jar</packaging>
 
     <properties>
