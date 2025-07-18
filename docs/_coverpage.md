@@ -11,7 +11,7 @@
 - Spring boot integration
 
 [Get Started](README.md)
-[GitHub](https://github.com/SilentSamurai/Speedy-API)
+[GitHub](https://github.com/silentsamurai/Speedy-API)
 
 
 <!-- background image -->

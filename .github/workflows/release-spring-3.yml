@@ -3,6 +3,7 @@ on:
     push:
         branches:
             - release-spring-3
+            - spring-v3
 
 jobs:
     publish:

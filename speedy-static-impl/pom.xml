@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.github.SilentSamurai</groupId>
+        <groupId>com.github.silentsamurai</groupId>
         <artifactId>speedy-api-parent</artifactId>
         <version>3.1.1</version>
     </parent>
@@ -10,7 +10,7 @@
     <name>speedy-static-impl</name>
     <dependencies>
         <dependency>
-            <groupId>com.github.SilentSamurai</groupId>
+            <groupId>com.github.silentsamurai</groupId>
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
             <scope>compile</scope>

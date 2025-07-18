@@ -8,7 +8,7 @@ Speedy spring boot auto configurations
 
 ```xml
 <dependency>
-    <groupId>com.github.SilentSamurai</groupId>
+    <groupId>com.github.silentsamurai</groupId>
     <artifactId>spring-boot-starter-speedy-api</artifactId>
     <version>3.1.1</version>
 </dependency>
@@ -18,7 +18,7 @@ include the jpa implementation of the Speedy System
 
 ```xml
 <dependency>
-    <groupId>com.github.SilentSamurai</groupId>
+    <groupId>com.github.silentsamurai</groupId>
     <artifactId>speedy-jpa-impl</artifactId>
     <version>3.1.1</version>
 </dependency>
