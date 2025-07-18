@@ -1,0 +1,162 @@
+name: Verify Release Pull Request
+on:
+    pull_request:
+        branches:
+            - release
+            - release-spring-3
+
+jobs:
+    verify:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v2
+                with:
+                    token: ${{ secrets.GITHUB_TOKEN }}
+            
+            -   name: Set up Maven Central Repository
+                uses: actions/setup-java@v4
+                with:
+                    java-version: 17
+                    distribution: 'temurin'
+                    server-id: ossrh
+                    server-username: MAVEN_USERNAME
+                    server-password: MAVEN_PASSWORD
+                    gpg-passphrase: MAVEN_GPG_PASSPHRASE
+            
+            -   name: Configure Git
+                run: |
+                    git config --global user.name "github-actions[bot]"
+                    git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            
+            -   name: Verify Maven Central Credentials
+                env:
+                    MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
+                    MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+                    MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
+                run: |
+                    echo "🔐 Verifying Maven Central credentials..."
+                    
+                    if [[ -z "$MAVEN_USERNAME" ]]; then
+                        echo "❌ Error: MAVEN_USERNAME secret is not set"
+                        exit 1
+                    fi
+                    
+                    if [[ -z "$MAVEN_PASSWORD" ]]; then
+                        echo "❌ Error: MAVEN_PASSWORD secret is not set"
+                        exit 1
+                    fi
+                    
+                    if [[ -z "$MAVEN_GPG_PASSPHRASE" ]]; then
+                        echo "❌ Error: MAVEN_GPG_PASSPHRASE secret is not set"
+                        exit 1
+                    fi
+                    
+                    echo "✅ Central Portal credentials configured"
+            
+            -   name: Install and Verify GPG Key
+                env:
+                    MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
+                run: |
+                    echo "🔑 Installing and verifying GPG signing key..."
+                    
+                    if [[ -n "${{ secrets.GPG_SIGNING_KEY }}" ]]; then
+                        # Create .gnupg directory and configure GPG for non-interactive use
+                        mkdir -p ~/.gnupg
+                        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+                        
+                        # Import the GPG key
+                        cat <(echo -e "${{ secrets.GPG_SIGNING_KEY }}") | gpg --batch --import
+                        
+                        # List the imported keys
+                        echo "📋 Imported GPG keys:"
+                        gpg --list-secret-keys --keyid-format LONG
+                        
+                        # Get the key ID
+                        KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep -E "^sec" | head -1 | awk '{print $2}' | cut -d'/' -f2)
+                        
+                        if [[ -n "$KEY_ID" ]]; then
+                            echo "🔑 Testing GPG key passphrase for key: $KEY_ID"
+                            
+                            # Test the passphrase by trying to sign a test file
+                            echo "test" > /tmp/test.txt
+                            
+                            if echo "$MAVEN_GPG_PASSPHRASE" | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --sign /tmp/test.txt; then
+                                echo "✅ GPG key passphrase verified successfully"
+                                rm -f /tmp/test.txt /tmp/test.txt.gpg
+                            else
+                                echo "❌ Error: GPG key passphrase verification failed"
+                                rm -f /tmp/test.txt /tmp/test.txt.gpg
+                                exit 1
+                            fi
+                        else
+                            echo "❌ Error: No GPG key found after import"
+                            exit 1
+                        fi
+                        
+                        echo "✅ GPG key installed and verified successfully"
+                    else
+                        echo "❌ Error: GPG_SIGNING_KEY secret is not set"
+                        exit 1
+                    fi
+            
+            -   name: Verify Maven Build
+                run: |
+                    echo "🔨 Verifying Maven build process..."
+                    mvn --no-transfer-progress --batch-mode clean compile test-compile
+                    echo "✅ Maven build verification completed"
+            
+            -   name: Verify Central Portal Connection
+                env:
+                    MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
+                    MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN_PASSWORD }}
+                run: |
+                    echo "🌐 Testing Central Portal credentials..."
+                    
+                    # Test the Central Portal API using the publisher status endpoint
+                    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -u "$MAVEN_USERNAME:$MAVEN_PASSWORD" https://central.sonatype.com/api/v1/publisher/status)
+                    
+                    if [[ "$RESPONSE" =~ ^[25][0-9][0-9]$ ]]; then
+                        echo "✅ Successfully connected to Central Portal (HTTP $RESPONSE)"
+                    elif [[ "$RESPONSE" == "401" || "$RESPONSE" == "403" ]]; then
+                        echo "❌ Authentication failed with Central Portal (HTTP $RESPONSE)"
+                        exit 1
+                    else
+                        echo "⚠️ Unexpected response from Central Portal (HTTP $RESPONSE)"
+                        echo "   This might indicate the API endpoint is not available or credentials need updating"
+                        exit 1
+                    fi
+            
+            -   name: Verify Version Bump Script
+                run: |
+                    echo "📝 Verifying version bump script..."
+                    
+                    if [[ ! -f "./update-patch-version.sh" ]]; then
+                        echo "❌ Error: update-patch-version.sh script not found"
+                        exit 1
+                    fi
+                    
+                    chmod +x ./update-patch-version.sh
+                    
+                    if ! command -v jq &> /dev/null; then
+                        echo "❌ Error: jq is required but not available"
+                        exit 1
+                    fi
+                    
+                    echo "✅ Version bump script verified"
+            
+            -   name: Summary
+                run: |
+                    echo ""
+                    echo "🎉 Release Pull Request Verification Summary"
+                    echo "=========================================="
+                    echo "✅ Central Portal credentials verified"
+                    echo "✅ GPG signing key installed"
+                    echo "✅ Maven build process verified"
+                    echo "✅ OSSRH connection tested"
+                    echo "✅ Version bump script verified"
+                    echo ""
+                    echo "📊 Current version: $(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+                    echo "🌿 Branch: ${{ github.head_ref }}"
+                    echo "🔗 PR: #${{ github.event.number }}"
+                    echo ""
+                    echo "🚀 This pull request is ready for release!" 
