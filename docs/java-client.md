@@ -14,7 +14,7 @@ The Speedy Java Client provides a fluent, type-safe API for interacting with Spe
 
 ```xml
 <dependency>
-    <groupId>com.github.SilentSamurai</groupId>
+    <groupId>com.github.silentsamurai</groupId>
     <artifactId>speedy-java-client</artifactId>
     <version>3.1.1</version>
 </dependency>

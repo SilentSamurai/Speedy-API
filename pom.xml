@@ -3,20 +3,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.SilentSamurai</groupId>
+    <groupId>com.github.silentsamurai</groupId>
     <artifactId>speedy-api-parent</artifactId>
     <version>3.1.1</version>
     <name>speedy-api-parent</name>
     <description>All entity in one api resource manager</description>
     <packaging>pom</packaging>
 
-    <url>https://github.com/SilentSamurai/Speedy-API</url>
+    <url>https://github.com/silentsamurai/Speedy-API</url>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.0</version>
-        <relativePath/> <!-- lookup parent sender repository -->
+        <relativePath/> <!-- look up parent sender repository -->
     </parent>
 
     <properties>
@@ -46,8 +46,8 @@
         <developer>
             <name>Sourav Das</name>
             <email>sourav.das08@outlook.com</email>
-            <organization>com.github.SilentSamurai</organization>
-            <organizationUrl>http://www.github.com/SilentSamurai</organizationUrl>
+            <organization>com.github.silentsamurai</organization>
+            <organizationUrl>http://www.github.com/silentsamurai</organizationUrl>
         </developer>
     </developers>
 
@@ -61,9 +61,9 @@
 
 
     <scm>
-        <connection>scm:git:git://github.com/SilentSamurai/Speedy-API.git</connection>
-        <developerConnection>scm:git:ssh://github.com:SilentSamurai/Speedy-API.git</developerConnection>
-        <url>https://github.com/SilentSamurai/Speedy-API/tree/master</url>
+        <connection>scm:git:git://github.com/silentsamurai/Speedy-API.git</connection>
+        <developerConnection>scm:git:ssh://github.com:silentsamurai/Speedy-API.git</developerConnection>
+        <url>https://github.com/silentsamurai/Speedy-API/tree/master</url>
     </scm>
 
 
@@ -108,10 +108,6 @@
             <id>central-portal</id>
             <url>https://central.sonatype.com/api/v1/snapshots</url>
         </snapshotRepository>
-        <repository>
-            <id>central-portal</id>
-            <url>https://central.sonatype.com/api/v1/staging</url>
-        </repository>
     </distributionManagement>
 
 
@@ -239,14 +235,14 @@
                 </pluginManagement>
                 <plugins>
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.7.0</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>central-portal</serverId>
-                            <nexusUrl>https://central.sonatype.com/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <publishingServerId>central-portal</publishingServerId>
+                            <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
                         </configuration>
                     </plugin>
                     <plugin>
