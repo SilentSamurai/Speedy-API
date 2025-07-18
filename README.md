@@ -2,9 +2,9 @@
 
 All entity in one api resource manager
 
-![example workflow](https://github.com/silentsamurai/Speedy-API/actions/workflows/main.yml/badge.svg)
+![example workflow](https://github.com/SilentSamurai/Speedy-API/actions/workflows/main-spring-3.yml/badge.svg)
 <BR>
-![example workflow](https://github.com/silentsamurai/Speedy-API/actions/workflows/release.yml/badge.svg)
+![example workflow](https://github.com/SilentSamurai/Speedy-API/actions/workflows/release-spring-3.yml/badge.svg)
 
 #### Getting Started
 
