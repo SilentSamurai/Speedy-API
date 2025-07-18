@@ -1,34 +1,27 @@
 #!/bin/bash
 
 # === CONFIGURATION ===
-GROUP_ID="com.github.silentsamurai"       # Replace with your groupId
-ARTIFACT_ID="speedy-api-parent"  # Replace with your artifactId
+GROUP_ID="com.github.silentsamurai"
+ARTIFACT_ID="speedy-api-parent"
 
-# URL encode the groupId and artifactId
-ENCODED_GROUP_ID=$(echo "$GROUP_ID" | sed 's/\./%2E/g')
+# Convert groupId dots to slashes for Maven Central URL path
+ENCODED_GROUP_ID=$(echo "$GROUP_ID" | sed 's/\./\//g')
 ENCODED_ARTIFACT_ID=$ARTIFACT_ID
 
 echo "Fetching latest version of $GROUP_ID:$ARTIFACT_ID from Maven Central..."
 
 # === CHECK DEPENDENCIES ===
-if ! command -v jq &> /dev/null; then
-    echo "❌ Error: jq is required but not installed. Please install jq first."
-    echo "   On Ubuntu/Debian: sudo apt-get install jq"
-    echo "   On macOS: brew install jq"
-    echo "   On Windows: choco install jq"
-    exit 1
-fi
-
 if ! command -v mvn &> /dev/null; then
     echo "❌ Error: Maven (mvn) is required but not installed or not in PATH."
     exit 1
 fi
 
 # === FETCH LATEST VERSION FROM MAVEN CENTRAL ===
-SEARCH_URL="https://search.maven.org/solrsearch/select?q=g:%22$ENCODED_GROUP_ID%22+AND+a:%22$ENCODED_ARTIFACT_ID%22&rows=1&wt=json"
-echo $SEARCH_URL
-LATEST_VERSION=$(curl -s "$SEARCH_URL" \
-  | jq -r '.response.docs[0].latestVersion')
+METADATA_URL="https://repo1.maven.org/maven2/$ENCODED_GROUP_ID/$ENCODED_ARTIFACT_ID/maven-metadata.xml"
+echo "🔍 Fetching from URL: $METADATA_URL"
+
+# Fetch the metadata XML and extract the latest version
+LATEST_VERSION=$(curl -s "$METADATA_URL" | grep -o '<latest>[^<]*</latest>' | sed 's/<latest>\(.*\)<\/latest>/\1/')
 
 if [[ -z "$LATEST_VERSION" || "$LATEST_VERSION" == "null" ]]; then
   echo "⚠️  Could not fetch latest version from Maven Central."

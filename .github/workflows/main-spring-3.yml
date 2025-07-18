@@ -2,8 +2,8 @@
 name: Maven Build
 
 on:
-    push:
-        branches: [ main-spring-3 ]
+#    push:
+#        branches: [ main-spring-3 ]
     pull_request:
         branches: [ main-spring-3 ]
 
