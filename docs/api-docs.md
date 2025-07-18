@@ -11,7 +11,7 @@ docs
 
 ```xml
 <dependency>
-    <groupId>com.github.SilentSamurai</groupId>
+    <groupId>com.github.silentsamurai</groupId>
     <artifactId>spring-boot-starter-speedy-open-api</artifactId>
     <version>3.1.1</version>
 </dependency>
