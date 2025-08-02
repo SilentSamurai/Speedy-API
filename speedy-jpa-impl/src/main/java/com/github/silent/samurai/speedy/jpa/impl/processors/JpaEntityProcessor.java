@@ -64,7 +64,7 @@ public class JpaEntityProcessor {
         return entityMetadata;
     }
 
-    private static Class<?> getIdClassType(EntityType<?> entityType) {
+    static Class<?> getIdClassType(EntityType<?> entityType) {
         Class<?> entityClassType = entityType.getBindableJavaType();
         IdClass idClass = AnnotationUtils.getAnnotation(entityClassType, IdClass.class);
         if (idClass == null) {
@@ -73,7 +73,7 @@ public class JpaEntityProcessor {
         return idClass.value();
     }
 
-    private static String getTableName(Class<?> entityClass) {
+    static String getTableName(Class<?> entityClass) {
         if (entityClass.isAnnotationPresent(Entity.class)) {
             Table tableAnnotation = entityClass.getAnnotation(Table.class);
             if (tableAnnotation != null) {

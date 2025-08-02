@@ -49,13 +49,13 @@
                 "name": "modifiedAt",
                 "outputProperty": "modifiedAt",
                 "dbColumn": "modified_at",
-                "fieldType": "DATE_TIME"
+                "fieldType": "TIMESTAMP"
             },
             {
                 "name": "createdAt",
                 "outputProperty": "createdAt",
                 "dbColumn": "created_at",
-                "fieldType": "DATE_TIME"
+                "fieldType": "TIMESTAMP"
             },
             {
                 "name": "dueAmount",
@@ -67,11 +67,12 @@
                 "name": "purchaseDate",
                 "outputProperty": "purchaseDate",
                 "dbColumn": "purchase_date",
-                "fieldType": "DATE_TIME"
+                "fieldType": "TIMESTAMP"
             }
         ],
         "hasCompositeKey": false,
         "entityType": "procurements",
+        "dbTable": "procurements",
         "keyType": "Procurement"
     },
     {
@@ -123,7 +124,7 @@
                 "name": "orderDate",
                 "outputProperty": "orderDate",
                 "dbColumn": "order_date",
-                "fieldType": "DATE_TIME"
+                "fieldType": "TIMESTAMP"
             }
         ],
         "hasCompositeKey": true,
@@ -137,7 +138,7 @@
                 "name": "localDateTime",
                 "outputProperty": "localDateTime",
                 "dbColumn": "local_date_time",
-                "fieldType": "DATE_TIME"
+                "fieldType": "TIMESTAMP"
             },
             {
                 "name": "localDate",
@@ -149,7 +150,7 @@
                 "name": "zonedDateTime",
                 "outputProperty": "zonedDateTime",
                 "dbColumn": "zoned_date_time",
-                "fieldType": "ZONED_DATE_TIME"
+                "fieldType": "TIMESTAMP_WITH_ZONE"
             },
             {
                 "name": "localTime",
@@ -263,7 +264,7 @@
                 "name": "createdAt",
                 "outputProperty": "createdAt",
                 "dbColumn": "created_at",
-                "fieldType": "DATE_TIME"
+                "fieldType": "TIMESTAMP"
             },
             {
                 "name": "name",

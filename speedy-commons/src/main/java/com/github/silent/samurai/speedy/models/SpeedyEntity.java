@@ -43,7 +43,7 @@ public class SpeedyEntity implements SpeedyValue {
 
     public SpeedyValue get(FieldMetadata fieldMetadata) {
         if (!has(fieldMetadata)) {
-            throw new IllegalArgumentException("Field " + fieldMetadata.getOutputPropertyName() + " does not exist");
+            throw new IllegalArgumentException("Field '%s' does not exist".formatted(fieldMetadata.getOutputPropertyName()));
         }
         return fields.get(fieldMetadata.getOutputPropertyName());
     }

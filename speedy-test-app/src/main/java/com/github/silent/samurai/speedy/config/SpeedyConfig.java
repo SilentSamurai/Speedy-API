@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessor;
+import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessorV2;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import jakarta.persistence.EntityManagerFactory;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -43,7 +44,7 @@ public class SpeedyConfig implements ISpeedyConfiguration {
 
     @Override
     public MetaModelProcessor metaModelProcessor() {
-        return new JpaMetaModelProcessor(this, entityManagerFactory);
+        return new JpaMetaModelProcessorV2(this, entityManagerFactory);
     }
 
     @Override

@@ -6,5 +6,6 @@ class JpaMetaModelTest {
 
     @Test
     void getAllEntityMetadata() {
+
     }
 }

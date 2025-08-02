@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.events;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
+import com.github.silent.samurai.speedy.entity.User;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -22,20 +23,20 @@ public class EntityEvents implements ISpeedyEventHandler {
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_INSERT})
-    public void userInsert(SpeedyEntity user) throws Exception {
+    public void userInsert(User user) throws Exception {
         LOGGER.info("User Insert Event");
-        user.put("createdAt", Speedy.from(LocalDateTime.now()));
+        user.setCreatedAt(LocalDateTime.now());
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_UPDATE})
-    public void userUpdate(SpeedyEntity user) throws Exception {
+    public void userUpdate(User user) throws Exception {
         LOGGER.info("User Update Event");
-        user.put("updateAt", Speedy.from(LocalDateTime.now()));
+        user.setUpdatedAt(LocalDateTime.now());
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_DELETE})
-    public void userDelete(SpeedyEntity user) throws Exception {
+    public void userDelete(User user) throws Exception {
         LOGGER.info("User Delete Event");
-        user.put("deletedAt", Speedy.from(LocalDateTime.now()));
+        user.setDeletedAt(LocalDateTime.now());
     }
 }
