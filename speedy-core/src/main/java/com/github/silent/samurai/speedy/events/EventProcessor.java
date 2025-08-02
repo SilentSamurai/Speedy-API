@@ -7,8 +7,11 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -34,7 +37,7 @@ public class EventProcessor {
         }
     }
      */
-    private final Map<SpeedyEventType, Map<String, EventHandlerMetadata>> eventMap = new HashMap<>();
+    private final Map<SpeedyEventType, MultiValueMap<String, EventHandlerMetadata>> eventMap = new HashMap<>();
 
     public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry) {
         this.metaModel = metaModel;
@@ -54,13 +57,18 @@ public class EventProcessor {
                 if (declaredMethod.isAnnotationPresent(SpeedyEvent.class)) {
                     SpeedyEvent annotation = declaredMethod.getAnnotation(SpeedyEvent.class);
                     String entity = annotation.value();
+                    Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
+                    if (parameterTypes.length != 1) {
+                        throw new IllegalArgumentException("Method " + declaredMethod.getName() + " must have a single parameter");
+                    }
+                    Class<?> ioClass = parameterTypes[0];
                     EntityMetadata entityMetadata = this.metaModel.findEntityMetadata(entity);
                     for (SpeedyEventType event : SpeedyEventType.values()) {
-                        eventMap.putIfAbsent(event, new HashMap<>());
-                        Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(event);
+                        eventMap.putIfAbsent(event, new LinkedMultiValueMap<>());
+                        MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(event);
                         if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == event)) {
-                            EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod);
-                            eventEntityMap.put(entityMetadata.getName(), metadata);
+                            EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod, ioClass);
+                            eventEntityMap.add(entityMetadata.getName(), metadata);
                         }
                     }
                 }
@@ -70,31 +78,41 @@ public class EventProcessor {
         }
     }
 
-    public Object triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
-        Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
+    public void triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         if (isEventPresent(eventType, entityMetadata)) {
-            EventHandlerMetadata metadata = eventEntityMap.get(entityMetadata.getName());
-            return metadata.invokeEventHandler(entity);
+            MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
+            for (EventHandlerMetadata metadata : eventEntityMap.get(entityMetadata.getName())) {
+                metadata.invokeEventHandler(entity);
+            }
         }
-        return null;
     }
 
     public boolean isEventPresent(SpeedyEventType eventType, EntityMetadata entityMetadata) {
-        Map<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
-        return eventEntityMap != null && eventEntityMap.containsKey(entityMetadata.getName());
+        MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
+        return eventEntityMap != null && eventEntityMap.containsKey(entityMetadata.getName()) &&
+                !eventEntityMap.get(entityMetadata.getName()).isEmpty();
     }
 
     static class EventHandlerMetadata {
-        Object instance;
-        Method method;
+        final Object instance;
+        final Method method;
+        final Class<?> ioClass;
 
-        public EventHandlerMetadata(Object instance, Method method) {
+        public EventHandlerMetadata(Object instance, Method method, Class<?> ioClass) {
             this.instance = instance;
             this.method = method;
+            this.ioClass = ioClass;
         }
 
-        private Object invokeEventHandler(Object entity) throws Exception {
-            return method.invoke(instance, entity);
+        private Object invokeEventHandler(SpeedyEntity entity) throws Exception {
+            if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
+                method.invoke(instance, entity);
+            } else {
+                Object value = SpeedyValueFactory.speedyValue2JavaEntity(ioClass, entity);
+                method.invoke(instance, value);
+                SpeedyValueFactory.updateSpeedyWithJavaEntity(value, entity);
+            }
+            return entity;
         }
     }
 

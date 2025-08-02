@@ -14,6 +14,7 @@ public class KeyFieldMetadataImpl extends FieldMetadataImpl implements KeyFieldM
 
     public KeyFieldMetadataImpl(ColumnType columnType, String dbColumnName, String outputPropertyName, boolean isCollection, boolean isAssociation, boolean isInsertable, boolean isUpdatable, boolean isUnique, boolean isNullable, boolean isRequired, boolean isSerializable, boolean isDeserializable, boolean shouldGenerateKey) {
         super(columnType, dbColumnName, outputPropertyName, isCollection, isAssociation, isInsertable, isUpdatable, isUnique, isNullable, isRequired, isSerializable, isDeserializable);
+        this.shouldGenerateKey = shouldGenerateKey;
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Timestamp;
 import java.time.*;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,6 +48,7 @@ public class JavaType2ColumnType {
         CLASS_TO_SQL_VALUE_TYPE_MAP.put(LocalDate.class, ColumnType.DATE);
         CLASS_TO_SQL_VALUE_TYPE_MAP.put(LocalDateTime.class, ColumnType.TIMESTAMP);
         CLASS_TO_SQL_VALUE_TYPE_MAP.put(LocalTime.class, ColumnType.TIME);
+        CLASS_TO_SQL_VALUE_TYPE_MAP.put(Timestamp.class, ColumnType.TIMESTAMP);
 
         // Zoned/offset date-time
         CLASS_TO_SQL_VALUE_TYPE_MAP.put(OffsetDateTime.class, ColumnType.TIMESTAMP_WITH_ZONE);
@@ -64,7 +66,7 @@ public class JavaType2ColumnType {
         if (CLASS_TO_SQL_VALUE_TYPE_MAP.containsKey(clazz)) {
             return CLASS_TO_SQL_VALUE_TYPE_MAP.get(clazz);
         }
-        throw new NotFoundException("SQL type " + clazz.getName() + " not found");
+        throw new NotFoundException("Column type of '%s' not found".formatted(clazz.getName()));
     }
 
     public static Class<?> toBasicStandardJavaType(ValueType valueType) {

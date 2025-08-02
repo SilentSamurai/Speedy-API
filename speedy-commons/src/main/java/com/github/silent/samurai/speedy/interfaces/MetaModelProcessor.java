@@ -1,11 +1,11 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
+import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
 
 public interface MetaModelProcessor {
 
     MetaModel getMetaModel();
 
-    void processMetaModel(MetadataBuilder.MetaModelBuilder builder);
+    void processMetaModel(MetaModelBuilder builder);
 
 }

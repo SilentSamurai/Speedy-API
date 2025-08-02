@@ -153,7 +153,6 @@ public class JpaFieldProcessor {
             fieldMetadata.setUnique(columnAnnotation.unique());
             fieldMetadata.setUpdatable(columnAnnotation.updatable());
             fieldMetadata.setNullable(columnAnnotation.nullable());
-
         }
 
         JoinColumn joinColumnAnnotation = AnnotationUtils.getAnnotation(fieldMetadata.getField(), JoinColumn.class);

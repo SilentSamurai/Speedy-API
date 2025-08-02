@@ -6,31 +6,20 @@ public enum ConditionOperator {
     EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR, PATTERN_MATCHING;
 
     public static ConditionOperator fromSymbol(String symbol) throws BadRequestException {
-        if (symbol.equals("=") || symbol.equals("==") || symbol.equals("$eq")) {
-            return EQ;
-        } else if (symbol.equals("!=") || symbol.equals("$neq") || symbol.equals("$ne")) {
-            return NEQ;
-        } else if (symbol.equals("<") || symbol.equals("$lt")) {
-            return LT;
-        } else if (symbol.equals("<=") || symbol.equals("$lte")) {
-            return LTE;
-        } else if (symbol.equals(">") || symbol.equals("$gt")) {
-            return GT;
-        } else if (symbol.equals(">=") || symbol.equals("$gte")) {
-            return GTE;
-        } else if (symbol.equals("=*") || symbol.equals("$matches")) {
-            return PATTERN_MATCHING;
-        } else if (symbol.equals("<>") || symbol.equals("$in")) {
-            return IN;
-        } else if (symbol.equals("<!>") || symbol.equals("$nin")) {
-            return NOT_IN;
-        } else if (symbol.equals("&") || symbol.equals(",") || symbol.equals("&&") || symbol.equals("$and")) {
-            return AND;
-        } else if (symbol.equals("|") || symbol.equals("||") || symbol.equals("$or")) {
-            return OR;
-        } else {
-            throw new BadRequestException("Operator not recognized: " + symbol);
-        }
+        return switch (symbol) {
+            case "=", "==", "$eq" -> EQ;
+            case "!=", "$neq", "$ne" -> NEQ;
+            case "<", "$lt" -> LT;
+            case "<=", "$lte" -> LTE;
+            case ">", "$gt" -> GT;
+            case ">=", "$gte" -> GTE;
+            case "=*", "$matches" -> PATTERN_MATCHING;
+            case "<>", "$in" -> IN;
+            case "<!>", "$nin" -> NOT_IN;
+            case "&", ",", "&&", "$and" -> AND;
+            case "|", "||", "$or" -> OR;
+            default -> throw new BadRequestException("Operator not recognized: " + symbol);
+        };
     }
 
     public boolean doesAcceptMultipleValues() {

@@ -120,4 +120,12 @@ public class SpeedyValueFactory {
         Object instance = String2JavaType.quotedStringToPrimitive(quotedValue, aClass);
         return toSpeedyValue(fieldMetadata, instance);
     }
+
+    public static<T> T speedyValue2JavaEntity(Class<T> clazz, SpeedyValue speedyValue) throws SpeedyHttpException {
+        return SpeedyValue2JavaType.convertToCompositeClass(speedyValue, clazz);
+    }
+
+    public static<T> SpeedyEntity updateSpeedyWithJavaEntity(T instance, SpeedyEntity speedyEntity) throws SpeedyHttpException {
+        return JavaType2SpeedyValue.convertFromCompositeClass(instance, speedyEntity);
+    }
 }
