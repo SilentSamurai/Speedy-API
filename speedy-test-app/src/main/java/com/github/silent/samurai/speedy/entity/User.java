@@ -1,13 +1,17 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
 import com.github.silent.samurai.speedy.enums.ActionType;
+import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +24,8 @@ import java.time.LocalDateTime;
 })
 @Entity
 public class User extends AbstractBaseEntity {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(User.class);
 
     @Column(name = "name", nullable = false, length = 250)
     private String name;

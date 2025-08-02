@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.file.impl.metadata.FileEntityMetadata;
 import com.github.silent.samurai.speedy.file.impl.processor.FileProcessor;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class FileMetaModelProcessor implements MetaModelProcessor {
     }
 
     @Override
-    public void processMetaModel(MetadataBuilder.MetaModelBuilder builder) {
+    public void processMetaModel(MetaModelBuilder builder) {
         try {
             File file = ResourceUtils.getFile("classpath:" + metaModelFile);
             try (InputStream in = new FileInputStream(file)) {
