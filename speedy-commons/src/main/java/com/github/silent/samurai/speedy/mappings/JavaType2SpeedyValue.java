@@ -8,6 +8,9 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.PropertyAccessorFactory;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -19,6 +22,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class JavaType2SpeedyValue {
     private static final Map<String, ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
@@ -192,48 +197,53 @@ public class JavaType2SpeedyValue {
             EntityMetadata entityMetadata = entity.getMetadata();
             // Get all fields of the source class
             Class<?> clazz = instance.getClass();
-            java.lang.reflect.Field[] sourceFields = clazz.getDeclaredFields();
 
-            // Loop through each field in the source class
-            for (java.lang.reflect.Field sourceField : sourceFields) {
-                sourceField.setAccessible(true);
-                String fieldName = sourceField.getName();
+            // Create a map of source fields for efficient lookup
+            Map<String, Field> fieldMap = java.util.Arrays.stream(clazz.getDeclaredFields())
+                    .collect(Collectors.toMap(Field::getName, Function.identity()));
 
-                // Check if the field exists in the entity metadata
-                if (entityMetadata.has(fieldName)) {
-                    try {
-                        // Get the field value from the source object
-                        Object fieldValue = sourceField.get(instance);
+            // Loop through only the fields known to Speedy (fields in entity metadata)
+            for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+                String fieldName = fieldMetadata.getOutputPropertyName();
 
-                        if (!entityMetadata.has(fieldName)) {
-                            continue;
+                // Check if the source class has this field
+                if (!fieldMap.containsKey(fieldName)) {
+                    continue;
+                }
+
+                // Check if the field is readable
+                BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(instance);
+                if (!wrapper.isReadableProperty(fieldName)) {
+                    continue;
+                }
+
+                try {
+                    // Get the field value from the source object
+                    Object fieldValue = wrapper.getPropertyValue(fieldName);
+
+                    // Get the field metadata
+                    Class<?> fieldType = wrapper.getPropertyType(fieldName);
+                    ValueType valueType = fieldMetadata.getValueType();
+
+                    if (fieldValue == null) {
+                        // If the field value is null, preserve the existing value in the entity
+                        // Only set to SpeedyNull if the entity doesn't already have a value for this field
+                        if (!entity.has(fieldMetadata)) {
+                            entity.put(fieldMetadata, SpeedyNull.SPEEDY_NULL);
                         }
+                        // If the entity already has a value, we preserve it by not setting anything
+                    } else {
+                        // Convert the field value to SpeedyValue
+                        SpeedyValue speedyValue = convert(fieldType, valueType, fieldValue);
 
-                        // Get the field metadata
-                        FieldMetadata fieldMetadata = entityMetadata.field(fieldName);
-                        Class<?> fieldType = sourceField.getType();
-                        ValueType valueType = fieldMetadata.getValueType();
-
-                        if (fieldValue == null) {
-                            // If the field value is null, preserve the existing value in the entity
-                            // Only set to SpeedyNull if the entity doesn't already have a value for this field
-                            if (!entity.has(fieldMetadata)) {
-                                entity.put(fieldMetadata, SpeedyNull.SPEEDY_NULL);
-                            }
-                            // If the entity already has a value, we preserve it by not setting anything
-                        } else {
-                            // Convert the field value to SpeedyValue
-                            SpeedyValue speedyValue = convert(fieldType, valueType, fieldValue);
-
-                            // Set the field value in the entity
-                            entity.put(fieldMetadata, speedyValue);
-                        }
-                    } catch (Exception e) {
-                        // Skip the field if conversion fails
-                        throw new ConversionException(
-                                String.format("Failed to convert field %s in class %s: %s",
-                                        fieldName, clazz.getSimpleName(), e.getMessage()), e);
+                        // Set the field value in the entity
+                        entity.put(fieldMetadata, speedyValue);
                     }
+                } catch (Exception e) {
+                    // Skip the field if conversion fails
+                    throw new ConversionException(
+                            String.format("Failed to convert field %s in class %s: %s",
+                                    fieldName, clazz.getSimpleName(), e.getMessage()), e);
                 }
             }
 
@@ -243,5 +253,4 @@ public class JavaType2SpeedyValue {
                     String.format("Cannot convert %s to SpeedyEntity", instance), e);
         }
     }
-
 }
