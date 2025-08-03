@@ -8,15 +8,18 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.models.SpeedyNull;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.PropertyAccessorFactory;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.*;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class SpeedyValue2JavaType {
 
@@ -272,34 +275,34 @@ public class SpeedyValue2JavaType {
             // Create instance of target class
             T instance = clazz.getDeclaredConstructor().newInstance();
 
-            // Get all fields of the target class
-            java.lang.reflect.Field[] targetFields = clazz.getDeclaredFields();
+            Map<String, Field> fieldMap = Arrays.stream(clazz.getDeclaredFields())
+                    .collect(Collectors.toMap(Field::getName, Function.identity()));
 
-            // Loop through each field in the target class
-            for (java.lang.reflect.Field targetField : targetFields) {
-                String fieldName = targetField.getName();
+            // Loop through only the fields known to Speedy (fields in entity metadata)
+            for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+                String fieldName = fieldMetadata.getOutputPropertyName();
+                // Check if the entity has the value for this field
+                if (!entity.has(fieldMetadata)) {
+                    continue;
+                }
+                // Check if the class has the field
+                if (!fieldMap.containsKey(fieldName)) {
+                    continue;
+                }
+
+                Field targetField = fieldMap.get(fieldName);
+
                 try {
-                    // Check if the field exists in the entity
-                    if (!entityMetadata.has(fieldName)) {
-                        continue;
-                    }
-                    // Get the field metadata
-                    FieldMetadata fieldMetadata = entityMetadata.field(fieldName);
-
-                    // speedy entity does not have the value
-                    if (!entity.has(fieldMetadata)) {
-                        continue;
-                    }
-
                     // Get the value from the entity
                     SpeedyValue fieldValue = entity.get(fieldMetadata);
 
                     // Convert the field value to the target field type
                     Object convertedValue = convert(fieldValue, targetField.getType());
 
-                    // Set the field value in the target object
-                    targetField.setAccessible(true);
-                    targetField.set(instance, convertedValue);
+                    BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(instance);
+                    if (wrapper.isWritableProperty(fieldName)) {
+                        wrapper.setPropertyValue(fieldName, convertedValue);
+                    }
                 } catch (Exception e) {
                     // Skip the field if conversion fails
                     throw new ConversionException(
@@ -314,6 +317,4 @@ public class SpeedyValue2JavaType {
                     String.format("Cannot convert %s to composite class %s", value, clazz.getSimpleName()), e);
         }
     }
-
-
 }
