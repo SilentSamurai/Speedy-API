@@ -67,21 +67,21 @@ public class EntityEvents implements ISpeedyEventHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityEvents.class);
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_INSERT})
-    public void userInsert(SpeedyEntity user) throws Exception {
+    public void userInsert(User user) throws Exception {
         LOGGER.info("User Insert Event");
-        user.put("createdAt", Speedy.from(LocalDateTime.now()));
+        user.createdAt = LocalDateTime.now();
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_UPDATE})
-    public void userUpdate(SpeedyEntity user) throws Exception {
+    public void userUpdate(User user) throws Exception {
         LOGGER.info("User Update Event");
-        user.put("updateAt", Speedy.from(LocalDateTime.now()));
+        user.updateAt = LocalDateTime.now();
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_DELETE})
-    public void userDelete(SpeedyEntity user) throws Exception {
+    public void userDelete(User user) throws Exception {
         LOGGER.info("User Delete Event");
-        user.put("deletedAt", Speedy.from(LocalDateTime.now()));
+        user.deleteAt = LocalDateTime.now();
     }
 }
 
