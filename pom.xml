@@ -5,7 +5,7 @@
 
     <groupId>com.github.silentsamurai</groupId>
     <artifactId>speedy-api-parent</artifactId>
-    <version>3.1.1</version>
+    <version>3.1.4</version>
     <name>speedy-api-parent</name>
     <description>All entity in one api resource manager</description>
     <packaging>pom</packaging>

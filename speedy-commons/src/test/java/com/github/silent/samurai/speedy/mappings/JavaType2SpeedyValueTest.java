@@ -36,6 +36,36 @@ class JavaType2SpeedyValueTest {
     }
 
     @Test
+    void convertFromCompositeClass_withAssociation_shouldMapNestedEntity() throws Exception {
+        // Arrange: define metadata for parent with child association
+        EntityMetadata parentMd = StaticEntityMetadata.createEntityMetadata(SpeedyValue2JavaTypeTest.ParentEntity.class);
+        SpeedyEntity target = new SpeedyEntity(parentMd);
+
+        UUID parentId = UUID.randomUUID();
+        UUID childId = UUID.randomUUID();
+
+        SpeedyValue2JavaTypeTest.ChildEntity child = new SpeedyValue2JavaTypeTest.ChildEntity();
+        child.setId(childId);
+        child.setLabel("child-label");
+
+        SpeedyValue2JavaTypeTest.ParentEntity parent = new SpeedyValue2JavaTypeTest.ParentEntity();
+        parent.setId(parentId);
+        parent.setName("parent-name");
+        parent.setChild(child);
+
+        // Act
+        SpeedyEntity result = JavaType2SpeedyValue.convertFromCompositeClass(parent, target);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("parent-name", result.get("name").asText());
+        SpeedyEntity childEntity = result.get("child").asObject();
+        assertNotNull(childEntity);
+        assertEquals(childId.toString(), childEntity.get("id").asText());
+        assertEquals("child-label", childEntity.get("label").asText());
+    }
+
+    @Test
     void convertFromCompositeClass_withValidObject_shouldReturnSpeedyEntity() throws Exception {
         // Arrange
         TestEntity testEntity = new TestEntity("testName", 25);

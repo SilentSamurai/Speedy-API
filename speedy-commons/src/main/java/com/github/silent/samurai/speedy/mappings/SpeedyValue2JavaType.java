@@ -8,7 +8,6 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
-import com.github.silent.samurai.speedy.models.SpeedyNull;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
 
@@ -295,9 +294,18 @@ public class SpeedyValue2JavaType {
                 try {
                     // Get the value from the entity
                     SpeedyValue fieldValue = entity.get(fieldMetadata);
-
-                    // Convert the field value to the target field type
-                    Object convertedValue = convert(fieldValue, targetField.getType());
+                    // Associations: if this field represents an association and
+                    // the value is an object, recursively convert it to the
+                    // target type. Associated SpeedyEntity may contain only key fields.
+                    Object convertedValue;
+                    if (fieldValue instanceof SpeedyNull) {
+                        convertedValue = null;
+                    } else if (fieldMetadata.isAssociation() && fieldValue.isObject()) {
+                        convertedValue = convertToCompositeClass(fieldValue, targetField.getType());
+                    } else {
+                        // Scalar or directly convertible values
+                        convertedValue = convert(fieldValue, targetField.getType());
+                    }
 
                     BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(instance);
                     if (wrapper.isWritableProperty(fieldName)) {

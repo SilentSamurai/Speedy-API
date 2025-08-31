@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
 
 /**
  * Utility class for JSON operations in the Speedy Java Client.
