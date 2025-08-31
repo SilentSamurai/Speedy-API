@@ -9,7 +9,6 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.PropertyAccessorFactory;
 
 import java.lang.reflect.Field;
@@ -232,12 +231,21 @@ public class JavaType2SpeedyValue {
                             entity.put(fieldMetadata, SpeedyNull.SPEEDY_NULL);
                         }
                         // If the entity already has a value, we preserve it by not setting anything
+                    } else if (fieldMetadata.isAssociation()) {
+                        // Handle associations/composite object fields
+                        EntityMetadata assocMd = fieldMetadata.getAssociationMetadata();
+                        SpeedyEntity child = entity.has(fieldMetadata) && entity.isObject() ?
+                                entity.get(fieldMetadata).asObject() : new SpeedyEntity(assocMd);
+                        // Recursively map the associated object
+                        convertFromCompositeClass(fieldValue, child);
+                        entity.put(fieldMetadata, child);
                     } else {
                         // Convert the field value to SpeedyValue
                         SpeedyValue speedyValue = convert(fieldType, valueType, fieldValue);
-
-                        // Set the field value in the entity
-                        entity.put(fieldMetadata, speedyValue);
+                        // Set the field value in the entity (avoid overwriting with SpeedyNull when already present)
+                        if (!(speedyValue instanceof SpeedyNull) || !entity.has(fieldMetadata)) {
+                            entity.put(fieldMetadata, speedyValue);
+                        }
                     }
                 } catch (Exception e) {
                     // Skip the field if conversion fails

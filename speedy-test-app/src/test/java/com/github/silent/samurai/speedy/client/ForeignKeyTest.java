@@ -77,7 +77,8 @@ class ForeignKeyTest {
 
         assertEquals(productId, fetchedProduct.get("id").asText());
         assertEquals("client-product-1", fetchedProduct.get("name").asText());
-        assertEquals("test description", fetchedProduct.get("description").asText());
+        // PRE_INSERT event mutates description to verify handler execution
+        assertEquals("created-by-event", fetchedProduct.get("description").asText());
         assertEquals("1", fetchedProduct.get("category").get("id").asText());
 
         // Validate Foreign Key association with Category

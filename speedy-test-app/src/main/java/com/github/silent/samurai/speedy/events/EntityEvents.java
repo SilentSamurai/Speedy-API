@@ -1,19 +1,26 @@
 package com.github.silent.samurai.speedy.events;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
+import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.entity.User;
+import com.github.silent.samurai.speedy.entity.Product;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component
 public class EntityEvents implements ISpeedyEventHandler {
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityEvents.class);
 
@@ -38,5 +45,28 @@ public class EntityEvents implements ISpeedyEventHandler {
     public void userDelete(User user) throws Exception {
         LOGGER.info("User Delete Event");
         user.setDeletedAt(LocalDateTime.now());
+    }
+
+    @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.PRE_INSERT})
+    public void productInsert(Product product) throws Exception {
+        LOGGER.info("Product Insert Event");
+        // mark description so tests can verify handler execution (always override on insert)
+        product.setDescription("created-by-event");
+        if (product.getCategory() != null && product.getCategory().getId() != null && !product.getCategory().getId().isBlank()) {
+            Category category = categoryRepository.findById(product.getCategory().getId()).orElse(null);
+            product.setCategory(category);
+        }
+    }
+
+    @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.PRE_UPDATE})
+    public void productUpdate(Product product) throws Exception {
+        LOGGER.info("Product Update Event");
+        // mark description so tests can verify handler execution
+        product.setDescription("updated-by-event");
+        if (product.getCategory() != null && product.getCategory().getId() != null && !product.getCategory().getId().isBlank()) {
+            Category category = categoryRepository.findById(product.getCategory().getId()).orElse(null);
+            product.setCategory(category);
+        }
+
     }
 }
