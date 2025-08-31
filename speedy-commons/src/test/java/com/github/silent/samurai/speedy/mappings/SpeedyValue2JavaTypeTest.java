@@ -89,6 +89,36 @@ class SpeedyValue2JavaTypeTest {
     }
 
     @Test
+    void convertToCompositeClass_withAssociation_shouldMapNestedEntity() throws SpeedyHttpException {
+        // Arrange
+        EntityMetadata parentMd = StaticEntityMetadata.createEntityMetadata(ParentEntity.class);
+        SpeedyEntity parent = new SpeedyEntity(parentMd);
+
+        // Build child entity
+        EntityMetadata childMd = StaticEntityMetadata.createEntityMetadata(ChildEntity.class);
+        SpeedyEntity child = new SpeedyEntity(childMd);
+        java.util.UUID childId = java.util.UUID.randomUUID();
+        child.put("id", new SpeedyText(childId.toString()));
+        child.put("label", new SpeedyText("child-label"));
+
+        // Build parent with nested child
+        java.util.UUID parentId = java.util.UUID.randomUUID();
+        parent.put("id", new SpeedyText(parentId.toString()));
+        parent.put("name", new SpeedyText("parent-name"));
+        parent.put("child", child);
+
+        // Act
+        ParentEntity result = SpeedyValue2JavaType.convertToCompositeClass(parent, ParentEntity.class);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("parent-name", result.getName());
+        assertNotNull(result.getChild());
+        assertEquals(childId, result.getChild().getId());
+        assertEquals("child-label", result.getChild().getLabel());
+    }
+
+    @Test
     void convertToCompositeClass_withNullValue_shouldReturnNull() throws SpeedyHttpException {
         // Act
         TestEntity result = SpeedyValue2JavaType.convertToCompositeClass(null, TestEntity.class);
@@ -147,5 +177,23 @@ class SpeedyValue2JavaTypeTest {
         
         // Collection type
         private java.util.List<String> tags;
+    }
+
+    @Getter
+    @Setter
+    public static class ChildEntity {
+        @jakarta.persistence.Id
+        private java.util.UUID id;
+        private String label;
+    }
+
+    @Getter
+    @Setter
+    public static class ParentEntity {
+        @jakarta.persistence.Id
+        private java.util.UUID id;
+        private String name;
+        @jakarta.persistence.OneToOne
+        private ChildEntity child;
     }
 }
