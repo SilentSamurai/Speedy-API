@@ -6,7 +6,6 @@ import com.github.silent.samurai.speedy.events.EntityEvents;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessor;
 import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessorV2;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import jakarta.persistence.EntityManagerFactory;

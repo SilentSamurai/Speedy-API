@@ -32,9 +32,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.github.silent.samurai.speedy.enums.ActionType.*;
-import static com.github.silent.samurai.speedy.jpa.impl.processors.JpaEntityProcessor.getTableName;
-import static com.github.silent.samurai.speedy.jpa.impl.processors.JpaFieldProcessor.getField;
-import static com.github.silent.samurai.speedy.jpa.impl.processors.JpaFieldProcessor.resolveGenericFieldType;
+import static com.github.silent.samurai.speedy.jpa.impl.util.JpaUtil.*;
 
 public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
 
@@ -122,8 +120,8 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     }
 
     private FieldBuilder processField(Attribute<?, ?> attribute,
-                                                      Class<?> entityClass,
-                                                      EntityBuilder entity) {
+                                      Class<?> entityClass,
+                                      EntityBuilder entity) {
 
         boolean isId = attribute instanceof SingularAttribute && ((SingularAttribute<?, ?>) attribute).isId();
         Member member = attribute.getJavaMember();
