@@ -33,11 +33,13 @@ public class MetaModelBuilder {
         throw new NotFoundException("entity not found" + name);
     }
 
-    public MetaModel build() {
+    public MetaModel build() throws NotFoundException {
         MetaModelImpl metaModelProcessor = new MetaModelImpl();
 
-        entityMap.values().stream().map(EntityBuilder::build)
-                .forEach(metaModelProcessor::add);
+        for (EntityBuilder entityBuilder : entityMap.values()) {
+            EntityMetadataImpl build = entityBuilder.build();
+            metaModelProcessor.add(build);
+        }
 
         try {
             for (EntityBuilder eb : entityMap.values()) {

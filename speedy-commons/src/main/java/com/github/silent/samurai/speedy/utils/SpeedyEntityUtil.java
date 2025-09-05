@@ -22,7 +22,6 @@ public class SpeedyEntityUtil {
                 SpeedyValue speedyValue = entity.get(keyField);
                 speedyEntityKey.put(keyField, speedyValue);
             }
-
         }
         return speedyEntityKey;
     }

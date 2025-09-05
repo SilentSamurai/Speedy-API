@@ -33,8 +33,12 @@ public class JsonNode2SpeedyValue {
                 yield fromBool(jsonNode.asBoolean());
             case TEXT:
                 yield fromText(jsonNode.asText());
+            case ENUM:
+                yield fromEnum(jsonNode.asText(), fieldMetadata);
             case INT:
                 yield fromInt(jsonNode.asLong());
+            case ENUM_ORD:
+                yield fromEnum(jsonNode.asLong(), fieldMetadata);
             case FLOAT:
                 yield fromDouble(jsonNode.asDouble());
             case DATE:

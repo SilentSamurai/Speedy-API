@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.jpa.impl.util;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.ValueType;
@@ -67,20 +67,6 @@ public class JavaType2ColumnType {
             return CLASS_TO_SQL_VALUE_TYPE_MAP.get(clazz);
         }
         throw new NotFoundException("Column type of '%s' not found".formatted(clazz.getName()));
-    }
-
-    public static Class<?> toBasicStandardJavaType(ValueType valueType) {
-        return switch (valueType) {
-            case BOOL -> Boolean.class;
-            case TEXT -> String.class;
-            case INT -> Long.class;
-            case FLOAT -> Double.class;
-            case DATE -> LocalDate.class;
-            case TIME -> LocalTime.class;
-            case DATE_TIME -> LocalDateTime.class;
-            case ZONED_DATE_TIME -> ZonedDateTime.class;
-            default -> throw new IllegalArgumentException("Unsupported value type: " + valueType);
-        };
     }
 
 

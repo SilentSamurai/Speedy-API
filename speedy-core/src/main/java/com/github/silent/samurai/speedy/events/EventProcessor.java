@@ -6,8 +6,9 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
+import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.LinkedMultiValueMap;
@@ -108,9 +109,9 @@ public class EventProcessor {
             if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
                 method.invoke(instance, entity);
             } else {
-                Object value = SpeedyValueFactory.speedyValue2JavaEntity(ioClass, entity);
+                Object value = SpeedySerializer.toJavaObject(entity, ioClass);
                 method.invoke(instance, value);
-                SpeedyValueFactory.updateSpeedyWithJavaEntity(value, entity);
+                SpeedyDeserializer.updateEntity(value, entity);
             }
             return entity;
         }

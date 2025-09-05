@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.ThrowingBiFunction;
 import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
 
@@ -20,7 +21,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SpeedyValue2JavaType {
+public class SpeedySerializer {
 
     private static final Map<String, ThrowingBiFunction<SpeedyValue, ValueType, Object, SpeedyHttpException>> converters = new HashMap<>();
 
@@ -173,10 +174,19 @@ public class SpeedyValue2JavaType {
         });
     }
 
-    public static <T> T convert(SpeedyValue value, Class<T> clazz) throws SpeedyHttpException {
+    private static <T> T toJavaField(SpeedyValue value, FieldMetadata fieldMetadata, Class<T> clazz) throws SpeedyHttpException {
         ValueType valueType = value.getValueType();
         // handle null
-        if (!has(valueType, clazz) || value instanceof SpeedyNull) {
+        if (value instanceof SpeedyNull) {
+            return null;
+        }
+
+        // Handle enums
+        if (!has(valueType, clazz)) {
+            if (clazz.isEnum()) {
+                // Safe because convertToEnum returns the right enum subtype
+                return (T) CommonUtil.convertToEnum((Class<? extends Enum>) clazz, value);
+            }
             return null;
         }
 
@@ -201,49 +211,56 @@ public class SpeedyValue2JavaType {
         }
     }
 
-    public static <T> T convert(SpeedyValue speedyValue, ValueType valueType) {
-        switch (valueType) {
+    public static <T> T asJavaObject(SpeedyValue speedyValue) {
+        return switch (speedyValue.getValueType()) {
             case NULL:
-                return null;
+                yield null;
             case BOOL:
                 if (speedyValue.isBoolean()) {
-                    return (T) speedyValue.asBoolean();
+                    yield (T) speedyValue.asBoolean();
                 }
             case TEXT:
                 if (speedyValue.isText()) {
-                    return (T) speedyValue.asText();
+                    yield (T) speedyValue.asText();
+                }
+            case ENUM:
+                if (speedyValue.isEnum()) {
+                    yield (T) speedyValue.asEnum();
+                }
+            case ENUM_ORD:
+                if (speedyValue.isEnumOrd()) {
+                    yield (T) speedyValue.asEnumOrd();
                 }
             case INT:
                 if (speedyValue.isInt()) {
-                    return (T) speedyValue.asInt();
+                    yield (T) speedyValue.asInt();
                 }
             case FLOAT:
                 if (speedyValue.isDouble()) {
-                    return (T) speedyValue.asDouble();
+                    yield (T) speedyValue.asDouble();
                 }
             case DATE:
                 if (speedyValue.isDate()) {
-                    return (T) speedyValue.asDate();
+                    yield (T) speedyValue.asDate();
                 }
             case TIME:
                 if (speedyValue.isTime()) {
-                    return (T) speedyValue.asTime();
+                    yield (T) speedyValue.asTime();
                 }
             case DATE_TIME:
                 if (speedyValue.isDateTime()) {
-                    return (T) speedyValue.asDateTime();
+                    yield (T) speedyValue.asDateTime();
                 }
             case ZONED_DATE_TIME:
                 if (speedyValue.isZonedDateTime()) {
-                    return (T) speedyValue.asZonedDateTime();
+                    yield (T) speedyValue.asZonedDateTime();
                 }
             case OBJECT:
             case COLLECTION:
-            default:
                 throw new ConversionException(
-                        String.format("Cannot convert %s to %s", speedyValue, valueType.name())
+                        String.format("Cannot convert %s to %s", speedyValue, speedyValue.getValueType().name())
                 );
-        }
+        };
     }
 
     /**
@@ -255,8 +272,8 @@ public class SpeedyValue2JavaType {
      * @return The converted composite object or null if conversion is not possible
      * @throws SpeedyHttpException If conversion fails
      */
-    public static <T> T convertToCompositeClass(SpeedyValue value, Class<T> clazz) throws SpeedyHttpException {
-        if (value == null || value instanceof SpeedyNull) {
+    public static <T> T toJavaObject(SpeedyEntity value, Class<T> clazz) throws SpeedyHttpException {
+        if (value == null) {
             return null;
         }
 
@@ -301,10 +318,10 @@ public class SpeedyValue2JavaType {
                     if (fieldValue instanceof SpeedyNull) {
                         convertedValue = null;
                     } else if (fieldMetadata.isAssociation() && fieldValue.isObject()) {
-                        convertedValue = convertToCompositeClass(fieldValue, targetField.getType());
+                        convertedValue = toJavaObject(fieldValue.asObject(), targetField.getType());
                     } else {
                         // Scalar or directly convertible values
-                        convertedValue = convert(fieldValue, targetField.getType());
+                        convertedValue = toJavaField(fieldValue, fieldMetadata, targetField.getType());
                     }
 
                     BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(instance);

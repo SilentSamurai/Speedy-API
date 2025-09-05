@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.query.jooq.JooqConversionImpl;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.DSLContext;
@@ -46,7 +47,7 @@ class JooqSqlToSpeedyTest {
     @BeforeEach
     void setUp() {
         Mockito.when(dslContext.dialect()).thenReturn(SQLDialect.H2);
-        jooqSqlToSpeedy = new JooqSqlToSpeedy(dslContext);
+        jooqSqlToSpeedy = new JooqSqlToSpeedy(dslContext, new JooqConversionImpl());
     }
 
     private <T> OngoingStubbing<T> mockRecord(EntityMetadata entityMetadata, String fieldName) throws NotFoundException {

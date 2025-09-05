@@ -23,4 +23,16 @@ public class SpeedyNull implements SpeedyValue {
         sb.append('}');
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        // All instances of SpeedyNull are considered equal
+        return obj instanceof SpeedyNull;
+    }
+
+    @Override
+    public int hashCode() {
+        // Constant hash code since all instances are equal
+        return 0;
+    }
 }

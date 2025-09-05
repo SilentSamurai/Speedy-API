@@ -49,7 +49,7 @@ public class SpeedyParserAssociationTest {
         EqCondition condition = (EqCondition) speedyQuery.getWhere().getConditions().get(0);
         FieldMetadata fieldMetadata = condition.getField().getAssociatedFieldMetadata();
         Literal literal = (Literal) condition.getExpression();
-        String condValue = SpeedyValueFactory.toJavaType(fieldMetadata, literal.value());
+        String condValue = literal.value().asText();
         assertEquals("1", condValue);
         assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
     }

@@ -7,13 +7,12 @@ import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.query.JsonQueryBuilder;
+import com.github.silent.samurai.speedy.parser.JsonQueryParser;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.JSONCountSerializerV2;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 public class QueryHandler implements Handler {
@@ -32,8 +31,8 @@ public class QueryHandler implements Handler {
         QueryProcessor queryProcessor = context.getQueryProcessor();
         JsonNode jsonBody = context.getBody();
 
-        JsonQueryBuilder jsonQueryBuilder = new JsonQueryBuilder(metaModel, resourceMetadata, jsonBody);
-        SpeedyQuery speedyQuery = jsonQueryBuilder.build();
+        JsonQueryParser jsonQueryParser = new JsonQueryParser(metaModel, resourceMetadata, jsonBody);
+        SpeedyQuery speedyQuery = jsonQueryParser.build();
         context.setSpeedyQuery(speedyQuery);
 
         if (speedyQuery.getSelect().contains("count")) {

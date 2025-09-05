@@ -12,10 +12,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -35,13 +32,13 @@ public class SelectiveSpeedy2Json {
     }
 
     private ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity,
-                                       EntityMetadata entityMetadata,
-                                       ExpansionPathTracker pathTracker) throws SpeedyHttpException {
+                                        EntityMetadata entityMetadata,
+                                        ExpansionPathTracker pathTracker) throws SpeedyHttpException {
         ObjectNode jsonObject = json.createObjectNode();
-        
+
         // Push the current entity onto the path tracker
         pathTracker.pushEntity(entityMetadata);
-        
+
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !this.fieldPredicate.test(fieldMetadata)) continue;
             if (!speedyEntity.has(fieldMetadata)) {
@@ -50,7 +47,7 @@ public class SelectiveSpeedy2Json {
             }
             if (fieldMetadata.isAssociation()) {
                 String associationName = fieldMetadata.getAssociationMetadata().getName();
-                
+
                 // Check if this specific path should be expanded using dot notation
                 if (pathTracker.shouldExpand(fieldMetadata.getAssociationMetadata())) {
                     if (fieldMetadata.isCollection()) {
@@ -109,7 +106,7 @@ public class SelectiveSpeedy2Json {
                 }
             }
         }
-        
+
         // Pop current entity from the path tracker when done processing
         pathTracker.popEntity();
         return jsonObject;
@@ -146,44 +143,32 @@ public class SelectiveSpeedy2Json {
 
     public void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
         switch (fieldMetadata.getValueType()) {
-            case BOOL:
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asBoolean());
-                break;
-            case TEXT:
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asText());
-                break;
-            case INT:
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asLong());
-                break;
-            case FLOAT:
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asDouble());
-                break;
-            case DATE: {
+            case BOOL -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asBoolean());
+            case TEXT -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asText());
+            case INT -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asLong());
+            case FLOAT -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asDouble());
+            case DATE -> {
                 String stringValue = speedyValue.asDate().format(DateTimeFormatter.ISO_DATE);
                 jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-                break;
             }
-            case TIME: {
+            case TIME -> {
                 String stringValue = speedyValue.asTime().format(DateTimeFormatter.ISO_TIME);
                 jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-                break;
             }
-            case DATE_TIME: {
+            case DATE_TIME -> {
                 String stringValue = speedyValue.asDateTime().format(DateTimeFormatter.ISO_DATE_TIME);
                 jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-                break;
             }
-            case ZONED_DATE_TIME: {
+            case ZONED_DATE_TIME -> {
                 String stringValue = speedyValue.asZonedDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                 jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-                break;
             }
-            case NULL:
-                jsonObject.putNull(fieldMetadata.getOutputPropertyName());
-                break;
-            case OBJECT:
-            case COLLECTION:
-                throw new RuntimeException("OBJECT & Collection Not implemented yet in basic");
+            case ENUM -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asEnum());
+            case ENUM_ORD -> {
+                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asEnumOrd());
+            }
+            case NULL -> jsonObject.putNull(fieldMetadata.getOutputPropertyName());
+            case OBJECT, COLLECTION -> throw new RuntimeException("OBJECT & Collection Not implemented yet in basic");
         }
     }
 
