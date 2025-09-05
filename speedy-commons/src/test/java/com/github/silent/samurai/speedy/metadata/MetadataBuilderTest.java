@@ -28,6 +28,7 @@ class MetadataBuilderTest {
                 .shouldGenerateKey(true);
         productBuilder.field("name", "NAME", ColumnType.VARCHAR);
         productBuilder.field("price", "PRICE", ColumnType.DOUBLE);
+
         FieldBuilder categoryField = productBuilder.field("category", "CATEGORY_ID", ColumnType.UUID);
         categoryField.associateWith(categoryBuilder.keyFields().iterator().next());
 

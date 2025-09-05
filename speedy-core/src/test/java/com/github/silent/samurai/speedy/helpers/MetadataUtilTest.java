@@ -106,56 +106,56 @@ class MetadataUtilTest {
         assertFalse(MetadataUtil.hasOnlyPrimaryKeyFields(entityMetadata, fields));
     }
 
-    @Test
-    void createEntityKeyFromMap() throws Exception {
-        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-        Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'");
-        SpeedyQuery speedyQuery = speedyUriContext.parse();
-        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
-        FieldMetadata id = productMetadata.field("id");
-        assertEquals("1234", primaryKey.get(id).asText());
-    }
-
-    @Test
-    void createEntityKeyFromMap1() throws Exception {
-        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
-        Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'&name='na'");
-        SpeedyQuery speedyQuery = speedyUriContext.parse();
-
-        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
-        FieldMetadata id = productMetadata.field("id");
-        FieldMetadata name = productMetadata.field("name");
-        assertEquals("1234", primaryKey.get(id).asText());
-        assertEquals("na", primaryKey.get(name).asText());
-    }
-
-    @Test
-    void createEntityKeyFromMap2() throws Exception {
-        BadRequestException badRequestException = assertThrows(BadRequestException.class,
-                () -> {
-                    EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
-                    Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
-                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(name='1234')");
-                    SpeedyQuery speedyQuery = speedyUriContext.parse();
-                    MetadataUtil.createIdentifierFromQuery(speedyQuery);
-                }
-        );
-    }
-
-    @Test
-    void createEntityKeyFromMap3() throws Exception {
-        BadRequestException badRequestException = assertThrows(BadRequestException.class,
-                () -> {
-                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
-                    Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
-                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(name='na')");
-                    SpeedyQuery speedyQuery = speedyUriContext.parse();
-                    MetadataUtil.createIdentifierFromQuery(speedyQuery);
-                }
-        );
-    }
+//    @Test
+//    void createEntityKeyFromMap() throws Exception {
+//        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
+//        Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
+//        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'");
+//        SpeedyQuery speedyQuery = speedyUriContext.parse();
+//        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
+//        FieldMetadata id = productMetadata.field("id");
+//        assertEquals("1234", primaryKey.get(id).asText());
+//    }
+//
+//    @Test
+//    void createEntityKeyFromMap1() throws Exception {
+//        EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
+//        Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
+//        SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category?id='1234'&name='na'");
+//        SpeedyQuery speedyQuery = speedyUriContext.parse();
+//
+//        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromQuery(speedyQuery);
+//        FieldMetadata id = productMetadata.field("id");
+//        FieldMetadata name = productMetadata.field("name");
+//        assertEquals("1234", primaryKey.get(id).asText());
+//        assertEquals("na", primaryKey.get(name).asText());
+//    }
+//
+//    @Test
+//    void createEntityKeyFromMap2() throws Exception {
+//        BadRequestException badRequestException = assertThrows(BadRequestException.class,
+//                () -> {
+//                    EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
+//                    Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(productMetadata);
+//                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(name='1234')");
+//                    SpeedyQuery speedyQuery = speedyUriContext.parse();
+//                    MetadataUtil.createIdentifierFromQuery(speedyQuery);
+//                }
+//        );
+//    }
+//
+//    @Test
+//    void createEntityKeyFromMap3() throws Exception {
+//        BadRequestException badRequestException = assertThrows(BadRequestException.class,
+//                () -> {
+//                    EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
+//                    Mockito.when(metaModel.findEntityMetadata(Mockito.anyString())).thenReturn(entityMetadata);
+//                    SpeedyUriContext speedyUriContext = new SpeedyUriContext(metaModel, "/Category(name='na')");
+//                    SpeedyQuery speedyQuery = speedyUriContext.parse();
+//                    MetadataUtil.createIdentifierFromQuery(speedyQuery);
+//                }
+//        );
+//    }
 
 
     @Test

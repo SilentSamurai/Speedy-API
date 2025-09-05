@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.models.conditions.InCondition;
 import com.github.silent.samurai.speedy.models.conditions.MatchingCondition;
@@ -34,25 +35,27 @@ public class JooqQueryBuilder {
     final Map<String, String> joinAlias = new HashMap<>();
     final SQLDialect dialect;
     SelectJoinStep<? extends Record> query;
+    private final Converter converter;
 
-    public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext) {
+    public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext, Converter converter) {
         this.speedyQuery = speedyQuery;
         this.entityMetadata = speedyQuery.getFrom();
         this.dslContext = dslContext;
         this.dialect = dslContext.dialect();
+        this.converter = converter;
     }
 
     Object toJooqType(BinaryCondition bCondition, SpeedyValue speedyValue) throws SpeedyHttpException {
         QueryField queryField = bCondition.getField();
         if (queryField.isAssociated()) {
-            return JooqUtil.toJooqType(
+            return converter.toColumnType(
                     speedyValue,
-                    queryField.getAssociatedFieldMetadata().getColumnType()
+                    queryField.getAssociatedFieldMetadata()
             );
         }
-        return JooqUtil.toJooqType(
+        return converter.toColumnType(
                 speedyValue,
-                bCondition.getField().getFieldMetadata().getColumnType()
+                bCondition.getField().getFieldMetadata()
         );
     }
 

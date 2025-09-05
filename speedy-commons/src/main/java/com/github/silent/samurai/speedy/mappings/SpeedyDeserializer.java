@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class JavaType2SpeedyValue {
+public class SpeedyDeserializer {
     private static final Map<String, ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>> converters = new HashMap<>();
 
     static {
@@ -45,13 +45,6 @@ public class JavaType2SpeedyValue {
                                ThrowingBiFunction<T, ValueType, SpeedyValue, SpeedyHttpException> lambda) {
         String key = clazz.getName() + valueType.name();
         converters.put(key, (ThrowingBiFunction<Object, ValueType, SpeedyValue, SpeedyHttpException>) lambda);
-    }
-
-    public static <T> SpeedyValue convert(Class<T> clazz, ValueType valueType, Object instance) throws SpeedyHttpException {
-        if (instance == null || !has(valueType, clazz)) {
-            return SpeedyNull.SPEEDY_NULL;
-        }
-        return get(valueType, clazz).apply(instance, valueType);
     }
 
     private static void initConverters() {
@@ -164,18 +157,34 @@ public class JavaType2SpeedyValue {
         });
     }
 
-    public static void convertAndSetField(SpeedyEntity entity, Field field, Object instance) throws SpeedyHttpException {
-        Class<?> fieldType = field.getType();
-        try {
-            Object fieldValue = field.get(instance);
-            EntityMetadata entityMetadata = entity.getMetadata();
-            FieldMetadata fieldMetadata = entityMetadata.field(field.getName());
-            ValueType valueType = fieldMetadata.getValueType();
-            SpeedyValue speedyValue = convert(fieldType, valueType, fieldValue);
-            entity.put(field.getName(), speedyValue);
-        } catch (IllegalAccessException e) {
-            throw new ConversionException("", e);
+    public static <T> SpeedyValue fromJavaObject(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
+        ValueType valueType = fieldMetadata.getValueType();
+        if (instance == null) {
+            return SpeedyNull.SPEEDY_NULL;
         }
+
+        Class<?> clazz = instance.getClass();
+
+        if (clazz.isEnum() && instance instanceof Enum<?> enumInstance) {
+            switch (valueType) {
+                case TEXT, ENUM -> {
+                    return new SpeedyText(enumInstance.name());
+                }
+                case INT, ENUM_ORD -> {
+                    return new SpeedyInt((long) enumInstance.ordinal());
+                }
+                default -> {
+                    throw new ConversionException(
+                            String.format("Cannot convert enum %s to %s",
+                                    enumInstance.getClass().getSimpleName(), valueType));
+                }
+            }
+        }
+        if (!has(valueType, clazz)) {
+            return SpeedyNull.SPEEDY_NULL;
+        }
+
+        return get(valueType, clazz).apply(instance, valueType);
     }
 
     /**
@@ -187,7 +196,7 @@ public class JavaType2SpeedyValue {
      * @return The converted SpeedyEntity or null if conversion is not possible
      * @throws SpeedyHttpException If conversion fails
      */
-    public static SpeedyEntity convertFromCompositeClass(Object instance, SpeedyEntity entity) throws SpeedyHttpException {
+    public static SpeedyEntity updateEntity(Object instance, SpeedyEntity entity) throws SpeedyHttpException {
         if (instance == null) {
             return null;
         }
@@ -237,11 +246,11 @@ public class JavaType2SpeedyValue {
                         SpeedyEntity child = entity.has(fieldMetadata) && entity.isObject() ?
                                 entity.get(fieldMetadata).asObject() : new SpeedyEntity(assocMd);
                         // Recursively map the associated object
-                        convertFromCompositeClass(fieldValue, child);
+                        updateEntity(fieldValue, child);
                         entity.put(fieldMetadata, child);
                     } else {
                         // Convert the field value to SpeedyValue
-                        SpeedyValue speedyValue = convert(fieldType, valueType, fieldValue);
+                        SpeedyValue speedyValue = fromJavaObject(fieldMetadata, fieldValue);
                         // Set the field value in the entity (avoid overwriting with SpeedyNull when already present)
                         if (!(speedyValue instanceof SpeedyNull) || !entity.has(fieldMetadata)) {
                             entity.put(fieldMetadata, speedyValue);

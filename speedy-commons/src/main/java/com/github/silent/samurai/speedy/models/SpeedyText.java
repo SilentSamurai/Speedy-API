@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.models;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
+import java.util.Objects;
 
 @Getter
 public class SpeedyText implements SpeedyValue {
@@ -26,6 +27,19 @@ public class SpeedyText implements SpeedyValue {
     @Override
     public String asText() {
         return getValue();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SpeedyText that = (SpeedyText) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 
     @Override

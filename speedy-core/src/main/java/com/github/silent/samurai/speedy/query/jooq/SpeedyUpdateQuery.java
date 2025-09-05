@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.*;
@@ -19,10 +20,12 @@ public class SpeedyUpdateQuery {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyUpdateQuery.class);
     final SQLDialect dialect;
     private final DSLContext dslContext;
+    private final Converter converter;
 
-    public SpeedyUpdateQuery(DSLContext dslContext, SQLDialect dialect) {
+    public SpeedyUpdateQuery(DSLContext dslContext, SQLDialect dialect, Converter converter) {
         this.dslContext = dslContext;
         this.dialect = dialect;
+        this.converter = converter;
     }
 
     private Optional<UpdateSetMoreStep<Record>> handleAssociation(
@@ -40,10 +43,9 @@ public class SpeedyUpdateQuery {
             return Optional.empty();
         }
         SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
-        Object value = JooqUtil.toJooqType(
+        Object value = converter.toColumnType(
                 innerValue,
-                associatedFieldMetadata.getColumnType()
-
+                associatedFieldMetadata
         );
         // update current object with foreign key
         Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
@@ -61,9 +63,9 @@ public class SpeedyUpdateQuery {
                 return handleAssociation(updateQuery, fieldMetadata, entity);
             } else {
                 SpeedyValue val = entity.get(fieldMetadata);
-                Object value = JooqUtil.toJooqType(
+                Object value = converter.toColumnType(
                         val,
-                        fieldMetadata.getColumnType()
+                        fieldMetadata
                 );
                 Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
                 return Optional.of(updateQuery.set(field, value));
@@ -88,9 +90,9 @@ public class SpeedyUpdateQuery {
         if (returnQuery.isPresent()) {
             for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
                 SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-                Object value = JooqUtil.toJooqType(
+                Object value = converter.toColumnType(
                         speedyValue,
-                        keyFieldMetadata.getColumnType()
+                        keyFieldMetadata
                 );
                 Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
                 returnQuery.get().where(field.equal(value));

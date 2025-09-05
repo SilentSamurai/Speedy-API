@@ -1,14 +1,22 @@
 package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
+import com.github.silent.samurai.speedy.enums.EnumMode;
+import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.models.DynamicEnum;
 import lombok.Getter;
+
+import java.util.Set;
 
 @Getter
 public class FieldBuilder {
     final EntityBuilder entityBuilder;
-    final ColumnType columnType;
-    final String dbColumnName;
     final String outputPropertyName;
+    ColumnType columnType;
+    String dbColumnName;
+    ColumnType columnTypeOverride;
     boolean isCollection = false;
     boolean isAssociation = false;
     boolean isInsertable = true;
@@ -21,12 +29,30 @@ public class FieldBuilder {
     boolean shouldGenerateKey = false;
     String associatedField;
     String associatedEntity;
+    boolean isEnum = false;
+    EnumMode storedEnumMode;
+    EnumMode operationalEnumMode;
+    DynamicEnum dynamicEnum;
 
-    public FieldBuilder(EntityBuilder entityBuilder, String dbColumnName, ColumnType columnType, String outputPropertyName) {
+    public FieldBuilder(EntityBuilder entityBuilder, String name) {
         this.entityBuilder = entityBuilder;
-        this.columnType = columnType;
+        this.dbColumnName = name;
+        this.outputPropertyName = name;
+    }
+
+    public FieldBuilder dbColumnName(String dbColumnName) {
         this.dbColumnName = dbColumnName;
-        this.outputPropertyName = outputPropertyName;
+        return this;
+    }
+
+    public FieldBuilder columnType(ColumnType columnType) {
+        this.columnType = columnType;
+        return this;
+    }
+
+    public FieldBuilder columnTypeOverride(ColumnType columnTypeOverride) {
+        this.columnTypeOverride = columnTypeOverride;
+        return this;
     }
 
     public FieldBuilder collection(boolean isCollection) {
@@ -69,6 +95,16 @@ public class FieldBuilder {
         return this;
     }
 
+    public FieldBuilder enumField(EnumMode storedEnumMode,
+                                  EnumMode operational,
+                                  DynamicEnum dynamicEnum) {
+        this.isEnum = true;
+        this.storedEnumMode = storedEnumMode;
+        this.dynamicEnum = dynamicEnum;
+        this.operationalEnumMode = operational;
+        return this;
+    }
+
     public FieldBuilder associateWith(FieldBuilder associatedField) {
         this.associatedField = associatedField.outputPropertyName;
         this.associatedEntity = associatedField.entityBuilder.getName();
@@ -83,14 +119,72 @@ public class FieldBuilder {
         return this;
     }
 
-    public FieldMetadataImpl build() {
+    public FieldMetadataImpl build() throws NotFoundException {
         if (!isNullable && isDeserializable) {
             required(true);
         }
-        return new FieldMetadataImpl(
-                columnType, dbColumnName, outputPropertyName,
-                isCollection, isAssociation, isInsertable, isUpdatable, isUnique,
-                isNullable, isRequired, isSerializable, isDeserializable
+        // Compute value type based on override when provided, else use the base columnType
+        ValueType valueType = resolveValueType();
+        ColumnType columnType = resolveColumnType();
+        FieldMetadataImpl fmi = new FieldMetadataImpl(
+                columnType,
+                valueType,
+                dbColumnName,
+                outputPropertyName,
+                isCollection,
+                isAssociation,
+                isInsertable,
+                isUpdatable,
+                isUnique,
+                isNullable,
+                isRequired,
+                isSerializable,
+                isDeserializable,
+                isEnum,
+                storedEnumMode,
+                operationalEnumMode,
+                dynamicEnum
         );
+        return fmi;
+    }
+
+    public ValueType resolveValueType() throws NotFoundException {
+        if (isEnum) {
+            return switch (operationalEnumMode) {
+                case STRING -> ValueType.ENUM;
+                case ORDINAL -> ValueType.ENUM_ORD;
+            };
+        }
+        return resolveColumnType().getValueType();
+    }
+
+    public ColumnType resolveColumnType() throws NotFoundException {
+        // 1) explicit override wins
+        if (columnTypeOverride != null) {
+            return columnTypeOverride;
+        }
+
+        // 2) enum handling if applicable
+        if (isEnum) {
+            return switch (storedEnumMode) {
+                case STRING -> ColumnType.VARCHAR;
+                case ORDINAL -> ColumnType.INTEGER;
+            };
+        }
+
+        if (isAssociation) {
+            return ColumnType.VARCHAR;
+        }
+
+        if (columnType != null) {
+            return columnType;
+        }
+
+        throw new NotFoundException("Unable to resolve column type for " + entityBuilder.getName() + "." + dbColumnName);
+    }
+
+    // Backward compatibility for callers expecting getEnumMode() on builder
+    public EnumMode getEnumMode() {
+        return operationalEnumMode;
     }
 }

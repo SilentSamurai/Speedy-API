@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query;
+package com.github.silent.samurai.speedy.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,7 +15,6 @@ import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
-import com.github.silent.samurai.speedy.parser.ConditionFactory;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import java.util.Iterator;
@@ -178,7 +177,7 @@ import java.util.List;
 /// @see Expression
 /// @see BinaryCondition
 /// @see BooleanCondition
-public class JsonQueryBuilder {
+public class JsonQueryParser {
 
     /// The meta model containing entity and field metadata for validation and query building.
     final MetaModel metaModel;
@@ -201,7 +200,7 @@ public class JsonQueryBuilder {
     /// @param from the name of the entity to query
     /// @param rootNode the JSON root node containing the query structure
     /// @throws NotFoundException if the specified entity is not found in the metamodel
-    public JsonQueryBuilder(MetaModel metaModel, String from, JsonNode rootNode) throws NotFoundException {
+    public JsonQueryParser(MetaModel metaModel, String from, JsonNode rootNode) throws NotFoundException {
         this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(from));
@@ -218,7 +217,7 @@ public class JsonQueryBuilder {
     /// @param rootNode the JSON root node containing the query structure
     /// @throws BadRequestException if the query structure is invalid
     /// @throws NotFoundException if the entity metadata is invalid
-    public JsonQueryBuilder(MetaModel metaModel, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
+    public JsonQueryParser(MetaModel metaModel, EntityMetadata entityMetadata, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
@@ -235,7 +234,7 @@ public class JsonQueryBuilder {
     /// @param rootNode the JSON root node containing the query structure
     /// @throws BadRequestException if the query structure is invalid or `$from` is missing/invalid
     /// @throws NotFoundException if the entity specified in `$from` is not found
-    public JsonQueryBuilder(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
+    public JsonQueryParser(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
         this.metaModel = metaModel;
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(getFrom()));

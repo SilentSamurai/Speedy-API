@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -18,43 +17,28 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class JavaType2SpeedyValueTest {
+class SpeedyDeserializerTest {
 
     @Test
-    void convertAndSetField_withValidValue_shouldUpdateEntity() throws Exception {
-        // Arrange
-        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(TestEntity.class);
-        SpeedyEntity entity = new SpeedyEntity(entityMetadata);
-        TestEntity testEntity = new TestEntity("testName", 25);
-        Field field = TestEntity.class.getDeclaredField("name");
-
-        // Act
-        JavaType2SpeedyValue.convertAndSetField(entity, field, testEntity);
-
-        // Assert
-        assertEquals("testName", entity.get("name").asText());
-    }
-
-    @Test
-    void convertFromCompositeClass_withAssociation_shouldMapNestedEntity() throws Exception {
+    void updateEntity_withAssociation_shouldMapNestedEntity() throws Exception {
         // Arrange: define metadata for parent with child association
-        EntityMetadata parentMd = StaticEntityMetadata.createEntityMetadata(SpeedyValue2JavaTypeTest.ParentEntity.class);
+        EntityMetadata parentMd = StaticEntityMetadata.createEntityMetadata(SpeedySerializerTest.ParentEntity.class);
         SpeedyEntity target = new SpeedyEntity(parentMd);
 
         UUID parentId = UUID.randomUUID();
         UUID childId = UUID.randomUUID();
 
-        SpeedyValue2JavaTypeTest.ChildEntity child = new SpeedyValue2JavaTypeTest.ChildEntity();
+        SpeedySerializerTest.ChildEntity child = new SpeedySerializerTest.ChildEntity();
         child.setId(childId);
         child.setLabel("child-label");
 
-        SpeedyValue2JavaTypeTest.ParentEntity parent = new SpeedyValue2JavaTypeTest.ParentEntity();
+        SpeedySerializerTest.ParentEntity parent = new SpeedySerializerTest.ParentEntity();
         parent.setId(parentId);
         parent.setName("parent-name");
         parent.setChild(child);
 
         // Act
-        SpeedyEntity result = JavaType2SpeedyValue.convertFromCompositeClass(parent, target);
+        SpeedyEntity result = SpeedyDeserializer.updateEntity(parent, target);
 
         // Assert
         assertNotNull(result);
@@ -66,7 +50,7 @@ class JavaType2SpeedyValueTest {
     }
 
     @Test
-    void convertFromCompositeClass_withValidObject_shouldReturnSpeedyEntity() throws Exception {
+    void updateEntity_withValidObject_shouldReturnSpeedyEntity() throws Exception {
         // Arrange
         TestEntity testEntity = new TestEntity("testName", 25);
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(TestEntity.class);
@@ -74,7 +58,7 @@ class JavaType2SpeedyValueTest {
         SpeedyEntity entity = new SpeedyEntity(entityMetadata);
 
         // Act
-        SpeedyEntity result = JavaType2SpeedyValue.convertFromCompositeClass(testEntity, entity);
+        SpeedyEntity result = SpeedyDeserializer.updateEntity(testEntity, entity);
 
         // Assert
         assertNotNull(result);
@@ -83,16 +67,16 @@ class JavaType2SpeedyValueTest {
     }
 
     @Test
-    void convertFromCompositeClass_withNullValue_shouldReturnNull() throws Exception {
+    void updateEntity_withNullValue_shouldReturnNull() throws Exception {
         // Act
-        SpeedyEntity result = JavaType2SpeedyValue.convertFromCompositeClass(null, new SpeedyEntity(StaticEntityMetadata.createEntityMetadata(TestEntity.class)));
+        SpeedyEntity result = SpeedyDeserializer.updateEntity(null, new SpeedyEntity(StaticEntityMetadata.createEntityMetadata(TestEntity.class)));
 
         // Assert
         assertNull(result);
     }
 
     @Test
-    void convertFromCompositeClass_withAllTypes_shouldMapFieldsCorrectly() throws Exception {
+    void updateEntity_withAllTypes_shouldMapFieldsCorrectly() throws Exception {
         // Arrange
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(TestEntity.class);
         SpeedyEntity entity = new SpeedyEntity(entityMetadata);
@@ -137,7 +121,7 @@ class JavaType2SpeedyValueTest {
         testEntity.setTime(testTime);
 
         // Act
-        SpeedyEntity result = JavaType2SpeedyValue.convertFromCompositeClass(testEntity, entity);
+        SpeedyEntity result = SpeedyDeserializer.updateEntity(testEntity, entity);
 
         // Assert
         assertNotNull(result);

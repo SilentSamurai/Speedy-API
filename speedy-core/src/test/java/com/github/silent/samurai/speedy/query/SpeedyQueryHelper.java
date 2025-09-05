@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
+import com.github.silent.samurai.speedy.query.jooq.JooqConversionImpl;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import java.util.HashMap;
@@ -17,6 +18,7 @@ public class SpeedyQueryHelper {
 
     public final Map<String, BinaryCondition> conditionMap = new HashMap<>();
     private final SpeedyQuery speedyQuery;
+    private final Converter converter = new JooqConversionImpl();
 
     public SpeedyQueryHelper(SpeedyQuery speedyQuery) {
         this.speedyQuery = speedyQuery;
@@ -68,16 +70,6 @@ public class SpeedyQueryHelper {
     public boolean isIdentifiersPresent() {
         EntityMetadata entityMetadata = speedyQuery.getFrom();
         return entityMetadata.getKeyFields().stream().allMatch(this::isFilterPresent);
-    }
-
-    public <T> T rawValueFromCondition(FieldMetadata fieldMetadata, Class<T> clazz) throws Exception {
-        Expression filterValue = getFilterValue(fieldMetadata).orElseThrow();
-        if (filterValue instanceof Literal literal) {
-            return SpeedyValueFactory.toJavaType(fieldMetadata, literal.value());
-        } else if (filterValue instanceof Identifier identifier) {
-            return (T) identifier.field().getFieldMetadata().getDbColumnName();
-        }
-        throw new Exception("invalid filter value for field: " + fieldMetadata.getOutputPropertyName());
     }
 
 }

@@ -12,4 +12,14 @@ start
 
 stop
 
+start
+
+:json ;
+
+:Speedy Value;
+
+:Jooq Record;
+
+stop
+
 @enduml

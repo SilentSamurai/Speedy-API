@@ -7,15 +7,17 @@ import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.annotations.SpeedyType;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
+import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
+import com.github.silent.samurai.speedy.jpa.impl.util.JavaType2ColumnType;
 import com.github.silent.samurai.speedy.metadata.EntityBuilder;
 import com.github.silent.samurai.speedy.metadata.FieldBuilder;
 import com.github.silent.samurai.speedy.metadata.KeyFieldBuilder;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
+import com.github.silent.samurai.speedy.models.DynamicEnum;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
@@ -65,10 +67,10 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     public void processMetaModel(MetaModelBuilder builder) {
         try {
             processEntities(builder);
+            this.metaModel = builder.build();
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         }
-        this.metaModel = builder.build();
     }
 
     void processEntities(MetaModelBuilder builder) throws NotFoundException {
@@ -127,16 +129,15 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         Member member = attribute.getJavaMember();
         Field field = findReflectionField(attribute, entityClass);
 
-        ColumnType columnType = findColumnTypeFromField(attribute, entityClass, field, member);
+        ColumnType columnType = findColumnTypeFromField(attribute);
         String outputName = findOutputName(field, member);
         String dbColumnName = findDbColumnName(attribute, entityClass, field, member);
 
 
-        FieldBuilder fieldMetadata = isId ?
-                entity.keyField(outputName, dbColumnName, columnType)
-                :
-                entity.field(outputName, dbColumnName, columnType);
+        FieldBuilder fieldMetadata = isId ? entity.keyField(outputName) : entity.field(outputName);
 
+        fieldMetadata.dbColumnName(dbColumnName);
+        fieldMetadata.columnType(columnType);
         fieldMetadata.insertable(true);
         fieldMetadata.unique(false);
         fieldMetadata.updatable(true);
@@ -145,6 +146,27 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         fieldMetadata.serializable(true);
         fieldMetadata.deserializable(true);
         fieldMetadata.collection(attribute.isCollection());
+
+        SpeedyType speedyType = AnnotationUtils.getAnnotation(field, SpeedyType.class);
+        if (speedyType != null) {
+            fieldMetadata.columnTypeOverride(speedyType.value());
+        }
+
+        // Populate enum metadata on FieldBuilder
+        Enumerated enumeratedAnn = AnnotationUtils.getAnnotation(field, Enumerated.class);
+        Class<?> effectiveType = attribute.isCollection() ? resolveGenericFieldType(field) : attribute.getJavaType();
+        boolean isEnumType = effectiveType != null && effectiveType.isEnum();
+        if (isEnumType) {
+
+            if (enumeratedAnn != null) {
+                EnumMode em = enumeratedAnn.value() == EnumType.STRING ? EnumMode.STRING : EnumMode.ORDINAL;
+                DynamicEnum dynamicEnum = DynamicEnum.of((Class<? extends Enum<?>>) effectiveType);
+                fieldMetadata.enumField(em, em, dynamicEnum);
+            } else {
+                DynamicEnum dynamicEnum = DynamicEnum.of((Class<? extends Enum<?>>) effectiveType);
+                fieldMetadata.enumField(EnumMode.STRING, EnumMode.ORDINAL, dynamicEnum);
+            }
+        }
 
         Column columnAnnotation = AnnotationUtils.getAnnotation(field, Column.class);
         if (columnAnnotation != null) {
@@ -236,28 +258,11 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         return member.getName();
     }
 
-    ColumnType findColumnTypeFromField(Attribute<?, ?> attribute, Class<?> entityClass, Field field, Member member) {
-        Enumerated enumerated = AnnotationUtils.getAnnotation(field, Enumerated.class);
-        SpeedyType speedyType = AnnotationUtils.getAnnotation(field, SpeedyType.class);
-        if (speedyType != null) {
-            return speedyType.value();
-        } else if (enumerated != null) {
-            EnumType value = enumerated.value();
-            return switch (value) {
-                case STRING -> ColumnType.VARCHAR;
-                case ORDINAL -> ColumnType.INTEGER;
-            };
-        } else {
-            try {
-                return JavaType2ColumnType.fromClass(attribute.getJavaType());
-            } catch (NotFoundException e) {
-                // ignore if association
-                if (attribute.isAssociation()) {
-                    return ColumnType.VARCHAR;
-                } else {
-                    throw new RuntimeException(e);
-                }
-            }
+    ColumnType findColumnTypeFromField(Attribute<?, ?> attribute) {
+        try {
+            return JavaType2ColumnType.fromClass(attribute.getJavaType());
+        } catch (NotFoundException e) {
+            return null;
         }
     }
 

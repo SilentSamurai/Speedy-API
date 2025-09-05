@@ -111,13 +111,13 @@ VALUES ('1', '1', 100.00, 0.00, 0.00, 0.00, 'No notes', '2023-04-28', '2022-04-3
         NULL, NULL);
 
 
-INSERT INTO companies (id, name, address, email, phone, details_top, extra, currency, invoice_no, created_at,
+INSERT INTO companies (id, status, name, address, email, phone, details_top, extra, currency, invoice_no, created_at,
                        updated_at, deleted_at)
-VALUES ('1', 'ABC Company', '123 Main St, Anytown USA', 'info@abccompany.com', '+1 555-1234', 'ABC Company Invoice',
+VALUES ('1', 'DRAFT', 'ABC Company', '123 Main St, Anytown USA', 'info@abccompany.com', '+1 555-1234', 'ABC Company Invoice',
         'Some extra details', 'USD', 1000, '2022-04-30 10:00:00', '2022-04-30 10:00:00', NULL),
-       ('2', 'XYZ Corporation', '456 High St, Anytown USA', 'info@xyzcorp.com', '+1 555-5678', 'XYZ Corp Invoice',
+       ('2','DRAFT', 'XYZ Corporation', '456 High St, Anytown USA', 'info@xyzcorp.com', '+1 555-5678', 'XYZ Corp Invoice',
         'Some other details', 'EUR', 2000, '2022-04-30 10:00:00', '2022-04-30 10:00:00', NULL),
-       ('3', 'PQR Inc.', '789 Elm St, Anytown USA', 'info@pqrinc.com', '+1 555-9012', 'PQR Inc. Invoice',
+       ('3', 'DRAFT','PQR Inc.', '789 Elm St, Anytown USA', 'info@pqrinc.com', '+1 555-9012', 'PQR Inc. Invoice',
         'Some more details', 'CAD', 3000, '2022-04-30 10:00:00', '2022-04-30 10:00:00', NULL);
 
 

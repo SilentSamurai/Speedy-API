@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.github.silent.samurai.speedy.parser.JsonQueryParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +37,7 @@ class BuildQueryFromJsonTests {
     private MetaModel metaModel;
     private ObjectMapper objectMapper;
     private JsonNode rootNode;
-    private JsonQueryBuilder builder;
+    private JsonQueryParser builder;
 
 
     @BeforeEach
@@ -77,7 +79,7 @@ class BuildQueryFromJsonTests {
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         // Initialize the builder
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
 
         // Build the query
         SpeedyQuery query = builder.build();
@@ -123,7 +125,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to an invalid where clause
         assertThrows(BadRequestException.class, builder::build);
@@ -155,7 +157,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -192,7 +194,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to invalid order clause
         assertThrows(BadRequestException.class, builder::build);
@@ -224,7 +226,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -257,7 +259,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -286,7 +288,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -309,7 +311,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        assertThrows(BadRequestException.class, () -> new JsonQueryBuilder(metaModel, rootNode));
+        assertThrows(BadRequestException.class, () -> new JsonQueryParser(metaModel, rootNode));
     }
 
     /*
@@ -337,7 +339,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryBuilder(metaModel, "Product", rootNode);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
         SpeedyQuery query = builder.build();
 
         BinaryCondition idCondition = (BinaryCondition) query.getWhere().getConditions().get(0);
@@ -373,6 +375,6 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        assertThrows(NotFoundException.class, () -> new JsonQueryBuilder(metaModel, rootNode).build());
+        assertThrows(NotFoundException.class, () -> new JsonQueryParser(metaModel, rootNode).build());
     }
 }

@@ -1,12 +1,12 @@
 package com.github.silent.samurai.speedy.metadata;
 
-import com.github.silent.samurai.speedy.enums.ColumnType;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
 public class KeyFieldBuilder extends FieldBuilder {
-    boolean shouldGenerateKey;
+    boolean shouldGenerateKey = false;
 
-    public KeyFieldBuilder(EntityBuilder entityBuilder, String dbColumnName, ColumnType columnType, String outputPropertyName) {
-        super(entityBuilder, dbColumnName, columnType, outputPropertyName);
+    public KeyFieldBuilder(EntityBuilder entityBuilder, String name) {
+        super(entityBuilder, name);
     }
 
     public KeyFieldBuilder shouldGenerateKey(boolean shouldGenerateKey) {
@@ -15,12 +15,28 @@ public class KeyFieldBuilder extends FieldBuilder {
     }
 
     @Override
-    public KeyFieldMetadataImpl build() {
-        return new KeyFieldMetadataImpl(
-                super.getColumnType(), super.getDbColumnName(), super.getOutputPropertyName(),
-                super.isCollection(), super.isAssociation(), super.isInsertable(), super.isUpdatable(),
-                super.isUnique(), super.isNullable(), super.isRequired(), super.isSerializable(),
-                super.isDeserializable(), shouldGenerateKey
+    public KeyFieldMetadataImpl build() throws NotFoundException {
+        FieldMetadataImpl fmi = super.build();
+        KeyFieldMetadataImpl kfmi = new KeyFieldMetadataImpl(
+                fmi.getColumnType(),
+                fmi.getValueType(),
+                fmi.getDbColumnName(),
+                outputPropertyName,
+                isCollection,
+                isAssociation,
+                isInsertable,
+                isUpdatable,
+                isUnique,
+                isNullable,
+                isRequired,
+                isSerializable,
+                isDeserializable,
+                isEnum,
+                storedEnumMode,
+                operationalEnumMode,
+                fmi.getDynamicEnum(),
+                shouldGenerateKey
         );
+        return kfmi;
     }
 }

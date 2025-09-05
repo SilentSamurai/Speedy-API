@@ -6,8 +6,9 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.models.SpeedyCollection;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.ExpansionPathTracker;
+import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.Speedy;
@@ -28,11 +29,13 @@ public class JooqSqlToSpeedy {
     private final DSLContext dslContext;
     private final JooqToJooqSql jooqToJooqSql;
     private final SQLDialect dialect;
+    private final Converter converter;
 
-    public JooqSqlToSpeedy(DSLContext dslContext) {
+    public JooqSqlToSpeedy(DSLContext dslContext, Converter converter) {
         this.dslContext = dslContext;
         this.jooqToJooqSql = new JooqToJooqSql(dslContext);
         this.dialect = dslContext.dialect();
+        this.converter = converter;
     }
 
     public SpeedyEntity fromRecord(Record record, EntityMetadata from, Set<String> expand) throws SpeedyHttpException {
@@ -42,14 +45,14 @@ public class JooqSqlToSpeedy {
 
     private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, ExpansionPathTracker pathTracker) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = SpeedyValueFactory.fromEntityMetadata(entityMetadata);
-        
+
         // Push the current entity onto the path tracker
         pathTracker.pushEntity(entityMetadata);
-        
+
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (fieldMetadata.isAssociation()) {
                 String associationName = fieldMetadata.getAssociationMetadata().getName();
-                
+
                 // Check if this specific path should be expanded using dot notation
                 if (pathTracker.shouldExpand(fieldMetadata.getAssociationMetadata())) {
                     // extract FK from the current record, then query foreign table rows
@@ -96,20 +99,20 @@ public class JooqSqlToSpeedy {
                     Collection<?> listOfInstances = (Collection<?>) fieldValue;
                     List<SpeedyValue> listOfSpeedyValue = new LinkedList<>();
                     for (Object item : listOfInstances) {
-                        SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(fieldMetadata, item);
+                        SpeedyValue speedyValue = converter.toSpeedyValue(item, fieldMetadata);
                         listOfSpeedyValue.add(speedyValue);
                     }
                     SpeedyCollection speedyCollection = SpeedyValueFactory.fromCollection(listOfSpeedyValue);
                     speedyEntity.put(fieldMetadata, speedyCollection);
                 } else {
                     // fieldValue some time is of not correct type, int promoted to decimal. and visa-versa
-                    SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(fieldMetadata, fieldValue);
+                    SpeedyValue speedyValue = converter.toSpeedyValue(fieldValue, fieldMetadata);
                     speedyEntity.put(fieldMetadata, speedyValue);
                 }
             }
         }
-        
-        // Pop current entity from the path tracker when done processing
+
+        // Pop the current entity from the path tracker when done processing
         pathTracker.popEntity();
         return speedyEntity;
     }
@@ -123,7 +126,7 @@ public class JooqSqlToSpeedy {
             return Optional.empty();
         }
         SpeedyEntityKey speedyEntityKey = SpeedyValueFactory.createEntityKey(associationMetadata);
-        SpeedyValue speedyValue = SpeedyValueFactory.toSpeedyValue(keyFieldMetadata, optional.get());
+        SpeedyValue speedyValue = converter.toSpeedyValue(optional.get(), keyFieldMetadata);
         speedyEntityKey.put(keyFieldMetadata, speedyValue);
 
         return Optional.of(speedyEntityKey);

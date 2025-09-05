@@ -2,6 +2,8 @@ package com.github.silent.samurai.speedy.events;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
 import com.github.silent.samurai.speedy.entity.Category;
+import com.github.silent.samurai.speedy.entity.Company;
+import com.github.silent.samurai.speedy.entity.CompanyStatus;
 import com.github.silent.samurai.speedy.entity.User;
 import com.github.silent.samurai.speedy.entity.Product;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
@@ -68,5 +70,26 @@ public class EntityEvents implements ISpeedyEventHandler {
             product.setCategory(category);
         }
 
+    }
+
+    @SpeedyEvent(value = "Company", eventType = {SpeedyEventType.PRE_INSERT})
+    public void companyInsert(Company company) throws Exception {
+        LOGGER.info("Company Insert Event");
+        if (company.getStatus() == null) {
+            company.setStatus(CompanyStatus.DRAFT);
+        }
+        company.setCreatedAt(LocalDateTime.now());
+    }
+
+    @SpeedyEvent(value = "Company", eventType = {SpeedyEventType.PRE_UPDATE})
+    public void companyUpdate(Company company) throws Exception {
+        LOGGER.info("Company Update Event");
+        company.setUpdatedAt(LocalDateTime.now());
+    }
+
+    @SpeedyEvent(value = "Company", eventType = {SpeedyEventType.PRE_DELETE})
+    public void companyDelete(Company company) throws Exception {
+        LOGGER.info("Company Delete Event");
+        company.setDeletedAt(LocalDateTime.now());
     }
 }

@@ -36,7 +36,7 @@ public interface SpeedyValue {
         return getValueType() == ValueType.INT;
     }
 
-    default Integer asInt() {
+    default Long asInt() {
         throw new ConversionException("Cannot convert to integer");
     }
 
@@ -112,33 +112,49 @@ public interface SpeedyValue {
         throw new ConversionException("Cannot convert to zoneddatetime");
     }
 
+    default boolean isEnum() {
+        return getValueType() == ValueType.ENUM;
+    }
+
+    default String asEnum() {
+        throw new ConversionException("Cannot convert to enum");
+    }
+
+    default boolean isEnumOrd() {
+        return getValueType() == ValueType.ENUM_ORD;
+    }
+
+    default Long asEnumOrd() {
+        throw new ConversionException("Cannot convert to enum ordinal");
+    }
+
     default boolean isValue() {
-        return getValueType() == ValueType.NULL ||
-                getValueType() == ValueType.TEXT ||
-                getValueType() == ValueType.INT ||
-                getValueType() == ValueType.FLOAT ||
-                getValueType() == ValueType.DATE ||
-                getValueType() == ValueType.DATE_TIME ||
-                getValueType() == ValueType.TIME ||
-                getValueType() == ValueType.ZONED_DATE_TIME ||
-                getValueType() == ValueType.BOOL;
+        return switch (getValueType()) {
+            case NULL, TEXT, INT, FLOAT, DATE, DATE_TIME, TIME, ZONED_DATE_TIME, BOOL, ENUM, ENUM_ORD -> true;
+            case OBJECT, COLLECTION -> false;
+        };
     }
 
     default boolean isNumber() {
-        return getValueType() == ValueType.INT ||
-                getValueType() == ValueType.FLOAT;
+        return switch (getValueType()) {
+            case INT, FLOAT, ENUM_ORD -> true;
+            case NULL, TEXT, DATE, TIME, DATE_TIME, ZONED_DATE_TIME, BOOL, OBJECT, COLLECTION, ENUM  -> false;
+        };
     }
 
     default boolean isTemporal() {
-        return getValueType() == ValueType.DATE ||
-                getValueType() == ValueType.DATE_TIME ||
-                getValueType() == ValueType.TIME ||
-                getValueType() == ValueType.ZONED_DATE_TIME;
+        return switch (getValueType()) {
+            case DATE, DATE_TIME, TIME, ZONED_DATE_TIME -> true;
+            case NULL, TEXT, INT, FLOAT, BOOL, OBJECT, COLLECTION, ENUM, ENUM_ORD -> false;
+        };
     }
 
     default boolean isContainer() {
-        return getValueType() == ValueType.OBJECT ||
-                getValueType() == ValueType.COLLECTION;
+        return switch (getValueType()) {
+            case OBJECT, COLLECTION -> true;
+            case NULL, TEXT, INT, FLOAT, DATE, DATE_TIME, TIME, ZONED_DATE_TIME, BOOL, ENUM, ENUM_ORD -> false;
+        };
     }
+
 
 }

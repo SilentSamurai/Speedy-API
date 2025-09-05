@@ -1,5 +1,8 @@
 package com.github.silent.samurai.speedy.jpa.impl.util;
 
+import com.github.silent.samurai.speedy.enums.EnumMode;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.utils.Speedy;
 import jakarta.persistence.Entity;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
@@ -9,6 +12,10 @@ import org.springframework.core.annotation.AnnotationUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class JpaUtil {
 

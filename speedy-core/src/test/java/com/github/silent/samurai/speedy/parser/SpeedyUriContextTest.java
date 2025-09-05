@@ -10,10 +10,7 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
-import com.github.silent.samurai.speedy.interfaces.query.Literal;
-import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
 import org.junit.jupiter.api.Assertions;
@@ -84,8 +81,10 @@ class SpeedyUriContextTest {
         Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
         assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
-        String rawValueOfValue = speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class);
-        assertEquals("1", rawValueOfValue);
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isText());
+        assertEquals("1", literal.value().asText());
     }
 
     @Test
@@ -107,7 +106,10 @@ class SpeedyUriContextTest {
         Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
         assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
-        assertEquals("1", speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isText());
+        assertEquals("1", literal.value().asText());
     }
 
     @Test
@@ -129,7 +131,10 @@ class SpeedyUriContextTest {
         Assertions.assertEquals("ComposedProduct", speedyQuery.getFrom().getName());
         assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("productItem");
-        assertEquals("1", speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isText());
+        assertEquals("1", literal.value().asText());
     }
 
     @Test
@@ -141,11 +146,17 @@ class SpeedyUriContextTest {
         Assertions.assertEquals("Product", speedyQuery.getFrom().getName());
         Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
 
-        FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
-        assertEquals("1", speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class));
+        FieldMetadata idField = speedyQuery.getFrom().field("id");
+        Expression idExpression = speedyQueryHelper.getFilterValue(idField).orElseThrow();
+        Literal idLiteral = assertInstanceOf(Literal.class, idExpression);
+        assertTrue(idLiteral.value().isText());
+        assertEquals("1", idLiteral.value().asText());
 
-        fieldMetadata = speedyQuery.getFrom().field("name");
-        assertEquals("apple", speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class));
+        FieldMetadata nameField = speedyQuery.getFrom().field("name");
+        Expression nameExpression = speedyQueryHelper.getFilterValue(nameField).orElseThrow();
+        Literal nameLiteral = assertInstanceOf(Literal.class, nameExpression);
+        assertTrue(nameLiteral.value().isText());
+        assertEquals("apple", nameLiteral.value().asText());
     }
 
     @Test
@@ -158,7 +169,10 @@ class SpeedyUriContextTest {
         assertTrue(speedyQueryHelper.isOnlyIdentifiersPresent());
 
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("id");
-        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isText());
+        assertEquals("fdc0bff1-8cc6-446e-a74e-5295039a92dd", literal.value().asText());
     }
 
     @Test
@@ -171,7 +185,10 @@ class SpeedyUriContextTest {
         Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
 
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
-        assertEquals("apple", speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isText());
+        assertEquals("apple", literal.value().asText());
     }
 
     @Test
@@ -185,7 +202,7 @@ class SpeedyUriContextTest {
 
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
-        SpeedyValue speedyValue = ((Literal)condition.get().getExpression()).value();
+        SpeedyValue speedyValue = ((Literal) condition.get().getExpression()).value();
         assertEquals(speedyValue.getValueType(), ValueType.COLLECTION);
         SpeedyCollection speedyCollection = (SpeedyCollection) speedyValue;
         for (SpeedyValue value : speedyCollection.asCollection()) {
@@ -210,7 +227,10 @@ class SpeedyUriContextTest {
         Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
 
         FieldMetadata fieldMetadata = speedyQuery.getFrom().field("name");
-        assertEquals("Test-01B", speedyQueryHelper.rawValueFromCondition(fieldMetadata, String.class));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isText());
+        assertEquals("Test-01B", literal.value().asText());
     }
 
     @Test
@@ -223,10 +243,15 @@ class SpeedyUriContextTest {
         Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
 
         FieldMetadata costField = productMetadata.field("cost");
-        FieldMetadata nameField = productMetadata.field("name");
+        Expression costExpression = speedyQueryHelper.getFilterValue(costField).orElseThrow();
+        Literal costLiteral = assertInstanceOf(Literal.class, costExpression);
+        assertEquals(12L, costLiteral.value().asLong());
 
-        assertEquals(12, speedyQueryHelper.rawValueFromCondition(costField, Long.class));
-        assertEquals("Test", speedyQueryHelper.rawValueFromCondition(nameField, String.class));
+        FieldMetadata nameField = productMetadata.field("name");
+        Expression nameExpression = speedyQueryHelper.getFilterValue(nameField).orElseThrow();
+        Literal nameLiteral = assertInstanceOf(Literal.class, nameExpression);
+        assertTrue(nameLiteral.value().isText());
+        assertEquals("Test", nameLiteral.value().asText());
 
     }
 
@@ -243,7 +268,9 @@ class SpeedyUriContextTest {
         Optional<BinaryCondition> condition = speedyQueryHelper.getCondition(fieldMetadata);
 
         assertEquals(ConditionOperator.EQ, condition.get().getOperator());
-        assertEquals(25, speedyQueryHelper.rawValueFromCondition(fieldMetadata, Long.class));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(25L, literal.value().asLong());
     }
 
     @Test
@@ -260,7 +287,9 @@ class SpeedyUriContextTest {
 
         assertTrue(condition.isPresent());
         assertEquals(ConditionOperator.EQ, condition.get().getOperator());
-        assertEquals(25, speedyQueryHelper.rawValueFromCondition(fieldMetadata, Long.class));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(25L, literal.value().asLong());
     }
 
 //    @Test
@@ -342,9 +371,15 @@ class SpeedyUriContextTest {
         Assertions.assertEquals("ValueTest", speedyQuery.getFrom().getName());
         Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
 
-        assertEquals(2, speedyQueryHelper.rawValueFromCondition(vtentity.field("intVal"), Long.class));
+        FieldMetadata intValField = vtentity.field("intVal");
+        Expression intExpression = speedyQueryHelper.getFilterValue(intValField).orElseThrow();
+        Literal intLiteral = assertInstanceOf(Literal.class, intExpression);
+        assertEquals(2L, intLiteral.value().asLong());
 
-        assertEquals(2.0, speedyQueryHelper.rawValueFromCondition(vtentity.field("doubleVal"), Double.class));
+        FieldMetadata doubleValField = vtentity.field("doubleVal");
+        Expression doubleExpression = speedyQueryHelper.getFilterValue(doubleValField).orElseThrow();
+        Literal doubleLiteral = assertInstanceOf(Literal.class, doubleExpression);
+        assertEquals(2.0, doubleLiteral.value().asDouble(), 0.001);
     }
 
     @Test
@@ -362,8 +397,11 @@ class SpeedyUriContextTest {
         Assertions.assertEquals("ValueTest", speedyQuery.getFrom().getName());
         Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
 
-        assertTrue(speedyQueryHelper.isFilterPresent(vtentity.field("intVal")));
-        assertEquals(2, speedyQueryHelper.rawValueFromCondition(vtentity.field("intVal"), Long.class));
+        FieldMetadata fieldMetadata = vtentity.field("intVal");
+        assertTrue(speedyQueryHelper.isFilterPresent(fieldMetadata));
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(2L, literal.value().asLong());
     }
 
     @Test
@@ -375,8 +413,15 @@ class SpeedyUriContextTest {
         Assertions.assertEquals("ValueTest", speedyQuery.getFrom().getName());
         Assertions.assertFalse(speedyQueryHelper.isOnlyIdentifiersPresent());
 
-        assertEquals(2, speedyQueryHelper.rawValueFromCondition(vtentity.field("intVal"), Long.class));
-        assertEquals(2.0, speedyQueryHelper.rawValueFromCondition(vtentity.field("doubleVal"), Double.class));
+        FieldMetadata intValField = vtentity.field("intVal");
+        Expression intExpression = speedyQueryHelper.getFilterValue(intValField).orElseThrow();
+        Literal intLiteral = assertInstanceOf(Literal.class, intExpression);
+        assertEquals(2L, intLiteral.value().asLong());
+
+        FieldMetadata doubleValField = vtentity.field("doubleVal");
+        Expression doubleExpression = speedyQueryHelper.getFilterValue(doubleValField).orElseThrow();
+        Literal doubleLiteral = assertInstanceOf(Literal.class, doubleExpression);
+        assertEquals(2.0, doubleLiteral.value().asDouble(), 0.001);
     }
 
     @Test
@@ -464,8 +509,11 @@ class SpeedyUriContextTest {
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals(LocalDate.of(2024, 3, 13),
-                speedyQueryHelper.rawValueFromCondition(vtentity.field("localDate"), LocalDate.class));
+        FieldMetadata fieldMetadata = vtentity.field("localDate");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isDate());
+        assertEquals(LocalDate.of(2024, 3, 13), literal.value().asDate());
     }
 
     @Test
@@ -481,8 +529,11 @@ class SpeedyUriContextTest {
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals(LocalTime.of(12, 30, 45),
-                speedyQueryHelper.rawValueFromCondition(vtentity.field("localTime"), LocalTime.class));
+        FieldMetadata fieldMetadata = vtentity.field("localTime");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isTime());
+        assertEquals(LocalTime.of(12, 30, 45), literal.value().asTime());
     }
 
     @Test
@@ -497,8 +548,11 @@ class SpeedyUriContextTest {
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals(LocalDateTime.of(2024, 3, 13, 12, 30, 45),
-                speedyQueryHelper.rawValueFromCondition(vtentity.field("localDateTime"), LocalDateTime.class));
+        FieldMetadata fieldMetadata = vtentity.field("localDateTime");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isDateTime());
+        assertEquals(LocalDateTime.of(2024, 3, 13, 12, 30, 45), literal.value().asDateTime());
     }
 
     @Test
@@ -515,7 +569,11 @@ class SpeedyUriContextTest {
         ZonedDateTime zonedDateTime = ZonedDateTime.of(2024, 3, 13, 12, 30, 45, 0,
                 ZoneId.of("Asia/Kolkata"));
 
-        ZonedDateTime actual = speedyQueryHelper.rawValueFromCondition(vtentity.field("zonedDateTime"), ZonedDateTime.class);
+        FieldMetadata fieldMetadata = vtentity.field("zonedDateTime");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertTrue(literal.value().isZonedDateTime());
+        ZonedDateTime actual = literal.value().asZonedDateTime();
 
         assertEquals(zonedDateTime.toOffsetDateTime().toString(), actual.toString());
     }
@@ -536,7 +594,10 @@ class SpeedyUriContextTest {
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         // Then: Validate the parsed boolean value
-        assertEquals(true, speedyQueryHelper.rawValueFromCondition(vtentity.field("booleanVal"), Boolean.class));
+        FieldMetadata fieldMetadata = vtentity.field("booleanVal");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(true, literal.value().asBoolean());
     }
 
     @Test
@@ -545,7 +606,10 @@ class SpeedyUriContextTest {
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals(false, speedyQueryHelper.rawValueFromCondition(vtentity.field("booleanVal"), Boolean.class));
+        FieldMetadata fieldMetadata = vtentity.field("booleanVal");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(false, literal.value().asBoolean());
     }
 
     @Test
@@ -554,7 +618,10 @@ class SpeedyUriContextTest {
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals(false, speedyQueryHelper.rawValueFromCondition(vtentity.field("booleanVal"), Boolean.class));
+        FieldMetadata fieldMetadata = vtentity.field("booleanVal");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(false, literal.value().asBoolean());
     }
 
     @Test
@@ -563,7 +630,10 @@ class SpeedyUriContextTest {
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals(false, speedyQueryHelper.rawValueFromCondition(vtentity.field("booleanVal"), Boolean.class));
+        FieldMetadata fieldMetadata = vtentity.field("booleanVal");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(false, literal.value().asBoolean());
     }
 
     @Test
@@ -572,7 +642,10 @@ class SpeedyUriContextTest {
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
-        assertEquals(false, speedyQueryHelper.rawValueFromCondition(vtentity.field("booleanVal"), Boolean.class));
+        FieldMetadata fieldMetadata = vtentity.field("booleanVal");
+        Expression expression = speedyQueryHelper.getFilterValue(fieldMetadata).orElseThrow();
+        Literal literal = assertInstanceOf(Literal.class, expression);
+        assertEquals(false, literal.value().asBoolean());
     }
 
 

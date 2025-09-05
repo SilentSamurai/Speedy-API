@@ -3,7 +3,6 @@ package com.github.silent.samurai.speedy.mappings;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.models.*;
 import jakarta.persistence.Id;
 import lombok.Getter;
@@ -13,21 +12,22 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-class SpeedyValue2JavaTypeTest {
+class SpeedySerializerTest {
 
     @Test
-    void convertToCompositeClass_withValidEntity_shouldMapFieldsCorrectly() throws SpeedyHttpException {
+    void convertToTargetClassToCompositeClass_withValidEntity_shouldMapFieldsCorrectly() throws SpeedyHttpException {
         // Arrange
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(TestEntity.class);
-        
+
         // Test values
         String testName = "John Doe";
         Integer testAge = 30;
@@ -66,7 +66,7 @@ class SpeedyValue2JavaTypeTest {
         entity.put("sqlDate", new SpeedyDate(testDate)); // Using Date for SQL Date
 
         // Act
-        TestEntity result = SpeedyValue2JavaType.convertToCompositeClass(entity, TestEntity.class);
+        TestEntity result = SpeedySerializer.toJavaObject(entity, TestEntity.class);
 
         // Assert
         assertNotNull(result);
@@ -89,7 +89,7 @@ class SpeedyValue2JavaTypeTest {
     }
 
     @Test
-    void convertToCompositeClass_withAssociation_shouldMapNestedEntity() throws SpeedyHttpException {
+    void convertToTargetClassToCompositeClass_withAssociation_shouldMapNestedEntity() throws SpeedyHttpException {
         // Arrange
         EntityMetadata parentMd = StaticEntityMetadata.createEntityMetadata(ParentEntity.class);
         SpeedyEntity parent = new SpeedyEntity(parentMd);
@@ -108,7 +108,7 @@ class SpeedyValue2JavaTypeTest {
         parent.put("child", child);
 
         // Act
-        ParentEntity result = SpeedyValue2JavaType.convertToCompositeClass(parent, ParentEntity.class);
+        ParentEntity result = SpeedySerializer.toJavaObject(parent, ParentEntity.class);
 
         // Assert
         assertNotNull(result);
@@ -119,31 +119,30 @@ class SpeedyValue2JavaTypeTest {
     }
 
     @Test
-    void convertToCompositeClass_withNullValue_shouldReturnNull() throws SpeedyHttpException {
+    void convertToTargetClassToCompositeClass_withNullValue_shouldReturnNull() throws SpeedyHttpException {
         // Act
-        TestEntity result = SpeedyValue2JavaType.convertToCompositeClass(null, TestEntity.class);
+        TestEntity result = SpeedySerializer.toJavaObject(null, TestEntity.class);
 
         // Assert
         assertNull(result);
     }
 
     @Test
-    void convertToCompositeClass_withNonEntityValue_shouldThrowException() throws SpeedyHttpException {
+    void convertToTargetClassToCompositeClass_withNonEntityValue_shouldThrowException() throws SpeedyHttpException {
         // Arrange
-        SpeedyText textValue = new SpeedyText("not an entity");
+        EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(TestEntity.class);
+        SpeedyEntity entity = new SpeedyEntity(entityMetadata);
 
         // Act & Assert
-        assertThrows(Exception.class, () -> {
-            SpeedyValue2JavaType.convertToCompositeClass(textValue, TestEntity.class);
-        });
+        SpeedySerializer.toJavaObject(entity, TestEntity.class);
     }
 
     @Test
-    void convertToClass_withBasicTypes_shouldConvertCorrectly() throws SpeedyHttpException {
+    void convertToClass_withBasicTypes_shouldToJavaFieldCorrectly() throws SpeedyHttpException {
         // Act & Assert
-        assertEquals("test", SpeedyValue2JavaType.convert(new SpeedyText("test"), String.class));
-        assertEquals(Integer.valueOf(42), SpeedyValue2JavaType.convert(new SpeedyInt(42L), Integer.class));
-        assertEquals(true, SpeedyValue2JavaType.convert(new SpeedyBoolean(true), Boolean.class));
+        assertEquals("test", SpeedySerializer.asJavaObject(new SpeedyText("test")));
+        assertEquals(Long.valueOf(42L), SpeedySerializer.asJavaObject(new SpeedyInt(42L)));
+        assertEquals(true, SpeedySerializer.asJavaObject(new SpeedyBoolean(true)));
     }
 
     @Getter
@@ -153,19 +152,19 @@ class SpeedyValue2JavaTypeTest {
 
         @Id
         public UUID id;
-        
+
         // Basic types
         private String name;
         private Integer age;
         private boolean active;
         private Double salary;
-        
+
         // Numeric types
         private Long longValue;
         private Float floatValue;
         private BigInteger bigIntegerValue;
         private BigDecimal bigDecimalValue;
-        
+
         // Date/Time types
         private LocalDate date;
         private LocalDateTime dateTime;
@@ -174,7 +173,7 @@ class SpeedyValue2JavaTypeTest {
         private ZonedDateTime zonedDateTime;
         private Date utilDate;
         private java.sql.Date sqlDate;
-        
+
         // Collection type
         private java.util.List<String> tags;
     }

@@ -3,7 +3,6 @@ package com.github.silent.samurai.speedy.file.impl.processor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.file.impl.metadata.FileFieldMetadata;
 import com.github.silent.samurai.speedy.file.impl.models.JsonEntity;
 import com.github.silent.samurai.speedy.file.impl.models.JsonField;
 import com.github.silent.samurai.speedy.file.impl.validator.JsonValidator;
@@ -37,8 +36,6 @@ public class FileProcessor {
         eb.hasCompositeKey(jsonEntity.hasCompositeKey);
         eb.dbTableName(jsonEntity.dbTable);
 //        eb.setKeyType(jsonEntity.keyType);
-
-        Map<String, FileFieldMetadata> fieldMap = new HashMap<>();
 
         for (JsonField jsonField : jsonEntity.fields) {
             JsonValidator.validate(jsonField);

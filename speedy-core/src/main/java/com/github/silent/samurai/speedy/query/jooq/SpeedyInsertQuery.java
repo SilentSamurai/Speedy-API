@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.jooq.*;
@@ -21,10 +22,12 @@ public class SpeedyInsertQuery {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyInsertQuery.class);
     final SQLDialect dialect;
     private final DSLContext dslContext;
+    private final Converter converter;
 
-    public SpeedyInsertQuery(DSLContext dslContext, SQLDialect dialect) {
+    public SpeedyInsertQuery(DSLContext dslContext, SQLDialect dialect, Converter converter) {
         this.dslContext = dslContext;
         this.dialect = dialect;
+        this.converter = converter;
     }
 
     public void insertEntity(List<SpeedyEntity> entities) {
@@ -67,7 +70,7 @@ public class SpeedyInsertQuery {
             return null;
         }
         SpeedyValue innerValue = associatedEntity.get(associatedFieldMetadata);
-        Object value = JooqUtil.toJooqType(innerValue, associatedFieldMetadata.getColumnType());
+        Object value = converter.toColumnType(innerValue, associatedFieldMetadata);
         return insertQuery.set(JooqUtil.getColumn(fieldMetadata, dslContext.dialect()), value);
     }
 
@@ -89,9 +92,9 @@ public class SpeedyInsertQuery {
             if (fieldMetadata.isAssociation()) {
                 returnQuery = handleAssociation(insertQuery, fieldMetadata, speedyValue);
             } else {
-                Object value = JooqUtil.toJooqType(
+                Object value = converter.toColumnType(
                         speedyValue,
-                        fieldMetadata.getColumnType()
+                        fieldMetadata
                 );
                 Field<Object> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
                 returnQuery = insertQuery.set(field, value);
