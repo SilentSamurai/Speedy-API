@@ -83,7 +83,7 @@ class RoundTripConversionTest {
         originalEntity.put("zonedDateTime", new SpeedyZonedDateTime(testZonedDateTime));
 
         // Act - Convert SpeedyEntity to a Java object
-        TestEntity javaObject = SpeedySerializer.toJavaObject(originalEntity, TestEntity.class);
+        TestEntity javaObject = SpeedySerializer.toJavaEntity(originalEntity, TestEntity.class);
 
         // Then convert a Java object back to SpeedyEntity
         SpeedyEntity convertedBackEntity = SpeedyDeserializer.updateEntity(javaObject, new SpeedyEntity(entityMetadata));
@@ -146,7 +146,7 @@ class RoundTripConversionTest {
         SpeedyEntity speedyEntity = SpeedyDeserializer.updateEntity(testEntity, entity);
 
         // Then convert SpeedyEntity back to a Java object
-        TestEntity convertedBackObject = SpeedySerializer.toJavaObject(speedyEntity, TestEntity.class);
+        TestEntity convertedBackObject = SpeedySerializer.toJavaEntity(speedyEntity, TestEntity.class);
 
         // Assert
         assertNotNull(speedyEntity);
@@ -192,7 +192,7 @@ class RoundTripConversionTest {
         SpeedyEntity speedyEntity = SpeedyDeserializer.updateEntity(testEntity, entity);
 
         // Then convert SpeedyEntity back to Java object
-        TestEntity convertedBackObject = SpeedySerializer.toJavaObject(speedyEntity, TestEntity.class);
+        TestEntity convertedBackObject = SpeedySerializer.toJavaEntity(speedyEntity, TestEntity.class);
 
         // Assert
         assertNotNull(speedyEntity);
@@ -250,7 +250,7 @@ class RoundTripConversionTest {
         SpeedyEntity speedyEntity = SpeedyDeserializer.updateEntity(originalEntity, entity);
         
         // Convert back to class
-        TestEntity convertedEntity = SpeedySerializer.toJavaObject(speedyEntity, TestEntity.class);
+        TestEntity convertedEntity = SpeedySerializer.toJavaEntity(speedyEntity, TestEntity.class);
 
         // Assert - Check all values
         assertNotNull(convertedEntity);
@@ -288,7 +288,7 @@ class RoundTripConversionTest {
         initialEntity.put("salary", SpeedyValueFactory.fromDouble(initialSalary));
         
         // Convert SpeedyEntity to Java object
-        TestEntity javaObject = SpeedySerializer.toJavaObject(initialEntity, TestEntity.class);
+        TestEntity javaObject = SpeedySerializer.toJavaEntity(initialEntity, TestEntity.class);
         
         // Set some fields to null in the Java object
         javaObject.setName(null);

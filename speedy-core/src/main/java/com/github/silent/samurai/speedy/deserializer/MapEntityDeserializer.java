@@ -4,7 +4,7 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.mappings.String2JavaType;
+import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import jakarta.persistence.EntityManager;
@@ -23,11 +23,11 @@ public record MapEntityDeserializer(Map<String, String> entityMap, EntityMetadat
         return switch (valueType) {
             case TEXT -> fromText(valueAsString);
             case INT -> {
-                Long intValue = String2JavaType.stringToPrimitive(valueAsString, Long.class);
+                Long intValue = TypeConverterRegistry.fromString(valueAsString, Long.class);
                 yield fromInt(intValue);
             }
             case FLOAT -> {
-                Double aDouble = String2JavaType.stringToPrimitive(valueAsString, Double.class);
+                Double aDouble = TypeConverterRegistry.fromString(valueAsString, Double.class);
                 yield fromDouble(aDouble);
             }
             case DATE -> fromDate(LocalDate.parse(valueAsString));

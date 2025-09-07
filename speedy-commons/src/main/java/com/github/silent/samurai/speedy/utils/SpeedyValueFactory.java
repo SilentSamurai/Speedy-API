@@ -11,7 +11,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
 import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.mappings.String2JavaType;
+import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
@@ -20,7 +20,12 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 
-
+/**
+ * 
+ * 
+ * @author fangliang
+ *
+ */
 public class SpeedyValueFactory {
 
     public static SpeedyNull fromNull() {
@@ -123,7 +128,7 @@ public class SpeedyValueFactory {
 
     public static SpeedyValue basicFromString(FieldMetadata fieldMetadata, String quotedValue) throws SpeedyHttpException {
         Class<?> aClass = fieldMetadata.getValueType().javaTypeClass();
-        Object instance = String2JavaType.quotedStringToPrimitive(quotedValue, aClass);
+        Object instance = TypeConverterRegistry.fromString(quotedValue.replaceAll("['\" ]", ""), aClass);
         return SpeedyDeserializer.fromJavaObject(fieldMetadata, instance);
     }
 //

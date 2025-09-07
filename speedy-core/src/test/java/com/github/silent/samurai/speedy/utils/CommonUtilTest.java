@@ -4,7 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.mappings.String2JavaType;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,16 +77,16 @@ class CommonUtilTest {
     }
 
     @Test
-    void stringToType() throws BadRequestException {
+    void stringToType() throws SpeedyHttpException {
         String input = "aisdiohaoisd-asdasd-asf";
-        String output = String2JavaType.stringToPrimitive(input, String.class);
+        String output = TypeConverterRegistry.fromString(input, String.class);
         Assertions.assertEquals(input, output);
     }
 
     @Test
-    void stringToType2() throws BadRequestException {
+    void stringToType2() throws SpeedyHttpException {
         String input = "New Category";
-        String output = String2JavaType.stringToPrimitive(input, String.class);
+        String output = TypeConverterRegistry.fromString(input, String.class);
         Assertions.assertEquals(input, output);
     }
 }
