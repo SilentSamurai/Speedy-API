@@ -109,7 +109,7 @@ public class EventProcessor {
             if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
                 method.invoke(instance, entity);
             } else {
-                Object value = SpeedySerializer.toJavaObject(entity, ioClass);
+                Object value = SpeedySerializer.toJavaEntity(entity, ioClass);
                 method.invoke(instance, value);
                 SpeedyDeserializer.updateEntity(value, entity);
             }

@@ -28,15 +28,7 @@ public abstract class ConversionFactory
                 }
                 throw new RuntimeException("Unsupported BOOL java type: " + instance.getClass());
             case TEXT:
-                // Route via ColumnType specific converters when available (e.g., UUID/CHAR/VARCHAR/TEXT/CLOB)
-                yield switch (columnType) {
-                    case UUID -> fromUuid((UuidType) instance);
-                    case CHAR -> fromChar((CharType) instance);
-                    case VARCHAR -> fromVarchar((VarcharType) instance);
-                    case CLOB -> fromClob((ClobType) instance);
-                    case TEXT -> fromText((TextType) instance);
-                    default -> new SpeedyText(String.valueOf(instance));
-                };
+                yield convertTextFromColumn(instance, columnType);
             case ENUM:
                 try {
                     yield new SpeedyEnum(String.valueOf(instance), fieldMetadata);
@@ -53,33 +45,18 @@ public abstract class ConversionFactory
                     throw new RuntimeException(e);
                 }
             case INT:
-                // BIGINT often maps to BigInteger; others may be Integer/Long/Short
-                if (columnType == ColumnType.BIGINT) {
+                // BIGINT can map to BigInteger in some drivers, but many JDBC drivers return Long.
+                if (columnType == ColumnType.BIGINT && instance instanceof java.math.BigInteger) {
+                    // Safe cast because of the instanceof check
                     yield fromBigInt((BigIntType) instance);
                 }
                 if (instance instanceof Number n) {
+                    // Handles Long, Integer, Short and any other numeric representation
                     yield new SpeedyInt(n.longValue());
                 }
                 throw new RuntimeException("Unsupported INT java type: " + instance.getClass());
             case FLOAT:
-                // Use precise converters when ColumnType indicates them
-                yield switch (columnType) {
-                    case NUMERIC -> fromNumeric((NumericType) instance);
-                    case DECIMAL -> fromDecimal((DecimalType) instance);
-                    case REAL -> fromReal((RealType) instance);
-                    case DOUBLE -> {
-                        if (instance instanceof Number n) yield new SpeedyDouble(n.doubleValue());
-                        throw new RuntimeException("Unsupported DOUBLE java type: " + instance.getClass());
-                    }
-                    case FLOAT -> {
-                        if (instance instanceof Number n) yield new SpeedyDouble(n.doubleValue());
-                        throw new RuntimeException("Unsupported FLOAT java type: " + instance.getClass());
-                    }
-                    default -> {
-                        if (instance instanceof Number n) yield new SpeedyDouble(n.doubleValue());
-                        throw new RuntimeException("Unsupported FLOAT mapping for column type: " + columnType);
-                    }
-                };
+                yield convertFloatFromColumn(instance, columnType);
             case DATE:
                 yield fromDate((DateType) instance);
             case TIME:
@@ -103,17 +80,7 @@ public abstract class ConversionFactory
                 case BOOLEAN -> speedyValue.asBoolean();
                 default -> throw new RuntimeException("Unsupported column type: " + columnType);
             };
-            case TEXT -> {
-                SpeedyText speedyText = (SpeedyText) speedyValue;
-                yield switch (columnType) {
-                    case UUID -> toUuid(speedyText);
-                    case CHAR -> toChar(speedyText);
-                    case VARCHAR -> toVarchar(speedyText);
-                    case CLOB -> toClob(speedyText);
-                    case TEXT -> toText(speedyText);
-                    default -> throw new RuntimeException("Unsupported column type: " + columnType);
-                };
-            }
+            case TEXT -> convertTextToColumn((SpeedyText) speedyValue, columnType);
             case ENUM -> switch (fieldMetadata.getStoredEnumMode()) {
                 case STRING -> {
                     SpeedyText st = new SpeedyText(speedyValue.asEnum());
@@ -172,17 +139,7 @@ public abstract class ConversionFactory
                     default -> throw new RuntimeException("Unsupported column type: " + columnType);
                 };
             }
-            case FLOAT -> {
-                SpeedyDouble speedyDouble = (SpeedyDouble) speedyValue;
-                yield switch (columnType) {
-                    case REAL -> toReal(speedyDouble);
-                    case FLOAT -> speedyDouble.asDouble().floatValue();
-                    case DECIMAL -> toDecimal(speedyDouble);
-                    case DOUBLE -> speedyDouble.asDouble();
-                    case NUMERIC -> toNumeric(speedyDouble);
-                    default -> throw new RuntimeException("Unsupported column type: " + columnType);
-                };
-            }
+            case FLOAT -> convertFloatToColumn((SpeedyDouble) speedyValue, columnType);
             case DATE -> {
                 SpeedyDate speedyDate = (SpeedyDate) speedyValue;
                 yield switch (columnType) {
@@ -215,6 +172,63 @@ public abstract class ConversionFactory
                 throw new RuntimeException("Cannot convert from " + speedyValue + " to " + columnType);
             }
             case NULL -> null;
+        };
+    }
+
+    // ---------------------------------------------------------------------
+    // Helper methods to centralize TEXT and FLOAT conversions
+    // ---------------------------------------------------------------------
+
+    private SpeedyValue convertTextFromColumn(Object instance, ColumnType columnType) {
+        return switch (columnType) {
+            case UUID -> fromUuid((UuidType) instance);
+            case CHAR -> fromChar((CharType) instance);
+            case VARCHAR -> fromVarchar((VarcharType) instance);
+            case CLOB -> fromClob((ClobType) instance);
+            case TEXT -> fromText((TextType) instance);
+            default -> new SpeedyText(String.valueOf(instance));
+        };
+    }
+
+    private SpeedyDouble convertFloatFromColumn(Object instance, ColumnType columnType) {
+        return switch (columnType) {
+            case NUMERIC -> fromNumeric((NumericType) instance);
+            case DECIMAL -> fromDecimal((DecimalType) instance);
+            case REAL -> fromReal((RealType) instance);
+            case DOUBLE -> {
+                if (instance instanceof Number n) yield new SpeedyDouble(n.doubleValue());
+                throw new RuntimeException("Unsupported DOUBLE java type: " + instance.getClass());
+            }
+            case FLOAT -> {
+                if (instance instanceof Number n) yield new SpeedyDouble(n.doubleValue());
+                throw new RuntimeException("Unsupported FLOAT java type: " + instance.getClass());
+            }
+            default -> {
+                if (instance instanceof Number n) yield new SpeedyDouble(n.doubleValue());
+                throw new RuntimeException("Unsupported FLOAT mapping for column type: " + columnType);
+            }
+        };
+    }
+
+    private Object convertTextToColumn(SpeedyText speedyText, ColumnType columnType) {
+        return switch (columnType) {
+            case UUID -> toUuid(speedyText);
+            case CHAR -> toChar(speedyText);
+            case VARCHAR -> toVarchar(speedyText);
+            case CLOB -> toClob(speedyText);
+            case TEXT -> toText(speedyText);
+            default -> throw new RuntimeException("Unsupported column type: " + columnType);
+        };
+    }
+
+    private Object convertFloatToColumn(SpeedyDouble speedyDouble, ColumnType columnType) {
+        return switch (columnType) {
+            case REAL -> toReal(speedyDouble);
+            case FLOAT -> speedyDouble.asDouble().floatValue();
+            case DECIMAL -> toDecimal(speedyDouble);
+            case DOUBLE -> speedyDouble.asDouble();
+            case NUMERIC -> toNumeric(speedyDouble);
+            default -> throw new RuntimeException("Unsupported column type: " + columnType);
         };
     }
 

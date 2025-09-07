@@ -66,7 +66,7 @@ class SpeedySerializerTest {
         entity.put("sqlDate", new SpeedyDate(testDate)); // Using Date for SQL Date
 
         // Act
-        TestEntity result = SpeedySerializer.toJavaObject(entity, TestEntity.class);
+        TestEntity result = SpeedySerializer.toJavaEntity(entity, TestEntity.class);
 
         // Assert
         assertNotNull(result);
@@ -108,7 +108,7 @@ class SpeedySerializerTest {
         parent.put("child", child);
 
         // Act
-        ParentEntity result = SpeedySerializer.toJavaObject(parent, ParentEntity.class);
+        ParentEntity result = SpeedySerializer.toJavaEntity(parent, ParentEntity.class);
 
         // Assert
         assertNotNull(result);
@@ -121,7 +121,7 @@ class SpeedySerializerTest {
     @Test
     void convertToTargetClassToCompositeClass_withNullValue_shouldReturnNull() throws SpeedyHttpException {
         // Act
-        TestEntity result = SpeedySerializer.toJavaObject(null, TestEntity.class);
+        TestEntity result = SpeedySerializer.toJavaEntity(null, TestEntity.class);
 
         // Assert
         assertNull(result);
@@ -134,7 +134,7 @@ class SpeedySerializerTest {
         SpeedyEntity entity = new SpeedyEntity(entityMetadata);
 
         // Act & Assert
-        SpeedySerializer.toJavaObject(entity, TestEntity.class);
+        SpeedySerializer.toJavaEntity(entity, TestEntity.class);
     }
 
     @Test
