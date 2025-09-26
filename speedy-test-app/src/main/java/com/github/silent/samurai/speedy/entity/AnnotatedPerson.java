@@ -4,10 +4,7 @@ import com.github.silent.samurai.speedy.annotations.validation.*;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,4 +36,44 @@ public class AnnotatedPerson extends AbstractBaseEntity {
     @SpeedyRegex("^[A-Z]{3}[0-9]{2}$")
     @jakarta.validation.constraints.Pattern(regexp = "^[A-Z]{3}[0-9]{2}$")
     private String code;
+
+    // --- New numeric validation demo fields ---------------------------------
+
+    /** Positive (>0) salary */
+    @SpeedyPositive
+    @Positive
+    @Column(name = "salary", nullable = false)
+    private java.math.BigDecimal salary;
+
+    /** Positive or zero score */
+    @SpeedyPositiveOrZero
+    @PositiveOrZero
+    @Column(name = "score", nullable = false)
+    private Integer score;
+
+    /** Negative value allowed (<0) */
+    @SpeedyNegative
+    @Negative
+    @Column(name = "debt", nullable = false)
+    private java.math.BigDecimal debt;
+
+    /** Negative or zero */
+    @SpeedyNegativeOrZero
+    @NegativeOrZero
+    @Column(name = "overdraft", nullable = false)
+    private Integer overdraft;
+
+    /** Decimal min/max between 0.5 and 5.0 */
+    @SpeedyDecimalMin(value = "0.5")
+    @SpeedyDecimalMax(value = "5.0")
+    @DecimalMin(value = "0.5")
+    @DecimalMax(value = "5.0")
+    @Column(name = "rating", nullable = false)
+    private java.math.BigDecimal rating;
+
+    /** 5 integer digits and 2 fraction digits max */
+    @SpeedyDigits(integer = 5, fraction = 2)
+    @Digits(integer = 5, fraction = 2)
+    @Column(name = "precision_val", nullable = false)
+    private java.math.BigDecimal precisionVal;
 }

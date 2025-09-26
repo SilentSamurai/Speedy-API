@@ -27,6 +27,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Negative;
+import jakarta.validation.constraints.NegativeOrZero;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.Digits;
 import com.github.silent.samurai.speedy.validation.rules.*;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
@@ -291,6 +298,36 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (speedyNotBlank != null) {
             fieldMetadata.addValidationRule(new NotBlankRule());
         }
+        // New Speedy numeric sign annotations
+        SpeedyPositive spPos = AnnotationUtils.getAnnotation(field, SpeedyPositive.class);
+        if (spPos != null) {
+            fieldMetadata.addValidationRule(new PositiveRule());
+        }
+        SpeedyPositiveOrZero spPosZero = AnnotationUtils.getAnnotation(field, SpeedyPositiveOrZero.class);
+        if (spPosZero != null) {
+            fieldMetadata.addValidationRule(new PositiveOrZeroRule());
+        }
+        SpeedyNegative spNeg = AnnotationUtils.getAnnotation(field, SpeedyNegative.class);
+        if (spNeg != null) {
+            fieldMetadata.addValidationRule(new NegativeRule());
+        }
+        SpeedyNegativeOrZero spNegZero = AnnotationUtils.getAnnotation(field, SpeedyNegativeOrZero.class);
+        if (spNegZero != null) {
+            fieldMetadata.addValidationRule(new NegativeOrZeroRule());
+        }
+        // Decimal boundary and digits
+        SpeedyDecimalMin spDecMin = AnnotationUtils.getAnnotation(field, SpeedyDecimalMin.class);
+        if (spDecMin != null) {
+            fieldMetadata.addValidationRule(new DecimalMinRule(spDecMin.value(), spDecMin.inclusive()));
+        }
+        SpeedyDecimalMax spDecMax = AnnotationUtils.getAnnotation(field, SpeedyDecimalMax.class);
+        if (spDecMax != null) {
+            fieldMetadata.addValidationRule(new DecimalMaxRule(spDecMax.value(), spDecMax.inclusive()));
+        }
+        SpeedyDigits spDigits = AnnotationUtils.getAnnotation(field, SpeedyDigits.class);
+        if (spDigits != null) {
+            fieldMetadata.addValidationRule(new DigitsRule(spDigits.integer(), spDigits.fraction()));
+        }
 
         // Jakarta Bean Validation annotations
         Min beanMin = AnnotationUtils.getAnnotation(field, Min.class);
@@ -316,6 +353,35 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         NotBlank notBlankAnn = AnnotationUtils.getAnnotation(field, NotBlank.class);
         if (notBlankAnn != null) {
             fieldMetadata.addValidationRule(new NotBlankRule());
+        }
+        // Numeric sign validations
+        Positive posAnn = AnnotationUtils.getAnnotation(field, Positive.class);
+        if (posAnn != null) {
+            fieldMetadata.addValidationRule(new PositiveRule());
+        }
+        PositiveOrZero posZeroAnn = AnnotationUtils.getAnnotation(field, PositiveOrZero.class);
+        if (posZeroAnn != null) {
+            fieldMetadata.addValidationRule(new PositiveOrZeroRule());
+        }
+        Negative negAnnJak = AnnotationUtils.getAnnotation(field, Negative.class);
+        if (negAnnJak != null) {
+            fieldMetadata.addValidationRule(new NegativeRule());
+        }
+        NegativeOrZero negZeroJak = AnnotationUtils.getAnnotation(field, NegativeOrZero.class);
+        if (negZeroJak != null) {
+            fieldMetadata.addValidationRule(new NegativeOrZeroRule());
+        }
+        DecimalMin decMinAnnJak = AnnotationUtils.getAnnotation(field, DecimalMin.class);
+        if (decMinAnnJak != null) {
+            fieldMetadata.addValidationRule(new DecimalMinRule(decMinAnnJak.value(), decMinAnnJak.inclusive()));
+        }
+        DecimalMax decMaxAnnJak = AnnotationUtils.getAnnotation(field, DecimalMax.class);
+        if (decMaxAnnJak != null) {
+            fieldMetadata.addValidationRule(new DecimalMaxRule(decMaxAnnJak.value(), decMaxAnnJak.inclusive()));
+        }
+        Digits digitsAnnJak = AnnotationUtils.getAnnotation(field, Digits.class);
+        if (digitsAnnJak != null) {
+            fieldMetadata.addValidationRule(new DigitsRule(digitsAnnJak.integer(), digitsAnnJak.fraction()));
         }
         NotNull notNullAnn = AnnotationUtils.getAnnotation(field, NotNull.class);
         if (notNullAnn != null) {
