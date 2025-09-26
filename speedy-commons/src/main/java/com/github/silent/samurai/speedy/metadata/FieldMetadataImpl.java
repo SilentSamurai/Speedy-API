@@ -5,13 +5,13 @@ import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
+import com.github.silent.samurai.speedy.validation.rules.FieldRule;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -34,6 +34,7 @@ public class FieldMetadataImpl implements FieldMetadata {
     private final EnumMode storedEnumMode;
     private final EnumMode operationalEnumMode;
     private final DynamicEnum dynamicEnum;
+    private final List<FieldRule> validations;
 
     private EntityMetadata entityMetadata;
     private EntityMetadata associationMetadata;
@@ -55,7 +56,8 @@ public class FieldMetadataImpl implements FieldMetadata {
                              boolean isEnum,
                              EnumMode storedEnumMode,
                              EnumMode operationalEnumMode,
-                             DynamicEnum dynamicEnum) {
+                             DynamicEnum dynamicEnum,
+                             List<FieldRule> validations) {
         this.columnType = columnType;
         this.valueType = valueType;
         this.dbColumnName = dbColumnName;
@@ -72,6 +74,7 @@ public class FieldMetadataImpl implements FieldMetadata {
         this.storedEnumMode = storedEnumMode;
         this.operationalEnumMode = operationalEnumMode;
         this.dynamicEnum = dynamicEnum;
+        this.validations = validations == null ? List.of() : List.copyOf(validations);
         this.isEnum = isEnum;
     }
 

@@ -35,6 +35,7 @@ public class KeyFieldBuilder extends FieldBuilder {
                 storedEnumMode,
                 operationalEnumMode,
                 fmi.getDynamicEnum(),
+                fmi.getValidations(),
                 shouldGenerateKey
         );
         return kfmi;

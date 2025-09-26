@@ -66,6 +66,8 @@
                 <configuration>
                     <excludes>
                         <exclude>org/openapitools/**</exclude>
+                        <exclude>**/entity/**</exclude>
+                        <exclude>**/config/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

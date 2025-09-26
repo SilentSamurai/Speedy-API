@@ -4,11 +4,11 @@ import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
+import com.github.silent.samurai.speedy.validation.rules.FieldRule;
 import lombok.Getter;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 public class FieldBuilder {
@@ -33,8 +33,10 @@ public class FieldBuilder {
     EnumMode storedEnumMode;
     EnumMode operationalEnumMode;
     DynamicEnum dynamicEnum;
+    List<FieldRule> validations = new java.util.ArrayList<>();
 
     public FieldBuilder(EntityBuilder entityBuilder, String name) {
+        this.validations = new java.util.ArrayList<>();
         this.entityBuilder = entityBuilder;
         this.dbColumnName = name;
         this.outputPropertyName = name;
@@ -119,6 +121,11 @@ public class FieldBuilder {
         return this;
     }
 
+    public FieldBuilder addValidationRule(FieldRule rule) {
+        this.validations.add(rule);
+        return this;
+    }
+
     public FieldMetadataImpl build() throws NotFoundException {
         if (!isNullable && isDeserializable) {
             required(true);
@@ -143,7 +150,8 @@ public class FieldBuilder {
                 isEnum,
                 storedEnumMode,
                 operationalEnumMode,
-                dynamicEnum
+                dynamicEnum,
+                validations
         );
         return fmi;
     }

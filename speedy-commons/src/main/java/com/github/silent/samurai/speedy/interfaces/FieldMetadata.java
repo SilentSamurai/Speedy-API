@@ -4,6 +4,9 @@ import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
+import com.github.silent.samurai.speedy.validation.rules.FieldRule;
+
+import java.util.List;
 
 public interface FieldMetadata {
 
@@ -48,5 +51,13 @@ public interface FieldMetadata {
     EnumMode getOperationalEnumMode();
 
     DynamicEnum getDynamicEnum();
+
+    /**
+     * List of generic validation specs derived from field annotations.
+     * Implementations may override; default is empty list.
+     */
+    default List<FieldRule> getValidations() {
+        return List.of();
+    }
 
 }
