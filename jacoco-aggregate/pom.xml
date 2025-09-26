@@ -40,11 +40,11 @@
             <artifactId>speedy-java-client</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>antlr-parser</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>${project.parent.groupId}</groupId>-->
+<!--            <artifactId>antlr-parser</artifactId>-->
+<!--            <version>${project.parent.version}</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>spring-boot-starter-speedy-api</artifactId>
