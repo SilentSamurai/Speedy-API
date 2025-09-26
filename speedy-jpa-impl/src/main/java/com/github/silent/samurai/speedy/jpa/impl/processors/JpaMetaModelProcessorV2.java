@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.annotations.SpeedyType;
+import com.github.silent.samurai.speedy.annotations.validation.*;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
@@ -18,6 +19,15 @@ import com.github.silent.samurai.speedy.metadata.FieldBuilder;
 import com.github.silent.samurai.speedy.metadata.KeyFieldBuilder;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
+// Jakarta Bean Validation annotations
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import com.github.silent.samurai.speedy.validation.rules.*;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
@@ -208,6 +218,10 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.deserializable(false);
         }
 
+        // Apply consolidated validation annotations
+        applyValidationAnnotations(field, fieldMetadata);
+
+
         JsonIgnore jsonIgnore = AnnotationUtils.getAnnotation(field, JsonIgnore.class);
         if (jsonIgnore != null) {
             fieldMetadata.serializable(false);
@@ -248,6 +262,66 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         }
 
         return fieldMetadata;
+    }
+
+    // Consolidated validation annotation processing
+    private void applyValidationAnnotations(Field field, FieldBuilder fieldMetadata) {
+        // Speedy custom annotations
+        SpeedyMin minAnn = AnnotationUtils.getAnnotation(field, SpeedyMin.class);
+        if (minAnn != null) {
+            fieldMetadata.addValidationRule(new MinRule(minAnn.value()));
+        }
+        SpeedyMax maxAnn = AnnotationUtils.getAnnotation(field, SpeedyMax.class);
+        if (maxAnn != null) {
+            fieldMetadata.addValidationRule(new MaxRule(maxAnn.value()));
+        }
+        SpeedyLength lenAnn = AnnotationUtils.getAnnotation(field, SpeedyLength.class);
+        if (lenAnn != null) {
+            fieldMetadata.addValidationRule(new LengthRule(lenAnn.min(), lenAnn.max()));
+        }
+        SpeedyRegex regexAnn = AnnotationUtils.getAnnotation(field, SpeedyRegex.class);
+        if (regexAnn != null) {
+            fieldMetadata.addValidationRule(new RegexRule(regexAnn.value()));
+        }
+        SpeedyEmail emailAnn = AnnotationUtils.getAnnotation(field, SpeedyEmail.class);
+        if (emailAnn != null) {
+            fieldMetadata.addValidationRule(new EmailRule());
+        }
+        SpeedyNotBlank speedyNotBlank = AnnotationUtils.getAnnotation(field, SpeedyNotBlank.class);
+        if (speedyNotBlank != null) {
+            fieldMetadata.addValidationRule(new NotBlankRule());
+        }
+
+        // Jakarta Bean Validation annotations
+        Min beanMin = AnnotationUtils.getAnnotation(field, Min.class);
+        if (beanMin != null) {
+            fieldMetadata.addValidationRule(new MinRule(beanMin.value()));
+        }
+        Max beanMax = AnnotationUtils.getAnnotation(field, Max.class);
+        if (beanMax != null) {
+            fieldMetadata.addValidationRule(new MaxRule(beanMax.value()));
+        }
+        Size sizeAnn = AnnotationUtils.getAnnotation(field, Size.class);
+        if (sizeAnn != null) {
+            fieldMetadata.addValidationRule(new LengthRule(sizeAnn.min(), sizeAnn.max()));
+        }
+        Pattern patternAnn = AnnotationUtils.getAnnotation(field, Pattern.class);
+        if (patternAnn != null) {
+            fieldMetadata.addValidationRule(new RegexRule(patternAnn.regexp()));
+        }
+        Email emailBeanAnn = AnnotationUtils.getAnnotation(field, Email.class);
+        if (emailBeanAnn != null) {
+            fieldMetadata.addValidationRule(new EmailRule());
+        }
+        NotBlank notBlankAnn = AnnotationUtils.getAnnotation(field, NotBlank.class);
+        if (notBlankAnn != null) {
+            fieldMetadata.addValidationRule(new NotBlankRule());
+        }
+        NotNull notNullAnn = AnnotationUtils.getAnnotation(field, NotNull.class);
+        if (notNullAnn != null) {
+            fieldMetadata.nullable(false);
+            fieldMetadata.required(true);
+        }
     }
 
     String findOutputName(Field field, Member member) {

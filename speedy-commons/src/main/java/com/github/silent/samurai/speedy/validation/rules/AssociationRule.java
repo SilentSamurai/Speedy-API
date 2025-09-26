@@ -5,7 +5,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Validates association fields: value must be nested object and must contain non-generated key fields.

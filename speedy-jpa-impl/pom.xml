@@ -23,6 +23,13 @@
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <!-- Jakarta Validation API for annotation scanning -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>3.0.2</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
