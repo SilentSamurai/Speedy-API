@@ -294,6 +294,28 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (emailAnn != null) {
             fieldMetadata.addValidationRule(new EmailRule());
         }
+        // URL validation
+        SpeedyUrl urlAnn = AnnotationUtils.getAnnotation(field, SpeedyUrl.class);
+        if (urlAnn != null) {
+            fieldMetadata.addValidationRule(new UrlRule());
+        }
+        // Date validation rules
+        SpeedyDateWithFormat dfAnn = AnnotationUtils.getAnnotation(field, SpeedyDateWithFormat.class);
+        if (dfAnn != null) {
+            fieldMetadata.addValidationRule(new DateFormatRule(dfAnn.iso()));
+        }
+        SpeedyFuture futureAnn = AnnotationUtils.getAnnotation(field, SpeedyFuture.class);
+        if (futureAnn != null) {
+            fieldMetadata.addValidationRule(new FutureRule(futureAnn.message()));
+        }
+        SpeedyPast pastAnn = AnnotationUtils.getAnnotation(field, SpeedyPast.class);
+        if (pastAnn != null) {
+            fieldMetadata.addValidationRule(new PastRule(pastAnn.message()));
+        }
+        SpeedyDateRange rangeAnn = AnnotationUtils.getAnnotation(field, SpeedyDateRange.class);
+        if (rangeAnn != null) {
+            fieldMetadata.addValidationRule(new DateRangeRule(rangeAnn.min(), rangeAnn.max(), rangeAnn.message()));
+        }
         SpeedyNotBlank speedyNotBlank = AnnotationUtils.getAnnotation(field, SpeedyNotBlank.class);
         if (speedyNotBlank != null) {
             fieldMetadata.addValidationRule(new NotBlankRule());

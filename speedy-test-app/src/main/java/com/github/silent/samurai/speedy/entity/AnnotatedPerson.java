@@ -7,6 +7,7 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
 @Setter
@@ -76,4 +77,31 @@ public class AnnotatedPerson extends AbstractBaseEntity {
     @Digits(integer = 5, fraction = 2)
     @Column(name = "precision_val", nullable = false)
     private java.math.BigDecimal precisionVal;
+
+    /** Website URL (optional, validated when supplied) */
+    @SpeedyUrl
+    @Column(name = "website")
+    private String website;
+
+    // Date validation demo fields
+
+    /** Birth date must be in the past */
+    @SpeedyPast
+    @Column(name = "birth_date")
+    private java.time.LocalDate birthDate;
+
+    /** Appointment date must be in the future */
+    @SpeedyFuture(message = "appointment must be in the future")
+    @Column(name = "appointment_date")
+    private java.time.LocalDate appointmentDate;
+
+    /** Booking date must be between 2025-01-01 and 2025-12-31 */
+    @SpeedyDateRange(min = "2025-01-01", max = "2025-12-31", message = "booking must be in 2025")
+    @Column(name = "booking_date")
+    private java.time.LocalDate bookingDate;
+
+    /** ISO DATE format enforced */
+    @SpeedyDateWithFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "iso_date")
+    private java.time.LocalDate isoDate;
 }
