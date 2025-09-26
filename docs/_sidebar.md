@@ -7,6 +7,7 @@
 * [QUERY Operations](query-operation.md)
 * [Field References](field-references.md)
 * [Multi-Level Expansions](multi-level-expansions.md)
+* [Validation Rules](validation-rules.md)
 * [POST Operations](post-operation.md)
 * [PUT Operations](put-operation.md)
 * [DELETE Operations](delete-operation.md)
