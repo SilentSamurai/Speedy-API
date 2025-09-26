@@ -129,6 +129,82 @@ class AnnotatedPersonValidationIT {
         }
 
         @Test
+        @DisplayName("CREATE invalid salary (<=0) should fail – PositiveRule")
+        void createInvalidSalary_shouldFail() throws Exception {
+            client.create("AnnotatedPerson")
+                    .addField("name", "John")
+                    .addField("age", 30)
+                    .addField("email", "john@example.com")
+                    .addField("code", "ABC12")
+                    .addField("salary", 0)
+                    .addField("score", 5)
+                    .addField("debt", -10)
+                    .addField("overdraft", 0)
+                    .addField("rating", 1)
+                    .addField("precision_val", 123.45)
+                    .execute()
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("salary must be > 0")));
+        }
+
+        @Test
+        @DisplayName("CREATE invalid debt (>=0) should fail – NegativeRule")
+        void createInvalidDebt_shouldFail() throws Exception {
+            client.create("AnnotatedPerson")
+                    .addField("name", "John")
+                    .addField("age", 30)
+                    .addField("email", "john@example.com")
+                    .addField("code", "ABC12")
+                    .addField("salary", 1000)
+                    .addField("score", 5)
+                    .addField("debt", 0)
+                    .addField("overdraft", 0)
+                    .addField("rating", 1)
+                    .addField("precision_val", 123.45)
+                    .execute()
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("debt must be < 0")));
+        }
+
+        @Test
+        @DisplayName("CREATE invalid rating (<0.5) should fail – DecimalMinRule")
+        void createInvalidRating_shouldFail() throws Exception {
+            client.create("AnnotatedPerson")
+                    .addField("name", "John")
+                    .addField("age", 30)
+                    .addField("email", "john@example.com")
+                    .addField("code", "ABC12")
+                    .addField("salary", 1000)
+                    .addField("score", 5)
+                    .addField("debt", -10)
+                    .addField("overdraft", 0)
+                    .addField("rating", 0.3)
+                    .addField("precision_val", 123.45)
+                    .execute()
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("rating must be >= 0.5")));
+        }
+
+        @Test
+        @DisplayName("CREATE invalid precisionVal (too many digits) should fail – DigitsRule")
+        void createInvalidPrecision_shouldFail() throws Exception {
+            client.create("AnnotatedPerson")
+                    .addField("name", "John")
+                    .addField("age", 30)
+                    .addField("email", "john@example.com")
+                    .addField("code", "ABC12")
+                    .addField("salary", 1000)
+                    .addField("score", 5)
+                    .addField("debt", -10)
+                    .addField("overdraft", 0)
+                    .addField("rating", 1)
+                    .addField("precision_val", 123456.789) // 6 integer digits
+                    .execute()
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.message", containsString("precision_val numeric value out of bounds")));
+        }
+
+        @Test
         @DisplayName("CREATE valid payload should succeed")
         void createValid_shouldSucceed() throws Exception {
             ResultActions act = client.create("AnnotatedPerson")
