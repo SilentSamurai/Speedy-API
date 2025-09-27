@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Entity
@@ -35,7 +37,7 @@ public class AnnotatedPerson extends AbstractBaseEntity {
 
     @Column(name = "code", nullable = false)
     @SpeedyRegex("^[A-Z]{3}[0-9]{2}$")
-    @jakarta.validation.constraints.Pattern(regexp = "^[A-Z]{3}[0-9]{2}$")
+    @Pattern(regexp = "^[A-Z]{3}[0-9]{2}$")
     private String code;
 
     // --- New numeric validation demo fields ---------------------------------
@@ -85,23 +87,23 @@ public class AnnotatedPerson extends AbstractBaseEntity {
 
     // Date validation demo fields
 
-    /** Birth date must be in the past */
+    /** Birthdate must be in the past */
     @SpeedyPast
     @Column(name = "birth_date")
-    private java.time.LocalDate birthDate;
+    private LocalDate birthDate;
 
     /** Appointment date must be in the future */
     @SpeedyFuture(message = "appointment must be in the future")
     @Column(name = "appointment_date")
-    private java.time.LocalDate appointmentDate;
+    private LocalDate appointmentDate;
 
     /** Booking date must be between 2025-01-01 and 2025-12-31 */
     @SpeedyDateRange(min = "2025-01-01", max = "2025-12-31", message = "booking must be in 2025")
     @Column(name = "booking_date")
-    private java.time.LocalDate bookingDate;
+    private LocalDate bookingDate;
 
     /** ISO DATE format enforced */
     @SpeedyDateWithFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "iso_date")
-    private java.time.LocalDate isoDate;
+    private LocalDate isoDate;
 }

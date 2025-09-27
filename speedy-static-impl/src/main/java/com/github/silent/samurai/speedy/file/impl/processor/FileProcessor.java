@@ -5,7 +5,6 @@ import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.file.impl.models.JsonEntity;
 import com.github.silent.samurai.speedy.file.impl.models.JsonField;
-import com.github.silent.samurai.speedy.file.impl.validator.JsonValidator;
 import com.github.silent.samurai.speedy.metadata.EntityBuilder;
 import com.github.silent.samurai.speedy.metadata.FieldBuilder;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
@@ -13,9 +12,7 @@ import com.github.silent.samurai.speedy.utils.CommonUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 
 public class FileProcessor {
@@ -25,7 +22,8 @@ public class FileProcessor {
         });
 
         for (JsonEntity jsonEntity : entityMetadata) {
-            JsonValidator.validate(jsonEntity);
+            // TODO: capture any validation rule metadata defined in JSON
+            // (no Bean Validation execution)
             processEntityMetadata(jsonEntity, mmb);
         }
     }
@@ -38,7 +36,7 @@ public class FileProcessor {
 //        eb.setKeyType(jsonEntity.keyType);
 
         for (JsonField jsonField : jsonEntity.fields) {
-            JsonValidator.validate(jsonField);
+            // TODO: capture field-level validation rule metadata from JSON
             processFieldMetadata(jsonField, eb);
         }
     }
