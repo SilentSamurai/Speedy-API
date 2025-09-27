@@ -18,8 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -97,15 +95,7 @@ public class ValidationProcessor {
             param = SpeedySerializer.toJavaEntity(entity, ioClass);
         }
 
-        Object valid;
-        try {
-            valid = method.invoke(instance, param);
-        } catch (InvocationTargetException ite) {
-            if (ite.getCause() instanceof SpeedyHttpException she) {
-                throw she;
-            }
-            throw ite;
-        }
+        Object valid = method.invoke(instance, param);
 
         // If the validator modified the Java object, synchronise the changes back to the SpeedyEntity
         if (!SpeedyEntity.class.isAssignableFrom(ioClass)) {
