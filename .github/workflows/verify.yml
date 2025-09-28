@@ -3,7 +3,6 @@ on:
     pull_request:
         branches:
             - release
-            - release-spring-3
 
 jobs:
     verify:
