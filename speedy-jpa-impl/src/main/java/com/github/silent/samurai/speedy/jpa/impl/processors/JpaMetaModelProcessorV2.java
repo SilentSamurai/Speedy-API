@@ -5,17 +5,36 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.annotations.SpeedyType;
+import com.github.silent.samurai.speedy.annotations.validation.*;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
+import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
-import com.github.silent.samurai.speedy.mappings.JavaType2ColumnType;
+import com.github.silent.samurai.speedy.jpa.impl.util.JavaType2ColumnType;
 import com.github.silent.samurai.speedy.metadata.EntityBuilder;
 import com.github.silent.samurai.speedy.metadata.FieldBuilder;
 import com.github.silent.samurai.speedy.metadata.KeyFieldBuilder;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
+import com.github.silent.samurai.speedy.models.DynamicEnum;
+// Jakarta Bean Validation annotations
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Negative;
+import jakarta.validation.constraints.NegativeOrZero;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.Digits;
+import com.github.silent.samurai.speedy.validation.rules.*;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
@@ -32,9 +51,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.github.silent.samurai.speedy.enums.ActionType.*;
-import static com.github.silent.samurai.speedy.jpa.impl.processors.JpaEntityProcessor.getTableName;
-import static com.github.silent.samurai.speedy.jpa.impl.processors.JpaFieldProcessor.getField;
-import static com.github.silent.samurai.speedy.jpa.impl.processors.JpaFieldProcessor.resolveGenericFieldType;
+import static com.github.silent.samurai.speedy.jpa.impl.util.JpaUtil.*;
 
 public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
 
@@ -67,10 +84,10 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     public void processMetaModel(MetaModelBuilder builder) {
         try {
             processEntities(builder);
+            this.metaModel = builder.build();
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         }
-        this.metaModel = builder.build();
     }
 
     void processEntities(MetaModelBuilder builder) throws NotFoundException {
@@ -122,23 +139,22 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     }
 
     private FieldBuilder processField(Attribute<?, ?> attribute,
-                                                      Class<?> entityClass,
-                                                      EntityBuilder entity) {
+                                      Class<?> entityClass,
+                                      EntityBuilder entity) {
 
         boolean isId = attribute instanceof SingularAttribute && ((SingularAttribute<?, ?>) attribute).isId();
         Member member = attribute.getJavaMember();
         Field field = findReflectionField(attribute, entityClass);
 
-        ColumnType columnType = findColumnTypeFromField(attribute, entityClass, field, member);
+        ColumnType columnType = findColumnTypeFromField(attribute);
         String outputName = findOutputName(field, member);
         String dbColumnName = findDbColumnName(attribute, entityClass, field, member);
 
 
-        FieldBuilder fieldMetadata = isId ?
-                entity.keyField(outputName, dbColumnName, columnType)
-                :
-                entity.field(outputName, dbColumnName, columnType);
+        FieldBuilder fieldMetadata = isId ? entity.keyField(outputName) : entity.field(outputName);
 
+        fieldMetadata.dbColumnName(dbColumnName);
+        fieldMetadata.columnType(columnType);
         fieldMetadata.insertable(true);
         fieldMetadata.unique(false);
         fieldMetadata.updatable(true);
@@ -147,6 +163,27 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         fieldMetadata.serializable(true);
         fieldMetadata.deserializable(true);
         fieldMetadata.collection(attribute.isCollection());
+
+        SpeedyType speedyType = AnnotationUtils.getAnnotation(field, SpeedyType.class);
+        if (speedyType != null) {
+            fieldMetadata.columnTypeOverride(speedyType.value());
+        }
+
+        // Populate enum metadata on FieldBuilder
+        Enumerated enumeratedAnn = AnnotationUtils.getAnnotation(field, Enumerated.class);
+        Class<?> effectiveType = attribute.isCollection() ? resolveGenericFieldType(field) : attribute.getJavaType();
+        boolean isEnumType = effectiveType != null && effectiveType.isEnum();
+        if (isEnumType) {
+
+            if (enumeratedAnn != null) {
+                EnumMode em = enumeratedAnn.value() == EnumType.STRING ? EnumMode.STRING : EnumMode.ORDINAL;
+                DynamicEnum dynamicEnum = DynamicEnum.of((Class<? extends Enum<?>>) effectiveType);
+                fieldMetadata.enumField(em, em, dynamicEnum);
+            } else {
+                DynamicEnum dynamicEnum = DynamicEnum.of((Class<? extends Enum<?>>) effectiveType);
+                fieldMetadata.enumField(EnumMode.STRING, EnumMode.ORDINAL, dynamicEnum);
+            }
+        }
 
         Column columnAnnotation = AnnotationUtils.getAnnotation(field, Column.class);
         if (columnAnnotation != null) {
@@ -187,6 +224,10 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.nullable(false);
             fieldMetadata.deserializable(false);
         }
+
+        // Apply consolidated validation annotations
+        applyValidationAnnotations(field, fieldMetadata);
+
 
         JsonIgnore jsonIgnore = AnnotationUtils.getAnnotation(field, JsonIgnore.class);
         if (jsonIgnore != null) {
@@ -230,6 +271,147 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         return fieldMetadata;
     }
 
+    // Consolidated validation annotation processing
+    private void applyValidationAnnotations(Field field, FieldBuilder fieldMetadata) {
+        // Speedy custom annotations
+        SpeedyMin minAnn = AnnotationUtils.getAnnotation(field, SpeedyMin.class);
+        if (minAnn != null) {
+            fieldMetadata.addValidationRule(new MinRule(minAnn.value()));
+        }
+        SpeedyMax maxAnn = AnnotationUtils.getAnnotation(field, SpeedyMax.class);
+        if (maxAnn != null) {
+            fieldMetadata.addValidationRule(new MaxRule(maxAnn.value()));
+        }
+        SpeedyLength lenAnn = AnnotationUtils.getAnnotation(field, SpeedyLength.class);
+        if (lenAnn != null) {
+            fieldMetadata.addValidationRule(new LengthRule(lenAnn.min(), lenAnn.max()));
+        }
+        SpeedyRegex regexAnn = AnnotationUtils.getAnnotation(field, SpeedyRegex.class);
+        if (regexAnn != null) {
+            fieldMetadata.addValidationRule(new RegexRule(regexAnn.value()));
+        }
+        SpeedyEmail emailAnn = AnnotationUtils.getAnnotation(field, SpeedyEmail.class);
+        if (emailAnn != null) {
+            fieldMetadata.addValidationRule(new EmailRule());
+        }
+        // URL validation
+        SpeedyUrl urlAnn = AnnotationUtils.getAnnotation(field, SpeedyUrl.class);
+        if (urlAnn != null) {
+            fieldMetadata.addValidationRule(new UrlRule());
+        }
+        // Date validation rules
+        SpeedyDateWithFormat dfAnn = AnnotationUtils.getAnnotation(field, SpeedyDateWithFormat.class);
+        if (dfAnn != null) {
+            fieldMetadata.addValidationRule(new DateFormatRule(dfAnn.iso()));
+        }
+        SpeedyFuture futureAnn = AnnotationUtils.getAnnotation(field, SpeedyFuture.class);
+        if (futureAnn != null) {
+            fieldMetadata.addValidationRule(new FutureRule(futureAnn.message()));
+        }
+        SpeedyPast pastAnn = AnnotationUtils.getAnnotation(field, SpeedyPast.class);
+        if (pastAnn != null) {
+            fieldMetadata.addValidationRule(new PastRule(pastAnn.message()));
+        }
+        SpeedyDateRange rangeAnn = AnnotationUtils.getAnnotation(field, SpeedyDateRange.class);
+        if (rangeAnn != null) {
+            fieldMetadata.addValidationRule(new DateRangeRule(rangeAnn.min(), rangeAnn.max(), rangeAnn.message()));
+        }
+        SpeedyNotBlank speedyNotBlank = AnnotationUtils.getAnnotation(field, SpeedyNotBlank.class);
+        if (speedyNotBlank != null) {
+            fieldMetadata.addValidationRule(new NotBlankRule());
+        }
+        // New Speedy numeric sign annotations
+        SpeedyPositive spPos = AnnotationUtils.getAnnotation(field, SpeedyPositive.class);
+        if (spPos != null) {
+            fieldMetadata.addValidationRule(new PositiveRule());
+        }
+        SpeedyPositiveOrZero spPosZero = AnnotationUtils.getAnnotation(field, SpeedyPositiveOrZero.class);
+        if (spPosZero != null) {
+            fieldMetadata.addValidationRule(new PositiveOrZeroRule());
+        }
+        SpeedyNegative spNeg = AnnotationUtils.getAnnotation(field, SpeedyNegative.class);
+        if (spNeg != null) {
+            fieldMetadata.addValidationRule(new NegativeRule());
+        }
+        SpeedyNegativeOrZero spNegZero = AnnotationUtils.getAnnotation(field, SpeedyNegativeOrZero.class);
+        if (spNegZero != null) {
+            fieldMetadata.addValidationRule(new NegativeOrZeroRule());
+        }
+        // Decimal boundary and digits
+        SpeedyDecimalMin spDecMin = AnnotationUtils.getAnnotation(field, SpeedyDecimalMin.class);
+        if (spDecMin != null) {
+            fieldMetadata.addValidationRule(new DecimalMinRule(spDecMin.value(), spDecMin.inclusive()));
+        }
+        SpeedyDecimalMax spDecMax = AnnotationUtils.getAnnotation(field, SpeedyDecimalMax.class);
+        if (spDecMax != null) {
+            fieldMetadata.addValidationRule(new DecimalMaxRule(spDecMax.value(), spDecMax.inclusive()));
+        }
+        SpeedyDigits spDigits = AnnotationUtils.getAnnotation(field, SpeedyDigits.class);
+        if (spDigits != null) {
+            fieldMetadata.addValidationRule(new DigitsRule(spDigits.integer(), spDigits.fraction()));
+        }
+
+        // Jakarta Bean Validation annotations
+        Min beanMin = AnnotationUtils.getAnnotation(field, Min.class);
+        if (beanMin != null) {
+            fieldMetadata.addValidationRule(new MinRule(beanMin.value()));
+        }
+        Max beanMax = AnnotationUtils.getAnnotation(field, Max.class);
+        if (beanMax != null) {
+            fieldMetadata.addValidationRule(new MaxRule(beanMax.value()));
+        }
+        Size sizeAnn = AnnotationUtils.getAnnotation(field, Size.class);
+        if (sizeAnn != null) {
+            fieldMetadata.addValidationRule(new LengthRule(sizeAnn.min(), sizeAnn.max()));
+        }
+        Pattern patternAnn = AnnotationUtils.getAnnotation(field, Pattern.class);
+        if (patternAnn != null) {
+            fieldMetadata.addValidationRule(new RegexRule(patternAnn.regexp()));
+        }
+        Email emailBeanAnn = AnnotationUtils.getAnnotation(field, Email.class);
+        if (emailBeanAnn != null) {
+            fieldMetadata.addValidationRule(new EmailRule());
+        }
+        NotBlank notBlankAnn = AnnotationUtils.getAnnotation(field, NotBlank.class);
+        if (notBlankAnn != null) {
+            fieldMetadata.addValidationRule(new NotBlankRule());
+        }
+        // Numeric sign validations
+        Positive posAnn = AnnotationUtils.getAnnotation(field, Positive.class);
+        if (posAnn != null) {
+            fieldMetadata.addValidationRule(new PositiveRule());
+        }
+        PositiveOrZero posZeroAnn = AnnotationUtils.getAnnotation(field, PositiveOrZero.class);
+        if (posZeroAnn != null) {
+            fieldMetadata.addValidationRule(new PositiveOrZeroRule());
+        }
+        Negative negAnnJak = AnnotationUtils.getAnnotation(field, Negative.class);
+        if (negAnnJak != null) {
+            fieldMetadata.addValidationRule(new NegativeRule());
+        }
+        NegativeOrZero negZeroJak = AnnotationUtils.getAnnotation(field, NegativeOrZero.class);
+        if (negZeroJak != null) {
+            fieldMetadata.addValidationRule(new NegativeOrZeroRule());
+        }
+        DecimalMin decMinAnnJak = AnnotationUtils.getAnnotation(field, DecimalMin.class);
+        if (decMinAnnJak != null) {
+            fieldMetadata.addValidationRule(new DecimalMinRule(decMinAnnJak.value(), decMinAnnJak.inclusive()));
+        }
+        DecimalMax decMaxAnnJak = AnnotationUtils.getAnnotation(field, DecimalMax.class);
+        if (decMaxAnnJak != null) {
+            fieldMetadata.addValidationRule(new DecimalMaxRule(decMaxAnnJak.value(), decMaxAnnJak.inclusive()));
+        }
+        Digits digitsAnnJak = AnnotationUtils.getAnnotation(field, Digits.class);
+        if (digitsAnnJak != null) {
+            fieldMetadata.addValidationRule(new DigitsRule(digitsAnnJak.integer(), digitsAnnJak.fraction()));
+        }
+        NotNull notNullAnn = AnnotationUtils.getAnnotation(field, NotNull.class);
+        if (notNullAnn != null) {
+            fieldMetadata.nullable(false);
+            fieldMetadata.required(true);
+        }
+    }
+
     String findOutputName(Field field, Member member) {
         JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(field, JsonProperty.class);
         if (propertyAnnotation != null) {
@@ -238,28 +420,11 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         return member.getName();
     }
 
-    ColumnType findColumnTypeFromField(Attribute<?, ?> attribute, Class<?> entityClass, Field field, Member member) {
-        Enumerated enumerated = AnnotationUtils.getAnnotation(field, Enumerated.class);
-        SpeedyType speedyType = AnnotationUtils.getAnnotation(field, SpeedyType.class);
-        if (speedyType != null) {
-            return speedyType.value();
-        } else if (enumerated != null) {
-            EnumType value = enumerated.value();
-            return switch (value) {
-                case STRING -> ColumnType.VARCHAR;
-                case ORDINAL -> ColumnType.INTEGER;
-            };
-        } else {
-            try {
-                return JavaType2ColumnType.fromClass(attribute.getJavaType());
-            } catch (NotFoundException e) {
-                // ignore if association
-                if (attribute.isAssociation()) {
-                    return ColumnType.VARCHAR;
-                } else {
-                    throw new RuntimeException(e);
-                }
-            }
+    ColumnType findColumnTypeFromField(Attribute<?, ?> attribute) {
+        try {
+            return JavaType2ColumnType.fromClass(attribute.getJavaType());
+        } catch (NotFoundException e) {
+            return null;
         }
     }
 

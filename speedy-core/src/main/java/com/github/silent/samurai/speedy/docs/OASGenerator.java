@@ -60,25 +60,14 @@ public class OASGenerator {
     }
 
     public static Schema basicSchema(ValueType valueType) {
-        switch (valueType) {
-            case BOOL:
-                return new Schema<>().type("boolean");
-            case TEXT:
-                return new Schema<>().type("string");
-            case INT:
-                return new Schema<>().type("integer").format("int64");
-            case FLOAT:
-                return new Schema<>().type("number").format("double");
-            case DATE_TIME:
-            case DATE:
-            case TIME:
-                return new Schema<>().type("string");
-            case OBJECT:
-            case COLLECTION:
-            case NULL:
-            default:
-                return new Schema<>().type("string");
-        }
+        return switch (valueType) {
+            case BOOL -> new Schema<>().type("boolean");
+            case TEXT -> new Schema<>().type("string");
+            case INT -> new Schema<>().type("integer").format("int64");
+            case FLOAT -> new Schema<>().type("number").format("double");
+            case DATE_TIME, DATE, TIME -> new Schema<>().type("string");
+            case OBJECT, COLLECTION, NULL, ZONED_DATE_TIME, ENUM, ENUM_ORD -> new Schema<>().type("string");
+        };
     }
 
     public static Schema generateBasicSchema(FieldMetadata fieldMetadata) {

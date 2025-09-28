@@ -1,13 +1,14 @@
 package com.github.silent.samurai.speedy.helpers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.deserializer.QueryKeyDeserializer;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.Expression;
+import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
@@ -41,15 +42,6 @@ public class MetadataUtil {
         return false;
     }
 
-    public static SpeedyEntityKey createIdentifierFromQuery(SpeedyQuery speedyQuery) throws SpeedyHttpException {
-        try {
-            QueryKeyDeserializer deserializer = new QueryKeyDeserializer(speedyQuery);
-            return deserializer.deserialize();
-        } catch (Exception e) {
-            throw new BadRequestException("failed to parse parameters : " + e.getMessage(), e);
-        }
-    }
-
     public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject) throws SpeedyHttpException {
         try {
             return SpeedyValueFactory.fromJsonObject(entityMetadata, jsonObject);
@@ -76,8 +68,8 @@ public class MetadataUtil {
         return true;
     }
 
-    public String getEntityNameFromType(Class<?> entityType) {
-        return entityType.getSimpleName();
-    }
+//    public String getEntityNameFromType(Class<?> entityType) {
+//        return entityType.getSimpleName();
+//    }
 
 }

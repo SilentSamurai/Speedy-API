@@ -1,91 +1,91 @@
-package com.github.silent.samurai.speedy.jpa.impl.processors;
-
-import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.metamodel.EntityType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-
-public class JpaMetaModel implements MetaModel {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModel.class);
-    private final Map<String, JpaEntityMetadata> entityMap = new HashMap<>();
-    private final Map<Class<?>, JpaEntityMetadata> typeMap = new HashMap<>();
-    private ISpeedyConfiguration configuration;
-    private EntityManagerFactory entityManagerFactory;
-
-    public JpaMetaModel(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {
-        this.configuration = configuration;
-        this.entityManagerFactory = entityManagerFactory;
-    }
-
-    public void process() {
-        Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
-        for (EntityType<?> entityType : entities) {
-            SpeedyIgnore annotation = entityType.getBindableJavaType().getAnnotation(SpeedyIgnore.class);
-            if (annotation != null) {
-                continue;
-            }
-            JpaEntityMetadata entityMetadata = JpaEntityProcessor.processEntity(entityType);
-            entityMap.put(entityType.getName(), entityMetadata);
-            typeMap.put(entityMetadata.getEntityClass(), entityMetadata);
-            LOGGER.info("registering resources {}", entityType.getName());
-        }
-        processAssociations();
-    }
-
-    private void processAssociations() {
-        for (JpaEntityMetadata entityMetadata : entityMap.values()) {
-            JpaEntityProcessor.processAssociations(entityMetadata, typeMap);
-        }
-    }
-
-    @Override
-    public Collection<EntityMetadata> getAllEntityMetadata() {
-        return entityMap.values().stream().map(em -> (EntityMetadata) em).collect(Collectors.toUnmodifiableList());
-    }
-
-    //    @Override
-    public boolean hasEntityMetadata(Class<?> entityType) {
-        return typeMap.containsKey(entityType);
-    }
-
-    //    @Override
-    public EntityMetadata findEntityMetadata(Class<?> entityType) throws NotFoundException {
-        return typeMap.get(entityType);
-    }
-
-    @Override
-    public boolean hasEntityMetadata(String entityName) {
-        return entityMap.containsKey(entityName);
-    }
-
-    @Override
-    public EntityMetadata findEntityMetadata(String entityName) throws NotFoundException {
-        if (entityMap.containsKey(entityName)) {
-            return entityMap.get(entityName);
-        }
-        throw new NotFoundException(entityName);
-    }
-
-    @Override
-    public FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException {
-        EntityMetadata entityMetadata = findEntityMetadata(entityName);
-        return entityMetadata.field(entityName);
-    }
-
-
-}
+//package com.github.silent.samurai.speedy.jpa.impl.processors;
+//
+//import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
+//import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+//import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+//import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+//import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+//import com.github.silent.samurai.speedy.interfaces.MetaModel;
+//import com.github.silent.samurai.speedy.jpa.impl.metamodel.JpaEntityMetadata;
+//import jakarta.persistence.EntityManagerFactory;
+//import jakarta.persistence.metamodel.EntityType;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//
+//import java.util.Collection;
+//import java.util.HashMap;
+//import java.util.Map;
+//import java.util.Set;
+//import java.util.stream.Collectors;
+//
+//
+//public class JpaMetaModel implements MetaModel {
+//
+//    private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModel.class);
+//    private final Map<String, JpaEntityMetadata> entityMap = new HashMap<>();
+//    private final Map<Class<?>, JpaEntityMetadata> typeMap = new HashMap<>();
+//    private ISpeedyConfiguration configuration;
+//    private EntityManagerFactory entityManagerFactory;
+//
+//    public JpaMetaModel(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {
+//        this.configuration = configuration;
+//        this.entityManagerFactory = entityManagerFactory;
+//    }
+//
+//    public void process() {
+//        Set<EntityType<?>> entities = entityManagerFactory.getMetamodel().getEntities();
+//        for (EntityType<?> entityType : entities) {
+//            SpeedyIgnore annotation = entityType.getBindableJavaType().getAnnotation(SpeedyIgnore.class);
+//            if (annotation != null) {
+//                continue;
+//            }
+//            JpaEntityMetadata entityMetadata = JpaEntityProcessor.processEntity(entityType);
+//            entityMap.put(entityType.getName(), entityMetadata);
+//            typeMap.put(entityMetadata.getEntityClass(), entityMetadata);
+//            LOGGER.info("registering resources {}", entityType.getName());
+//        }
+//        processAssociations();
+//    }
+//
+//    private void processAssociations() {
+//        for (JpaEntityMetadata entityMetadata : entityMap.values()) {
+//            JpaEntityProcessor.processAssociations(entityMetadata, typeMap);
+//        }
+//    }
+//
+//    @Override
+//    public Collection<EntityMetadata> getAllEntityMetadata() {
+//        return entityMap.values().stream().map(em -> (EntityMetadata) em).collect(Collectors.toUnmodifiableList());
+//    }
+//
+//    //    @Override
+//    public boolean hasEntityMetadata(Class<?> entityType) {
+//        return typeMap.containsKey(entityType);
+//    }
+//
+//    //    @Override
+//    public EntityMetadata findEntityMetadata(Class<?> entityType) throws NotFoundException {
+//        return typeMap.get(entityType);
+//    }
+//
+//    @Override
+//    public boolean hasEntityMetadata(String entityName) {
+//        return entityMap.containsKey(entityName);
+//    }
+//
+//    @Override
+//    public EntityMetadata findEntityMetadata(String entityName) throws NotFoundException {
+//        if (entityMap.containsKey(entityName)) {
+//            return entityMap.get(entityName);
+//        }
+//        throw new NotFoundException(entityName);
+//    }
+//
+//    @Override
+//    public FieldMetadata findFieldMetadata(String entityName, String fieldName) throws NotFoundException {
+//        EntityMetadata entityMetadata = findEntityMetadata(entityName);
+//        return entityMetadata.field(entityName);
+//    }
+//
+//
+//}

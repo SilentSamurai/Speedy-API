@@ -6,6 +6,8 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.api.client.SpeedyClient;
 import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
 import com.github.silent.samurai.speedy.entity.User;
+import com.github.silent.samurai.speedy.util.SpeedyTestUtil;
+import com.jayway.jsonpath.DocumentContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -139,7 +141,7 @@ class UserEventTest {
 
     @Test
     @Disabled
-    // TODO: support soft delete
+        // TODO: support soft delete
     void testUserPreDeleteEvent() throws Exception {
         // First create a user
         SpeedyResponse createResponse = speedyClient.create("User")
@@ -184,5 +186,85 @@ class UserEventTest {
         assertTrue(deletedUser.getDeletedAt().isBefore(now.plusSeconds(1)), "deletedAt should be before now");
         assertTrue(deletedUser.getDeletedAt().isAfter(now.minusSeconds(10)), "deletedAt should be after a few seconds ago");
         entityManager.close();
+    }
+
+    @Test
+    void testCreateAndFetchProductWithCategoryAssociation() throws Exception {
+        // Use an existing seeded Category with id "1" (as used elsewhere in tests)
+        String uniqueName = "assoc-product-" + System.currentTimeMillis();
+
+        SpeedyResponse createResponse = speedyClient.create("Product")
+                .addField("name", uniqueName)
+                .addField("description", "association test")
+                .addField("category.id", "1")
+                .execute();
+
+        assertFalse(createResponse.getPayload().isEmpty());
+        JsonNode created = createResponse.getPayload().get(0);
+        assertTrue(created.has("id"));
+        String productId = created.get("id").asText();
+        assertNotNull(productId);
+
+        // Fetch and verify nested association
+        SpeedyResponse getResponse = speedyClient.get("Product")
+                .key("id", productId)
+                .execute();
+
+        assertFalse(getResponse.getPayload().isEmpty());
+        JsonNode fetched = getResponse.getPayload().get(0);
+        assertEquals(productId, fetched.get("id").asText());
+        assertEquals(uniqueName, fetched.get("name").asText());
+
+        assertTrue(fetched.has("category"), "Product should contain nested category");
+        JsonNode fetchedCategory = fetched.get("category");
+        assertEquals("1", fetchedCategory.get("id").asText(), "Default category id should be '1'");
+
+        // Verify PRE_INSERT Product event mutated description
+        assertTrue(fetched.has("description"));
+        assertEquals("created-by-event", fetched.get("description").asText());
+    }
+
+    @Test
+    void testUpdateProductCategoryAssociation() throws Exception {
+        // Create a Product initially associated with Category "1"
+        String uniqueName = "assoc-product-update-" + System.currentTimeMillis();
+
+        SpeedyResponse createProduct = speedyClient.create("Product")
+                .addField("name", uniqueName)
+                .addField("description", "association update test")
+                .addField("category.id", "1")
+                .execute();
+
+        assertFalse(createProduct.getPayload().isEmpty());
+        JsonNode productNode = createProduct.getPayload().get(0);
+        String productId = productNode.get("id").asText();
+
+        // Create a new Category to re-associate to
+        String newCategoryName = "assoc-category-" + System.currentTimeMillis();
+        SpeedyResponse createCategory = speedyClient.create("Category")
+                .addField("name", newCategoryName)
+                .execute();
+
+        DocumentContext createdCategoryJson = SpeedyTestUtil.jsonPath(createCategory);
+        String newCategoryId = createdCategoryJson.read("$.payload[0].id");
+        assertNotNull(newCategoryId);
+
+        // Update the Product's association
+        SpeedyResponse updateResponse = speedyClient.update("Product")
+                .key("id", productId)
+                .field("category.id", newCategoryId)
+                .execute();
+
+        assertFalse(updateResponse.getPayload().isEmpty());
+
+        // Fetch and verify new association
+        SpeedyResponse getResponse = speedyClient.get("Product")
+                .key("id", productId)
+                .execute();
+        DocumentContext jsonPath = SpeedyTestUtil.jsonPath(getResponse);
+
+        // JSONPath assertions
+        assertEquals(newCategoryId, jsonPath.read("$.payload[0].category.id"));
+        assertEquals("updated-by-event", jsonPath.read("$.payload[0].description"));
     }
 }

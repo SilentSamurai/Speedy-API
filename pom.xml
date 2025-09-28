@@ -5,7 +5,7 @@
 
     <groupId>com.github.silentsamurai</groupId>
     <artifactId>speedy-api-parent</artifactId>
-    <version>3.1.1</version>
+    <version>3.1.4</version>
     <name>speedy-api-parent</name>
     <description>All entity in one api resource manager</description>
     <packaging>pom</packaging>
@@ -40,6 +40,7 @@
         <module>speedy-jpa-impl</module>
         <module>speedy-java-client</module>
         <module>speedy-static-impl</module>
+        <module>jacoco-aggregate</module>
     </modules>
 
     <developers>
@@ -121,52 +122,6 @@
                 <version>3.8.1</version>
             </plugin>
 
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.8</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report-aggregate</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report-aggregate</goal>
-                        </goals>
-                    </execution>
-<!--                    <execution>-->
-<!--                        <id>jacoco-check</id>-->
-<!--                        <goals>-->
-<!--                            <goal>check</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <rules>-->
-<!--                                <rule>-->
-<!--                                    <element>PACKAGE</element>-->
-<!--                                    <limits>-->
-<!--                                        <limit>-->
-<!--                                            <counter>LINE</counter>-->
-<!--                                            <value>COVEREDRATIO</value>-->
-<!--                                            <minimum>0.80</minimum>-->
-<!--                                        </limit>-->
-<!--                                    </limits>-->
-<!--                                </rule>-->
-<!--                            </rules>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>

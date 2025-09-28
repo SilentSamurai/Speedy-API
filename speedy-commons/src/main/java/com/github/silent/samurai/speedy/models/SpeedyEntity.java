@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class SpeedyEntity implements SpeedyValue {
     private final EntityMetadata entityMetadata;
@@ -82,5 +83,19 @@ public class SpeedyEntity implements SpeedyValue {
 
     public EntityMetadata getMetadata() {
         return entityMetadata;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SpeedyEntity that = (SpeedyEntity) o;
+        return Objects.equals(entityMetadata, that.entityMetadata) &&
+                Objects.equals(fields, that.fields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityMetadata, fields);
     }
 }

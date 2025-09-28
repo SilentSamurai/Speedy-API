@@ -39,7 +39,21 @@ public class SpeedyUpdateRequestBuilder<T> {
      * @return this builder instance
      */
     public SpeedyUpdateRequestBuilder<T> field(String field, Object value) {
-        entity.set(field, JsonUtil.getObjectMapper().convertValue(value, JsonNode.class));
+        String[] parts = field.split("\\.");
+        ObjectNode currentNode = entity;
+
+        // Traverse or create intermediate nodes
+        for (int i = 0; i < parts.length - 1; i++) {
+            String part = parts[i];
+            if (!currentNode.has(part)) {
+                currentNode.set(part, JsonUtil.getObjectMapper().createObjectNode());
+            }
+            currentNode = (ObjectNode) currentNode.get(part);
+        }
+
+        // Set the final field value
+        currentNode.set(parts[parts.length - 1], JsonUtil.getObjectMapper().convertValue(value, JsonNode.class));
+
         return this;
     }
 

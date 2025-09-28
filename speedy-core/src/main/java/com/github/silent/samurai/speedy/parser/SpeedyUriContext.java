@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.*;
-import com.github.silent.samurai.speedy.mappings.String2JavaType;
+import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.Speedy;
@@ -81,11 +81,11 @@ public class SpeedyUriContext {
         return this.speedyQuery;
     }
 
-    private void extractPageInfo(UriComponents uriComponents) throws BadRequestException {
+    private void extractPageInfo(UriComponents uriComponents) throws SpeedyHttpException {
         if (uriComponents.getQueryParams().containsKey("$pageSize")) {
             String $pageSize = uriComponents.getQueryParams().getFirst("$pageSize");
             try {
-                Integer pageSize = String2JavaType.quotedStringToPrimitive($pageSize, Integer.class);
+                Integer pageSize = TypeConverterRegistry.fromString($pageSize.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageSize);
                 speedyQuery.addPageSize(pageSize);
             } catch (NumberFormatException e) {
@@ -96,7 +96,7 @@ public class SpeedyUriContext {
         if (uriComponents.getQueryParams().containsKey("$pageNo")) {
             String $pageNo = uriComponents.getQueryParams().getFirst("$pageNo");
             try {
-                Integer pageNo = String2JavaType.quotedStringToPrimitive($pageNo, Integer.class);
+                Integer pageNo = TypeConverterRegistry.fromString($pageNo.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageNo);
                 speedyQuery.addPageSize(pageNo);
             } catch (NumberFormatException e) {
@@ -107,7 +107,7 @@ public class SpeedyUriContext {
         if (uriComponents.getQueryParams().containsKey("$format")) {
             String $format = uriComponents.getQueryParams().getFirst("$format");
             if ($format != null) {
-                speedyQuery.addFormat(String2JavaType.quotedStringToPrimitive($format, String.class));
+                speedyQuery.addFormat(TypeConverterRegistry.fromString($format.replaceAll("['\" ]", ""), String.class));
             }
         }
     }
@@ -188,8 +188,8 @@ public class SpeedyUriContext {
             List<String> fields = values.stream()
                     .map(item -> {
                         try {
-                            return String2JavaType.quotedStringToPrimitive(item, String.class);
-                        } catch (BadRequestException e) {
+                            return TypeConverterRegistry.fromString(item.replaceAll("['\" ]", ""), String.class);
+                        } catch (SpeedyHttpException e) {
                             return null;
                         }
                     })

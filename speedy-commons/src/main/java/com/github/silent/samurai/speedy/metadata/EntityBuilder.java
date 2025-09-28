@@ -6,21 +6,16 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import lombok.Getter;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
 public class EntityBuilder {
-    private String name;
-    private String dbTableName;
     boolean hasCompositeKey;
     Set<ActionType> actionTypes = new HashSet<>(List.of(ActionType.ALL));
     Map<String, FieldBuilder> fieldMap = new HashMap<>();
+    private String name;
+    private String dbTableName;
 
     public Iterable<FieldBuilder> fields() {
         return fieldMap.values();
@@ -61,29 +56,54 @@ public class EntityBuilder {
         throw new NotFoundException(String.format("Field '%s' not found in entity %s", name, this.name));
     }
 
-    public FieldBuilder field(String fieldName, String columnName, ColumnType columnType) {
+    public FieldBuilder field(String fieldName) {
         assert !fieldName.isBlank();
-        assert !columnName.isBlank();
-        FieldBuilder fieldBuilder = new FieldBuilder(this, columnName, columnType, fieldName);
+        FieldBuilder fieldBuilder = new FieldBuilder(this, fieldName);
         this.fieldMap.put(fieldName, fieldBuilder);
         return fieldBuilder;
     }
 
-    public KeyFieldBuilder keyField(String fieldName, String columnName, ColumnType columnType) {
+    // Overload to support specifying output property name, DB column name and column type
+    public FieldBuilder field(String outputPropertyName, String dbColumnName, ColumnType columnType) {
+        Objects.requireNonNull(outputPropertyName);
+        Objects.requireNonNull(dbColumnName);
+        Objects.requireNonNull(columnType);
+        FieldBuilder fieldBuilder = new FieldBuilder(this, outputPropertyName)
+                .dbColumnName(dbColumnName)
+                .columnType(columnType);
+        this.fieldMap.put(outputPropertyName, fieldBuilder);
+        return fieldBuilder;
+    }
+
+    public KeyFieldBuilder keyField(String fieldName) {
         assert !fieldName.isBlank();
-        assert !columnName.isBlank();
-        KeyFieldBuilder fieldBuilder = new KeyFieldBuilder(this, columnName, columnType, fieldName);
+        KeyFieldBuilder fieldBuilder = new KeyFieldBuilder(this, fieldName);
         this.fieldMap.put(fieldName, fieldBuilder);
         return fieldBuilder;
     }
 
+    // Overload to support specifying output property name, DB column name and column type for key fields
+    public KeyFieldBuilder keyField(String outputPropertyName, String dbColumnName, ColumnType columnType) {
+        Objects.requireNonNull(outputPropertyName);
+        Objects.requireNonNull(dbColumnName);
+        Objects.requireNonNull(columnType);
+        KeyFieldBuilder fieldBuilder = new KeyFieldBuilder(this, outputPropertyName);
+        fieldBuilder.dbColumnName(dbColumnName)
+                .columnType(columnType);
+        this.fieldMap.put(outputPropertyName, fieldBuilder);
+        return fieldBuilder;
+    }
 
-    public EntityMetadataImpl build() {
 
-        Map<String, FieldMetadata> fieldMetadataMap = fieldMap.entrySet()
-                .stream()
-                .map(e -> Map.entry(e.getKey(), e.getValue().build()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    public EntityMetadataImpl build() throws NotFoundException {
+
+        Map<String, FieldMetadata> fieldMetadataMap = new HashMap<>();
+        for (Map.Entry<String, FieldBuilder> e : fieldMap.entrySet()) {
+            Map.Entry<String, FieldMetadataImpl> entry = Map.entry(e.getKey(), e.getValue().build());
+            if (fieldMetadataMap.put(entry.getKey(), entry.getValue()) != null) {
+                throw new IllegalStateException("Duplicate key");
+            }
+        }
 
         EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, actionTypes, fieldMetadataMap);
 

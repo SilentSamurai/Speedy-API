@@ -5,7 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.silent.samurai.speedy.exceptions.ConversionException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
@@ -111,4 +113,49 @@ public class CommonUtil {
         }
         return builder.toString();
     }
+
+    public static <T extends Enum<T>> T convertToEnum(Class<T> enumClass, SpeedyValue value) {
+        if (value == null || value.isNull() || !enumClass.isEnum()) {
+            throw new ConversionException(
+                    "Cannot convert NULL to enum %s".formatted(enumClass.getSimpleName())
+            );
+        }
+
+        return switch (value.getValueType()) {
+            case INT, ENUM_ORD -> {
+                Long ordinal = value.asInt();
+                var constants = enumClass.getEnumConstants();
+                if (ordinal < 0 || ordinal >= constants.length) {
+                    throw new ConversionException(
+                            "Invalid ordinal %d for enum %s".formatted(ordinal, enumClass.getSimpleName())
+                    );
+                }
+                yield constants.length > ordinal ? constants[ordinal.intValue()] : constants[0];
+            }
+            case TEXT, ENUM -> {
+                var enumName = value.asText();
+                try {
+                    yield Enum.valueOf(enumClass, enumName);
+                } catch (IllegalArgumentException iae) {
+                    // case-insensitive match
+                    for (var constant : enumClass.getEnumConstants()) {
+                        if (constant.name().equalsIgnoreCase(enumName)) {
+                            yield constant;
+                        }
+                    }
+                    throw new ConversionException(
+                            "Cannot convert TEXT '%s' to enum %s"
+                                    .formatted(enumName, enumClass.getSimpleName()), iae
+                    );
+                }
+            }
+            case BOOL, COLLECTION, OBJECT, FLOAT, DATE, TIME, DATE_TIME, ZONED_DATE_TIME, NULL ->
+                    throw new ConversionException(
+                            "Unsupported JSON type %s for enum %s"
+                                    .formatted(value.getValueType(), enumClass.getSimpleName())
+                    );
+        };
+    }
+
+
 }

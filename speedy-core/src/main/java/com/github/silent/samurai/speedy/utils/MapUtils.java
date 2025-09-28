@@ -3,7 +3,8 @@ package com.github.silent.samurai.speedy.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.mappings.String2JavaType;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
 
 import java.util.Map;
 import java.util.Optional;
@@ -13,10 +14,10 @@ import java.util.stream.StreamSupport;
 
 public class MapUtils {
 
-    public static Object findAnyValueInMap(Map<String, String> map, Class<?> keyClass) throws BadRequestException {
+    public static Object findAnyValueInMap(Map<String, String> map, Class<?> keyClass) throws SpeedyHttpException {
         Optional<String> any = map.values().stream().findAny();
         if (any.isPresent()) {
-            return String2JavaType.stringToPrimitive(any.get(), keyClass);
+            return TypeConverterRegistry.fromString(any.get(), keyClass);
         }
         return null;
     }

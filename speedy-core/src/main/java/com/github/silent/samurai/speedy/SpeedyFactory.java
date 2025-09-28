@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
-import com.github.silent.samurai.speedy.query.jooq.JooqQueryProcessorImpl;
+import com.github.silent.samurai.speedy.query.JooqQueryProcessorImpl;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.speedy.validation.MetaModelVerifier;

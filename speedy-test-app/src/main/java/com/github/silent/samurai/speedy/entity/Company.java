@@ -2,6 +2,8 @@ package com.github.silent.samurai.speedy.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
@@ -42,6 +44,10 @@ public class Company extends AbstractBaseEntity {
     @Column(name = "currency", nullable = false, length = 8)
     private String currency;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 16)
+    private CompanyStatus status = CompanyStatus.DRAFT;
+
     @Column(name = "invoice_no")
     private Integer invoiceNo;
 
@@ -57,3 +63,13 @@ public class Company extends AbstractBaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 }
+
+// Note: The enum CompanyStatus is not defined in the provided code. 
+// You need to define it separately, for example:
+
+// public enum CompanyStatus {
+//     DRAFT,
+//     PENDING,
+//     APPROVED,
+//     REJECTED
+// }

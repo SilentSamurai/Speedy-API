@@ -10,7 +10,6 @@ import com.github.silent.samurai.speedy.interfaces.IResponseContext;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
-import com.github.silent.samurai.speedy.models.ExpansionPathTracker;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
@@ -21,12 +20,12 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 /// JSON serializer for Speedy API responses with support for dot notation expansions.
-/// 
+///
 /// This serializer handles both entity-based expansions (e.g., `["Category"]`) and
 /// dot notation expansions (e.g., `["Inventory.Product", "Inventory.Product.Category"]`).
-/// 
+///
 /// ## Features
-/// 
+///
 /// - **Dot Notation Support**: Handles nested expansions like `Inventory.Product.Category`
 /// - **Backward Compatibility**: Supports traditional entity-based expansions
 /// - **Field Filtering**: Uses predicate to filter which fields to serialize
@@ -39,10 +38,10 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     private final Set<String> expands;
 
     /// Creates a JSON serializer with the default field predicate (includes all fields).
-    /// 
-    /// @param payload the list of entities to serialize
+    ///
+    /// @param payload   the list of entities to serialize
     /// @param pageIndex the current page index
-    /// @param expands the set of expansions (supports dot notation like `["Inventory.Product"]`)
+    /// @param expands   the set of expansions (supports dot notation like `["Inventory.Product"]`)
     public JSONSerializerV2(List<? extends SpeedyValue> payload, Integer pageIndex, Set<String> expands) {
         this.payload = payload;
         this.pageIndex = pageIndex;
@@ -51,11 +50,11 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     }
 
     /// Creates a JSON serializer with custom field predicate for filtering fields.
-    /// 
+    ///
     /// @param fieldPredicate predicate to filter which fields to include in serialization
-    /// @param payload the list of entities to serialize
-    /// @param pageIndex the current page index
-    /// @param expands the set of expansions (supports dot notation like `["Inventory.Product"]`)
+    /// @param payload        the list of entities to serialize
+    /// @param pageIndex      the current page index
+    /// @param expands        the set of expansions (supports dot notation like `["Inventory.Product"]`)
     public JSONSerializerV2(Predicate<FieldMetadata> fieldPredicate,
                             List<? extends SpeedyValue> payload,
                             Integer pageIndex, Set<String> expands) {

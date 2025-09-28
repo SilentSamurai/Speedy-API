@@ -4,10 +4,9 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.mappings.String2JavaType;
+import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
@@ -17,37 +16,25 @@ import java.util.Map;
 
 import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 
-public class MapEntityDeserializer {
-
-    private final Map<String, String> entityMap;
-    private final EntityMetadata entityMetadata;
-    private final EntityManager entityManager;
-
-    public MapEntityDeserializer(Map<String, String> entityMap, EntityMetadata entityMetadata, EntityManager entityManager) {
-        this.entityMap = entityMap;
-        this.entityMetadata = entityMetadata;
-        this.entityManager = entityManager;
-    }
+public record MapEntityDeserializer(Map<String, String> entityMap, EntityMetadata entityMetadata,
+                                    EntityManager entityManager) {
 
     private static SpeedyValue fromBasicString(ValueType valueType, String valueAsString) throws Exception {
-        switch (valueType) {
-            case TEXT:
-                return fromText(valueAsString);
-            case INT:
-                Long intValue = String2JavaType.stringToPrimitive(valueAsString, Long.class);
-                return fromInt(intValue);
-            case FLOAT:
-                Double aDouble = String2JavaType.stringToPrimitive(valueAsString, Double.class);
-                return fromDouble(aDouble);
-            case DATE:
-                return fromDate(LocalDate.parse(valueAsString));
-            case TIME:
-                return fromTime(LocalTime.parse(valueAsString));
-            case DATE_TIME:
-                return fromDateTime(LocalDateTime.parse(valueAsString));
-            default:
-                return SpeedyNull.SPEEDY_NULL;
-        }
+        return switch (valueType) {
+            case TEXT -> fromText(valueAsString);
+            case INT -> {
+                Long intValue = TypeConverterRegistry.fromString(valueAsString, Long.class);
+                yield fromInt(intValue);
+            }
+            case FLOAT -> {
+                Double aDouble = TypeConverterRegistry.fromString(valueAsString, Double.class);
+                yield fromDouble(aDouble);
+            }
+            case DATE -> fromDate(LocalDate.parse(valueAsString));
+            case TIME -> fromTime(LocalTime.parse(valueAsString));
+            case DATE_TIME -> fromDateTime(LocalDateTime.parse(valueAsString));
+            case BOOL, ZONED_DATE_TIME, OBJECT, COLLECTION, ENUM, ENUM_ORD, NULL -> SpeedyNull.SPEEDY_NULL;
+        };
     }
 
     public SpeedyEntity deserialize() throws Exception {
@@ -69,7 +56,7 @@ public class MapEntityDeserializer {
     private SpeedyValue createField(
             FieldMetadata fieldMetadata,
             Map<String, String> fieldsMap) throws Exception {
-        SpeedyValue value = SpeedyValueFactory.fromNull();
+        SpeedyValue value = fromNull();
         String propertyName = fieldMetadata.getOutputPropertyName();
         if (fieldsMap.containsKey(propertyName)) {
             if (fieldMetadata.isAssociation()) {

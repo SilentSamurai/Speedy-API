@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.github.silentsamurai</groupId>
         <artifactId>speedy-api-parent</artifactId>
-        <version>3.1.1</version>
+        <version>3.1.4</version>
     </parent>
 
     <artifactId>spring-boot-starter-speedy-api</artifactId>
@@ -27,5 +27,28 @@
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

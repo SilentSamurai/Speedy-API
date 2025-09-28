@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces.query;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.mappings.ConversionFactory;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
@@ -21,6 +22,6 @@ public interface QueryProcessor {
 
     List<SpeedyEntity> delete(List<SpeedyEntityKey> entityKeys) throws SpeedyHttpException;
 
-    ConversionProcessor getConversionProcessor();
+    ConversionFactory getConversionProcessor();
 
 }

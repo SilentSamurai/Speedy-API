@@ -887,7 +887,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Category");
         body.putObject("$where")
                 .putObject("name")
-                .put("$matches", "*10*");
+                .put("$matches", "*-10-10");
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")

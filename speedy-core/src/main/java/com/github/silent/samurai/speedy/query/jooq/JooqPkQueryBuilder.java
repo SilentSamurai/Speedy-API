@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.*;
 import org.jooq.Record;
@@ -16,10 +17,12 @@ public class JooqPkQueryBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqPkQueryBuilder.class);
     final SQLDialect dialect;
     private final DSLContext dslContext;
+    private final Converter converter;
 
-    public JooqPkQueryBuilder(DSLContext dslContext, SQLDialect dialect) {
+    public JooqPkQueryBuilder(DSLContext dslContext, SQLDialect dialect, Converter converter) {
         this.dslContext = dslContext;
         this.dialect = dialect;
+        this.converter = converter;
     }
 
     public Result<Record> findByPrimaryKey(SpeedyEntityKey pk) throws SpeedyHttpException {
@@ -30,9 +33,9 @@ public class JooqPkQueryBuilder {
         // Build the where clause for each primary key field
         for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
             SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-            Object value = JooqUtil.toJooqType(
+            Object value = converter.toColumnType(
                     speedyValue,
-                    keyFieldMetadata.getColumnType()
+                    keyFieldMetadata
             );
             Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
 

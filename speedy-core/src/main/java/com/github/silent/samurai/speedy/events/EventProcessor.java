@@ -6,13 +6,16 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -105,12 +108,20 @@ public class EventProcessor {
         }
 
         private Object invokeEventHandler(SpeedyEntity entity) throws Exception {
-            if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
-                method.invoke(instance, entity);
-            } else {
-                Object value = SpeedyValueFactory.speedyValue2JavaEntity(ioClass, entity);
-                method.invoke(instance, value);
-                SpeedyValueFactory.updateSpeedyWithJavaEntity(value, entity);
+            try {
+                if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
+                    method.invoke(instance, entity);
+                } else {
+                    Object value = SpeedySerializer.toJavaEntity(entity, ioClass);
+                    method.invoke(instance, value);
+                    SpeedyDeserializer.updateEntity(value, entity);
+                }
+            } catch (InvocationTargetException ite) {
+                // Surface the underlying exception if it's a SpeedyHttpException so HTTP status can propagate
+                if (ite.getCause() instanceof SpeedyHttpException she) {
+                    throw she;
+                }
+                throw ite;
             }
             return entity;
         }
