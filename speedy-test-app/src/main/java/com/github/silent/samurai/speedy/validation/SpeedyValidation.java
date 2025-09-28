@@ -34,4 +34,9 @@ public class SpeedyValidation implements ISpeedyCustomValidation {
                 && supplier.getPhoneNo() != null && !supplier.getPhoneNo().isEmpty();
     }
 
+    @SpeedyValidator(entity = "Product", requests = SpeedyValidationRequestType.CREATE)
+    public boolean preventInvalidProductName(com.github.silent.samurai.speedy.entity.Product product) {
+        return product.getName() == null || !"invalid-trigger".equalsIgnoreCase(product.getName());
+    }
+
 }

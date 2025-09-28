@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.entity.Product;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import org.slf4j.Logger;
@@ -52,6 +53,10 @@ public class EntityEvents implements ISpeedyEventHandler {
     @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.PRE_INSERT})
     public void productInsert(Product product) throws Exception {
         LOGGER.info("Product Insert Event");
+        // raise BadRequestException for specific invalid name to test error handling
+        if ("invalid-trigger".equalsIgnoreCase(product.getName())) {
+            throw new BadRequestException("Product name 'invalid-trigger' is not allowed");
+        }
         // mark description so tests can verify handler execution (always override on insert)
         product.setDescription("created-by-event");
         if (product.getCategory() != null && product.getCategory().getId() != null && !product.getCategory().getId().isBlank()) {
