@@ -30,3 +30,13 @@ hs_err_pid*
 .vscode
 .qodo
 **pom.xml.versionsBackup
+
+# Secrets and sensitive files
+.env
+.env.*
+*.key
+secrets/
+keys/
+application-secret*
+*secret*.yml
+*secret*.properties

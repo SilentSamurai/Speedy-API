@@ -10,13 +10,13 @@ Audit based on codebase analysis as of v3.1.4.
 
 ## Bugs
 
-### 1. `$pageNo` URL parameter is ignored — calls `addPageSize()` instead of `addPageNo()`
+### 1. `$pageNo` URL parameter is ignored — calls `addPageSize()` instead of `addPageNo()` ✅ FIXED
 
 File: `speedy-core/.../parser/SpeedyUriContext.java`, method `extractPageInfo()`
 
 ```java
-// BUG: should be speedyQuery.addPageNo(pageNo)
-speedyQuery.addPageSize(pageNo);
+// FIXED: now calls speedyQuery.addPageNo(pageNo)
+speedyQuery.addPageNo(pageNo);
 ```
 
 The `$pageNo` query parameter is parsed correctly but then passed to `addPageSize()` instead of `addPageNo()`. This means `?$pageNo=2` overwrites the page size rather than setting the page number. Pagination via URL is effectively broken for anything beyond page 0.
@@ -25,20 +25,21 @@ The `$pageNo` query parameter is parsed correctly but then passed to `addPageSiz
 
 `EntityCaptureHandler` already parses the URI via `SpeedyUriContext` to extract the entity metadata, but `GetHandler` creates a second `SpeedyUriContext` and parses the same URI again. This is redundant work and means any query parameters parsed in `EntityCaptureHandler` are discarded — the `SpeedyQuery` from the first parse is never stored on the `RequestContext`.
 
-### 3. `GetHandler` force-expands all associations
+### 3. `GetHandler` force-expands all associations ✅ FIXED
 
 ```java
-Set<String> allAssociations = speedyQuery.getFrom()
-    .getAssociatedFields().stream().map(...)
-    .collect(Collectors.toSet());
-speedyImpl.setExpand(allAssociations);
+// FIXED: removed force-expand; $expand URL param now parsed and honored
+SpeedyQuery speedyQuery = parser.parse();
+context.setSpeedyQuery(speedyQuery);
 ```
 
-Every GET request automatically expands all associations regardless of what the client requested. For entities with many relationships, this causes unnecessary joins and data transfer. The user's `$expand` parameter (if any) is overwritten.
+Every GET request automatically expands all associations regardless of what the client requested. For entities with many relationships, this causes unnecessary joins and data transfer. The user's `$expand` parameter (if any) is overwritten. **Fix:** Removed the auto-expand and added `$expand` URL query parameter parsing — expansion is now opt-in.
 
-### 4. `UpdateHandler` wraps all exceptions as `InternalServerError`
+### 4. `UpdateHandler` wraps all exceptions as `InternalServerError` ✅ FIXED
 
 ```java
+} catch (SpeedyHttpException e) {
+    throw e;
 } catch (Exception e) {
     throw new InternalServerError("Update failed", e);
 }
@@ -46,9 +47,9 @@ Every GET request automatically expands all associations regardless of what the 
 
 If a `BadRequestException` is thrown during event processing or validation, it gets wrapped in a 500 `InternalServerError` instead of propagating the original 400 status. The `DeleteHandler` correctly handles this with a separate `catch (SpeedyHttpException e) { throw e; }` block, but `UpdateHandler` does not.
 
-### 5. `SpeedyQueryHandler` is a no-op
+### 5. `SpeedyQueryHandler` is a no-op ✅ FIXED
 
-`SpeedyQueryHandler` exists in the handlers package but does nothing — it just calls `next.process(context)`. It's not used in the handler chain built by `SpeedyFactory`. Dead code.
+`SpeedyQueryHandler` existed in the handlers package but did nothing — it just called `next.process(context)`. It was not used in the handler chain built by `SpeedyFactory`. Dead code. **Fix:** Removed the class.
 
 ---
 
@@ -78,21 +79,21 @@ The `$pageSize` parameter has no upper bound — `addPageSize()` only checks `pa
 
 **Recommendation:** Add a configurable max page size enforced in `SpeedyQueryImpl.addPageSize()`. Add a max request body size via Spring config or a custom filter.
 
-### 10. `GetHandler` auto-expands all associations — data leakage risk
+### 10. `GetHandler` auto-expands all associations — data leakage risk ✅ FIXED
 
 Every GET request automatically expands ALL associations regardless of what the client requested (see bug #3). Beyond the performance impact, this is a data exposure risk: if entity A has a FK to a sensitive entity B (e.g., User → Role, Order → Customer), a simple GET on A returns B's data. Combined with the lack of auth (#6), any anonymous client can traverse the entire data graph.
 
-**Recommendation:** Make expansion opt-in on GET requests. Only expand associations explicitly requested via `$expand`.
+**Fix:** Expansion is now opt-in via `?$expand=AssociationName` on GET requests.
 
 ### 11. No field-level access control beyond `@SpeedyIgnore`
 
 The only mechanism to hide fields is `@SpeedyIgnore` (compile-time exclusion from MetaModel). There's no runtime field-level visibility based on user role, request context, or any other dynamic criteria. `$select` controls which fields appear in the response, but any user can select any field.
 
-### 12. CI/CD uses outdated `actions/checkout@v2`
+### 12. CI/CD uses outdated `actions/checkout@v2` ✅ FIXED
 
-All 3 GitHub workflows (`main.yml`, `release.yml`, `verify.yml`) use `actions/checkout@v2`, which runs on Node.js 12 (EOL). Should be updated to `@v4`.
+All 3 GitHub workflows (`main.yml`, `release.yml`, `verify.yml`) use `actions/checkout@v2`, which runs on Node.js 12 (EOL). Should be updated to `@v4`. **Fix:** Updated all to `actions/checkout@v4`.
 
-### 13. `.gitignore` incomplete — missing common sensitive file patterns
+### 13. `.gitignore` incomplete — missing common sensitive file patterns ✅ FIXED
 
 The `.gitignore` only covers IDE and build artifacts. The following patterns are missing and should be added:
 
@@ -107,11 +108,11 @@ application-secret*
 *secret*.properties
 ```
 
-The `keys/` directory exists (currently empty) but is not listed — if GPG keys, certificates, or other secrets are accidentally placed there, they will be committed. Same risk applies to `.env` files and any `*secret*` config files.
+The `keys/` directory exists (currently empty) but is not listed — if GPG keys, certificates, or other secrets are accidentally placed there, they will be committed. Same risk applies to `.env` files and any `*secret*` config files. **Fix:** Added all patterns to `.gitignore`.
 
-### 14. `release.yml` uses `git add .` — risk of committing untracked files
+### 14. `release.yml` uses `git add .` — risk of committing untracked files ✅ FIXED
 
-The release workflow does `git add .` before committing version bumps. If any untracked files exist in the CI workspace, they'll be committed to the release branch.
+The release workflow does `git add .` before committing version bumps. If any untracked files exist in the CI workspace, they'll be committed to the release branch. **Fix:** Changed to `git add pom.xml **/pom.xml update-patch-version.sh`.
 
 ### 15. Spring Boot 3.3.0 not on latest patch
 
@@ -121,11 +122,11 @@ Spring Boot 3.3.0 was released May 2024. Multiple patch releases have been publi
 
 jOOQ DSL is used throughout with `DSL.value()` for parameterized values. Table/column names come from MetaModel (startup-time JPA introspection), not user input. Field names from user input are validated against the MetaModel via `entityMetadata.getField()` which throws `NotFoundException`. No raw SQL string construction found.
 
-### 17. PostgreSQL JDBC driver pinned to vulnerable version 42.2.25 — CRITICAL
+### 17. PostgreSQL JDBC driver pinned to vulnerable version 42.2.25 — CRITICAL ✅ FIXED
 
 File: `speedy-test-app/pom.xml:77-81`
 
-The `<version>42.2.25</version>` is explicitly pinned in the test app, overriding the Spring Boot BOM-managed version (42.7.3). This version is affected by:
+The `<version>42.2.25</version>` was explicitly pinned in the test app, overriding the Spring Boot BOM-managed version (42.7.3). This version is affected by:
 
 | CVE | CVSS | Details |
 |-----|------|---------|
@@ -133,34 +134,27 @@ The `<version>42.2.25</version>` is explicitly pinned in the test app, overridin
 | CVE-2022-31197 | 7.5 | SQL injection via Timestamp — fixed in 42.4.1 |
 | CVE-2022-21724 | 8.1 | Improper input validation — fixed in 42.3.3 |
 
-**Recommendation:** Remove the explicit `<version>` tag so the Spring Boot parent BOM manages it at 42.7.3+.
+**Fix:** Removed the explicit `<version>` tag so the Spring Boot parent BOM manages it at 42.7.3+.
 
-### 18. LIKE wildcard `_` not escaped in `$matches` operator — HIGH
+### 18. LIKE wildcard `_` not escaped in `$matches` operator — HIGH ✅ FIXED
 
 File: `speedy-core/.../query/jooq/JooqQueryBuilder.java:82-86`
 
 ```java
 String rawValue = speedyValue.asText()
     .replaceAll("%", "\\\\%")
+    .replaceAll("_", "\\\\_")
     .replaceAll("\\*", "%");
 return path.like(DSL.value(rawValue)).escape('\\');
 ```
 
-The code escapes `%` and `*` but not the SQL single-character wildcard `_`. An attacker searching for a literal underscore (e.g., product code `PART_123`) would also match `PARTX123`, `PARTY123`, etc. Since jOOQ uses bind parameters this is not classic SQLi, but it causes **data leakage** — queries return more records than intended.
+The code escapes `%` and `*` but not the SQL single-character wildcard `_`. An attacker searching for a literal underscore (e.g., product code `PART_123`) would also match `PARTX123`, `PARTY123`, etc. Since jOOQ uses bind parameters this is not classic SQLi, but it causes **data leakage** — queries return more records than intended. **Fix:** Added `.replaceAll("_", "\\\\_")`.
 
-**Recommendation:** Add `.replaceAll("_", "\\\\_")` before the LIKE call.
-
-### 19. `$orderBy` accepts arbitrary field names without metadata validation — HIGH
+### 19. `$orderBy` accepts arbitrary field names without metadata validation — HIGH 🟡 FALSE ALARM
 
 File: `speedy-core/.../parser/SpeedyUriContext.java:184-207`
 
-The `$orderBy` and `$orderByDesc` URL parameters take comma-separated field names from user input and pass them directly to `speedyQuery.orderByAsc(field)` / `speedyQuery.orderByDesc(field)`. No metamodel lookup is performed. While jOOQ quotes these as identifiers (safe from classic SQLi), an attacker could:
-
-- Reference columns from other tables via dot notation (`otherTable.secretColumn`)
-- Reference non-existent columns causing database errors (info disclosure)
-- Reference system columns that jOOQ may not fully sanitize
-
-**Recommendation:** Validate each order-by field against the entity's metadata before adding to the query.
+The `$orderBy` and `$orderByDesc` URL parameters take comma-separated field names from user input and pass them directly to `speedyQuery.orderByAsc(field)` / `speedyQuery.orderByDesc(field)`. ~~No metamodel lookup is performed.~~ **This was a misreading —** `SpeedyQueryImpl.orderByAsc/orderByDesc()` already calls `this.from.getField(field)` which performs metamodel lookup and throws `NotFoundException` for invalid fields. Dot notation like `otherTable.secretColumn` would also fail since no field by that literal name exists in the entity. No fix needed.
 
 ### 20. `$`-prefixed value expressions bypass type compatibility checks — HIGH
 
@@ -182,7 +176,7 @@ Piping the full private GPG signing key through `echo -e` exposes the key materi
 
 **Recommendation:** Write the key to a file from a GitHub Actions environment variable instead. Use `gpg --import` with a file input.
 
-### 22. H2 web console enabled with empty password — HIGH
+### 22. H2 web console enabled with empty password — HIGH ✅ FIXED
 
 Files:
 - `speedy-test-app/.../application.properties:3,5,7`
@@ -190,7 +184,7 @@ Files:
 
 The H2 console is enabled (`spring.h2.console.enabled=true`) with an empty datasource password and `DB_CLOSE_DELAY=-1`. An attacker who reaches `/h2-console` can execute arbitrary SQL against the in-memory database. Additionally, `spring.h2.console.enabled=true` is set in the **MySQL profile** (`application-mysql.properties`), which is a misconfiguration — the MySQL profile doesn't use H2 as its datasource.
 
-**Recommendation:** Disable H2 console in all production profiles. For the MySQL profile, remove the `spring.h2.console.enabled` property entirely.
+**Fix:** Removed `spring.h2.console.enabled=true` from the MySQL profile.
 
 ### 23. Catch-all `/**` request mapping is overly broad — MEDIUM
 
@@ -260,9 +254,9 @@ Using `String.contains()` on the URI is fragile. An entity named `$queryHelper` 
 
 ## Performance
 
-### 31. Default page size is 5 — too small for most use cases
+### 31. Default page size is 5 — too small for most use cases ✅ FIXED
 
-`SpeedyConstant.defaultPageSize = 5` means every query without explicit `$pageSize` returns only 5 rows. This is unusually small and will cause excessive round-trips for most real-world usage. Consider raising to 20-50 or making it configurable via `ISpeedyConfiguration`.
+`SpeedyConstant.defaultPageSize = 20` means every query without explicit `$pageSize` returns 20 rows (up from 5). This reduces round-trips for most real-world usage. Still configurable per request via `$pageSize` URL param.
 
 ### 32. `exists()` check before create/update/delete adds extra round-trip
 

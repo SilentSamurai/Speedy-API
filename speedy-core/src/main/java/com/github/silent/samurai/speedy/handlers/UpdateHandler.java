@@ -41,6 +41,8 @@ public class UpdateHandler implements Handler {
         try {
             UpdateParams up = parse(context);
             savedEntity = runBatch(context, up);
+        } catch (SpeedyHttpException e) {
+            throw e;
         } catch (Exception e) {
             throw new InternalServerError("Update failed", e);
         }
