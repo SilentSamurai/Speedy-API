@@ -98,7 +98,7 @@ public class SpeedyUriContext {
             try {
                 Integer pageNo = TypeConverterRegistry.fromString($pageNo.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageNo);
-                speedyQuery.addPageSize(pageNo);
+                speedyQuery.addPageNo(pageNo);
             } catch (NumberFormatException e) {
                 log.error("Invalid value for $pageNo. Must be an integer.");
             }
@@ -108,6 +108,18 @@ public class SpeedyUriContext {
             String $format = uriComponents.getQueryParams().getFirst("$format");
             if ($format != null) {
                 speedyQuery.addFormat(TypeConverterRegistry.fromString($format.replaceAll("['\" ]", ""), String.class));
+            }
+        }
+
+        if (uriComponents.getQueryParams().containsKey("$expand")) {
+            String $expand = uriComponents.getQueryParams().getFirst("$expand");
+            if ($expand != null) {
+                String[] expands = $expand.replaceAll("['\" ]", "").split(",");
+                for (String exp : expands) {
+                    if (!exp.isEmpty()) {
+                        speedyQuery.addExpand(exp);
+                    }
+                }
             }
         }
     }

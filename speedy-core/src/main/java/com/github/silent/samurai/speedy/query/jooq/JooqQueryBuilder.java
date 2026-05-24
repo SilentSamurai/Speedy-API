@@ -81,6 +81,7 @@ public class JooqQueryBuilder {
         Field<Object> path = getPath(bCondition.getField());
         String rawValue = speedyValue.asText()
                 .replaceAll("%", "\\\\%")
+                .replaceAll("_", "\\\\_")
                 .replaceAll("\\*", "%");
         return path.like(DSL.value(rawValue)).escape('\\');
     }
