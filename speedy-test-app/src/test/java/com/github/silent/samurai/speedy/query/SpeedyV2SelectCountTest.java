@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
+import org.hamcrest.Matchers;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -199,6 +200,33 @@ public class SpeedyV2SelectCountTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.count").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.count").isNumber())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.count").value(totalProduct))
+                .andReturn();
+
+    }
+
+    @Test
+    void testCountQueryWithWhereAndExpand() throws Exception {
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
+                .content(CommonUtil.json().writeValueAsString(
+                        SpeedyQuery.from("Product")
+                                .select("count")
+                                .where(
+                                        condition("category.name", eq("cat-1-1"))
+                                )
+                                .expand("category")
+                                .prettyPrint()
+                                .build()
+                ))
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+
+        mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.count").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.count").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.count").value(Matchers.greaterThan(0)))
                 .andReturn();
 
     }

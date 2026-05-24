@@ -37,23 +37,6 @@ class SpeedyGetTest {
     @Autowired
     private MockMvc mvc;
 
-//    @BeforeEach
-//    void setUp() {
-//        EntityManager entityManager = entityManagerFactory.createEntityManager();
-//        EntityTransaction transaction = entityManager.getTransaction();
-//        transaction.begin();
-//
-//        Customer customer = new Customer();
-//        customer.setName("cat-1");
-//        customer.setEmail("testemail@test.cas");
-//        customer.setPhoneNo("+91-189-298-7633");
-//
-//        entityManager.merge(customer);
-//        entityManager.flush();
-//        transaction.commit();
-//    }
-
-
     @Test
     void getViaPrimaryKey() throws Exception {
 
@@ -160,5 +143,42 @@ class SpeedyGetTest {
                 .andReturn();
     }
 
+    @Test
+    void getWithExpand() throws Exception {
+        mvc.perform(get(SpeedyConstant.URI + "/Product?$expand=Category")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThan(0))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].category").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].category.name").exists())
+                .andReturn();
+    }
 
+    @Test
+    void getWithPagination() throws Exception {
+        mvc.perform(get(SpeedyConstant.URI + "/Product?$page=0&$pageSize=3")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageIndex").value(0))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.pageSize").value(3))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(3)))
+                .andReturn();
+    }
+
+    @Test
+    void getWithMultiConditionAnd() throws Exception {
+        mvc.perform(get(SpeedyConstant.URI + "/Product?name='prod-1-1'&category.id=1")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andReturn();
+    }
 }
