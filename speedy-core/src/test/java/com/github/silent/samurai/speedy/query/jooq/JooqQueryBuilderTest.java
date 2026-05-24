@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.query.jooq;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.data.MultipleFk;
 import com.github.silent.samurai.speedy.data.Product;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.sql.DataSource;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Disabled

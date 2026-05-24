@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.Assertions;
@@ -23,8 +23,8 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 import java.util.List;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)

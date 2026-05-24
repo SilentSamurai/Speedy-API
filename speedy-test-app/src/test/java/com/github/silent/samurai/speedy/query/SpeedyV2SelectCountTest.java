@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.query;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.ProductRepository;
@@ -23,8 +23,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)

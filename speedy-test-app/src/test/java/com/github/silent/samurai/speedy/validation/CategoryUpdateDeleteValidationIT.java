@@ -1,9 +1,8 @@
 package com.github.silent.samurai.speedy.validation;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
+import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,13 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-/**
- * Integration tests covering UPDATE & DELETE validation rules using MockMvc.
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class CategoryUpdateDeleteValidationIT {
@@ -26,12 +19,11 @@ class CategoryUpdateDeleteValidationIT {
     @Autowired
     MockMvc mockMvc;
 
-    private SpeedyClient<ResultActions> client;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private SpeedyTest client;
 
     @BeforeEach
     void setUp() {
-        client = SpeedyClient.mockMvc(mockMvc);
+        client = SpeedyTest.mockMvc(mockMvc);
     }
 
     @Nested
@@ -43,7 +35,7 @@ class CategoryUpdateDeleteValidationIT {
             client.update("Category")
                     .field("name", "should-fail")
                     .execute()
-                    .andExpect(status().isBadRequest());
+                    .expectBadRequest();
         }
     }
 
@@ -55,27 +47,23 @@ class CategoryUpdateDeleteValidationIT {
         void deleteMissingKey_shouldFail() throws Exception {
             client.delete("Category")
                     .execute()
-                    .andExpect(status().isBadRequest());
+                    .expectBadRequest();
         }
 
         @Test
         @DisplayName("Successful create & delete")
         void createThenDelete_shouldSucceed() throws Exception {
-            // create valid entity
-            ResultActions createAct = client.create("Category")
-                    .addField("name", "it-cat-del")
+            SpeedyTestResult createResult = client.create("Category")
+                    .field("name", "it-cat-del")
                     .execute()
-                    .andExpect(status().isOk());
+                    .expectOk();
 
-            String content = createAct.andReturn().getResponse().getContentAsString();
-            JsonNode json = mapper.readTree(content);
-            String id = json.at("/payload/0/id").asText();
+            String id = createResult.jsonPath("$.payload[0].id");
 
-            // perform delete with key
             client.delete("Category")
                     .key("id", id)
                     .execute()
-                    .andExpect(status().isOk());
+                    .expectOk();
         }
     }
 }

@@ -1,13 +1,10 @@
 package com.github.silent.samurai.speedy.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.entity.ValueTestEntity;
-import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
+import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,13 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.*;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -30,115 +25,84 @@ import static org.junit.jupiter.api.Assertions.*;
 class ValueTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ValueTest.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Autowired
     EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    SpeedyFactory speedyFactory;
-
-    @Autowired
-    ValueTestRepository valueTestRepository;
-    SpeedyClient<SpeedyResponse> speedyClient;
-
-    @Autowired
     private MockMvc mvc;
+
+    private SpeedyTest speedyClient;
 
     @BeforeEach
     void setUp() {
-        MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-        speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
+        speedyClient = SpeedyTest.mockMvc(mvc);
     }
 
     @Test
     void normalTest() throws Exception {
-        Class<ValueTestEntity> valueTestEntityClass = ValueTestEntity.class;
+        SpeedyTestResult createResponse = speedyClient.create("ValueTestEntity")
+                .field("localDateTime", LocalDateTime.now())
+                .field("localDate", LocalDate.now())
+                .field("localTime", LocalTime.now())
+                .field("instantTime", Instant.now())
+                .field("booleanValue", true)
+                .execute()
+                .expectOk();
 
-        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
-                .addField("localDateTime", LocalDateTime.now())
-                .addField("localDate", LocalDate.now())
-                .addField("localTime", LocalTime.now())
-                .addField("instantTime", Instant.now())
-                .addField("zonedDateTime", ZonedDateTime.now())
-                .addField("booleanValue", true)
-                .execute();
-
-        assertFalse(createResponse.getPayload().isEmpty());
-        JsonNode createdEntity = createResponse.getPayload().get(0);
-
-        assertTrue(createdEntity.has("id"));
-        String id = createdEntity.get("id").asText();
+        String id = createResponse.jsonPath("$.payload[0].id");
         assertNotNull(id);
 
         // Step 2: Get and verify the created entity
-        SpeedyResponse getResponse = speedyClient.get("ValueTestEntity")
+        SpeedyTestResult getResponse = speedyClient.get("ValueTestEntity")
                 .key("id", id)
-                .execute();
+                .execute()
+                .expectOk();
 
-        JsonNode fetchedEntity = getResponse.getPayload().get(0);
-
-        assertTrue(fetchedEntity.has("localDateTime"));
-        assertTrue(fetchedEntity.has("booleanValue"));
-        assertTrue(fetchedEntity.get("booleanValue").asBoolean());
+        assertNotNull(getResponse.jsonPath("$.payload[0].localDateTime"));
+        boolean boolVal = getResponse.jsonPath("$.payload[0].booleanValue", Boolean.class);
+        assertTrue(boolVal);
 
         // Step 3: Update the entity
-        SpeedyResponse updateResponse = speedyClient.update("ValueTestEntity")
+        SpeedyTestResult updateResponse = speedyClient.update("ValueTestEntity")
                 .key("id", id)
-                .field("booleanValue", false)  // Update the boolean field
-                .field("localDateTime", LocalDateTime.now().plusDays(1).toString()) // Update the date
-                .execute();
+                .field("booleanValue", false)
+                .field("localDateTime", LocalDateTime.now().plusDays(1).toString())
+                .execute()
+                .expectOk();
 
-        JsonNode updatedEntity = updateResponse.getPayload();
-
-        assertTrue(updatedEntity.isArray());
-        assertFalse(updatedEntity.isEmpty());
-        updatedEntity = updatedEntity.get(0);
-
-        assertTrue(updatedEntity.has("booleanValue"));
-        assertFalse(updatedEntity.get("booleanValue").asBoolean());
+        boolean updatedBool = updateResponse.jsonPath("$.payload[0].booleanValue", Boolean.class);
+        assertFalse(updatedBool);
 
         // Step 4: Query the entity by ID and verify the updated value
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .where(condition("id", eq(id)))
-                )
-                .execute();
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .where(condition("id", eq(id)))
+                .execute()
+                .expectOk();
 
-        JsonNode queriedEntity = queryResponse.getPayload().get(0);
-
-        assertTrue(queriedEntity.has("booleanValue"));
-        assertFalse(queriedEntity.get("booleanValue").asBoolean());
-        assertTrue(queriedEntity.has("localDateTime"));
+        boolean queriedBool = queryResponse.jsonPath("$.payload[0].booleanValue", Boolean.class);
+        assertFalse(queriedBool);
+        assertNotNull(queryResponse.jsonPath("$.payload[0].localDateTime"));
 
         // Step 5: Delete the entity
-        SpeedyResponse deleteResponse = speedyClient.delete("ValueTestEntity")
+        SpeedyTestResult deleteResponse = speedyClient.delete("ValueTestEntity")
                 .key("id", id)
-                .execute();
+                .execute()
+                .expectOk();
 
-        JsonNode deletedEntity = deleteResponse.getPayload().get(0);
-
-        assertTrue(deletedEntity.has("id"));
-        assertEquals(id, deletedEntity.get("id").asText());
+        assertEquals(id, deleteResponse.jsonPath("$.payload[0].id"));
     }
 
     @Test
     void testQueryWithGreaterThanAndLessThan() throws Exception {
-        // Step 1: Create multiple ValueTestEntities
         createEntity(LocalDate.now().minusDays(5), LocalTime.of(10, 0), Instant.now().minusSeconds(5000));
         createEntity(LocalDate.now(), LocalTime.of(12, 0), Instant.now());
         createEntity(LocalDate.now().plusDays(5), LocalTime.of(14, 0), Instant.now().plusSeconds(5000));
 
-        // Step 2: Query entities where localDate > today
         queryLocalDateGreaterThan(LocalDate.now());
-
-        // Step 3: Query entities where localDate < today
         queryLocalDateLessThan(LocalDate.now());
-
-        // Step 4: Query entities where localTime > 11:00
         queryLocalTimeGreaterThan(LocalTime.of(11, 0));
-
-        // Step 5: Query entities where instantTime < now
         queryInstantTimeLessThan(Instant.now());
 
         query_double_value(1.5430434);
@@ -149,92 +113,99 @@ class ValueTest {
     }
 
     private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) throws Exception {
-        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
-                .addField("localDateTime", LocalDateTime.of(localDate, localTime))
-                .addField("localDate", localDate)
-                .addField("localTime", localTime)
-                .addField("instantTime", instantTime)
-                .addField("booleanValue", true)
-                .addField("doubleValue", 1.5430434)
-                .execute();
-
-        assertFalse(createResponse.getPayload().isEmpty());
+        speedyClient.create("ValueTestEntity")
+                .field("localDateTime", LocalDateTime.of(localDate, localTime))
+                .field("localDate", localDate)
+                .field("localTime", localTime)
+                .field("instantTime", instantTime)
+                .field("booleanValue", true)
+                .field("doubleValue", 1.5430434)
+                .execute()
+                .expectOk();
     }
 
     private void queryLocalDateGreaterThan(LocalDate date) throws Exception {
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .where(condition("localDate", gt(date.toString())))
-                )
-                .execute();
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .where(condition("localDate", gt(date.toString())))
+                .execute()
+                .expectOk();
 
-        assertFalse(queryResponse.getPayload().isEmpty());
-        for (JsonNode entity : queryResponse.getPayload()) {
-            assertTrue(LocalDate.parse(entity.get("localDate").asText()).isAfter(date));
+        String responseBody = queryResponse.responseBody();
+        int size = MAPPER.readTree(responseBody).at("/payload").size();
+        assertTrue(size > 0);
+        for (int i = 0; i < size; i++) {
+            String val = MAPPER.readTree(responseBody).at("/payload/" + i + "/localDate").asText();
+            assertTrue(LocalDate.parse(val).isAfter(date));
         }
     }
 
     private void queryLocalDateLessThan(LocalDate date) throws Exception {
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .where(condition("localDate", lt(date.toString())))
-                )
-                .execute();
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .where(condition("localDate", lt(date.toString())))
+                .execute()
+                .expectOk();
 
-        assertFalse(queryResponse.getPayload().isEmpty());
-        for (JsonNode entity : queryResponse.getPayload()) {
-            assertTrue(LocalDate.parse(entity.get("localDate").asText()).isBefore(date));
+        String responseBody = queryResponse.responseBody();
+        int size = MAPPER.readTree(responseBody).at("/payload").size();
+        assertTrue(size > 0);
+        for (int i = 0; i < size; i++) {
+            String val = MAPPER.readTree(responseBody).at("/payload/" + i + "/localDate").asText();
+            assertTrue(LocalDate.parse(val).isBefore(date));
         }
     }
 
     private void queryLocalTimeGreaterThan(LocalTime time) throws Exception {
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .where(condition("localTime", gt(time.toString())))
-                )
-                .execute();
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .where(condition("localTime", gt(time.toString())))
+                .execute()
+                .expectOk();
 
-        assertFalse(queryResponse.getPayload().isEmpty());
-        for (JsonNode entity : queryResponse.getPayload()) {
-            assertTrue(LocalTime.parse(entity.get("localTime").asText()).isAfter(time));
+        String responseBody = queryResponse.responseBody();
+        int size = MAPPER.readTree(responseBody).at("/payload").size();
+        assertTrue(size > 0);
+        for (int i = 0; i < size; i++) {
+            String val = MAPPER.readTree(responseBody).at("/payload/" + i + "/localTime").asText();
+            assertTrue(LocalTime.parse(val).isAfter(time));
         }
     }
 
     private void queryInstantTimeLessThan(Instant instant) throws Exception {
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .where(condition("instantTime", lt(instant.toString())))
-                )
-                .execute();
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .where(condition("instantTime", lt(instant.toString())))
+                .execute()
+                .expectOk();
 
-        assertFalse(queryResponse.getPayload().isEmpty());
-        for (JsonNode entity : queryResponse.getPayload()) {
-            assertTrue(Instant.parse(entity.get("instantTime").asText()).isBefore(instant));
+        String responseBody = queryResponse.responseBody();
+        int size = MAPPER.readTree(responseBody).at("/payload").size();
+        assertTrue(size > 0);
+        for (int i = 0; i < size; i++) {
+            String val = MAPPER.readTree(responseBody).at("/payload/" + i + "/instantTime").asText();
+            assertTrue(Instant.parse(val).isBefore(instant));
         }
     }
 
     private void query_double_value(Double doubleValue) throws Exception {
-        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
-                .addField("localDateTime", LocalDateTime.now())
-                .addField("localDate", LocalDate.now())
-                .addField("localTime", LocalTime.now())
-                .addField("instantTime", Instant.now())
-                .addField("booleanValue", true)
-                .addField("doubleValue", doubleValue)
-                .execute();
+        speedyClient.create("ValueTestEntity")
+                .field("localDateTime", LocalDateTime.now())
+                .field("localDate", LocalDate.now())
+                .field("localTime", LocalTime.now())
+                .field("instantTime", Instant.now())
+                .field("booleanValue", true)
+                .field("doubleValue", doubleValue)
+                .execute()
+                .expectOk();
 
-        assertFalse(createResponse.getPayload().isEmpty());
-        JsonNode payload = createResponse.getPayload();
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .where(condition("doubleValue", eq(doubleValue)))
+                .execute()
+                .expectOk();
 
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .where(condition("doubleValue", eq(doubleValue)))
-                )
-                .execute();
-
-        assertFalse(queryResponse.getPayload().isEmpty());
-        for (JsonNode entity : queryResponse.getPayload()) {
-            assertEquals(entity.get("doubleValue").asDouble(), doubleValue);
+        String responseBody = queryResponse.responseBody();
+        int size = MAPPER.readTree(responseBody).at("/payload").size();
+        assertTrue(size > 0);
+        for (int i = 0; i < size; i++) {
+            double val = MAPPER.readTree(responseBody).at("/payload/" + i + "/doubleValue").asDouble();
+            assertEquals(val, doubleValue);
         }
     }
 }

@@ -40,3 +40,5 @@ keys/
 application-secret*
 *secret*.yml
 *secret*.properties
+
+specs

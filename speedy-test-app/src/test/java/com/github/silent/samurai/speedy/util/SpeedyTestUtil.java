@@ -1,8 +1,6 @@
 package com.github.silent.samurai.speedy.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.api.client.utils.JsonUtil;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.Matcher;
@@ -10,15 +8,15 @@ import org.hamcrest.MatcherAssert;
 
 public class SpeedyTestUtil {
 
-    public static DocumentContext jsonPath(SpeedyResponse response) throws JsonProcessingException {
-        return JsonPath.parse(JsonUtil.toJson(response));
+    public static DocumentContext jsonPath(String responseBody) throws JsonProcessingException {
+        return JsonPath.parse(responseBody);
     }
 
     /**
-     * Entry point for fluent JSONPath assertions using Hamcrest on a SpeedyResponse.
+     * Entry point for fluent JSONPath assertions using Hamcrest on a response body string.
      */
-    public static JsonResponseAssert assertThat(SpeedyResponse response) throws JsonProcessingException {
-        return new JsonResponseAssert(jsonPath(response));
+    public static JsonResponseAssert assertThat(String responseBody) throws JsonProcessingException {
+        return new JsonResponseAssert(jsonPath(responseBody));
     }
 
     /**

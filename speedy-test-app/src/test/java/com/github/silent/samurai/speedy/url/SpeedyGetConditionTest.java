@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.url;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)

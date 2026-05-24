@@ -1,12 +1,10 @@
 package com.github.silent.samurai.speedy.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
+import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,91 +13,78 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class OrderByTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderByTest.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Autowired
     EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    SpeedyFactory speedyFactory;
-
-    @Autowired
-    ValueTestRepository valueTestRepository;
-    SpeedyClient<SpeedyResponse> speedyClient;
-
-    @Autowired
     private MockMvc mvc;
+
+    private SpeedyTest speedyClient;
 
     @BeforeEach
     void setUp() {
-        MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-        speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
+        speedyClient = SpeedyTest.mockMvc(mvc);
     }
 
     @Test
     void testOrderByLocalDateAscending() throws Exception {
-        // Step 1: Create multiple ValueTestEntities with different localDate values
         createEntity(LocalDate.now().minusDays(5), LocalTime.of(10, 0), Instant.now().minusSeconds(5000));
         createEntity(LocalDate.now(), LocalTime.of(12, 0), Instant.now());
         createEntity(LocalDate.now().plusDays(5), LocalTime.of(14, 0), Instant.now().plusSeconds(5000));
 
-        // Step 2: Query and order entities by localDate ascending
         queryOrderByLocalDateAscending();
     }
 
     @Test
     void testOrderByLocalTimeDescending() throws Exception {
-        // Step 1: Create multiple ValueTestEntities with different localTime values
         createEntity(LocalDate.now(), LocalTime.of(10, 0), Instant.now().minusSeconds(5000));
         createEntity(LocalDate.now(), LocalTime.of(12, 0), Instant.now());
         createEntity(LocalDate.now(), LocalTime.of(14, 0), Instant.now().plusSeconds(5000));
 
-        // Step 2: Query and order entities by localTime descending
         queryOrderByLocalTimeDescending();
     }
 
     private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) throws Exception {
-        SpeedyResponse createResponse = speedyClient.create("ValueTestEntity")
-                .addField("localDateTime", LocalDateTime.of(localDate, localTime).toString())
-                .addField("localDate", localDate.toString())
-                .addField("localTime", localTime.toString())
-                .addField("instantTime", instantTime.toString())
-                .addField("booleanValue", true)
-                .execute();
-
-        assertFalse(createResponse.getPayload().isEmpty());
+        speedyClient.create("ValueTestEntity")
+                .field("localDateTime", LocalDateTime.of(localDate, localTime).toString())
+                .field("localDate", localDate.toString())
+                .field("localTime", localTime.toString())
+                .field("instantTime", instantTime.toString())
+                .field("booleanValue", true)
+                .execute()
+                .expectOk();
     }
 
     private void queryOrderByLocalDateAscending() throws Exception {
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .orderByAsc("localDate")
-                )
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .orderByAsc("localDate")
+                .execute()
+                .expectOk();
 
-                .execute();
-
-        assertFalse(queryResponse.getPayload().isEmpty());
-
+        String responseBody = queryResponse.responseBody();
+        int size = MAPPER.readTree(responseBody).at("/payload").size();
         LocalDate previousDate = null;
-        for (JsonNode entity : queryResponse.getPayload()) {
-            LocalDate currentDate = LocalDate.parse(entity.get("localDate").asText());
+        for (int i = 0; i < size; i++) {
+            LocalDate currentDate = LocalDate.parse(
+                    MAPPER.readTree(responseBody).at("/payload/" + i + "/localDate").asText());
             if (previousDate != null) {
                 assertTrue(currentDate.isAfter(previousDate) || currentDate.isEqual(previousDate));
             }
@@ -108,17 +93,17 @@ class OrderByTest {
     }
 
     private void queryOrderByLocalTimeDescending() throws Exception {
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("ValueTestEntity")
-                                .orderByDesc("localTime")
-                )
-                .execute();
+        SpeedyTestResult queryResponse = speedyClient.query("ValueTestEntity")
+                .orderByDesc("localTime")
+                .execute()
+                .expectOk();
 
-        assertFalse(queryResponse.getPayload().isEmpty());
-
+        String responseBody = queryResponse.responseBody();
+        int size = MAPPER.readTree(responseBody).at("/payload").size();
         LocalTime previousTime = null;
-        for (JsonNode entity : queryResponse.getPayload()) {
-            LocalTime currentTime = LocalTime.parse(entity.get("localTime").asText());
+        for (int i = 0; i < size; i++) {
+            LocalTime currentTime = LocalTime.parse(
+                    MAPPER.readTree(responseBody).at("/payload/" + i + "/localTime").asText());
             if (previousTime != null) {
                 assertTrue(currentTime.isBefore(previousTime) || currentTime.equals(previousTime));
             }

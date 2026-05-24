@@ -1,12 +1,9 @@
 package com.github.silent.samurai.speedy.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
+import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,12 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -33,101 +28,66 @@ class ForeignKeyTest {
     EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    SpeedyFactory speedyFactory;
-
-    @Autowired
-    ValueTestRepository valueTestRepository;
-    SpeedyClient<SpeedyResponse> speedyClient;
-
-    @Autowired
     private MockMvc mvc;
+
+    private SpeedyTest speedyClient;
 
     @BeforeEach
     void setUp() {
-        MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-        speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
+        speedyClient = SpeedyTest.mockMvc(mvc);
     }
 
     @Test
     void normalTest() throws Exception {
 
-        SpeedyResponse createResponse = speedyClient.create("Product")
-                .addField("name", "client-product-1")
-                .addField("description", "test description")
-                .addField("category.id", "1")  // Foreign Key to Category entity
-                .execute();
+        SpeedyTestResult createResponse = speedyClient.create("Product")
+                .field("name", "client-product-1")
+                .field("description", "test description")
+                .field("category.id", "1")
+                .execute()
+                .expectOk()
+                .expectJsonPathExists("$.payload[0].id");
 
-        // Assert that the product creation is successful
-        assertFalse(createResponse.getPayload().isEmpty());
-        JsonNode product = createResponse.getPayload().get(0);
-
-        assertTrue(product.has("id"));
-        assertTrue(product.get("id").isTextual());
-        String productId = product.get("id").asText();
+        String productId = createResponse.jsonPath("$.payload[0].id");
         LOGGER.info("Created product with ID: {}", productId);
 
-        // Fetch and validate the created product
-        SpeedyResponse getResponse = speedyClient.get("Product")
+        SpeedyTestResult getResponse = speedyClient.get("Product")
                 .key("id", productId)
-                .execute();
+                .execute()
+                .expectOk();
 
-        assertFalse(getResponse.getPayload().isEmpty());
-        JsonNode fetchedProduct = getResponse.getPayload().get(0);
-
-        assertEquals(productId, fetchedProduct.get("id").asText());
-        assertEquals("client-product-1", fetchedProduct.get("name").asText());
-        // PRE_INSERT event mutates description to verify handler execution
-        assertEquals("created-by-event", fetchedProduct.get("description").asText());
-        assertEquals("1", fetchedProduct.get("category").get("id").asText());
-
-        // Validate Foreign Key association with Category
-        assertTrue(fetchedProduct.has("category"));
-        assertTrue(fetchedProduct.get("category").has("id"));
-        assertEquals("1", fetchedProduct.get("category").get("id").asText());
+        assertEquals(productId, getResponse.jsonPath("$.payload[0].id"));
+        assertEquals("client-product-1", getResponse.jsonPath("$.payload[0].name"));
+        assertEquals("created-by-event", getResponse.jsonPath("$.payload[0].description"));
+        assertEquals("1", getResponse.jsonPath("$.payload[0].category.id"));
         LOGGER.info("Product is associated with category ID: 1");
-
         LOGGER.info("Fetched product details match with the created product");
 
-        // Update Product name
-        SpeedyResponse updateResponse = speedyClient.update("Product")
+        SpeedyTestResult updateResponse = speedyClient.update("Product")
                 .key("id", productId)
                 .field("name", "updated-client-product")
-                .execute();
+                .execute()
+                .expectOk();
 
-        // Validate update
-        JsonNode updatedProduct = updateResponse.getPayload();
-        assertTrue(updatedProduct.isArray());
-        assertFalse(updatedProduct.isEmpty());
-        updatedProduct = updatedProduct.get(0);
-
-        assertEquals(productId, updatedProduct.get("id").asText());
-        assertEquals("updated-client-product", updatedProduct.get("name").asText());
+        assertEquals(productId, updateResponse.jsonPath("$.payload[0].id"));
+        assertEquals("updated-client-product", updateResponse.jsonPath("$.payload[0].name"));
         LOGGER.info("Updated product name to 'updated-client-product'");
 
-        // Query the updated product using the new name
+        SpeedyTestResult queryResponse = speedyClient.query("Product")
+                .where(condition("name", eq("updated-client-product")))
+                .execute()
+                .expectOk();
 
-        SpeedyResponse queryResponse = speedyClient.query(
-                        SpeedyQuery.from("Product")
-                                .where(condition("name", eq("updated-client-product")))
-                )
-                .execute();
-
-        // Validate query result
-        assertFalse(queryResponse.getPayload().isEmpty());
-        JsonNode queriedProduct = queryResponse.getPayload().get(0);
-        assertEquals(productId, queriedProduct.get("id").asText());
-        assertEquals("updated-client-product", queriedProduct.get("name").asText());
+        assertEquals(productId, queryResponse.jsonPath("$.payload[0].id"));
+        assertEquals("updated-client-product", queryResponse.jsonPath("$.payload[0].name"));
         LOGGER.info("Queried product successfully by updated name");
 
-        // Optionally, delete the product for cleanup
-        SpeedyResponse deleteResponse = speedyClient.delete("Product")
+        SpeedyTestResult deleteResponse = speedyClient.delete("Product")
                 .key("id", productId)
-                .execute();
+                .execute()
+                .expectOk();
 
-        assertFalse(deleteResponse.getPayload().isEmpty());
-        JsonNode deletedProduct = deleteResponse.getPayload().get(0);
-        assertEquals(productId, deletedProduct.get("id").asText());
+        assertEquals(productId, deleteResponse.jsonPath("$.payload[0].id"));
         LOGGER.info("Product with ID {} successfully deleted", productId);
     }
 }

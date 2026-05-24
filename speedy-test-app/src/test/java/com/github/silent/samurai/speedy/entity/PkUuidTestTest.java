@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.entity;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
