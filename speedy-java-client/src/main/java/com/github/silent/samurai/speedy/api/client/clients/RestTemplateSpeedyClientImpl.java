@@ -29,18 +29,15 @@ public class RestTemplateSpeedyClientImpl implements HttpClient<SpeedyResponse> 
                                     MultiValueMap<String, String> queryParams,
                                     JsonNode body,
                                     HttpHeaders headerParams) throws Exception {
-        // Build full URI with query parameters
-        String uri = UriComponentsBuilder.fromPath(path)
+        String uri = UriComponentsBuilder.fromHttpUrl(baseUrl).path(path)
                 .queryParams(queryParams)
                 .build()
                 .toUriString();
 
-        // Prepare the request entity
         HttpEntity<?> requestEntity = (body != null)
                 ? new HttpEntity<>(body.toString(), headerParams)
                 : new HttpEntity<>(headerParams);
 
-        // Send the request
         ResponseEntity<SpeedyResponse> response = restTemplate.exchange(
                 uri,
                 method,

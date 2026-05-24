@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.api.client;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.silent.samurai.speedy.api.client.builder.SpeedyCreateRequestBuilder;
 import com.github.silent.samurai.speedy.api.client.builder.SpeedyDeleteRequestBuilder;
 import com.github.silent.samurai.speedy.api.client.builder.SpeedyGetRequestBuilder;
@@ -76,6 +77,17 @@ import org.springframework.web.client.RestTemplate;
      */
     public SpeedyClient(HttpClient<T> httpClient) {
         this.speedyApi = new SpeedyApi<>(httpClient);
+    }
+
+    /**
+     * Configure the API path prefix. Default is {@code /speedy/v1/}.
+     *
+     * @param baseUrl the API path prefix (e.g., "/speedy/v1/")
+     * @return this client instance for method chaining
+     */
+    public SpeedyClient<T> baseUrl(String baseUrl) {
+        speedyApi.setBaseUrl(baseUrl);
+        return this;
     }
 
     /**
@@ -229,6 +241,75 @@ import org.springframework.web.client.RestTemplate;
      */
     public SpeedyQueryRequest<T> query(SpeedyQuery query) {
         return new SpeedyQueryRequest<>(query, speedyApi);
+    }
+
+    /**
+     * Execute a count query returning the number of matching records.
+     *
+     * <pre>{@code
+     * import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+     * SpeedyQuery query = from("users").where(condition("active", eq(true))).build();
+     * T response = client.count(query);
+     * }
+     * </pre>
+     *
+     * @param query the query defining which records to count
+     * @return the response from the count endpoint
+     */
+    public T count(SpeedyQuery query) throws Exception {
+        return speedyApi.count(query);
+    }
+
+    /**
+     * Fetch the API metadata describing all available entities and fields.
+     *
+     * <pre>{@code
+     * SpeedyResponse metadata = client.metadata();
+     * }
+     * </pre>
+     *
+     * @return the response from the metadata endpoint
+     */
+    public T metadata() throws Exception {
+        return speedyApi.metadata();
+    }
+
+    /**
+     * Bulk create multiple entities.
+     *
+     * <pre>{@code
+     * ArrayNode entities = mapper.createArrayNode();
+     * entities.add(mapper.createObjectNode().put("name", "Alice"));
+     * entities.add(mapper.createObjectNode().put("name", "Bob"));
+     * T response = client.createMany("User", entities);
+     * }
+     * </pre>
+     *
+     * @param entity   the entity name
+     * @param entities the array of entity objects to create
+     * @return the response from the API
+     */
+    public T createMany(String entity, ArrayNode entities) throws Exception {
+        return speedyApi.createMany(entity, entities);
+    }
+
+    /**
+     * Bulk delete multiple entities by primary key.
+     *
+     * <pre>{@code
+     * ArrayNode pks = mapper.createArrayNode();
+     * pks.add(mapper.createObjectNode().put("id", 123));
+     * pks.add(mapper.createObjectNode().put("id", 456));
+     * T response = client.deleteMany("User", pks);
+     * }
+     * </pre>
+     *
+     * @param entity the entity name
+     * @param pks    the array of primary key objects to delete
+     * @return the response from the API
+     */
+    public T deleteMany(String entity, ArrayNode pks) throws Exception {
+        return speedyApi.deleteMany(entity, pks);
     }
 
 }

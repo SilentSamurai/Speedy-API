@@ -31,15 +31,24 @@ public class MockMvcHttpClient implements HttpClient<ResultActions> {
 
     @Override
     public ResultActions invokeAPI(String path,
-                                   HttpMethod method,
-                                   MultiValueMap<String, String> queryParams,
-                                   JsonNode body,
-                                   HttpHeaders headerParams) throws Exception {
-        return mockMvc.perform(
-                MockMvcRequestBuilders.request(method, path)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body))
-        );
+                                    HttpMethod method,
+                                    MultiValueMap<String, String> queryParams,
+                                    JsonNode body,
+                                    HttpHeaders headerParams) throws Exception {
+        var requestBuilder = MockMvcRequestBuilders.request(method, path)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON);
+
+        if (queryParams != null && !queryParams.isEmpty()) {
+            requestBuilder.queryParams(queryParams);
+        }
+        if (body != null) {
+            requestBuilder.content(objectMapper.writeValueAsString(body));
+        }
+        if (headerParams != null && !headerParams.isEmpty()) {
+            requestBuilder.headers(headerParams);
+        }
+
+        return mockMvc.perform(requestBuilder);
     }
 } 

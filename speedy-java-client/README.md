@@ -2,70 +2,45 @@
 
 A library-agnostic Java client for Speedy API that allows you to use any HTTP client implementation of your choice.
 
-## Architecture
+## Quick Start
 
-The Speedy Java Client now uses an interface-based approach that allows you to plug in your own HTTP client
-implementation:
-
-- **`HttpClient` interface**: Defines the contract for HTTP operations
-- **`ApiClient` class**: Default implementation using Spring's RestTemplate
-- **`SpeedyApi` class**: Main API client that uses the HttpClient interface
-- **Query builders**: Fluent builders for creating complex queries
-
-## Usage Options
-
-### Option 1: Use with Default HTTP Client (Spring RestTemplate)
+### RestTemplate (Production)
 
 ```java
-// Using default ApiClient with RestTemplate
-SpeedyApi speedyApi = new SpeedyApi();
+RestTemplate restTemplate = new RestTemplate();
+SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080");
 
-// Or with custom RestTemplate
-RestTemplate customRestTemplate = new RestTemplate();
-SpeedyApi speedyApi = new SpeedyApi(customRestTemplate);
+SpeedyResponse response = client.get("users")
+    .key("id", 123)
+    .execute();
+
+List<User> users = response.asList(User.class);
 ```
 
-### Option 2: Use with Your Own HTTP Client
+### MockMvc (Testing)
 
 ```java
-// Implement the HttpClient interface with your preferred HTTP library
-public class MyCustomHttpClient implements HttpClient {
-    // Implement using OkHttp, Apache HttpClient, etc.
-    @Override
-    public <T> ResponseEntity<T> invokeAPI(...) {
-        // Your HTTP client implementation here
-    }
-    
-    // Implement other methods...
-}
+SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
 
-// Use your custom HTTP client
-SpeedyApi speedyApi = new SpeedyApi(new MyCustomHttpClient());
-```
+ResultActions result = client.create("users")
+    .field("name", "Test User")
+    .execute();
 
-### Option 3: Use Only Request/Response Generation (No HTTP Client)
-
-```java
-// Use static builder methods for just building requests
-SpeedyQuery query = SpeedyQuery.builder("User")
-    .where(SpeedyQuery.condition("email", SpeedyQuery.eq("john@example.com")))
-    .orderByAsc("name")
-    .pageSize(10);
-
-JsonNode requestBody = query.build();
-// Use requestBody with your own HTTP client
+result.andExpect(status().isCreated());
 ```
 
 ## Query Building
 
-Build complex queries using the fluent API:
+Build complex queries using the fluent API with static imports:
 
 ```java
-SpeedyQuery query = SpeedyQuery.builder("User")
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+
+SpeedyQuery query = from("users")
     .where(
-        SpeedyQuery.and(
-            SpeedyQuery.condition("email", SpeedyQuery.eq("john@example.com")),
-            SpeedyQuery.condition("age", SpeedyQuery.gt(18))
+        and(
+            condition("active", eq(true)),
+            condition("age", gte(18))
         )
     )
     .orderByAsc("name")
@@ -74,57 +49,168 @@ SpeedyQuery query = SpeedyQuery.builder("User")
     .expand("profile")
     .select("id", "name", "email");
 
-// Execute the query
-SpeedyResponse response = speedyApi.query(query);
+SpeedyResponse response = client.query(query).execute();
+List<User> users = response.asList(User.class);
 ```
 
 ## CRUD Operations
 
+### Create
+
 ```java
-// Create
-SpeedyCreateRequest createRequest = SpeedyCreateRequest.builder("User")
-    .addField("name", "John Doe")
-    .addField("email", "john@example.com")
-    .build();
-SpeedyResponse response = speedyApi.create(createRequest);
+// Single entity
+SpeedyResponse response = client.create("User")
+    .field("name", "John Doe")
+    .field("email", "john@example.com")
+    .execute();
 
-// Read
-SpeedyGetRequest getRequest = SpeedyGetRequest.builder("User")
-    .pk("id", "123")
-    .build();
-SpeedyResponse response = speedyApi.get(getRequest);
-
-// Update
-SpeedyUpdateRequest updateRequest = SpeedyUpdateRequest.builder("User")
-    .addField("name", "Jane Doe")
-    .where("id", "123")
-    .build();
-SpeedyResponse response = speedyApi.update(updateRequest);
-
-// Delete
-SpeedyDeleteRequest deleteRequest = SpeedyDeleteRequest.builder("User")
-    .pk("id", "123")
-    .build();
-SpeedyResponse response = speedyApi.delete(deleteRequest);
+// Bulk create
+ArrayNode entities = mapper.createArrayNode();
+entities.add(mapper.createObjectNode().put("name", "Alice"));
+entities.add(mapper.createObjectNode().put("name", "Bob"));
+SpeedyResponse response = client.createMany("User", entities);
 ```
 
-## Benefits
+### Read
 
-1. **Library Agnostic**: Use any HTTP client library (OkHttp, Apache HttpClient, etc.)
-2. **Backward Compatible**: Existing code using RestTemplate continues to work
-3. **Flexible**: Choose between full HTTP client integration or just request/response generation
-4. **Type Safe**: Strong typing with fluent builders
-5. **Easy Testing**: Mock the HttpClient interface for unit tests
+```java
+// By primary key
+SpeedyResponse response = client.get("User")
+    .key("id", 123)
+    .execute();
+
+User user = response.asSingle(User.class);
+
+// List all
+SpeedyResponse response = client.get("User").execute();
+List<User> users = response.asList(User.class);
+```
+
+### Update
+
+```java
+SpeedyResponse response = client.update("User")
+    .key("id", 123)
+    .field("name", "Jane Doe")
+    .field("email", "jane@example.com")
+    .execute();
+```
+
+### Delete
+
+```java
+// Single
+SpeedyResponse response = client.delete("User")
+    .key("id", 123)
+    .execute();
+
+// Bulk
+ArrayNode pks = mapper.createArrayNode();
+pks.add(mapper.createObjectNode().put("id", 123));
+pks.add(mapper.createObjectNode().put("id", 456));
+SpeedyResponse response = client.deleteMany("User", pks);
+```
+
+## Count Queries
+
+```java
+import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+
+SpeedyQuery query = from("users")
+    .where(condition("active", eq(true)))
+    .build();
+
+SpeedyResponse response = client.count(query);
+long total = response.asCount();
+```
+
+## Metadata
+
+```java
+SpeedyResponse metadata = client.metadata();
+```
+
+## Typed Responses
+
+`SpeedyResponse` provides helper methods for automatic deserialization:
+
+```java
+SpeedyResponse response = client.get("users").execute();
+
+// Deserialize payload as a list
+List<User> users = response.asList(User.class);
+
+// Deserialize first element
+User user = response.asSingle(User.class);
+
+// Extract count from count queries
+long total = response.asCount();
+
+// Access pagination metadata
+int page = response.getPageIndex();
+int size = response.getPageSize();
+int totalPages = response.getTotalPageCount();
+```
+
+## Custom API Path
+
+```java
+SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080")
+    .baseUrl("/custom/path/");
+```
+
+## Custom HTTP Client
+
+```java
+public class OkHttpClientImpl implements HttpClient<MyResponse> {
+    // Implement methods using OkHttp
+}
+
+SpeedyClient<MyResponse> client = SpeedyClient.from(new OkHttpClientImpl());
+```
+
+## Building Requests Without Executing
+
+All builders expose `build()` for inspection or deferred execution:
+
+```java
+SpeedyGetRequest request = client.get("users")
+    .key("id", 123)
+    .build();
+
+// Inspect or modify the request
+logger.info("Entity: {}", request.getEntity());
+logger.info("PK: {}", request.getPk());
+
+// Execute later
+SpeedyResponse response = client.get(request).execute();
+```
+
+## Available Query Operators
+
+| Operator | Method | Description |
+|----------|--------|-------------|
+| `$eq` | `eq(value)` | Equal to |
+| `$ne` | `ne(value)` | Not equal to |
+| `$gt` | `gt(value)` | Greater than |
+| `$lt` | `lt(value)` | Less than |
+| `$gte` | `gte(value)` | Greater than or equal |
+| `$lte` | `lte(value)` | Less than or equal |
+| `$in` | `in(values...)` | In array of values |
+| `$nin` | `nin(values...)` | Not in array |
+| `$matches` | `matches(value)` | Pattern matching |
+| `$contains` | `contains(value)` | Substring/collection containment |
+
+## Logical Operators
+
+| Operator | Method | Description |
+|----------|--------|-------------|
+| `$and` | `and(conditions...)` | Logical AND |
+| `$or` | `or(conditions...)` | Logical OR |
 
 ## Dependencies
 
-The client has minimal dependencies:
-
-- Jackson for JSON processing
-- Jakarta Validation for annotations
-- Lombok for reducing boilerplate (optional)
-- Spring HTTP types (for the default implementation only)
-
-## Custom HTTP Client Example
-
-See `CustomHttpClientExample.java` for a complete example of implementing your own HTTP client. 
+- Jackson for JSON processing (via `speedy-commons`)
+- Spring Web types (for the default RestTemplate implementation)
+- Spring Test (optional, for MockMvc testing)
+- Lombok (provided scope)

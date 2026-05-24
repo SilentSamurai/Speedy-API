@@ -34,7 +34,7 @@ public class SpeedyGetRequestBuilder<T> {
      *
      * @return the constructed SpeedyGetRequest
      */
-    private SpeedyGetRequest build() {
+    public SpeedyGetRequest build() {
         SpeedyGetRequest request = new SpeedyGetRequest();
         request.setEntity(entityName);
         request.setPk(pk);
