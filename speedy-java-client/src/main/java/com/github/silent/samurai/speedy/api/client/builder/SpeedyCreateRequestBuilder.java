@@ -27,11 +27,10 @@ public class SpeedyCreateRequestBuilder<T> {
      * @param value the field value
      * @return this builder instance
      */
-    public <R> SpeedyCreateRequestBuilder<T> addField(String field, R value) {
+    public <R> SpeedyCreateRequestBuilder<T> field(String field, R value) {
         String[] parts = field.split("\\.");
         ObjectNode currentNode = entity;
 
-        // Traverse or create intermediate nodes
         for (int i = 0; i < parts.length - 1; i++) {
             String part = parts[i];
             if (!currentNode.has(part)) {
@@ -40,10 +39,17 @@ public class SpeedyCreateRequestBuilder<T> {
             currentNode = (ObjectNode) currentNode.get(part);
         }
 
-        // Set the final field value
         currentNode.set(parts[parts.length - 1], JsonUtil.getObjectMapper().convertValue(value, JsonNode.class));
 
         return this;
+    }
+
+    /**
+     * @deprecated use {@link #field(String, Object)} instead
+     */
+    @Deprecated
+    public <R> SpeedyCreateRequestBuilder<T> addField(String field, R value) {
+        return field(field, value);
     }
 
     /**
@@ -51,7 +57,7 @@ public class SpeedyCreateRequestBuilder<T> {
      *
      * @return the constructed SpeedyCreateRequest
      */
-    private SpeedyCreateRequest build() {
+    public SpeedyCreateRequest build() {
         SpeedyCreateRequest speedyCreateRequest = new SpeedyCreateRequest();
         speedyCreateRequest.setEntity(entityName);
         speedyCreateRequest.setBody(entity);
@@ -59,13 +65,11 @@ public class SpeedyCreateRequestBuilder<T> {
     }
 
     /**
-     * Build and execute the creation request using the configured SpeedyApi.
+     * Build and execute a single creation request.
      *
      * @return the response from the API
      */
     public T execute() throws Exception {
-        SpeedyCreateRequest request = build();
-        return speedyApi.create(request);
+        return speedyApi.create(build());
     }
-
 }

@@ -35,7 +35,7 @@ public class SpeedyDeleteRequestBuilder<T> {
      *
      * @return the constructed SpeedyDeleteRequest
      */
-    private SpeedyDeleteRequest build() {
+    public SpeedyDeleteRequest build() {
         SpeedyDeleteRequest request = new SpeedyDeleteRequest();
         request.setEntity(entityName);
         ArrayNode arrayNode = JsonUtil.getObjectMapper().createArrayNode();

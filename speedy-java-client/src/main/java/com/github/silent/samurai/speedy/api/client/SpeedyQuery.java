@@ -114,6 +114,7 @@ import java.util.Set;
 /// | `$in` | `in(Object...)` | In array of values | `in("A", "B", "C")` |
 /// | `$nin` | `nin(Object...)` | Not in array | `nin("deleted", "archived")` |
 /// | `$matches` | `matches(Object)` | Pattern matching | `matches("john.*")` |
+/// | `$contains` | `contains(Object)` | Substring/collection containment | `contains("john")` |
 ///
 /// ## Logical Operators
 ///
@@ -363,6 +364,24 @@ public class SpeedyQuery {
         return toJsonNode(values, "$matches");
     }
 
+    /// Creates a "contains" condition for substring/collection containment.
+    ///
+    /// ## Example
+    /// ```java
+    /// import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+    ///
+    /// SpeedyQuery query = from("users")
+    ///     .where(condition("name", contains("john")))
+    ///     .build();
+    ///```
+    ///
+    /// @param values the value to check for containment
+    /// @return an ObjectNode representing the contains condition
+    /// @throws JsonProcessingException if JSON conversion fails
+    public static ObjectNode contains(@NotNull Object values) throws JsonProcessingException {
+        return toJsonNode(values, "$contains");
+    }
+
     /// Creates a condition object with a key-value pair.
     ///
     /// This method is used to create condition objects that can be used
@@ -497,24 +516,18 @@ public class SpeedyQuery {
     /// @return this SpeedyQuery instance for method chaining
     /// @throws IllegalArgumentException if any condition is null or empty
     public SpeedyQuery where(@NotNull JsonNode... conditionObjs) {
+        where.removeAll();
         for (JsonNode conditionObj : conditionObjs) {
             if (conditionObj == null || conditionObj.isEmpty()) {
                 throw new IllegalArgumentException("The 'where' parameter cannot be null or empty.");
             }
-            if (conditionObj.has("$and")) {
+            if (conditionObj.has("$and") || conditionObj.has("$or")) {
                 where.removeAll();
-                where.set("$and", conditionObj.get("$and"));
+                conditionObj.fields().forEachRemaining(entry -> where.set(entry.getKey(), entry.getValue()));
                 break;
             }
-            if (conditionObj.has("$or")) {
-                where.removeAll();
-                where.set("$or", conditionObj.get("$or"));
-                break;
-            }
-            if (!conditionObj.isEmpty()) {
-                String firstField = conditionObj.fieldNames().next();
-                where.set(firstField, conditionObj.get(firstField));
-            }
+            String firstField = conditionObj.fieldNames().next();
+            where.set(firstField, conditionObj.get(firstField));
         }
         return this;
     }
