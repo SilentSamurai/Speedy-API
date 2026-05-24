@@ -1,10 +1,13 @@
 package com.github.silent.samurai.speedy.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
+
+import static org.hamcrest.Matchers.*;
 
 public class SpeedyTestUtil {
 
@@ -70,5 +73,26 @@ public class SpeedyTestUtil {
         public T get() {
             return value;
         }
+    }
+
+    /**
+     * Asserts the standard error response format: {"status":..., "message":..., "timestamp":...}
+     */
+    public static SpeedyTestResult expectErrorFormat(SpeedyTestResult result, int expectedStatus) {
+        result.expectStatus(expectedStatus);
+        result.expectJsonPath("$.status", equalTo(expectedStatus));
+        result.expectJsonPath("$.message", notNullValue());
+        result.expectJsonPath("$.message", not(emptyString()));
+        result.expectJsonPath("$.timestamp", notNullValue());
+        return result;
+    }
+
+    /**
+     * Asserts pagination metadata fields are present and match expected values.
+     */
+    public static SpeedyTestResult expectPaginationMetadata(SpeedyTestResult result, int expectedPageIndex, int expectedPageSize) {
+        result.expectJsonPath("$.pageIndex", equalTo(expectedPageIndex));
+        result.expectJsonPath("$.pageSize", equalTo(expectedPageSize));
+        return result;
     }
 }

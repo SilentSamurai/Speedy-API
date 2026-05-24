@@ -18,9 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class EntityEvents implements ISpeedyEventHandler {
+
+    public static final AtomicInteger POST_DELETE_COUNTER = new AtomicInteger(0);
+    public static final ConcurrentHashMap<String, Boolean> POST_INSERT_CATEGORIES = new ConcurrentHashMap<>();
+    public static volatile boolean POST_UPDATE_FIRED = false;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -30,6 +36,12 @@ public class EntityEvents implements ISpeedyEventHandler {
     @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.POST_INSERT, SpeedyEventType.PRE_INSERT})
     public void categoryPostInsertEvent(SpeedyEntity category) throws Exception {
         LOGGER.info("Category Post Insert Event");
+        try {
+            String id = category.get("id").asText();
+            POST_INSERT_CATEGORIES.put(id, true);
+        } catch (Exception e) {
+            LOGGER.warn("Failed to extract category ID from SpeedyEntity in POST_INSERT handler", e);
+        }
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_INSERT})
@@ -53,11 +65,9 @@ public class EntityEvents implements ISpeedyEventHandler {
     @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.PRE_INSERT})
     public void productInsert(Product product) throws Exception {
         LOGGER.info("Product Insert Event");
-        // raise BadRequestException for specific invalid name to test error handling
         if ("invalid-trigger".equalsIgnoreCase(product.getName())) {
             throw new BadRequestException("Product name 'invalid-trigger' is not allowed");
         }
-        // mark description so tests can verify handler execution (always override on insert)
         product.setDescription("created-by-event");
         if (product.getCategory() != null && product.getCategory().getId() != null && !product.getCategory().getId().isBlank()) {
             Category category = categoryRepository.findById(product.getCategory().getId()).orElse(null);
@@ -68,13 +78,11 @@ public class EntityEvents implements ISpeedyEventHandler {
     @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.PRE_UPDATE})
     public void productUpdate(Product product) throws Exception {
         LOGGER.info("Product Update Event");
-        // mark description so tests can verify handler execution
         product.setDescription("updated-by-event");
         if (product.getCategory() != null && product.getCategory().getId() != null && !product.getCategory().getId().isBlank()) {
             Category category = categoryRepository.findById(product.getCategory().getId()).orElse(null);
             product.setCategory(category);
         }
-
     }
 
     @SpeedyEvent(value = "Company", eventType = {SpeedyEventType.PRE_INSERT})
@@ -96,5 +104,17 @@ public class EntityEvents implements ISpeedyEventHandler {
     public void companyDelete(Company company) throws Exception {
         LOGGER.info("Company Delete Event");
         company.setDeletedAt(LocalDateTime.now());
+    }
+
+    @SpeedyEvent(value = "Company", eventType = {SpeedyEventType.POST_UPDATE})
+    public void companyPostUpdate(Company company) throws Exception {
+        LOGGER.info("Company Post Update Event");
+        POST_UPDATE_FIRED = true;
+    }
+
+    @SpeedyEvent(value = "Company", eventType = {SpeedyEventType.POST_DELETE})
+    public void companyPostDelete(Company company) throws Exception {
+        LOGGER.info("Company Post Delete Event");
+        POST_DELETE_COUNTER.incrementAndGet();
     }
 }

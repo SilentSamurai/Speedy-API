@@ -196,6 +196,208 @@ class AnnotatedPersonValidationIT {
         }
 
         @Test
+        @DisplayName("CREATE invalid score (negative) should fail – PositiveOrZeroRule")
+        void createNegativeScore_shouldFail() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", -1)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectBadRequest()
+                    .expectJsonPath("$.message", containsString("score must be >= 0"));
+        }
+
+        @Test
+        @DisplayName("CREATE valid score (zero boundary) should succeed – PositiveOrZeroRule")
+        void createZeroScore_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 0)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("CREATE valid score (positive) should succeed – PositiveOrZeroRule")
+        void createPositiveScore_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 10)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("CREATE invalid overdraft (positive) should fail – NegativeOrZeroRule")
+        void createPositiveOverdraft_shouldFail() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 1)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectBadRequest()
+                    .expectJsonPath("$.message", containsString("overdraft must be <= 0"));
+        }
+
+        @Test
+        @DisplayName("CREATE valid overdraft (zero boundary) should succeed – NegativeOrZeroRule")
+        void createZeroOverdraft_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("CREATE valid overdraft (negative) should succeed – NegativeOrZeroRule")
+        void createNegativeOverdraft_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", -100)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("CREATE invalid rating (above max) should fail – DecimalMaxRule")
+        void createExcessiveRating_shouldFail() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 5.1)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectBadRequest()
+                    .expectJsonPath("$.message", containsString("rating must be <= 5.0"));
+        }
+
+        @Test
+        @DisplayName("CREATE valid rating (max boundary) should succeed – DecimalMaxRule")
+        void createMaxRating_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 5.0)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("CREATE valid rating (within range) should succeed – DecimalMaxRule")
+        void createValidRating_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 0.5)
+                    .field("precision_val", 123.45)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("CREATE valid bookingDate (min boundary 2025-01-01) should succeed – DateRangeRule")
+        void createMinBookingDate_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .field("bookingDate", "2025-01-01")
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("CREATE valid bookingDate (max boundary 2025-12-31) should succeed – DateRangeRule")
+        void createMaxBookingDate_shouldSucceed() {
+            client.create("AnnotatedPerson")
+                    .field("name", "John")
+                    .field("age", 30)
+                    .field("email", "john@example.com")
+                    .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 1)
+                    .field("precision_val", 123.45)
+                    .field("bookingDate", "2025-12-31")
+                    .execute()
+                    .expectOk();
+        }
+        @Test
         @DisplayName("CREATE valid payload should succeed")
         void createValid_shouldSucceed() {
             SpeedyTestResult createResult = client.create("AnnotatedPerson")
