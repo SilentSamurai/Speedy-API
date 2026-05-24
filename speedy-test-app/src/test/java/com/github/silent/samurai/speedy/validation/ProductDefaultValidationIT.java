@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.validation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
+import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,43 +11,32 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.hamcrest.Matchers.isA;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Integration tests that exercise the default validation pipeline for the Product entity
- * (no custom validators defined).
- */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class ProductDefaultValidationIT {
 
-    private final ObjectMapper mapper = new ObjectMapper();
     @Autowired
     MockMvc mockMvc;
-    private SpeedyClient<ResultActions> client;
+    private SpeedyTest client;
     private String categoryId;
-    private String productId;
 
     @BeforeEach
     void init() throws Exception {
-        client = SpeedyClient.mockMvc(mockMvc);
+        client = SpeedyTest.mockMvc(mockMvc);
 
-        // ensure a category exists – used as FK for products
         String uniqueCat = "it-cat-" + java.util.UUID.randomUUID();
-        ResultActions catAct = client.create("Category")
-                .addField("name", uniqueCat)
+        SpeedyTestResult catResult = client.create("Category")
+                .field("name", uniqueCat)
                 .execute()
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.payload[0].id").exists())
-                .andExpect(jsonPath("$.payload[0].id").isString());
-        String catJson = catAct.andReturn().getResponse().getContentAsString();
-        categoryId = mapper.readTree(catJson).at("/payload/0/id").asText();
+                .expectOk()
+                .expectJsonPathExists("$.payload[0].id");
+        categoryId = catResult.jsonPath("$.payload[0].id");
     }
 
     @Nested
@@ -57,21 +46,20 @@ class ProductDefaultValidationIT {
         @DisplayName("CREATE without required name should fail")
         void createMissingName_shouldFail() throws Exception {
             client.create("Product")
-                    .addField("category.id", categoryId) // association ok
+                    .field("category.id", categoryId)
                     .execute()
-                    .andExpect(status().isBadRequest());
+                    .expectBadRequest();
         }
 
         @Test
         @DisplayName("CREATE valid product should succeed")
         void createValidProduct_shouldSucceed() throws Exception {
-            ResultActions act = client.create("Product")
-                    .addField("name", "it-prod-" + java.util.UUID.randomUUID())
-                    .addField("category.id", categoryId)
+            client.create("Product")
+                    .field("name", "it-prod-" + java.util.UUID.randomUUID())
+                    .field("category.id", categoryId)
                     .execute()
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.payload[0].id").exists())
-                    .andExpect(jsonPath("$.payload[0].id").isString());
+                    .expectOk()
+                    .expectJsonPathExists("$.payload[0].id");
         }
     }
 
@@ -82,25 +70,20 @@ class ProductDefaultValidationIT {
         @Test
         @DisplayName("UPDATE partial payload succeeds (default validator)")
         void updatePartial_shouldSucceed() throws Exception {
-            // create first
-            MvcResult act = client.create("Product")
-                    .addField("name", "it-prod-" + UUID.randomUUID())
-                    .addField("category.id", categoryId)
+            SpeedyTestResult createResult = client.create("Product")
+                    .field("name", "it-prod-" + UUID.randomUUID())
+                    .field("category.id", categoryId)
                     .execute()
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.payload[0].id").exists())
-                    .andExpect(jsonPath("$.payload[0].id").isString())
-                    .andReturn();
+                    .expectOk()
+                    .expectJsonPathExists("$.payload[0].id");
 
-            String catJson = act.getResponse().getContentAsString();
-            String id = mapper.readTree(catJson).at("/payload/0/id").asText();
+            String id = createResult.jsonPath("$.payload[0].id");
 
-            // partial update (only description)
             client.update("Product")
                     .key("id", id)
                     .field("description", "updated desc")
                     .execute()
-                    .andExpect(status().isOk());
+                    .expectOk();
         }
 
         @Test
@@ -108,7 +91,7 @@ class ProductDefaultValidationIT {
         void deleteWithoutKey_shouldFail() throws Exception {
             client.delete("Product")
                     .execute()
-                    .andExpect(status().isBadRequest());
+                    .expectBadRequest();
         }
     }
 }

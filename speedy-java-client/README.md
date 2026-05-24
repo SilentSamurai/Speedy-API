@@ -1,42 +1,81 @@
 # Speedy Java Client
 
-A library-agnostic Java client for Speedy API that allows you to use any HTTP client implementation of your choice.
+A library-agnostic Java client for Speedy API. Zero framework dependency on the default classpath — bring your own HTTP transport.
 
 ## Quick Start
 
-### RestTemplate (Production)
+### Production (JDK HttpClient, zero deps)
 
 ```java
-RestTemplate restTemplate = new RestTemplate();
-SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080");
+Speedy speedy = Speedy.connect("http://localhost:8080");
 
-SpeedyResponse response = client.get("users")
-    .key("id", 123)
-    .execute();
-
-List<User> users = response.asList(User.class);
+List<User> users = speedy.get("User")
+    .execute()
+    .list(User.class);
 ```
 
-### MockMvc (Testing)
+### Spring RestTemplate (optional)
 
 ```java
-SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
+Speedy speedy = Speedy.builder()
+    .baseUrl("http://localhost:8080")
+    .transport(new RestTemplateTransport(new RestTemplate()))
+    .build();
 
-ResultActions result = client.create("users")
-    .field("name", "Test User")
+User user = speedy.get("User")
+    .key("id", 123)
+    .execute()
+    .first(User.class);
+```
+
+### MockMvc Integration Testing
+
+```java
+SpeedyTest speedy = SpeedyTest.mockMvc(mockMvc);
+
+speedy.get("User")
+    .key("id", 123)
+    .execute()
+    .expectOk()
+    .expectJsonPath("$.payload[*].name", everyItem(notNullValue()));
+```
+
+## CRUD Operations
+
+```java
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
+
+// Create
+SpeedyResult created = speedy.create("User")
+    .field("name", "John")
+    .field("email", "john@example.com")
+    .execute();
+User user = created.first(User.class);
+
+// Read by PK
+User user = speedy.get("User")
+    .key("id", 123)
+    .execute()
+    .first(User.class);
+
+// Update
+speedy.update("User")
+    .key("id", 123)
+    .field("name", "Jane")
     .execute();
 
-result.andExpect(status().isCreated());
+// Delete
+speedy.delete("User")
+    .key("id", 123)
+    .execute();
 ```
 
 ## Query Building
 
-Build complex queries using the fluent API with static imports:
-
 ```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 
-SpeedyQuery query = from("users")
+List<User> users = speedy.query("User")
     .where(
         and(
             condition("active", eq(true)),
@@ -44,173 +83,102 @@ SpeedyQuery query = from("users")
         )
     )
     .orderByAsc("name")
-    .pageSize(10)
+    .pageSize(20)
     .pageNo(0)
     .expand("profile")
-    .select("id", "name", "email");
+    .select("id", "name", "email")
+    .execute()
+    .list(User.class);
 
-SpeedyResponse response = client.query(query).execute();
-List<User> users = response.asList(User.class);
-```
-
-## CRUD Operations
-
-### Create
-
-```java
-// Single entity
-SpeedyResponse response = client.create("User")
-    .field("name", "John Doe")
-    .field("email", "john@example.com")
-    .execute();
-
-// Bulk create
-ArrayNode entities = mapper.createArrayNode();
-entities.add(mapper.createObjectNode().put("name", "Alice"));
-entities.add(mapper.createObjectNode().put("name", "Bob"));
-SpeedyResponse response = client.createMany("User", entities);
-```
-
-### Read
-
-```java
-// By primary key
-SpeedyResponse response = client.get("User")
-    .key("id", 123)
-    .execute();
-
-User user = response.asSingle(User.class);
-
-// List all
-SpeedyResponse response = client.get("User").execute();
-List<User> users = response.asList(User.class);
-```
-
-### Update
-
-```java
-SpeedyResponse response = client.update("User")
-    .key("id", 123)
-    .field("name", "Jane Doe")
-    .field("email", "jane@example.com")
-    .execute();
-```
-
-### Delete
-
-```java
-// Single
-SpeedyResponse response = client.delete("User")
-    .key("id", 123)
-    .execute();
-
-// Bulk
-ArrayNode pks = mapper.createArrayNode();
-pks.add(mapper.createObjectNode().put("id", 123));
-pks.add(mapper.createObjectNode().put("id", 456));
-SpeedyResponse response = client.deleteMany("User", pks);
-```
-
-## Count Queries
-
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-SpeedyQuery query = from("users")
+// Count
+long total = speedy.query("User")
     .where(condition("active", eq(true)))
-    .build();
-
-SpeedyResponse response = client.count(query);
-long total = response.asCount();
-```
-
-## Metadata
-
-```java
-SpeedyResponse metadata = client.metadata();
+    .count();
 ```
 
 ## Typed Responses
 
-`SpeedyResponse` provides helper methods for automatic deserialization:
+`SpeedyResult` provides typed deserialization:
 
 ```java
-SpeedyResponse response = client.get("users").execute();
+SpeedyResult result = speedy.get("User").execute();
 
-// Deserialize payload as a list
-List<User> users = response.asList(User.class);
-
-// Deserialize first element
-User user = response.asSingle(User.class);
-
-// Extract count from count queries
-long total = response.asCount();
-
-// Access pagination metadata
-int page = response.getPageIndex();
-int size = response.getPageSize();
-int totalPages = response.getTotalPageCount();
+List<User> users = result.list(User.class);
+User first = result.first(User.class);
+Optional<User> opt = result.firstOptional(User.class);
+ArrayNode raw = result.raw();
+JsonNode firstRaw = result.firstRaw();
+int page = result.pageIndex();
+int size = result.pageSize();
+boolean empty = result.isEmpty();
 ```
 
-## Custom API Path
+## Error Handling
+
+All errors surface as unchecked `SpeedyException` subclasses:
 
 ```java
-SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080")
-    .baseUrl("/custom/path/");
-```
-
-## Custom HTTP Client
-
-```java
-public class OkHttpClientImpl implements HttpClient<MyResponse> {
-    // Implement methods using OkHttp
+try {
+    speedy.create("User").field("name", null).execute();
+} catch (SpeedyBadRequestException e) {
+    e.getStatusCode();   // 400
+    e.getServerMessage(); // validation error detail
 }
-
-SpeedyClient<MyResponse> client = SpeedyClient.from(new OkHttpClientImpl());
 ```
 
-## Building Requests Without Executing
+| Exception | HTTP Status |
+|-----------|-------------|
+| `SpeedyBadRequestException` | 400 |
+| `SpeedyNotFoundException` | 404 |
+| `SpeedyServerException` | 500+ |
+| `SpeedyConnectionException` | network failure |
+| `SpeedyDeserializationException` | JSON parse failure |
 
-All builders expose `build()` for inspection or deferred execution:
+## Custom Transport
+
+Implement `SpeedyTransport` for any HTTP library:
 
 ```java
-SpeedyGetRequest request = client.get("users")
-    .key("id", 123)
+Speedy speedy = Speedy.builder()
+    .baseUrl("http://localhost:8080")
+    .transport(request -> {
+        // Your custom HTTP logic
+        return new SpeedyRawResponse(200, Map.of(), "{\"payload\":[]}");
+    })
     .build();
-
-// Inspect or modify the request
-logger.info("Entity: {}", request.getEntity());
-logger.info("PK: {}", request.getPk());
-
-// Execute later
-SpeedyResponse response = client.get(request).execute();
 ```
 
-## Available Query Operators
+## Interceptors
 
-| Operator | Method | Description |
-|----------|--------|-------------|
-| `$eq` | `eq(value)` | Equal to |
-| `$ne` | `ne(value)` | Not equal to |
-| `$gt` | `gt(value)` | Greater than |
-| `$lt` | `lt(value)` | Less than |
-| `$gte` | `gte(value)` | Greater than or equal |
-| `$lte` | `lte(value)` | Less than or equal |
-| `$in` | `in(values...)` | In array of values |
-| `$nin` | `nin(values...)` | Not in array |
-| `$matches` | `matches(value)` | Pattern matching |
-| `$contains` | `contains(value)` | Substring/collection containment |
+Chain interceptors for auth headers, logging, tracing:
 
-## Logical Operators
+```java
+Speedy speedy = Speedy.builder()
+    .baseUrl("http://localhost:8080")
+    .interceptor(req -> req.withHeader("Authorization", "Bearer token"))
+    .interceptor(req -> req.withHeader("X-Trace-Id", UUID.randomUUID().toString()))
+    .build();
+```
 
-| Operator | Method | Description |
-|----------|--------|-------------|
-| `$and` | `and(conditions...)` | Logical AND |
-| `$or` | `or(conditions...)` | Logical OR |
+## Query Operators
+
+| Operator | Method |
+|----------|--------|
+| `$eq` | `eq(value)` |
+| `$ne` | `ne(value)` |
+| `$gt` | `gt(value)` |
+| `$lt` | `lt(value)` |
+| `$gte` | `gte(value)` |
+| `$lte` | `lte(value)` |
+| `$in` | `in(values...)` |
+| `$nin` | `nin(values...)` |
+| `$matches` | `matches(value)` |
+| `$contains` | `contains(value)` |
+
+Logical: `and(conditions...)`, `or(conditions...)`
 
 ## Dependencies
 
-- Jackson for JSON processing (via `speedy-commons`)
-- Spring Web types (for the default RestTemplate implementation)
-- Spring Test (optional, for MockMvc testing)
-- Lombok (provided scope)
+- **Required**: Jackson (`jackson-databind`, `jackson-datatype-jsr310`)
+- **Optional**: Spring Web (`RestTemplateTransport`), Spring Test (`MockMvcTransport`), Hamcrest + json-path (`SpeedyTestResult` assertions)
+- **No** Spring, Lombok, or `speedy-commons` on default classpath

@@ -1,12 +1,9 @@
 package com.github.silent.samurai.speedy.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
+import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
+import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,12 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.client.RestTemplate;
 
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.condition;
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.eq;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -33,104 +28,77 @@ class SpeedyApiTest {
     EntityManagerFactory entityManagerFactory;
 
     @Autowired
-    SpeedyFactory speedyFactory;
-
-    @Autowired
-    ValueTestRepository valueTestRepository;
-    SpeedyClient<SpeedyResponse> speedyClient;
-
-    @Autowired
     private MockMvc mvc;
+
+    private SpeedyTest speedyClient;
 
     @BeforeEach
     void setUp() {
-        MockMvcClientHttpRequestFactory requestFactory = new MockMvcClientHttpRequestFactory(mvc);
-        RestTemplate restTemplate = new RestTemplate(requestFactory);
-        speedyClient = SpeedyClient.restTemplate(restTemplate, "http://localhost");
+        speedyClient = SpeedyTest.mockMvc(mvc);
     }
 
     String createTest() throws Exception {
-        SpeedyResponse speedyResponse = speedyClient.create("Category")
-                .addField("name", "cat-client-1")
-                .execute();
+        SpeedyTestResult result = speedyClient.create("Category")
+                .field("name", "cat-client-1")
+                .execute()
+                .expectOk();
 
-        assertFalse(speedyResponse.getPayload().isEmpty());
-        JsonNode entityNode = speedyResponse.getPayload().get(0);
+        String id = result.jsonPath("$.payload[0].id");
+        assertNotNull(id);
 
-        assertTrue(entityNode.has("id"));
-        assertTrue(entityNode.get("id").isTextual());
-        assertNotNull(entityNode.get("id").asText());
-
-        return entityNode.get("id").asText();
+        return id;
     }
 
     void updateTest(String id) throws Exception {
-        SpeedyResponse speedyResponse = speedyClient.update("Category")
+        SpeedyTestResult result = speedyClient.update("Category")
                 .key("id", id)
                 .field("name", "cat-CLIENT-updated-1")
-                .execute();
+                .execute()
+                .expectOk();
 
-        assertFalse(speedyResponse.getPayload().isEmpty());
-        JsonNode entityNode = speedyResponse.getPayload();
+        String returnedId = result.jsonPath("$.payload[0].id");
+        assertNotNull(returnedId);
 
-        assertTrue(entityNode.isArray());
-        assertFalse(entityNode.isEmpty());
-        entityNode = entityNode.get(0);
-        assertTrue(entityNode.has("id"));
-        assertTrue(entityNode.get("id").isTextual());
-        assertNotNull(entityNode.get("id").asText());
-
-        assertTrue(entityNode.has("name"));
-        assertEquals("cat-CLIENT-updated-1", entityNode.get("name").asText());
+        String name = result.jsonPath("$.payload[0].name");
+        assertEquals("cat-CLIENT-updated-1", name);
     }
 
     void deleteTest(String id) throws Exception {
-        SpeedyResponse speedyResponse = speedyClient.delete("Category")
+        SpeedyTestResult result = speedyClient.delete("Category")
                 .key("id", id)
-                .execute();
+                .execute()
+                .expectOk();
 
-        assertFalse(speedyResponse.getPayload().isEmpty());
-        JsonNode entityNode = speedyResponse.getPayload().get(0);
-
-        assertTrue(entityNode.has("id"));
-        assertTrue(entityNode.get("id").isTextual());
-        assertNotNull(entityNode.get("id").asText());
+        String deletedId = result.jsonPath("$.payload[0].id");
+        assertNotNull(deletedId);
     }
 
     void getTest(String id, String name) throws Exception {
-        SpeedyResponse speedyResponse = speedyClient.get("Category")
+        SpeedyTestResult result = speedyClient.get("Category")
                 .key("id", id)
-                .execute();
+                .execute()
+                .expectOk();
 
-        assertFalse(speedyResponse.getPayload().isEmpty());
-        JsonNode entityNode = speedyResponse.getPayload().get(0);
+        String returnedId = result.jsonPath("$.payload[0].id");
+        assertNotNull(returnedId);
+        assertEquals(id, returnedId);
 
-        assertTrue(entityNode.has("id"));
-        assertTrue(entityNode.get("id").isTextual());
-        assertNotNull(entityNode.get("id").asText());
-        assertEquals(id, entityNode.get("id").asText());
-
-        assertTrue(entityNode.has("name"));
-        assertEquals(name, entityNode.get("name").asText());
+        String returnedName = result.jsonPath("$.payload[0].name");
+        assertEquals(name, returnedName);
     }
 
     void query(String id, String name) throws Exception {
-        SpeedyResponse speedyResponse = speedyClient.query(
-                        SpeedyQuery.from("Category")
-                                .where(condition("name", eq(name)))
-                )
-                .execute();
+        SpeedyTestResult result = speedyClient.query("Category")
+                .where(condition("name", eq(name)))
+                .execute()
+                .expectOk();
 
-        assertFalse(speedyResponse.getPayload().isEmpty());
-        JsonNode entityNode = speedyResponse.getPayload().get(0);
+        String returnedId = result.jsonPath("$.payload[0].id");
+        assertNotNull(returnedId);
+        assertEquals(id, returnedId);
 
-        assertTrue(entityNode.has("id"));
-        assertTrue(entityNode.get("id").isTextual());
-        assertNotNull(entityNode.get("id").asText());
-        assertEquals(id, entityNode.get("id").asText());
-
-        assertTrue(entityNode.has("name"));
-        assertEquals(name, entityNode.get("name").asText());
+        String returnedName = result.jsonPath("$.payload[0].name");
+        assertEquals(name, returnedName);
     }
 
     @Test
