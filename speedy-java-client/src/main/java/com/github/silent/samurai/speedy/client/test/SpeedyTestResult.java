@@ -19,16 +19,12 @@ public class SpeedyTestResult {
 
     private final ResultActions resultActions;
     private final JsonNode payload;
-    private final int pageIndex;
-    private final int pageSize;
     private final ObjectMapper mapper;
 
     public SpeedyTestResult(ResultActions resultActions, JsonNode payload,
-                            int pageIndex, int pageSize, ObjectMapper mapper) {
+                            ObjectMapper mapper) {
         this.resultActions = resultActions;
         this.payload = payload != null ? payload : mapper.createArrayNode();
-        this.pageIndex = pageIndex;
-        this.pageSize = pageSize;
         this.mapper = mapper;
     }
 

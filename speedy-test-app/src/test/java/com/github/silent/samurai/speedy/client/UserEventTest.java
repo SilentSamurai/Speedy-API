@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
@@ -12,8 +11,6 @@ import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,8 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class UserEventTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserEventTest.class);
 
     @Autowired
     EntityManagerFactory entityManagerFactory;
@@ -44,7 +39,7 @@ class UserEventTest {
     }
 
     @Test
-    void testUserPreInsertEvent() throws Exception {
+    void testUserPreInsertEvent() {
 
         SpeedyTestResult createResponse = speedyClient.create("User")
                 .field("name", "Test User")
@@ -93,7 +88,7 @@ class UserEventTest {
 
         Thread.sleep(1000);
 
-        SpeedyTestResult updateResponse = speedyClient.update("User")
+        speedyClient.update("User")
                 .key("id", id)
                 .field("name", "Updated Test User")
                 .execute()
@@ -115,7 +110,7 @@ class UserEventTest {
 
     @Test
     @Disabled
-    void testUserPreDeleteEvent() throws Exception {
+    void testUserPreDeleteEvent() {
         SpeedyTestResult createResponse = speedyClient.create("User")
                 .field("name", "Test User")
                 .field("phoneNo", "1234567890")
@@ -154,7 +149,7 @@ class UserEventTest {
     }
 
     @Test
-    void testCreateAndFetchProductWithCategoryAssociation() throws Exception {
+    void testCreateAndFetchProductWithCategoryAssociation() {
         String uniqueName = "assoc-product-" + System.currentTimeMillis();
 
         SpeedyTestResult createResponse = speedyClient.create("Product")

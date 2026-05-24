@@ -4,10 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyException;
 import com.github.silent.samurai.speedy.client.internal.FieldUtil;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
@@ -16,7 +14,6 @@ import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -61,7 +58,7 @@ public class QueryBuilder {
      * Sets WHERE conditions for the query.
      */
     public QueryBuilder where(JsonNode... conditions) {
-        if (conditions == null || conditions.length == 0) {
+        if (conditions == null) {
             return this;
         }
         for (JsonNode condition : conditions) {

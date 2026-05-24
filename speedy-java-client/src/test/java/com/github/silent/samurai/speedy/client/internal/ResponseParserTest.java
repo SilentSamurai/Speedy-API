@@ -122,7 +122,7 @@ class ResponseParserTest {
         SpeedyRawResponse response = new SpeedyRawResponse(400, Map.of(), body);
 
         SpeedyException ex = parser.parseError(response);
-        assertTrue(ex instanceof SpeedyBadRequestException);
+        assertInstanceOf(SpeedyBadRequestException.class, ex);
         assertEquals(400, ex.statusCode());
         assertEquals("Bad input", ex.serverMessage());
         assertEquals("2024-01-01T00:00:00Z", ex.timestamp());
@@ -134,7 +134,7 @@ class ResponseParserTest {
         SpeedyRawResponse response = new SpeedyRawResponse(502, Map.of(), body);
 
         SpeedyException ex = parser.parseError(response);
-        assertTrue(ex instanceof SpeedyServerException);
+        assertInstanceOf(SpeedyServerException.class, ex);
         assertEquals(502, ex.statusCode());
         assertEquals("Connection refused", ex.serverMessage());
     }

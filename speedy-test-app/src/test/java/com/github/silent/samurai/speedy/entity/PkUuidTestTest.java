@@ -1,27 +1,22 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
@@ -35,8 +30,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class PkUuidTestTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PkUuidTestTest.class);
-
     /// JavaDoc Markdown documentation comment example
     /// 
     /// This is an example of using Markdown in JavaDoc comments.
@@ -48,12 +41,6 @@ class PkUuidTestTest {
     ///     System.out.println("Hello World!");
     /// }
     /// ```
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    SpeedyFactory speedyFactory;
-
     @Autowired
     PkUuidTestRepository pkUuidTestRepository;
 
@@ -92,7 +79,7 @@ class PkUuidTestTest {
                 .put("description", "test des"));
         MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$create")
                 .content(arrayNode.toPrettyString())
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         mvc.perform(createRequest)
                 .andExpect(status().isOk());
@@ -114,10 +101,10 @@ class PkUuidTestTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
 
-        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+        mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())

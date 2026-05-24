@@ -52,9 +52,7 @@ public class MockMvcTransport implements SpeedyTransport {
                     headers,
                     response.getContentAsString());
 
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (IOException e) {
+        } catch (RuntimeException | IOException e) {
             throw e;
         } catch (Exception e) {
             throw new IOException("MockMvc request failed: " + e.getMessage(), e);
@@ -67,23 +65,12 @@ public class MockMvcTransport implements SpeedyTransport {
         String url = request.url();
 
         switch (method) {
-            case "GET":
-                builder = MockMvcRequestBuilders.get(url);
-                break;
-            case "POST":
-                builder = MockMvcRequestBuilders.post(url);
-                break;
-            case "PATCH":
-                builder = MockMvcRequestBuilders.patch(url);
-                break;
-            case "PUT":
-                builder = MockMvcRequestBuilders.put(url);
-                break;
-            case "DELETE":
-                builder = MockMvcRequestBuilders.delete(url);
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported HTTP method: " + method);
+            case "GET" -> builder = MockMvcRequestBuilders.get(url);
+            case "POST" -> builder = MockMvcRequestBuilders.post(url);
+            case "PATCH" -> builder = MockMvcRequestBuilders.patch(url);
+            case "PUT" -> builder = MockMvcRequestBuilders.put(url);
+            case "DELETE" -> builder = MockMvcRequestBuilders.delete(url);
+            default -> throw new IllegalArgumentException("Unsupported HTTP method: " + method);
         }
 
         builder.header("Accept", "application/json");

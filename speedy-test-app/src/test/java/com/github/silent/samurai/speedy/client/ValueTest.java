@@ -4,12 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,11 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @AutoConfigureMockMvc(addFilters = false)
 class ValueTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ValueTest.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
 
     @Autowired
     private MockMvc mvc;
@@ -41,7 +33,7 @@ class ValueTest {
     }
 
     @Test
-    void normalTest() throws Exception {
+    void normalTest() {
         SpeedyTestResult createResponse = speedyClient.create("ValueTestEntity")
                 .field("localDateTime", LocalDateTime.now())
                 .field("localDate", LocalDate.now())
@@ -112,7 +104,7 @@ class ValueTest {
         query_double_value(909999.5);
     }
 
-    private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) throws Exception {
+    private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) {
         speedyClient.create("ValueTestEntity")
                 .field("localDateTime", LocalDateTime.of(localDate, localTime))
                 .field("localDate", localDate)

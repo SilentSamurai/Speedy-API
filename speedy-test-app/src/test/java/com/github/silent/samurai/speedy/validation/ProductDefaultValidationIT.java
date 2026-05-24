@@ -14,9 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.isA;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class ProductDefaultValidationIT {
@@ -27,7 +24,7 @@ class ProductDefaultValidationIT {
     private String categoryId;
 
     @BeforeEach
-    void init() throws Exception {
+    void init() {
         client = SpeedyTest.mockMvc(mockMvc);
 
         String uniqueCat = "it-cat-" + java.util.UUID.randomUUID();
@@ -44,7 +41,7 @@ class ProductDefaultValidationIT {
     class CreateValidation {
         @Test
         @DisplayName("CREATE without required name should fail")
-        void createMissingName_shouldFail() throws Exception {
+        void createMissingName_shouldFail() {
             client.create("Product")
                     .field("category.id", categoryId)
                     .execute()
@@ -53,7 +50,7 @@ class ProductDefaultValidationIT {
 
         @Test
         @DisplayName("CREATE valid product should succeed")
-        void createValidProduct_shouldSucceed() throws Exception {
+        void createValidProduct_shouldSucceed() {
             client.create("Product")
                     .field("name", "it-prod-" + java.util.UUID.randomUUID())
                     .field("category.id", categoryId)
@@ -69,7 +66,7 @@ class ProductDefaultValidationIT {
 
         @Test
         @DisplayName("UPDATE partial payload succeeds (default validator)")
-        void updatePartial_shouldSucceed() throws Exception {
+        void updatePartial_shouldSucceed() {
             SpeedyTestResult createResult = client.create("Product")
                     .field("name", "it-prod-" + UUID.randomUUID())
                     .field("category.id", categoryId)
@@ -88,7 +85,7 @@ class ProductDefaultValidationIT {
 
         @Test
         @DisplayName("DELETE without key fails (default validator)")
-        void deleteWithoutKey_shouldFail() throws Exception {
+        void deleteWithoutKey_shouldFail() {
             client.delete("Product")
                     .execute()
                     .expectBadRequest();

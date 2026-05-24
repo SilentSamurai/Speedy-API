@@ -43,7 +43,7 @@ class CompanyEventTest {
     }
 
     @Test
-    void testCompanyPreInsertEvent() throws Exception {
+    void testCompanyPreInsertEvent() {
         String email = "event-company-" + System.nanoTime() + "@example.com";
 
         SpeedyTestResult response = speedyClient.create("Company")
@@ -55,9 +55,7 @@ class CompanyEventTest {
                 .execute()
                 .expectOk()
                 .expectJsonPath("$.payload.length()", greaterThan(0))
-                .expectJsonPath("$.payload[0].id", not(isEmptyOrNullString()));
-
-        String id = response.jsonPath("$.payload[0].id");
+                .expectJsonPath("$.payload[0].id", not(emptyString()));
 
         EntityManager em = entityManagerFactory.createEntityManager();
         Company created = em.createQuery("SELECT c FROM Company c WHERE c.email = :email", Company.class)
@@ -83,7 +81,7 @@ class CompanyEventTest {
                 .execute()
                 .expectOk()
                 .expectJsonPath("$.payload.length()", greaterThan(0))
-                .expectJsonPath("$.payload[0].id", not(isEmptyOrNullString()));
+                .expectJsonPath("$.payload[0].id", not(emptyString()));
 
         String id = create.jsonPath("$.payload[0].id");
 
@@ -96,7 +94,7 @@ class CompanyEventTest {
 
         Thread.sleep(1000);
 
-        SpeedyTestResult upd = speedyClient.update("Company")
+        speedyClient.update("Company")
                 .key("id", id)
                 .field("name", "Event Co 2 Updated")
                 .execute()
@@ -115,7 +113,7 @@ class CompanyEventTest {
     }
 
     @Test
-    void testCompanyPreDeleteEvent() throws Exception {
+    void testCompanyPreDeleteEvent() {
         String email = "event-company-" + System.nanoTime() + "@example.com";
 
         SpeedyTestResult create = speedyClient.create("Company")
@@ -128,7 +126,7 @@ class CompanyEventTest {
                 .execute()
                 .expectOk()
                 .expectJsonPath("$.payload.length()", greaterThan(0))
-                .expectJsonPath("$.payload[0].id", not(isEmptyOrNullString()));
+                .expectJsonPath("$.payload[0].id", not(emptyString()));
 
         String id = create.jsonPath("$.payload[0].id");
 

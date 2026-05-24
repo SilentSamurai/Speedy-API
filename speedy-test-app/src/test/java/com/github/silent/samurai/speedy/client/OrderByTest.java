@@ -4,12 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,19 +16,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
-import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class OrderByTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrderByTest.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
 
     @Autowired
     private MockMvc mvc;
@@ -62,7 +52,7 @@ class OrderByTest {
         queryOrderByLocalTimeDescending();
     }
 
-    private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) throws Exception {
+    private void createEntity(LocalDate localDate, LocalTime localTime, Instant instantTime) {
         speedyClient.create("ValueTestEntity")
                 .field("localDateTime", LocalDateTime.of(localDate, localTime).toString())
                 .field("localDate", localDate.toString())

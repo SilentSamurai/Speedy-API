@@ -67,8 +67,10 @@ public class RestTemplateTransport implements SpeedyTransport {
 
         } catch (HttpStatusCodeException e) {
             Map<String, List<String>> responseHeaders = new HashMap<>();
-            e.getResponseHeaders().forEach((key, values) ->
-                    responseHeaders.put(key, new ArrayList<>(values)));
+            if (e.getResponseHeaders() != null) {
+                e.getResponseHeaders().forEach((key, values) ->
+                        responseHeaders.put(key, new ArrayList<>(values)));
+            }
 
             return new SpeedyRawResponse(
                     e.getStatusCode().value(),

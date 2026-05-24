@@ -97,6 +97,7 @@ class SpeedyResultTest {
         assertEquals(0, result.size());
     }
 
+    @SuppressWarnings("unused")
     public static class Person {
         private String name;
         private int age;

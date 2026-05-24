@@ -1,17 +1,14 @@
 package com.github.silent.samurai.speedy.url;
 
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
-import jakarta.persistence.EntityManagerFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.InventoryApi;
 import org.openapitools.client.model.FilteredInventoryResponse;
 import org.openapitools.client.model.Inventory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,13 +22,6 @@ import java.util.List;
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedyGetFormulaSpeedyQueryImplFieldTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyGetFormulaSpeedyQueryImplFieldTest.class);
-
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    SpeedyFactory speedyFactory;
     ApiClient defaultClient;
     @Autowired
     private MockMvc mvc;
@@ -46,13 +36,14 @@ class SpeedyGetFormulaSpeedyQueryImplFieldTest {
 
 
     @Test
-    void getViaPrimaryKey() throws Exception {
+    void getViaPrimaryKey() {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
                 SpeedyQuery.from().build()
         );
         List<Inventory> payload = someInventory.getPayload();
-        Inventory inventory = payload.get(0);
+        Assertions.assertNotNull(payload);
+        Assertions.assertFalse(payload.isEmpty());
 //        Assertions.assertNotNull(inventory.getProfit());
     }
 

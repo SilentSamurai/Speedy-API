@@ -7,7 +7,6 @@ import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
-import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;

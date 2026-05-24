@@ -1,14 +1,12 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -37,12 +35,6 @@ public class SpeedyV2ExpandTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyV2ExpandTest.class);
 
     @Autowired
-    EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    SpeedyFactory speedyFactory;
-
-    @Autowired
     CategoryRepository categoryRepository;
 
     @Autowired
@@ -66,10 +58,10 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
 
-        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+        mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
@@ -121,10 +113,10 @@ public class SpeedyV2ExpandTest {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
                 .content(CommonUtil.json().writeValueAsString(query))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
 
-        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+        mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
@@ -164,10 +156,10 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
 
-        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+        mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
@@ -219,9 +211,9 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
-        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+        mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
@@ -313,9 +305,9 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
-        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+        mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
@@ -440,7 +432,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
@@ -492,7 +484,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         // Should either return 400 Bad Request or handle gracefully with 200 OK
         // but without the invalid expansion
@@ -534,7 +526,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andDo(MockMvcResultHandlers.print())
@@ -574,7 +566,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andDo(MockMvcResultHandlers.print())
@@ -620,7 +612,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
@@ -654,7 +646,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         mvc.perform(mockHttpServletRequest)
                 .andExpect(status().isOk())
@@ -687,7 +679,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
                 .andDo(MockMvcResultHandlers.print())
@@ -731,7 +723,7 @@ public class SpeedyV2ExpandTest {
                                 .prettyPrint()
                                 .build()
                 ))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         // Should return 400 Bad Request or 404 Not Found for non-existent entity
         MvcResult result = mvc.perform(mockHttpServletRequest)

@@ -12,7 +12,6 @@ import com.github.silent.samurai.speedy.client.builder.GetBuilder;
 import com.github.silent.samurai.speedy.client.builder.QueryBuilder;
 import com.github.silent.samurai.speedy.client.builder.UpdateBuilder;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyException;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
 import com.github.silent.samurai.speedy.client.transport.JdkHttpTransport;

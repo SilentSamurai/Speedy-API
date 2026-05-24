@@ -3,10 +3,7 @@ package com.github.silent.samurai.speedy.client;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.util.SpeedyTestUtil;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -26,23 +22,18 @@ class TaskEnumTest {
     @Autowired
     private MockMvc mvc;
 
-    @Autowired
-    private EntityManagerFactory entityManagerFactory;
-
     SpeedyTest speedyClient;
-
-    private String lastTitle;
 
     @BeforeEach
     void setUp() {
         speedyClient = SpeedyTest.mockMvc(mvc);
     }
 
-    private String createTask(String title, String priority, String difficulty) throws Exception {
+    private String createTask() throws Exception {
         SpeedyTestResult result = speedyClient.create("Task")
-                .field("title", title)
-                .field("priority", priority)
-                .field("difficulty", Integer.parseInt(difficulty))
+                .field("title", "enum-task-1")
+                .field("priority", "LOW")
+                .field("difficulty", Integer.parseInt("0"))
                 .execute();
 
         var idPath = SpeedyTestUtil.assertThat(result.responseBody())
@@ -50,7 +41,6 @@ class TaskEnumTest {
                 .path("$.payload[0].id", String.class).is(not(emptyString()))
                 .path("$.payload[0].id", String.class);
         String id = idPath.get();
-        lastTitle = title;
         return id;
     }
 
@@ -96,7 +86,7 @@ class TaskEnumTest {
 
     @Test
     void testEnumCrudAndQuery() throws Exception {
-        String id = createTask("enum-task-1", "LOW", "0");
+        String id = createTask();
         assertTask(id, "LOW", "0");
 
         updateTask(id, "MEDIUM", "1");

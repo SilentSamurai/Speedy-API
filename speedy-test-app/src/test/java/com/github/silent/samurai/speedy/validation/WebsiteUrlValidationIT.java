@@ -33,7 +33,7 @@ class WebsiteUrlValidationIT {
 
         @Test
         @DisplayName("CREATE with invalid website should fail – UrlRule")
-        void createInvalidWebsite_shouldFail() throws Exception {
+        void createInvalidWebsite_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)
@@ -47,7 +47,7 @@ class WebsiteUrlValidationIT {
 
         @Test
         @DisplayName("CREATE with valid website should succeed")
-        void createValidWebsite_shouldSucceed() throws Exception {
+        void createValidWebsite_shouldSucceed() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)

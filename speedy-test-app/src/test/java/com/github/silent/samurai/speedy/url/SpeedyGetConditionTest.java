@@ -1,11 +1,9 @@
 package com.github.silent.samurai.speedy.url;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +12,6 @@ import org.openapitools.client.api.InventoryApi;
 import org.openapitools.client.api.ProcurementApi;
 import org.openapitools.client.api.ProductApi;
 import org.openapitools.client.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,13 +30,6 @@ import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedyGetConditionTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyGetConditionTest.class);
-
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    SpeedyFactory speedyFactory;
     ApiClient defaultClient;
     ProductApi productApi;
     @Autowired
@@ -56,7 +45,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void lessThanCondition() throws Exception {
+    void lessThanCondition() {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 //        "(cost < 50)"
@@ -75,7 +64,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void lessThanEquals() throws Exception {
+    void lessThanEquals() {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost <= 75)"
@@ -96,7 +85,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void greaterThan() throws Exception {
+    void greaterThan() {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost > 75)"
@@ -117,7 +106,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void greaterThanEquals() throws Exception {
+    void greaterThanEquals() {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost >= 75)"
@@ -129,7 +118,7 @@ class SpeedyGetConditionTest {
 
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertTrue(!payload.isEmpty());
+        Assertions.assertFalse(payload.isEmpty());
         for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() >= 75);
@@ -138,7 +127,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void notEquals() throws Exception {
+    void notEquals() {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
@@ -160,7 +149,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void equals() throws Exception {
+    void equals() {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost = 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
@@ -178,7 +167,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void multiple1() throws Exception {
+    void multiple1() {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost < 75 & cost >= 25)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
@@ -189,7 +178,7 @@ class SpeedyGetConditionTest {
         );
         List<Inventory> payload = someInventory.getPayload();
         Assertions.assertNotNull(payload);
-        Assertions.assertTrue(payload.size() > 0);
+        Assertions.assertTrue(!payload.isEmpty());
         for (Inventory inventory : payload) {
             Assertions.assertNotNull(inventory.getCost());
             Assertions.assertTrue(inventory.getCost() < 75 && inventory.getCost() >= 25);
@@ -198,7 +187,7 @@ class SpeedyGetConditionTest {
 
 
     @Test
-    void multiple2() throws Exception {
+    void multiple2() {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost < 25 | cost > 75)"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
@@ -223,7 +212,7 @@ class SpeedyGetConditionTest {
 
 
     @Test
-    void multiple3() throws Exception {
+    void multiple3() {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
 
         // "(cost > 75 & cost < 25 | cost > 45 & cost < 60)"
@@ -253,7 +242,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void in() throws Exception {
+    void in() {
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost <> [ 25, 50, 75])"
         FilteredInventoryResponse someInventory = inventoryApi.queryInventory(
@@ -270,7 +259,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void in_single_value() throws Exception {
+    void in_single_value() {
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.putObject("$where").putObject("cost").put("$in", 50);
 
@@ -289,7 +278,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void notin_single_value() throws Exception {
+    void notin_single_value() {
 
         ObjectNode body = CommonUtil.json().createObjectNode();
         body.putObject("$where")
@@ -312,7 +301,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void notin() throws Exception {
+    void notin() {
 
         InventoryApi inventoryApi = new InventoryApi(defaultClient);
         // "(cost <!> [ 25, 50, 75])"
@@ -336,7 +325,7 @@ class SpeedyGetConditionTest {
 
 
     @Test
-    void associationTest() throws Exception {
+    void associationTest() {
 
         // " (category.id = '1') "
         FilteredProductResponse someInventory = productApi.queryProduct(
@@ -355,7 +344,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void association1Test() throws Exception {
+    void association1Test() {
 
         // "( name = 'Product 1' & category.id = '1')"
         FilteredProductResponse someInventory = productApi.queryProduct(
@@ -376,7 +365,7 @@ class SpeedyGetConditionTest {
     }
 
     @Test
-    void dateTest() throws Exception {
+    void dateTest() {
 
         ProcurementApi procurementApi = new ProcurementApi(defaultClient);
 

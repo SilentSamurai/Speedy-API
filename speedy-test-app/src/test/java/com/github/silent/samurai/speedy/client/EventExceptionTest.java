@@ -25,7 +25,7 @@ class EventExceptionTest {
     }
 
     @Test
-    void testBadRequestWhenEventHandlerThrows() throws Exception {
+    void testBadRequestWhenEventHandlerThrows() {
         String categoryName = "test-cat-" + java.util.UUID.randomUUID();
         SpeedyTestResult catResult = speedyClient.create("Category")
                 .field("name", categoryName)

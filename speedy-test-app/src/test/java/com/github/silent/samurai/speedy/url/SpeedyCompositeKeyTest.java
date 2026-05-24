@@ -1,18 +1,13 @@
 package com.github.silent.samurai.speedy.url;
 
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
-import com.github.silent.samurai.speedy.repositories.CategoryRepository;
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openapitools.client.ApiClient;
 import org.openapitools.client.api.OrderApi;
 import org.openapitools.client.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,16 +25,6 @@ import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedyCompositeKeyTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyCompositeKeyTest.class);
-
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    SpeedyFactory speedyFactory;
-
-    @Autowired
-    CategoryRepository categoryRepository;
     ApiClient defaultClient;
     OrderApi apiInstance;
     @Autowired
@@ -54,7 +39,7 @@ class SpeedyCompositeKeyTest {
     }
 
 
-    OrderKey createOrder() throws Exception {
+    OrderKey createOrder() {
 
         CreateOrderRequest createOrderRequest = new CreateOrderRequest();
         createOrderRequest.setProductId("1");
@@ -80,7 +65,7 @@ class SpeedyCompositeKeyTest {
         return orderKey;
     }
 
-    Order getOrder(OrderKey orderKey) throws Exception {
+    Order getOrder(OrderKey orderKey) {
 
 //        String query = String.format("(productId=\"%s\",supplierId=\"%s\")", orderKey.getProductId(), orderKey.getSupplierId());
 
@@ -110,7 +95,7 @@ class SpeedyCompositeKeyTest {
         return order;
     }
 
-    void updateOrder(OrderKey orderKey) throws Exception {
+    void updateOrder(OrderKey orderKey) {
 
         UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest();
         updateOrderRequest.setDiscount(100.0);
@@ -132,7 +117,7 @@ class SpeedyCompositeKeyTest {
         Assertions.assertEquals(100.0, lightOrder.getDiscount());
     }
 
-    void deleteOrder(OrderKey orderKey) throws Exception {
+    void deleteOrder(OrderKey orderKey) {
 
         BulkDeleteOrderResponse response = apiInstance.bulkDeleteOrder(
                 List.of(orderKey)
@@ -152,7 +137,7 @@ class SpeedyCompositeKeyTest {
     void test() throws Exception {
 
         OrderKey orderKey = createOrder();
-        Order order = getOrder(orderKey);
+        getOrder(orderKey);
 
         updateOrder(orderKey);
 
@@ -161,12 +146,9 @@ class SpeedyCompositeKeyTest {
     }
 
     @Test
-    void duplicateCreate() throws Exception {
-        OrderKey orderKey = createOrder();
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            // Code that should throw a RuntimeException
-            createOrder();
-        });
+    void duplicateCreate() {
+        createOrder();
+        Assertions.assertThrows(RuntimeException.class, this::createOrder);
     }
 
 }

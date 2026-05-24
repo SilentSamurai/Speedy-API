@@ -20,13 +20,6 @@ public class SpeedyTestUtil {
     }
 
     /**
-     * Entry point for fluent JSONPath assertions using Hamcrest on a pre-parsed DocumentContext.
-     */
-    public static JsonResponseAssert assertThat(DocumentContext ctx) {
-        return new JsonResponseAssert(ctx);
-    }
-
-    /**
      * Fluent JSON response assertion helper that lets you select a JSONPath
      * and then assert on its value using Hamcrest, with support for chaining.
      */
@@ -35,14 +28,6 @@ public class SpeedyTestUtil {
 
         private JsonResponseAssert(DocumentContext ctx) {
             this.ctx = ctx;
-        }
-
-        /**
-         * Select a JSONPath and infer the type as Object.
-         */
-        public ValueAssert<Object> path(String jsonPath) {
-            Object value = ctx.read(jsonPath);
-            return new ValueAssert<>(this, value, jsonPath);
         }
 
         /**
