@@ -31,7 +31,7 @@ class DateValidationIT {
 
         @Test
         @DisplayName("CREATE with past-required field in future should fail – PastRule")
-        void createInvalidBirthDate_shouldFail() throws Exception {
+        void createInvalidBirthDate_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "JD")
                     .field("age", 30)
@@ -45,7 +45,7 @@ class DateValidationIT {
 
         @Test
         @DisplayName("CREATE with future-required field in past should fail – FutureRule")
-        void createInvalidAppointmentDate_shouldFail() throws Exception {
+        void createInvalidAppointmentDate_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "JD")
                     .field("age", 30)
@@ -59,7 +59,7 @@ class DateValidationIT {
 
         @Test
         @DisplayName("CREATE with booking date outside range should fail – DateRangeRule")
-        void createInvalidBookingDate_shouldFail() throws Exception {
+        void createInvalidBookingDate_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "JD")
                     .field("age", 30)
@@ -73,7 +73,7 @@ class DateValidationIT {
 
         @Test
         @DisplayName("CREATE with ISO format violation should fail – DateFormatRule")
-        void createInvalidIsoDate_shouldFail() throws Exception {
+        void createInvalidIsoDate_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "JD")
                     .field("age", 30)
@@ -87,7 +87,7 @@ class DateValidationIT {
 
         @Test
         @DisplayName("CREATE valid dates should succeed")
-        void createValidDates_shouldSucceed() throws Exception {
+        void createValidDates_shouldSucceed() {
             client.create("AnnotatedPerson")
                     .field("name", "JohnDoe")
                     .field("age", 30)

@@ -2,7 +2,6 @@ package com.github.silent.samurai.speedy.client.builder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;

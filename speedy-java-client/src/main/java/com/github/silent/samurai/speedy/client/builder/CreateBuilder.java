@@ -15,8 +15,6 @@ import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Fluent builder for creating entities via the Speedy API.

@@ -31,7 +31,7 @@ class CategoryUpdateDeleteValidationIT {
     class UpdateValidation {
         @Test
         @DisplayName("UPDATE without key should fail with 400 Bad Request")
-        void updateMissingKey_shouldFail() throws Exception {
+        void updateMissingKey_shouldFail() {
             client.update("Category")
                     .field("name", "should-fail")
                     .execute()
@@ -44,7 +44,7 @@ class CategoryUpdateDeleteValidationIT {
     class DeleteValidation {
         @Test
         @DisplayName("DELETE without key should fail with 400 Bad Request")
-        void deleteMissingKey_shouldFail() throws Exception {
+        void deleteMissingKey_shouldFail() {
             client.delete("Category")
                     .execute()
                     .expectBadRequest();
@@ -52,7 +52,7 @@ class CategoryUpdateDeleteValidationIT {
 
         @Test
         @DisplayName("Successful create & delete")
-        void createThenDelete_shouldSucceed() throws Exception {
+        void createThenDelete_shouldSucceed() {
             SpeedyTestResult createResult = client.create("Category")
                     .field("name", "it-cat-del")
                     .execute()

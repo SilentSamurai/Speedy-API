@@ -33,7 +33,7 @@ class AnnotatedPersonValidationIT {
     class CreateValidation {
         @Test
         @DisplayName("CREATE invalid name (blank) should fail – NotBlankRule")
-        void createBlankName_shouldFail() throws Exception {
+        void createBlankName_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "   ")
                     .field("age", 25)
@@ -45,7 +45,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE invalid age (<18) should fail – MinRule")
-        void createUnderage_shouldFail() throws Exception {
+        void createUnderage_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 15)
@@ -58,7 +58,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE invalid email format should fail – EmailRule")
-        void createInvalidEmail_shouldFail() throws Exception {
+        void createInvalidEmail_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)
@@ -71,7 +71,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE name too short (<3) should fail – LengthRule min")
-        void createShortName_shouldFail() throws Exception {
+        void createShortName_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "Jo")
                     .field("age", 30)
@@ -83,7 +83,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE name too long (>20) should fail – LengthRule max")
-        void createLongName_shouldFail() throws Exception {
+        void createLongName_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "ThisNameIsWayTooLongForTheField")
                     .field("age", 30)
@@ -95,7 +95,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE age above 60 should fail – MaxRule")
-        void createOverage_shouldFail() throws Exception {
+        void createOverage_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 65)
@@ -108,7 +108,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE invalid code pattern should fail – RegexRule")
-        void createInvalidCode_shouldFail() throws Exception {
+        void createInvalidCode_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)
@@ -121,7 +121,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE invalid salary (<=0) should fail – PositiveRule")
-        void createInvalidSalary_shouldFail() throws Exception {
+        void createInvalidSalary_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)
@@ -140,7 +140,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE invalid debt (>=0) should fail – NegativeRule")
-        void createInvalidDebt_shouldFail() throws Exception {
+        void createInvalidDebt_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)
@@ -159,7 +159,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE invalid rating (<0.5) should fail – DecimalMinRule")
-        void createInvalidRating_shouldFail() throws Exception {
+        void createInvalidRating_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)
@@ -178,7 +178,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE invalid precisionVal (too many digits) should fail – DigitsRule")
-        void createInvalidPrecision_shouldFail() throws Exception {
+        void createInvalidPrecision_shouldFail() {
             client.create("AnnotatedPerson")
                     .field("name", "John")
                     .field("age", 30)
@@ -197,7 +197,7 @@ class AnnotatedPersonValidationIT {
 
         @Test
         @DisplayName("CREATE valid payload should succeed")
-        void createValid_shouldSucceed() throws Exception {
+        void createValid_shouldSucceed() {
             SpeedyTestResult createResult = client.create("AnnotatedPerson")
                     .field("name", "John Doe")
                     .field("age", 30)

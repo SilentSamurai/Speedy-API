@@ -27,7 +27,7 @@ class CategoryValidationIT {
 
     @Test
     @DisplayName("CREATE should fail when custom validator rejects empty name")
-    void createCategory_invalidName_shouldReturnBadRequest() throws Exception {
+    void createCategory_invalidName_shouldReturnBadRequest() {
         client.create("Category")
                 .field("name", "")
                 .execute()
@@ -36,7 +36,7 @@ class CategoryValidationIT {
 
     @Test
     @DisplayName("Valid CREATE followed by UPDATE and DELETE should succeed")
-    void createUpdateDelete_validFlow() throws Exception {
+    void createUpdateDelete_validFlow() {
         SpeedyTestResult createResult = client.create("Category")
                 .field("name", "it-category-1")
                 .execute()

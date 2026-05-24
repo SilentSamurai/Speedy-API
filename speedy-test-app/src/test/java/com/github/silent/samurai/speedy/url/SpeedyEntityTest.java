@@ -1,13 +1,9 @@
 package com.github.silent.samurai.speedy.url;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.repositories.CategoryRepository;
-import jakarta.persistence.EntityManagerFactory;
 import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +28,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
@@ -44,15 +39,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class SpeedyEntityTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyEntityTest.class);
-
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    SpeedyFactory speedyFactory;
-
-    @Autowired
-    CategoryRepository categoryRepository;
 
     ApiClient defaultClient;
 
@@ -96,16 +82,19 @@ class SpeedyEntityTest {
 
         FilteredCompanyResponse companyResponse = companyApi.getCompany(companyKey.getId());
         List<Company> company = companyResponse.getPayload();
+        Assertions.assertNotNull(company);
+        Assertions.assertFalse(company.isEmpty());
         Company lightCompany = company.get(0);
+        Assertions.assertNotNull(lightCompany);
         LOGGER.info("company {}", lightCompany);
         return lightCompany;
     }
 
-    Product crudProduct() throws Exception {
+    Product crudProduct() {
         CategoryApi categoryApi = new CategoryApi(defaultClient);
-        List<CreateCategoryRequest> postCategories = Arrays.asList(
+        List<CreateCategoryRequest> postCategories = List.of(
                 new CreateCategoryRequest().name("New Category ALL")
-        ); // List<PostCategory> | Fields needed for creation
+        );
         BulkCreateCategoryResponse categoryResponse = categoryApi.bulkCreateCategory(postCategories);
 
         Assertions.assertNotNull(categoryResponse);
@@ -159,7 +148,7 @@ class SpeedyEntityTest {
 
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/$create")
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
-                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
 
         MvcResult mvcResult = mvc.perform(getRequest)
                 .andExpect(status().isOk())
@@ -183,7 +172,10 @@ class SpeedyEntityTest {
         SupplierApi supplierApi = new SupplierApi(defaultClient);
 
         List<Supplier> payload = supplierApi.getSupplier(supplierKey.getId()).getPayload();
+        Assertions.assertNotNull(payload);
+        Assertions.assertFalse(payload.isEmpty());
         Supplier supplier = payload.get(0);
+        Assertions.assertNotNull(supplier);
 
         LOGGER.info("Supplier {}", supplier);
         assert supplier != null;
@@ -197,7 +189,7 @@ class SpeedyEntityTest {
         return supplier;
     }
 
-    Procurement crudProcurement(Product product, Supplier supplier) throws Exception {
+    Procurement crudProcurement(Product product, Supplier supplier) {
         String dateTimeInstant = Instant.now().toString();
         CreateProcurementRequest createProcurementRequest = new CreateProcurementRequest();
         createProcurementRequest
@@ -213,10 +205,16 @@ class SpeedyEntityTest {
 
         ProcurementApi procurementApi = new ProcurementApi(defaultClient);
         BulkCreateProcurementResponse bulkCreateProcurement200Response = procurementApi.bulkCreateProcurement(Lists.newArrayList(createProcurementRequest));
+        Assertions.assertNotNull(bulkCreateProcurement200Response);
+        Assertions.assertNotNull(bulkCreateProcurement200Response.getPayload());
+        Assertions.assertFalse(bulkCreateProcurement200Response.getPayload().isEmpty());
         ProcurementKey procurementKey = bulkCreateProcurement200Response.getPayload().get(0);
 
         List<Procurement> payload = procurementApi.getProcurement(procurementKey.getId()).getPayload();
+        Assertions.assertNotNull(payload);
+        Assertions.assertFalse(payload.isEmpty());
         Procurement lightProcurement = payload.get(0);
+        Assertions.assertNotNull(lightProcurement);
         LOGGER.info(" {} ", lightProcurement);
 
         return lightProcurement;
@@ -238,11 +236,17 @@ class SpeedyEntityTest {
 
         BulkCreateCustomerResponse bulkCreateCustomer200Response = customerApi.bulkCreateCustomer(Lists.newArrayList(createCustomerRequest));
 
+        Assertions.assertNotNull(bulkCreateCustomer200Response);
+        Assertions.assertNotNull(bulkCreateCustomer200Response.getPayload());
+        Assertions.assertFalse(bulkCreateCustomer200Response.getPayload().isEmpty());
         CustomerKey customerKey = bulkCreateCustomer200Response.getPayload().get(0);
 
         List<Customer> payload1 = customerApi.getCustomer(customerKey.getId()).getPayload();
 
+        Assertions.assertNotNull(payload1);
+        Assertions.assertFalse(payload1.isEmpty());
         Customer customer = payload1.get(0);
+        Assertions.assertNotNull(customer);
 
         LOGGER.info(" {} ", customer);
         return customer;
@@ -267,16 +271,21 @@ class SpeedyEntityTest {
         InvoiceApi invoiceApi = new InvoiceApi(defaultClient);
         BulkCreateInvoiceResponse bulkCreateInvoice200Response = invoiceApi.bulkCreateInvoice(Lists.newArrayList(createInvoiceRequest));
 
+        Assertions.assertNotNull(bulkCreateInvoice200Response);
+        Assertions.assertNotNull(bulkCreateInvoice200Response.getPayload());
+        Assertions.assertFalse(bulkCreateInvoice200Response.getPayload().isEmpty());
         InvoiceKey invoiceKey = bulkCreateInvoice200Response.getPayload().get(0);
 
         List<Invoice> payload1 = invoiceApi.getInvoice(invoiceKey.getId()).getPayload();
+        Assertions.assertNotNull(payload1);
+        Assertions.assertFalse(payload1.isEmpty());
         Invoice lightInvoice = payload1.get(0);
+        Assertions.assertNotNull(lightInvoice);
         LOGGER.info(" {} ", lightInvoice);
         return lightInvoice;
     }
 
-    User crudUser(Company company) {
-        String dateTimeInstant = Instant.now().toString();
+    User crudUser() {
         CreateUserRequest createUserRequest = new CreateUserRequest();
         createUserRequest
                 .phoneNo("0984738269")
@@ -288,11 +297,17 @@ class SpeedyEntityTest {
 
         BulkCreateUserResponse bulkCreateUser200Response = userApi.bulkCreateUser(Lists.newArrayList(createUserRequest));
 
+        Assertions.assertNotNull(bulkCreateUser200Response);
+        Assertions.assertNotNull(bulkCreateUser200Response.getPayload());
+        Assertions.assertFalse(bulkCreateUser200Response.getPayload().isEmpty());
         UserKey userKey = bulkCreateUser200Response.getPayload().get(0);
 
         List<User> payload1 = userApi.getUser(userKey.getId()).getPayload();
 
+        Assertions.assertNotNull(payload1);
+        Assertions.assertFalse(payload1.isEmpty());
         User payload = payload1.get(0);
+        Assertions.assertNotNull(payload);
         LOGGER.info(" {} ", payload);
         return payload;
     }
@@ -311,16 +326,22 @@ class SpeedyEntityTest {
 
         BulkCreateInventoryResponse bulkCreateInventory200Response = inventoryApi.bulkCreateInventory(Lists.newArrayList(createInventoryRequest));
 
+        Assertions.assertNotNull(bulkCreateInventory200Response);
+        Assertions.assertNotNull(bulkCreateInventory200Response.getPayload());
+        Assertions.assertFalse(bulkCreateInventory200Response.getPayload().isEmpty());
         InventoryKey userKey = bulkCreateInventory200Response.getPayload().get(0);
 
         List<Inventory> payload1 = inventoryApi.getInventory(userKey.getId()).getPayload();
 
+        Assertions.assertNotNull(payload1);
+        Assertions.assertFalse(payload1.isEmpty());
         Inventory payload = payload1.get(0);
+        Assertions.assertNotNull(payload);
         LOGGER.info(" {} ", payload);
         return payload;
     }
 
-    void crudCurrency() throws JsonProcessingException {
+    void crudCurrency() {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
         CreateCurrencyRequest createCurrencyRequest = new CreateCurrencyRequest();
         createCurrencyRequest.currencyAbbr("CED")
@@ -422,7 +443,7 @@ class SpeedyEntityTest {
         });
     }
 
-    void crudExchangeRates() throws JsonProcessingException {
+    void crudExchangeRates() {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
 
         FilteredCurrencyResponse someCurrency = currencyApi.queryCurrency(
@@ -497,7 +518,7 @@ class SpeedyEntityTest {
     void normal() throws Exception {
 
 
-        Company company = crudCompany();
+        crudCompany();
         Product product = crudProduct();
         Supplier supplier = crudSupplier();
 
@@ -507,7 +528,7 @@ class SpeedyEntityTest {
 
         Invoice invoice = crudInvoice(customer);
 
-        User user = crudUser(company);
+        crudUser();
 
         Inventory inventory = crudInventory(procurement, product, invoice);
 

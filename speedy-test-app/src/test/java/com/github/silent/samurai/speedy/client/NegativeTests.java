@@ -2,12 +2,8 @@ package com.github.silent.samurai.speedy.client;
 
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,11 +18,6 @@ import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 @AutoConfigureMockMvc(addFilters = false)
 class NegativeTests {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NegativeTests.class);
-
-    @Autowired
-    EntityManagerFactory entityManagerFactory;
-
     @Autowired
     private MockMvc mvc;
 
@@ -38,7 +29,7 @@ class NegativeTests {
     }
 
     @Test
-    void normalTest() throws Exception {
+    void normalTest() {
         speedyClient.create("ValueTestEntity")
                 .field("localDateTime", "11-09-2020")
                 .execute()
@@ -46,7 +37,7 @@ class NegativeTests {
     }
 
     @Test
-    void sqlInjectTest() throws Exception {
+    void sqlInjectTest() {
         speedyClient.create("ValueTestEntity")
                 .field("localDateTime", "delete Customer")
                 .execute()
@@ -54,7 +45,7 @@ class NegativeTests {
     }
 
     @Test
-    void sqlInjectTest2() throws Exception {
+    void sqlInjectTest2() {
         speedyClient.create("Product")
                 .field("name", "abcd'; delete Customer")
                 .field("category.id", "1")
@@ -62,7 +53,7 @@ class NegativeTests {
     }
 
     @Test
-    void sqlInjectTestInNameField() throws Exception {
+    void sqlInjectTestInNameField() {
         speedyClient.create("Product")
                 .field("name", "test'; DROP TABLE Products; --")
                 .field("category.id", "1")
@@ -70,7 +61,7 @@ class NegativeTests {
     }
 
     @Test
-    void sqlInjectTestInIdField() throws Exception {
+    void sqlInjectTestInIdField() {
         speedyClient.create("Procurement")
                 .field("amount", "1 OR 1=1; --")
                 .field("dueAmount", 0)
@@ -81,7 +72,7 @@ class NegativeTests {
     }
 
     @Test
-    void sqlInjectUnionAttackTest() throws Exception {
+    void sqlInjectUnionAttackTest() {
         speedyClient.create("Procurement")
                 .field("amount", "1 UNION SELECT * FROM users; --")
                 .field("dueAmount", 0)
@@ -92,14 +83,14 @@ class NegativeTests {
     }
 
     @Test
-    void sqlInjectTestInWhereClause() throws Exception {
+    void sqlInjectTestInWhereClause() {
         speedyClient.query("Customer")
                 .where(condition("name", eq("John'; DROP TABLE Customer; --")))
                 .execute();
     }
 
     @Test
-    void sqlInjectTestInNumericField() throws Exception {
+    void sqlInjectTestInNumericField() {
         speedyClient.create("Procurement")
                 .field("amount", "1 OR 1=1; --")
                 .field("dueAmount", 0)

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.silent.samurai.speedy.client.exception.SpeedyBadRequestException;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
-import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 import com.github.silent.samurai.speedy.client.transport.SpeedyTransport;
 import org.junit.jupiter.api.Test;
 

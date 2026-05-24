@@ -6,14 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
-import com.github.silent.samurai.speedy.client.builder.CreateBuilder;
-import com.github.silent.samurai.speedy.client.builder.DeleteBuilder;
-import com.github.silent.samurai.speedy.client.builder.GetBuilder;
-import com.github.silent.samurai.speedy.client.builder.QueryBuilder;
-import com.github.silent.samurai.speedy.client.builder.UpdateBuilder;
-import com.github.silent.samurai.speedy.client.exception.SpeedyException;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
@@ -122,8 +115,7 @@ public class SpeedyTest {
             SpeedyResult speedyResult = response.is2xx()
                     ? parser.parseEntityResponse(response)
                     : new SpeedyResult(mapper.createArrayNode(), 0, 0, mapper);
-            return new SpeedyTestResult(resultActions, speedyResult.raw(),
-                    speedyResult.pageIndex(), speedyResult.pageSize(), mapper);
+            return new SpeedyTestResult(resultActions, speedyResult.raw(), mapper);
         } catch (Exception e) {
             throw new RuntimeException("Test request failed", e);
         }
@@ -257,7 +249,7 @@ public class SpeedyTest {
         }
 
         public TestQueryBuilder where(JsonNode... conditions) {
-            if (conditions == null || conditions.length == 0) return this;
+            if (conditions == null) return this;
             for (JsonNode condition : conditions) {
                 if (condition.has("$and") || condition.has("$or")) {
                     body.remove("$where");

@@ -3,8 +3,6 @@ package com.github.silent.samurai.speedy.client;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
-import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -25,9 +23,6 @@ class ForeignKeyTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ForeignKeyTest.class);
 
     @Autowired
-    EntityManagerFactory entityManagerFactory;
-
-    @Autowired
     private MockMvc mvc;
 
     private SpeedyTest speedyClient;
@@ -38,7 +33,7 @@ class ForeignKeyTest {
     }
 
     @Test
-    void normalTest() throws Exception {
+    void normalTest() {
 
         SpeedyTestResult createResponse = speedyClient.create("Product")
                 .field("name", "client-product-1")

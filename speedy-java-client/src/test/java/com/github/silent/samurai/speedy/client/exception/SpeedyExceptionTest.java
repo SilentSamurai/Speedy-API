@@ -43,11 +43,11 @@ class SpeedyExceptionTest {
 
     @Test
     void allExceptionsShouldBeUnchecked() {
-        assertTrue(SpeedyBadRequestException.class.getSuperclass() == SpeedyException.class);
-        assertTrue(SpeedyNotFoundException.class.getSuperclass() == SpeedyException.class);
-        assertTrue(SpeedyServerException.class.getSuperclass() == SpeedyException.class);
-        assertTrue(SpeedyConnectionException.class.getSuperclass() == SpeedyException.class);
-        assertTrue(SpeedyDeserializationException.class.getSuperclass() == SpeedyException.class);
+        assertSame(SpeedyException.class, SpeedyBadRequestException.class.getSuperclass());
+        assertSame(SpeedyException.class, SpeedyNotFoundException.class.getSuperclass());
+        assertSame(SpeedyException.class, SpeedyServerException.class.getSuperclass());
+        assertSame(SpeedyException.class, SpeedyConnectionException.class.getSuperclass());
+        assertSame(SpeedyException.class, SpeedyDeserializationException.class.getSuperclass());
         assertTrue(RuntimeException.class.isAssignableFrom(SpeedyException.class));
     }
 

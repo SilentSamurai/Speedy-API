@@ -31,7 +31,6 @@ public class GetBuilder {
     private final ObjectNode pkNode;
     private final PathBuilder paths;
     private final RequestSender sender;
-    private final ObjectMapper mapper;
     private final ResponseParser parser;
 
     public GetBuilder(String entity, PathBuilder paths, RequestSender sender,
@@ -39,7 +38,6 @@ public class GetBuilder {
         this.entity = entity;
         this.paths = paths;
         this.sender = sender;
-        this.mapper = mapper;
         this.parser = parser;
         this.pkNode = mapper.createObjectNode();
     }

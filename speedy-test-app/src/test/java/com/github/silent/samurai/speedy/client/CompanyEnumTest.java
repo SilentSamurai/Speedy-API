@@ -3,10 +3,8 @@ package com.github.silent.samurai.speedy.client;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
-import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.entity.Company;
 import com.github.silent.samurai.speedy.util.SpeedyTestUtil;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,17 +38,17 @@ class CompanyEnumTest {
         speedyClient = SpeedyTest.mockMvc(mvc);
     }
 
-    private String createCompany(String name, String status) throws Exception {
+    private String createCompany() throws Exception {
         String nanos = Long.toString(System.nanoTime());
         String phone = "+44" + nanos.substring(Math.max(0, nanos.length() - 10));
         String email = "company-" + nanos + "@example.com";
         SpeedyTestResult result = speedyClient.create("Company")
-                .field("name", name)
+                .field("name", "enum-co-1")
                 .field("address", "221B Baker Street")
                 .field("email", email)
                 .field("phone", phone)
                 .field("currency", "GBP")
-                .field("status", status)
+                .field("status", "DRAFT")
                 .execute();
 
         var idPath = SpeedyTestUtil.assertThat(result.responseBody())
@@ -91,7 +89,7 @@ class CompanyEnumTest {
 
     @Test
     void testEnumCrudAndQuery() throws Exception {
-        String id = createCompany("enum-co-1", "DRAFT");
+        String id = createCompany();
         assertCompany(id, "DRAFT");
 
         EntityManager em = entityManagerFactory.createEntityManager();

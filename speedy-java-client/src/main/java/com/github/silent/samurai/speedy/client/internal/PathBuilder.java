@@ -60,7 +60,7 @@ public class PathBuilder {
         Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = pkNode.fields();
         while (fields.hasNext()) {
             Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = fields.next();
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append("&");
             }
             sb.append(entry.getKey()).append("=").append(entry.getValue().asText());
