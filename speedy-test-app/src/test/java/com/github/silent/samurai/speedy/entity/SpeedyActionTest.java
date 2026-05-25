@@ -90,7 +90,7 @@ class SpeedyActionTest {
     }
 
     @Test
-    void customerCreate_withCreatedBySupplied_valueIsPersisted() {
+    void customerCreate_withCreatedBySupplied_valueIsNotPersisted() {
         String uniquePhone = "0123456789";
         String uniqueEmail = "customer-" + System.nanoTime() + "@example.com";
 
@@ -111,8 +111,8 @@ class SpeedyActionTest {
                 .setParameter("id", id)
                 .getSingleResult();
 
-        assertEquals("hacker", persisted.getCreatedBy(),
-                "User-supplied createdBy is persisted despite @SpeedyAction(READ)");
+        assertNull(persisted.getCreatedBy(),
+                "User-supplied createdBy must NOT be persisted — field is @SpeedyAction(READ) only");
 
         em.close();
     }
