@@ -30,9 +30,10 @@ public class NullAssociationTest {
 
     @Test
     void null_fk_with_entity() {
+        String uniqueName = "TEST-" + System.nanoTime();
 
         speedyClient.create("FkNullEntity")
-                .field("name", "TEST")
+                .field("name", uniqueName)
                 .field("category", null)
                 .execute()
                 .expectOk()
@@ -43,24 +44,29 @@ public class NullAssociationTest {
                 .expectJsonPath("$.payload[*].category", Matchers.everyItem(Matchers.nullValue()));
 
         speedyClient.query("FkNullEntity")
-                .where(condition("category", eq(null)))
+                .where(
+                        condition("name", eq(uniqueName)),
+                        condition("category", eq(null))
+                )
                 .execute()
                 .expectOk()
                 .expectJsonPathExists("$.payload")
-                .expectJsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThanOrEqualTo(1)))
+                .expectJsonPath("$.payload[*]", Matchers.hasSize(1))
                 .expectJsonPathExists("$.payload[*].id")
                 .expectJsonPath("$.payload[*].id", Matchers.everyItem(Matchers.isA(String.class)))
                 .expectJsonPathExists("$.payload[*].name")
                 .expectJsonPath("$.payload[*].name", Matchers.everyItem(Matchers.isA(String.class)))
-                .expectJsonPath("$.payload[*].name", Matchers.everyItem(Matchers.equalTo("TEST")))
+                .expectJsonPath("$.payload[*].name", Matchers.everyItem(Matchers.equalTo(uniqueName)))
                 .expectJsonPathExists("$.payload[*].category")
                 .expectJsonPath("$.payload[*].category", Matchers.everyItem(Matchers.nullValue()));
     }
 
     @Test
     void filtering_with_null_fk() {
+        String uniqueName = "TEST-" + System.nanoTime();
+
         speedyClient.create("FkNullEntity")
-                .field("name", "TEST")
+                .field("name", uniqueName)
                 .field("category", null)
                 .execute()
                 .expectOk()
@@ -71,18 +77,18 @@ public class NullAssociationTest {
 
         speedyClient.query("FkNullEntity")
                 .where(
-                        condition("name", eq("TEST")),
+                        condition("name", eq(uniqueName)),
                         condition("category", eq(null))
                 )
                 .execute()
                 .expectOk()
                 .expectJsonPathExists("$.payload")
-                .expectJsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThanOrEqualTo(1)))
+                .expectJsonPath("$.payload[*]", Matchers.hasSize(1))
                 .expectJsonPathExists("$.payload[*].id")
                 .expectJsonPath("$.payload[*].id", Matchers.everyItem(Matchers.isA(String.class)))
                 .expectJsonPathExists("$.payload[*].name")
                 .expectJsonPath("$.payload[*].name", Matchers.everyItem(Matchers.isA(String.class)))
-                .expectJsonPath("$.payload[*].name", Matchers.everyItem(Matchers.equalTo("TEST")))
+                .expectJsonPath("$.payload[*].name", Matchers.everyItem(Matchers.equalTo(uniqueName)))
                 .expectJsonPathExists("$.payload[*].category")
                 .expectJsonPath("$.payload[*].category", Matchers.everyItem(Matchers.nullValue()));
     }
