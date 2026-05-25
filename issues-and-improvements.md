@@ -21,9 +21,11 @@ speedyQuery.addPageNo(pageNo);
 
 The `$pageNo` query parameter is parsed correctly but then passed to `addPageSize()` instead of `addPageNo()`. This means `?$pageNo=2` overwrites the page size rather than setting the page number. Pagination via URL is effectively broken for anything beyond page 0.
 
-### 2. `GetHandler` parses the URI twice
+### 2. `GetHandler` parses the URI twice ✅ FIXED
 
 `EntityCaptureHandler` already parses the URI via `SpeedyUriContext` to extract the entity metadata, but `GetHandler` creates a second `SpeedyUriContext` and parses the same URI again. This is redundant work and means any query parameters parsed in `EntityCaptureHandler` are discarded — the `SpeedyQuery` from the first parse is never stored on the `RequestContext`.
+
+**Fix:** `EntityCaptureHandler` now stores the parsed `SpeedyQuery` on the `RequestContext` via `context.setSpeedyQuery()`. `GetHandler` reuses `context.getSpeedyQuery()` instead of re-parsing the URI.
 
 ### 3. `GetHandler` force-expands all associations ✅ FIXED
 
@@ -65,19 +67,25 @@ By design, Speedy-API is a library — authentication and authorization are hand
 
 `SpeedyApiController.metadata()` at `/$metadata` is publicly accessible with no auth and returns the complete MetaModel: all entity names, field names, types, nullability, associations, key structure, and whether keys are auto-generated. While DB column names are commented out in `MetaModelSerializer`, the exposed information is sufficient to map the entire data model.
 
-**Recommendation:** Make `/$metadata` opt-in or secured by default.
+**Recommendation:** Add `default boolean isMetadataEndpointEnabled() { return true; }` to `ISpeedyConfiguration` (backward compatible). In `SpeedyApiController.metadata()`, check the config and throw `NotFoundException` (404) when disabled. Auth is the consuming app's responsibility (issue #6), but this gives integrators a kill-switch.
+
+**Fix scope:**
+- `speedy-commons/.../ISpeedyConfiguration.java` — add default method
+- `speedy-core/.../SpeedyApiController.java` — guard the endpoint
 
 ### 8. Error responses may leak internal details
 
 `ExceptionUtils.writeException()` returns `e.getLocalizedMessage()` directly to the client. For wrapped exceptions (e.g., jOOQ `DataException`), this can expose SQL column names, table names, and constraint details. The `processReqV2` catch for generic `Exception` doesn't write any body at all — just sets the status code, leaving the client with no structured error response.
 
-### 9. No rate limiting or request size limits — HIGH
+### 9. No rate limiting or request size limits — HIGH 🟡 OUT OF SCOPE
 
-There's no max body size check in `RequestParserHandler` — it reads the full request body into a `JsonNode` on every request (including GETs). A malicious client could send a very large JSON array to `$create` or `$delete` endpoints, potentially causing OOM.
+Rate limiting and max request body size are the consuming application's responsibility — Speedy-API is a library, not a standalone service. These concerns belong in the middleware layer:
+- Rate limiting: Spring Security filters, API gateway, or `WebMvcConfigurer` interceptors
+- Request body size: Spring Boot properties (`spring.servlet.multipart.max-request-size`, `server.max-http-request-header-size`) or servlet filter
 
 The `$pageSize` parameter has no upper bound — `addPageSize()` only checks `pageSize > 0`. A client can request `?$pageSize=999999999` and dump the entire table.
 
-**Recommendation:** Add a configurable max page size enforced in `SpeedyQueryImpl.addPageSize()`. Add a max request body size via Spring config or a custom filter.
+**Recommendation:** Add a configurable max page size enforced in `SpeedyQueryImpl.addPageSize()`. Rate limiting and body size limits are out of scope — defer to the consuming app's middleware.
 
 ### 10. `GetHandler` auto-expands all associations — data leakage risk ✅ FIXED
 
@@ -158,11 +166,21 @@ The `$orderBy` and `$orderByDesc` URL parameters take comma-separated field name
 
 ### 20. `$`-prefixed value expressions bypass type compatibility checks — HIGH
 
-File: `speedy-core/.../parser/SpeedyUriContext.java:38-46`
+Files:
+- `speedy-core/.../parser/SpeedyUriContext.java:38-46`
+- `speedy-core/.../parser/JsonQueryParser.java:409-417`
 
 The `$` prefix in filter values allows field-to-field comparisons, e.g., `?password=$email` compares the `password` field's value against the `email` field. The referenced field is validated to exist in the entity model, but **no type compatibility check** is performed between the source and target fields. A user can compare any two fields regardless of type, including sensitive fields like password hashes, salary, or internal flags.
 
-**Recommendation:** Add type compatibility validation when resolving `$`-prefixed value expressions. Restrict which fields can be referenced in field-to-field comparisons.
+The same vulnerability exists in the JSON `$query` body parser (`JsonQueryParser.buildExpression()`).
+
+**Fix:** In both `buildExpression()` overloads, after resolving the referenced field via `createQueryField()`, compare the referenced field's `getMetadataForParsing().getValueType()` against the source field's `metadata.getValueType()`. Use `getMetadataForParsing()` (not `getFieldMetadata()`) on both sides — this correctly handles association fields where the SQL comparison is against the FK column type (e.g., `INT`), not the entity type (`ENTITY`). Throw `BadRequestException` on mismatch.
+
+**Remaining gap:** Same-type comparisons (e.g., `?password=$email`, both `TEXT`) are still permitted. Full mitigation requires field-level access control (issue #11).
+
+**Fix scope:**
+- `SpeedyUriContext.buildExpression()` — add type check
+- `JsonQueryParser.buildExpression()` — add type check
 
 ### 21. GPG signing key passed unsafely in CI workflows — HIGH
 
@@ -172,9 +190,18 @@ Files: `.github/workflows/verify.yml:67`, `.github/workflows/release.yml:39`
 cat <(echo -e "${{ secrets.GPG_SIGNING_KEY }}") | gpg --batch --import
 ```
 
-Piping the full private GPG signing key through `echo -e` exposes the key material to process listing on the runner. While GitHub masks secrets in logs, the key can be visible via `/proc/` or other process introspection tools during execution.
+Piping the full private GPG signing key through `echo -e` exposes the key material to process listing on the runner (`<(...)` process substitution creates a subprocess where the key may be visible via `/proc/`). Additionally, `echo -e` interprets escape sequences which may corrupt the key. While GitHub masks secrets in logs, process-level visibility remains a risk.
 
-**Recommendation:** Write the key to a file from a GitHub Actions environment variable instead. Use `gpg --import` with a file input.
+**Fix:** Write the key to a unique temp file (via `mktemp`) using the shell builtin `echo` (no subprocess, no escape expansion), import from file, then clean up:
+
+```bash
+GPG_KEY=$(mktemp)
+echo "${{ secrets.GPG_SIGNING_KEY }}" > "$GPG_KEY"
+gpg --batch --import "$GPG_KEY"
+rm -f "$GPG_KEY"
+```
+
+The same fix applies to both workflow files.
 
 ### 22. H2 web console enabled with empty password — HIGH ✅ FIXED
 
@@ -229,7 +256,7 @@ There is also no max body size check in `RequestParserHandler` — it reads the 
 
 `CreateQueryProcessorHandler` creates a new `JooqQueryProcessorImpl` (and thus a new `DSLContext`) for every request. While `DSLContext` is relatively cheap, the pattern of `dataSourcePerReq()` suggests the intent was to support per-request DataSource switching (e.g., multi-tenancy). However, in practice most apps return the same DataSource every time, making this overhead unnecessary. Consider caching the `QueryProcessor` when the DataSource hasn't changed.
 
-### 27. `EntityCaptureHandler` parses URI but discards the `SpeedyQuery`
+### 27. `EntityCaptureHandler` parses URI but discards the `SpeedyQuery` ✅ FIXED
 
 The handler parses the URI to extract entity metadata but doesn't store the resulting `SpeedyQuery` on the `RequestContext`. Downstream handlers (`GetHandler`, `QueryHandler`) then re-parse the URI or body independently. Storing the parsed query on the context would eliminate duplicate parsing.
 
