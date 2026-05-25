@@ -6,7 +6,6 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
-import com.github.silent.samurai.speedy.interfaces.query.PageInfo;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
 import com.github.silent.samurai.speedy.models.orderby.OrderByImpl;
@@ -31,6 +30,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private Set<String> expand = new HashSet<>();
     private Set<String> select = new HashSet<>();
     private String responseFormat;
+    private int maxPageSize = Integer.MAX_VALUE;
 
     public SpeedyQueryImpl(EntityMetadata from) {
         this.from = from;
@@ -57,7 +57,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
 
     public void addPageSize(int pageSize) {
         if (pageSize > 0) {
-            pageInfo.setPageSize(pageSize);
+            pageInfo.setPageSize(Math.min(pageSize, maxPageSize));
         }
     }
 

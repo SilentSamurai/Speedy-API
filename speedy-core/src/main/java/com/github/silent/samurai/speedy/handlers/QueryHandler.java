@@ -32,6 +32,7 @@ public class QueryHandler implements Handler {
         JsonNode jsonBody = context.getBody();
 
         JsonQueryParser jsonQueryParser = new JsonQueryParser(metaModel, resourceMetadata, jsonBody);
+        jsonQueryParser.setMaxPageSize(context.getConfiguration().getMaxPageSize());
         SpeedyQuery speedyQuery = jsonQueryParser.build();
         context.setSpeedyQuery(speedyQuery);
 

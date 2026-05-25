@@ -14,4 +14,12 @@ public interface ISpeedyConfiguration {
 
     SpeedyDialect getDialect();
 
+    default boolean isMetadataEndpointEnabled() {
+        return true;
+    }
+
+    default int getMaxPageSize() {
+        return 1000;
+    }
+
 }

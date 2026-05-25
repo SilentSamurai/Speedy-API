@@ -46,7 +46,7 @@ public class MetadataUtil {
         try {
             return SpeedyValueFactory.fromJsonObject(entityMetadata, jsonObject);
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse body : " + e.getMessage(), e);
+            throw new BadRequestException("Failed to parse request body", e);
         }
     }
 
@@ -54,7 +54,7 @@ public class MetadataUtil {
         try {
             return SpeedyValueFactory.fromPkJson(entityMetadata, keyJson);
         } catch (Exception e) {
-            throw new BadRequestException("failed to parse body : " + e.getMessage(), e);
+            throw new BadRequestException("Failed to parse request body", e);
         }
     }
 

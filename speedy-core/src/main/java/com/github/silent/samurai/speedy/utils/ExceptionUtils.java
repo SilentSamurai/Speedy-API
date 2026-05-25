@@ -45,4 +45,15 @@ public class ExceptionUtils {
         basePayload.put("timestamp", LocalDateTime.now().toString());
         jsPr.writeValue(response.getWriter(), basePayload);
     }
+
+    public static void writeException(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        ObjectMapper jsPr = CommonUtil.json();
+        ObjectNode basePayload = jsPr.createObjectNode();
+        basePayload.put("status", status);
+        basePayload.put("message", message);
+        basePayload.put("timestamp", LocalDateTime.now().toString());
+        jsPr.writeValue(response.getWriter(), basePayload);
+    }
 }
