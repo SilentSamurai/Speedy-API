@@ -63,19 +63,20 @@ By design, Speedy-API is a library — authentication and authorization are hand
 
 **Recommendation:** Document this clearly in the getting-started guide with a Spring Security example showing how to secure Speedy endpoints.
 
-### 7. `/$metadata` endpoint exposes full schema publicly — HIGH
+### 7. `/$metadata` endpoint exposes full schema publicly — HIGH ✅ FIXED
 
 `SpeedyApiController.metadata()` at `/$metadata` is publicly accessible with no auth and returns the complete MetaModel: all entity names, field names, types, nullability, associations, key structure, and whether keys are auto-generated. While DB column names are commented out in `MetaModelSerializer`, the exposed information is sufficient to map the entire data model.
 
-**Recommendation:** Add `default boolean isMetadataEndpointEnabled() { return true; }` to `ISpeedyConfiguration` (backward compatible). In `SpeedyApiController.metadata()`, check the config and throw `NotFoundException` (404) when disabled. Auth is the consuming app's responsibility (issue #6), but this gives integrators a kill-switch.
+**Fix:** Added `default boolean isMetadataEndpointEnabled()` to `ISpeedyConfiguration` (returns `true` by default for backward compatibility). `SpeedyApiController.metadata()` now checks this config setting and returns HTTP 404 via `ResponseStatusException` when disabled.
 
-**Fix scope:**
-- `speedy-commons/.../ISpeedyConfiguration.java` — add default method
-- `speedy-core/.../SpeedyApiController.java` — guard the endpoint
-
-### 8. Error responses may leak internal details
+### 8. Error responses may leak internal details ✅ FIXED
 
 `ExceptionUtils.writeException()` returns `e.getLocalizedMessage()` directly to the client. For wrapped exceptions (e.g., jOOQ `DataException`), this can expose SQL column names, table names, and constraint details. The `processReqV2` catch for generic `Exception` doesn't write any body at all — just sets the status code, leaving the client with no structured error response.
+
+**Fix:** 
+- `MetadataUtil.java` lines 49 & 57: Replaced `"failed to parse body : " + e.getMessage()` with generic `"Failed to parse request body"` message (original exception still preserved as cause for logging).
+- `ExceptionUtils.java`: Added overloaded `writeException(response, status, message)` for writing generic error responses.
+- `SpeedyFactory.processReqV2()`: Generic `Exception` and `Throwable` catch blocks now write a structured JSON error response (`{"status":..., "message":"Internal Server Error", "timestamp":...}`) instead of just setting the HTTP status code with no body.
 
 ### 9. No rate limiting or request size limits — HIGH 🟡 OUT OF SCOPE
 
@@ -83,9 +84,16 @@ Rate limiting and max request body size are the consuming application's responsi
 - Rate limiting: Spring Security filters, API gateway, or `WebMvcConfigurer` interceptors
 - Request body size: Spring Boot properties (`spring.servlet.multipart.max-request-size`, `server.max-http-request-header-size`) or servlet filter
 
-The `$pageSize` parameter has no upper bound — `addPageSize()` only checks `pageSize > 0`. A client can request `?$pageSize=999999999` and dump the entire table.
+The `$pageSize` parameter has no upper bound — `addPageSize()` only checks `pageSize > 0`. A client can request `?$pageSize=999999999` and dump the entire table. ✅ FIXED — Added configurable max page size.
 
-**Recommendation:** Add a configurable max page size enforced in `SpeedyQueryImpl.addPageSize()`. Rate limiting and body size limits are out of scope — defer to the consuming app's middleware.
+**Fix for `$pageSize`:**
+- `ISpeedyConfiguration.java`: Added `default int getMaxPageSize() { return 1000; }`
+- `SpeedyQueryImpl.java`: Added `maxPageSize` field (default `Integer.MAX_VALUE`) and `setMaxPageSize()` — `addPageSize()` now clamps to `Math.min(pageSize, maxPageSize)`
+- `SpeedyUriContext.java`: Added overloaded constructor accepting `maxPageSize`, forwarded to query
+- `JsonQueryParser.java`: Added `setMaxPageSize()` method, forwarded to query
+- `EntityCaptureHandler.java`: Passes config's max page size to `SpeedyUriContext`
+- `QueryHandler.java`: Passes config's max page size to `JsonQueryParser`
+- Default max is 1000; integrators can override `getMaxPageSize()` in their config. Rate limiting and body size limits remain out of scope.
 
 ### 10. `GetHandler` auto-expands all associations — data leakage risk ✅ FIXED
 

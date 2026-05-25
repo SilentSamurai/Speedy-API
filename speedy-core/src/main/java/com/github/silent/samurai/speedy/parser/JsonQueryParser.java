@@ -207,6 +207,10 @@ public class JsonQueryParser {
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
+    public void setMaxPageSize(int maxPageSize) {
+        this.speedyQuery.setMaxPageSize(maxPageSize);
+    }
+
     /// Creates a new JsonQueryBuilder with the specified entity metadata.
     /// 
     /// This constructor is used when the entity metadata is already available,
