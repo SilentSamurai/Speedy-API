@@ -30,6 +30,10 @@ public class FieldBuilder {
     String associatedField;
     String associatedEntity;
     boolean isEnum = false;
+    // Inherited from the entity's @SpeedySensitive or set directly via
+    // field-level @SpeedySensitive. Determines whether this field is
+    // blocked from $ field references in query expressions.
+    boolean isSensitive = false;
     EnumMode storedEnumMode;
     EnumMode operationalEnumMode;
     DynamicEnum dynamicEnum;
@@ -126,6 +130,11 @@ public class FieldBuilder {
         return this;
     }
 
+    public FieldBuilder sensitive(boolean isSensitive) {
+        this.isSensitive = isSensitive;
+        return this;
+    }
+
     public FieldMetadataImpl build() throws NotFoundException {
         if (!isNullable && isDeserializable) {
             required(true);
@@ -148,6 +157,7 @@ public class FieldBuilder {
                 isSerializable,
                 isDeserializable,
                 isEnum,
+                isSensitive,
                 storedEnumMode,
                 operationalEnumMode,
                 dynamicEnum,

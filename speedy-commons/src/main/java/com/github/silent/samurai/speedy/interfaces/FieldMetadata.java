@@ -53,6 +53,13 @@ public interface FieldMetadata {
     DynamicEnum getDynamicEnum();
 
     /**
+     * Whether this field is marked sensitive via {@code @SpeedySensitive}.
+     * Sensitive fields are blocked from appearing on the right-hand side
+     * of {@code $} field references in query conditions.
+     */
+    boolean isSensitive();
+
+    /**
      * List of generic validation specs derived from field annotations.
      * Implementations may override; default is empty list.
      */

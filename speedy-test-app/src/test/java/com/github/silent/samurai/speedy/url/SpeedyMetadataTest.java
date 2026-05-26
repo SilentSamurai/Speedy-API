@@ -37,4 +37,15 @@ class SpeedyMetadataTest {
                 .andExpect(jsonPath("$").exists())
                 .andReturn();
     }
+
+    @Test
+    void getGlobalMetadata_showsSensitiveFields() throws Exception {
+        mvc.perform(get(SpeedyConstant.URI + "/$metadata")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.name=='SensitiveClassEntity')].sensitive").value(true))
+                .andExpect(jsonPath("$[?(@.name=='SensitiveTestEntity')].fields[?(@.outputProperty=='secretField')].sensitive").value(true))
+                .andExpect(jsonPath("$[?(@.name=='SensitiveTestEntity')].fields[?(@.outputProperty=='publicField')].sensitive").value(false))
+                .andReturn();
+    }
 }

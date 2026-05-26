@@ -124,4 +124,121 @@ class SpeedyV2FieldRefTest {
                 .andExpect(jsonPath("$.payload[*]").isNotEmpty())
                 .andReturn();
     }
+
+    @Test
+    void sensitiveFieldRef_publicEqualsSecret_shouldBeRejected() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveTestEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("publicField", "$secretField");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
+    void sensitiveFieldRef_publicEqualsAmount_shouldBeRejected() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveTestEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("publicField", "$amount");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    @Test
+    void nonSensitiveFieldRef_publicFieldEqualsLiteral_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveTestEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("publicField", "test-value");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    void sensitiveFieldRef_fkToSecretField_shouldBeRejected() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveFkEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("name", "$sensitiveTestEntity.secretField");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveFkEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    // fieldA inherits sensitivity from @SpeedySensitive on the entity class;
+    // referencing it via $fieldA on the RHS must be rejected.
+    @Test
+    void sensitiveClassEntity_inheritedFieldRef_shouldBeRejected() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveClassEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("fieldB", "$fieldA");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+    }
+
+    // fieldB is annotated @SpeedySensitive(false), overriding the entity-level
+    // default. Referencing it via $fieldB on the RHS must be allowed.
+    @Test
+    void sensitiveClassEntity_exemptedFieldRef_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveClassEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("fieldA", "$fieldB");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    // Literal values on the RHS are never blocked by sensitivity checks.
+    @Test
+    void sensitiveClassEntity_literalOnRHS_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveClassEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("fieldA", "some-value");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
+
+    @Test
+    void sensitiveFieldRef_fkToPublicField_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "SensitiveFkEntity");
+        ObjectNode where = body.putObject("$where");
+        where.put("name", "$sensitiveTestEntity.publicField");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveFkEntity/$query")
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+    }
 }

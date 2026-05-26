@@ -28,6 +28,9 @@ public class MetaModelSerializer {
         ObjectNode jsonMetadata = json.createObjectNode();
         jsonMetadata.put("name", entityMetadata.getName());
         jsonMetadata.put("hasCompositeKey", entityMetadata.hasCompositeKey());
+        // Expose entity-level @SpeedySensitive so clients can see the
+        // default sensitivity that cascades to fields without overrides.
+        jsonMetadata.put("sensitive", entityMetadata.isSensitive());
 //        jsonMetadata.put("dbTable", entityMetadata.getDbTableName());
         ArrayNode fieldArray = json.createArrayNode();
         entityMetadata.getAllFields().stream()
@@ -69,6 +72,7 @@ public class MetaModelSerializer {
         fieldMetadataJson.put("isSerializable", fieldMetadata.isSerializable());
         fieldMetadataJson.put("isDeserializable", fieldMetadata.isDeserializable());
         fieldMetadataJson.put("isUnique", fieldMetadata.isUnique());
+        fieldMetadataJson.put("sensitive", fieldMetadata.isSensitive());
 
         return fieldMetadataJson;
     }

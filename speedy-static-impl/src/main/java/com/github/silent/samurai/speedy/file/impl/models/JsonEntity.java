@@ -14,6 +14,8 @@ public class JsonEntity {
     @NotNull
     public boolean hasCompositeKey;
 
+    public boolean sensitive = false;
+
     public String dbTable;
     public String keyType;
 

@@ -47,6 +47,8 @@ public class SpeedyUriContext {
         if (symbol.startsWith("$")) {
             String field = symbol.substring(1);
             QueryField queryField = this.speedyQuery.getConditionFactory().createQueryField(field);
+            // Reject $ references to fields marked @SpeedySensitive
+            this.speedyQuery.getConditionFactory().validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
             return new Literal(SpeedyValueFactory.basicFromString(metadata, symbol));

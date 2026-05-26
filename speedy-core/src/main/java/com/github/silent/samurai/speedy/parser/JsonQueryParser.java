@@ -414,6 +414,8 @@ public class JsonQueryParser {
         if (symbol.isTextual() && symbol.asText().startsWith("$")) {
             String field = symbol.asText().substring(1);
             QueryField queryField = this.conditionFactory.createQueryField(field);
+            // Reject $ references to fields marked @SpeedySensitive
+            this.conditionFactory.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
             return new Literal(SpeedyValueFactory.fromJsonValue(metadata, symbol));

@@ -33,6 +33,7 @@ public class FileProcessor {
         EntityBuilder eb = mmb.entity(jsonEntity.name);
         eb.hasCompositeKey(jsonEntity.hasCompositeKey);
         eb.dbTableName(jsonEntity.dbTable);
+        eb.sensitive(jsonEntity.sensitive);
 //        eb.setKeyType(jsonEntity.keyType);
 
         for (JsonField jsonField : jsonEntity.fields) {
@@ -54,6 +55,7 @@ public class FileProcessor {
         fb.required(jsonField.isRequired);
         fb.serializable(jsonField.isSerializable);
         fb.deserializable(jsonField.isDeserializable);
+        fb.sensitive(jsonField.sensitive != null ? jsonField.sensitive : eb.isSensitive());
 
         if (jsonField.isAssociation) {
             fb.associateWith(jsonField.fieldType, jsonField.associatedColumn);

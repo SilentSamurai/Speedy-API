@@ -32,6 +32,7 @@ public class KeyFieldBuilder extends FieldBuilder {
                 isSerializable,
                 isDeserializable,
                 isEnum,
+                fmi.isSensitive(),
                 storedEnumMode,
                 operationalEnumMode,
                 fmi.getDynamicEnum(),

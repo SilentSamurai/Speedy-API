@@ -34,4 +34,6 @@ public class JsonField {
 
     public String associatedColumn;
 
+    public Boolean sensitive;
+
 }

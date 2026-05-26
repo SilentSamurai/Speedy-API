@@ -265,6 +265,91 @@ SpeedyQuery query = SpeedyQuery.from("users")
 - **Type Compatibility**: Fields should be of compatible types for comparison
 - **Error Handling**: Invalid field references result in `NotFoundException`
 
+### Sensitivity Control with `@SpeedySensitive`
+
+The `@SpeedySensitive` annotation prevents fields from being used on the
+right-hand side of `$` field references, protecting sensitive data from
+exposure through query conditions.
+
+**Only the referenced field (RHS) is blocked** — a sensitive field on the
+left-hand side with a literal or a non-sensitive `$ref` on the right is
+allowed.
+
+#### Field-Level Sensitivity
+
+```java
+@Entity
+public class User {
+    // Blocked: ?otherField=$secretField → 400 Bad Request
+    @SpeedySensitive
+    private String secretField;
+
+    // Allowed: ?secretField=$publicField → 200 OK
+    private String publicField;
+}
+```
+
+This blocks queries like:
+```http
+[GET] /speedy/v1/User?publicField=$secretField
+```
+
+But allows:
+```http
+[GET] /speedy/v1/User?secretField=literalValue
+[GET] /speedy/v1/User?secretField=$publicField
+```
+
+#### Entity-Level Sensitivity (Cascade)
+
+Applying `@SpeedySensitive` to the entity class makes **all fields
+sensitive by default**. Individual fields can opt out with
+`@SpeedySensitive(false)`:
+
+```java
+@SpeedySensitive
+@Entity
+public class SensitiveClassEntity {
+    // Inherits sensitivity — blocked in $ references
+    private String fieldA;
+
+    // Overrides — allowed in $ references
+    @SpeedySensitive(false)
+    private String fieldB;
+}
+```
+
+#### FK Traversal Sensitivity
+
+Sensitivity is enforced through foreign-key traversals. Referencing a
+sensitive field via a dot-notation path also fails:
+
+```http
+# Blocked — secretField on related entity is sensitive
+POST /speedy/v1/SensitiveFkEntity/$query
+{ "$where": { "name": "$sensitiveTestEntity.secretField" } }
+
+# Allowed — publicField on related entity is not sensitive
+POST /speedy/v1/SensitiveFkEntity/$query
+{ "$where": { "name": "$sensitiveTestEntity.publicField" } }
+```
+
+#### Metadata Endpoint
+
+The `/$metadata` endpoint exposes sensitivity at both entity and field
+levels so clients can discover which fields accept `$` references:
+
+```json
+{
+  "name": "SensitiveClassEntity",
+  "sensitive": true,
+  "fields": [
+    { "outputProperty": "fieldA", "sensitive": true },
+    { "outputProperty": "fieldB", "sensitive": false }
+  ]
+}
+```
+
 ### Supported Operators
 
 All comparison operators support field references:

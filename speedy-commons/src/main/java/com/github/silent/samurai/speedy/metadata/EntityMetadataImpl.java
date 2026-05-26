@@ -20,13 +20,17 @@ public class EntityMetadataImpl implements EntityMetadata {
     boolean hasCompositeKey = false;
     private String name;
     private String dbTableName;
+    // Set from @SpeedySensitive on the entity class; cascaded to fields
+    // that lack their own @SpeedySensitive annotation during build.
+    private boolean isSensitive;
     private Set<ActionType> actionType;
     private Map<String, FieldMetadata> fieldMap;
 
-    EntityMetadataImpl(String name, String dbTableName, boolean hasCompositeKey, Set<ActionType> actionType, Map<String, FieldMetadata> fieldMap) {
+    EntityMetadataImpl(String name, String dbTableName, boolean hasCompositeKey, boolean isSensitive, Set<ActionType> actionType, Map<String, FieldMetadata> fieldMap) {
         this.name = name;
         this.dbTableName = dbTableName;
         this.hasCompositeKey = hasCompositeKey;
+        this.isSensitive = isSensitive;
         this.actionType = actionType;
         this.fieldMap = fieldMap;
     }

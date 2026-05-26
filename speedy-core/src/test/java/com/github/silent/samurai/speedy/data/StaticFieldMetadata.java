@@ -98,6 +98,11 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return true;
     }
 
+    @Override
+    public boolean isSensitive() {
+        return false;
+    }
+
 //    @Override
 //    public String getClassFieldName() {
 //        return field.getName();
