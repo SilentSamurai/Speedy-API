@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
+import com.github.silent.samurai.speedy.annotations.SpeedySensitive;
 import com.github.silent.samurai.speedy.annotations.SpeedyType;
 import com.github.silent.samurai.speedy.annotations.validation.*;
 import com.github.silent.samurai.speedy.enums.ActionType;
@@ -113,6 +114,11 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (annotation != null) {
             Arrays.stream(annotation.value())
                     .forEach(entity::addActionType);
+        }
+        // Entity-level @SpeedySensitive sets the default sensitivity for all fields
+        SpeedySensitive speedySensitive = entityType.getBindableJavaType().getAnnotation(SpeedySensitive.class);
+        if (speedySensitive != null) {
+            entity.sensitive(speedySensitive.value());
         }
         for (Attribute<?, ?> attribute : entityType.getAttributes()) {
             if (isIgnorable(attribute, entityType.getJavaType())) {
@@ -266,6 +272,15 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                 fieldMetadata.serializable(true);
                 fieldMetadata.deserializable(true);
             }
+        }
+
+        // Field-level @SpeedySensitive overrides entity-level default;
+        // if absent, inherit the entity's sensitivity setting
+        SpeedySensitive speedySensitive = AnnotationUtils.getAnnotation(field, SpeedySensitive.class);
+        if (speedySensitive != null) {
+            fieldMetadata.sensitive(speedySensitive.value());
+        } else {
+            fieldMetadata.sensitive(entity.isSensitive());
         }
 
         return fieldMetadata;

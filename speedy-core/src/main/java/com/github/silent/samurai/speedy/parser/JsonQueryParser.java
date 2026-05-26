@@ -207,6 +207,10 @@ public class JsonQueryParser {
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
+    public void setMaxPageSize(int maxPageSize) {
+        this.speedyQuery.setMaxPageSize(maxPageSize);
+    }
+
     /// Creates a new JsonQueryBuilder with the specified entity metadata.
     /// 
     /// This constructor is used when the entity metadata is already available,
@@ -410,6 +414,8 @@ public class JsonQueryParser {
         if (symbol.isTextual() && symbol.asText().startsWith("$")) {
             String field = symbol.asText().substring(1);
             QueryField queryField = this.conditionFactory.createQueryField(field);
+            // Reject $ references to fields marked @SpeedySensitive
+            this.conditionFactory.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
             return new Literal(SpeedyValueFactory.fromJsonValue(metadata, symbol));

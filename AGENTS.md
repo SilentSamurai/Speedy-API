@@ -1,5 +1,9 @@
 # AGENTS.md
 
+<!-- SPECKIT START -->
+**Current Feature**: `002-sensitive-field-refs` — [Spec](./specs/002-sensitive-field-refs/spec.md) | [Plan](./specs/002-sensitive-field-refs/plan.md) | [Research](./specs/002-sensitive-field-refs/research.md) | [Data Model](./specs/002-sensitive-field-refs/data-model.md) | [Quickstart](./specs/002-sensitive-field-refs/quickstart.md)
+<!-- SPECKIT END -->
+
 ## Architecture
 
 ### Multi-Module Maven Project
@@ -99,6 +103,7 @@ All in `speedy-commons/.../annotations/`:
 - `@SpeedyAction` — gates CRUD operations per entity/field (`ActionType[]`: READ, CREATE, UPDATE, DELETE, ALL)
 - `@SpeedyIgnore` — excludes entity/field from metamodel
 - `@SpeedyType` — overrides column type in metamodel
+- `@SpeedySensitive` — marks entity/field as blocked from `$` field references
 - Validation annotations: `@SpeedyMin`, `@SpeedyMax`, `@SpeedyLength`, `@SpeedyRegex`, `@SpeedyEmail`, `@SpeedyUrl`, `@SpeedyFuture`, `@SpeedyPast`, `@SpeedyDateWithFormat`, `@SpeedyDateRange`, `@SpeedyNotBlank`, `@SpeedyPositive`, `@SpeedyNegative`, `@SpeedyDigits`, `@SpeedyDecimalMax`, `@SpeedyDecimalMin`, `@SpeedyPositiveOrZero`, `@SpeedyNegativeOrZero`
 
 ---

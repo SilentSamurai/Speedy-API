@@ -1,20 +1,18 @@
 package com.github.silent.samurai.speedy.parser;
 
-import com.fasterxml.jackson.databind.node.ValueNode;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.models.conditions.*;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
-
-import java.util.LinkedList;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConditionFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConditionFactory.class);
 
     private final EntityMetadata entityMetadata;
 
@@ -66,6 +64,22 @@ public class ConditionFactory {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
         return new AssociatedField(fieldMetadata, associatedFieldMetadata);
+    }
+
+    /**
+     * Rejects queries that reference a sensitive field via {@code $fieldName}.
+     * Only checks the resolved metadata (the target field), so a sensitive
+     * field on the LEFT side of a comparison is allowed — only the RHS is blocked.
+     * For FK traversals ({@code $entity.field}), the target field's sensitivity
+     * is checked, not the FK owner's.
+     */
+    public void validateQueryFieldNotSensitive(QueryField queryField) throws BadRequestException {
+        FieldMetadata metadata = queryField.getMetadataForParsing();
+        if (metadata.isSensitive()) {
+            LOGGER.warn("Blocked $ field reference to sensitive field '{}' on entity '{}'",
+                    metadata.getOutputPropertyName(), entityMetadata.getName());
+            throw new BadRequestException("Field '" + metadata.getOutputPropertyName() + "' cannot be used as a field reference");
+        }
     }
 
     public BinaryCondition createBiCondition(QueryField normalField, ConditionOperator operator, Expression expression) throws SpeedyHttpException {

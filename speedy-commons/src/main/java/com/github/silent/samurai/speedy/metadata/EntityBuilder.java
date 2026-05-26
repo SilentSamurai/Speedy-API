@@ -16,6 +16,9 @@ public class EntityBuilder {
     Map<String, FieldBuilder> fieldMap = new HashMap<>();
     private String name;
     private String dbTableName;
+    // Default sensitivity for all fields on this entity. Fields without
+    // their own @SpeedySensitive inherit this value during build.
+    private boolean isSensitive = false;
 
     public Iterable<FieldBuilder> fields() {
         return fieldMap.values();
@@ -46,6 +49,11 @@ public class EntityBuilder {
 
     public EntityBuilder addActionType(ActionType actionType) {
         this.actionTypes.add(actionType);
+        return this;
+    }
+
+    public EntityBuilder sensitive(boolean isSensitive) {
+        this.isSensitive = isSensitive;
         return this;
     }
 
@@ -105,7 +113,7 @@ public class EntityBuilder {
             }
         }
 
-        EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, actionTypes, fieldMetadataMap);
+        EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, isSensitive, actionTypes, fieldMetadataMap);
 
         for (FieldMetadata fieldMetadata : fieldMetadataMap.values()) {
             FieldMetadataImpl fieldMetadataImpl = (FieldMetadataImpl) fieldMetadata;

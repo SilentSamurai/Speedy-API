@@ -83,11 +83,15 @@ public class SpeedyFactory {
             ExceptionUtils.writeException(response, e);
             LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } catch (Exception e) {
-            response.setStatus(ExceptionUtils.getStatusFromException(e));
+            ExceptionUtils.writeException(response,
+                    ExceptionUtils.getStatusFromException(e),
+                    "Internal Server Error");
             LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } catch (Throwable e) {
+            ExceptionUtils.writeException(response,
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Internal Server Error");
             LOGGER.error("Exception {} ", request.getRequestURI(), e);
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } finally {
             response.getWriter().flush();
         }

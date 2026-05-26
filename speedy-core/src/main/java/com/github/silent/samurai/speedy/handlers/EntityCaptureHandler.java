@@ -66,12 +66,13 @@ public class EntityCaptureHandler implements Handler {
         String requestURI = context.getRequestUri();
 
         // Parse the URI to extract the Speedy query
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, requestURI);
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, requestURI,
+                context.getConfiguration().getMaxPageSize());
         SpeedyQuery uriSpeedyQuery = parser.parse();
 
-        // Extract the target entity metadata from the parsed query
         EntityMetadata resourceMetadata = uriSpeedyQuery.getFrom();
         context.setEntityMetadata(resourceMetadata);
+        context.setSpeedyQuery(uriSpeedyQuery);
 
         // Continue processing with the next handler
         next.process(context);

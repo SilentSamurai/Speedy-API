@@ -99,6 +99,7 @@ class JsonNode2SpeedyValueTest {
     @Test
     void testFromEntityMetadata_Valid() throws SpeedyHttpException {
         when(mockEntityMetadata.getAllFields()).thenReturn(Set.of(mockFieldMetadata));
+        when(mockFieldMetadata.isDeserializable()).thenReturn(true);
         when(mockFieldMetadata.getOutputPropertyName()).thenReturn("name");
         when(mockFieldMetadata.getValueType()).thenReturn(ValueType.TEXT);
         jsonNode.put("name", "Test Entity");

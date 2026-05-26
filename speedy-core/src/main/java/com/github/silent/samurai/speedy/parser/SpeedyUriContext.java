@@ -29,16 +29,26 @@ public class SpeedyUriContext {
     private final String requestURI;
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
     private SpeedyQueryImpl speedyQuery;
+    private final int maxPageSize;
 
     public SpeedyUriContext(MetaModel metaModel, String requestURI) {
         this.metaModel = metaModel;
         this.requestURI = requestURI;
+        this.maxPageSize = Integer.MAX_VALUE;
+    }
+
+    public SpeedyUriContext(MetaModel metaModel, String requestURI, int maxPageSize) {
+        this.metaModel = metaModel;
+        this.requestURI = requestURI;
+        this.maxPageSize = maxPageSize;
     }
 
     Expression buildExpression(FieldMetadata metadata, String symbol) throws SpeedyHttpException {
         if (symbol.startsWith("$")) {
             String field = symbol.substring(1);
             QueryField queryField = this.speedyQuery.getConditionFactory().createQueryField(field);
+            // Reject $ references to fields marked @SpeedySensitive
+            this.speedyQuery.getConditionFactory().validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
             return new Literal(SpeedyValueFactory.basicFromString(metadata, symbol));
@@ -67,6 +77,7 @@ public class SpeedyUriContext {
         EntityMetadata entityMetadata = this.extractEntity(uriComponents);
 
         this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
+        this.speedyQuery.setMaxPageSize(maxPageSize);
 
         captureUrlParams(uriComponents);
 

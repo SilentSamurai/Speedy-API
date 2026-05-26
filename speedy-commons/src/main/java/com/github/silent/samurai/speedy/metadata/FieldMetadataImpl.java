@@ -30,6 +30,8 @@ public class FieldMetadataImpl implements FieldMetadata {
     private final boolean isSerializable;
     private final boolean isDeserializable;
     private final boolean isEnum;
+    // Blocked from $ field references when true (from @SpeedySensitive).
+    private final boolean isSensitive;
     // Fields to distinguish stored vs operational enum configuration
     private final EnumMode storedEnumMode;
     private final EnumMode operationalEnumMode;
@@ -54,6 +56,7 @@ public class FieldMetadataImpl implements FieldMetadata {
                              boolean isSerializable,
                              boolean isDeserializable,
                              boolean isEnum,
+                             boolean isSensitive,
                              EnumMode storedEnumMode,
                              EnumMode operationalEnumMode,
                              DynamicEnum dynamicEnum,
@@ -74,6 +77,7 @@ public class FieldMetadataImpl implements FieldMetadata {
         this.storedEnumMode = storedEnumMode;
         this.operationalEnumMode = operationalEnumMode;
         this.dynamicEnum = dynamicEnum;
+        this.isSensitive = isSensitive;
         this.validations = validations == null ? List.of() : List.copyOf(validations);
         this.isEnum = isEnum;
     }

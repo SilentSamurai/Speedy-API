@@ -91,6 +91,50 @@ public class Entity {
 ```
 
 
+### Speedy Sensitive
+
+Prevent fields from being used in `$` field references in queries.
+Applies to both fields and entity classes.
+
+**Field-Level Sensitivity**
+
+```java
+@Table(name = "entity")
+@Entity
+public class Entity {
+
+    // Cannot be referenced via $secretField in query conditions
+    @SpeedySensitive
+    @Column(name = "secret_field")
+    private String secretField;
+
+    @Column(name = "public_field")
+    private String publicField;
+}
+```
+
+**Entity-Level Sensitivity**
+
+All fields inherit sensitivity by default; individual fields can opt out:
+
+```java
+@SpeedySensitive
+@Table(name = "entity")
+@Entity
+public class Entity {
+
+    @Column(name = "field_a")
+    private String fieldA;  // Inherits sensitivity from class
+
+    @SpeedySensitive(false) // Override — allowed in $ references
+    @Column(name = "field_b")
+    private String fieldB;
+}
+```
+
+See [Field References](field-references.md#sensitivity-control-with-speedysensitive) for runtime behavior.
+
+
 ### Jpa Entity
 
 **User Entity**

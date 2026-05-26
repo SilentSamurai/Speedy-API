@@ -48,6 +48,13 @@ public interface EntityMetadata {
 
     String getDbTableName();
 
+    // Whether entity-level @SpeedySensitive is applied. When true, the
+    // $metadata endpoint exposes this and all fields default to sensitive
+    // unless individually overridden with @SpeedySensitive(false).
+    default boolean isSensitive() {
+        return false;
+    }
+
     Set<ActionType> getActionType();
 
     default boolean isReadOnly() {
