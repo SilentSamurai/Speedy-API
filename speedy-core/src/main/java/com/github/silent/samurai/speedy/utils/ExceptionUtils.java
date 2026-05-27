@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.PayloadTooLargeException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import jakarta.persistence.PersistenceException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ public class ExceptionUtils {
         exceptionToStatusMap.put(BadRequestException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
         exceptionToStatusMap.put(ConstraintViolationException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
         exceptionToStatusMap.put(DataException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
+        exceptionToStatusMap.put(PayloadTooLargeException.class.getName(), HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
 
     }
 
