@@ -35,8 +35,13 @@ jobs:
             
             -   id: install-secret-key
                 name: Install gpg secret key
+                env:
+                    GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
                 run: |
-                    cat <(echo -e "${{ secrets.GPG_SIGNING_KEY }}") | gpg --batch --import
+                    GPG_KEY_FILE=$(mktemp)
+                    printf '%s' "$GPG_SIGNING_KEY" > "$GPG_KEY_FILE"
+                    gpg --batch --import "$GPG_KEY_FILE"
+                    rm -f "$GPG_KEY_FILE"
                     gpg --list-secret-keys --keyid-format LONG
             
             -   id: publish-to-central

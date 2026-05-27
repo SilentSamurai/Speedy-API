@@ -55,16 +55,20 @@ jobs:
             -   name: Install and Verify GPG Key
                 env:
                     MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
+                    GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
                 run: |
                     echo "🔑 Installing and verifying GPG signing key..."
                     
-                    if [[ -n "${{ secrets.GPG_SIGNING_KEY }}" ]]; then
+                    if [[ -n "$GPG_SIGNING_KEY" ]]; then
                         # Create .gnupg directory and configure GPG for non-interactive use
                         mkdir -p ~/.gnupg
                         echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
                         
                         # Import the GPG key
-                        cat <(echo -e "${{ secrets.GPG_SIGNING_KEY }}") | gpg --batch --import
+                        GPG_KEY_FILE=$(mktemp)
+                        printf '%s' "$GPG_SIGNING_KEY" > "$GPG_KEY_FILE"
+                        gpg --batch --import "$GPG_KEY_FILE"
+                        rm -f "$GPG_KEY_FILE"
                         
                         # List the imported keys
                         echo "📋 Imported GPG keys:"
