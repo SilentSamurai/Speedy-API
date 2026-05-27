@@ -27,6 +27,7 @@ public class SwitchHandler implements Handler {
         HttpMethod method = context.getHttpMethod();
         String requestURI = context.getRequestUri();
         EntityMetadata entityMetadata = context.getEntityMetadata();
+        String lastPathSegment = lastPathSegment(requestURI);
 
         if (method.equals(HttpMethod.GET)) {
             if (!entityMetadata.isReadAllowed()) {
@@ -35,13 +36,13 @@ public class SwitchHandler implements Handler {
             getRequestHandler.process(context);
             return;
         } else if (method.equals(HttpMethod.POST)) {
-            if (requestURI.contains("$query")) {
+            if ("$query".equals(lastPathSegment)) {
                 if (!entityMetadata.isReadAllowed()) {
                     throw new BadRequestException(String.format("read not allowed for %s", entityMetadata.getName()));
                 }
                 queryHandler.process(context);
                 return;
-            } else if (requestURI.contains("$create")) {
+            } else if ("$create".equals(lastPathSegment)) {
                 if (!entityMetadata.isCreateAllowed()) {
                     throw new BadRequestException(String.format("create not allowed for %s", entityMetadata.getName()));
                 }
@@ -49,7 +50,7 @@ public class SwitchHandler implements Handler {
                 return;
             }
         } else if (method.equals(HttpMethod.PUT) || method.equals(HttpMethod.PATCH)) {
-            if (requestURI.contains("$update")) {
+            if ("$update".equals(lastPathSegment)) {
                 if (!entityMetadata.isUpdateAllowed()) {
                     throw new BadRequestException(String.format("update not allowed for %s", entityMetadata.getName()));
                 }
@@ -57,7 +58,7 @@ public class SwitchHandler implements Handler {
                 return;
             }
         } else if (method.equals(HttpMethod.DELETE)) {
-            if (requestURI.contains("$delete")) {
+            if ("$delete".equals(lastPathSegment)) {
                 if (!entityMetadata.isDeleteAllowed()) {
                     throw new BadRequestException(String.format("delete not allowed for %s", entityMetadata.getName()));
                 }
@@ -66,5 +67,13 @@ public class SwitchHandler implements Handler {
             }
         }
         throw new BadRequestException("not a valid request");
+    }
+
+    private static String lastPathSegment(String uri) {
+        int lastSlash = uri.lastIndexOf('/');
+        if (lastSlash >= 0 && lastSlash < uri.length() - 1) {
+            return uri.substring(lastSlash + 1);
+        }
+        return "";
     }
 }
