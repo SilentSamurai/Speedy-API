@@ -88,6 +88,7 @@ public class SpeedyFactory {
                     "Internal Server Error");
             LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } catch (Throwable e) {
+            if (e instanceof Error) throw (Error) e;
             ExceptionUtils.writeException(response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Internal Server Error");
