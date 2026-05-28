@@ -22,4 +22,8 @@ public interface ISpeedyConfiguration {
         return 1000;
     }
 
+    default long getMaxRequestBodySize() {
+        return 1_048_576;
+    }
+
 }

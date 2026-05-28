@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.unit.DataSize;
 
 @AutoConfiguration
 @Configuration
@@ -17,11 +18,20 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackageClasses = SpeedyApiController.class)
 public class SpeedyApiAutoConfiguration {
 
+    private DataSize maxRequestBodySize = DataSize.ofMegabytes(1);
+
+    public DataSize getMaxRequestBodySize() {
+        return maxRequestBodySize;
+    }
+
+    public void setMaxRequestBodySize(DataSize maxRequestBodySize) {
+        this.maxRequestBodySize = maxRequestBodySize;
+    }
 
     @Bean
     @ConditionalOnBean(ISpeedyConfiguration.class)
     public SpeedyFactory speedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
-        return new SpeedyFactory(speedyConfiguration);
+        return new SpeedyFactory(speedyConfiguration, maxRequestBodySize.toBytes());
     }
 
     @Bean

@@ -37,11 +37,17 @@ public class SpeedyFactory {
     //    private final QueryProcessor queryProcessor;
     private final SpeedyDialect dialect;
     private final ISpeedyConfiguration configuration;
-    Handler chain = createHandlerChain();
+    private final long maxRequestBodySize;
+    Handler chain;
 
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
+        this(speedyConfiguration, speedyConfiguration.getMaxRequestBodySize());
+    }
+
+    public SpeedyFactory(ISpeedyConfiguration speedyConfiguration, long maxRequestBodySize) throws SpeedyHttpException {
         this.speedyConfiguration = speedyConfiguration;
+        this.maxRequestBodySize = maxRequestBodySize;
 
         MetaModelProcessor metaModelProcessor = speedyConfiguration.metaModelProcessor();
         metaModelProcessor.processMetaModel(MetadataBuilder.builder());
@@ -60,6 +66,8 @@ public class SpeedyFactory {
 
         configuration = speedyConfiguration;
         dialect = speedyConfiguration.getDialect();
+
+        this.chain = createHandlerChain();
     }
 
     private QueryProcessor createQueryProcessor() {
@@ -88,6 +96,7 @@ public class SpeedyFactory {
                     "Internal Server Error");
             LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } catch (Throwable e) {
+            if (e instanceof Error) throw (Error) e;
             ExceptionUtils.writeException(response,
                     HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Internal Server Error");
@@ -116,7 +125,7 @@ public class SpeedyFactory {
 
         Handler queryProcessorInit = new CreateQueryProcessorHandler(sh);
         Handler ech = new EntityCaptureHandler(queryProcessorInit);
-        Handler requestParserHandler = new RequestParserHandler(ech);
+        Handler requestParserHandler = new RequestParserHandler(ech, maxRequestBodySize);
         return new HeadHandler(requestParserHandler);
     }
 
