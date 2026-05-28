@@ -6,12 +6,15 @@ import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyExceptionMapper;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.query.JooqQueryProcessorImpl;
 import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
+import com.github.silent.samurai.speedy.utils.DefaultExceptionMapper;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.speedy.validation.MetaModelVerifier;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
@@ -34,7 +37,7 @@ public class SpeedyFactory {
     private final ValidationProcessor validationProcessor;
     private final EventProcessor eventProcessor;
     private final RegistryImpl eventRegistry;
-    //    private final QueryProcessor queryProcessor;
+    private final ISpeedyExceptionMapper exceptionMapper;
     private final SpeedyDialect dialect;
     private final ISpeedyConfiguration configuration;
     private final long maxRequestBodySize;
@@ -60,6 +63,9 @@ public class SpeedyFactory {
         speedyConfiguration.register(eventRegistry);
         this.eventProcessor = new EventProcessor(metaModel, eventRegistry);
         this.eventProcessor.processRegistry();
+
+        this.exceptionMapper = new DefaultExceptionMapper(
+                new AdviceExceptionMapper(eventRegistry.getControllerAdvices()));
 
         this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel);
         this.validationProcessor.process();
@@ -87,19 +93,11 @@ public class SpeedyFactory {
         );
         try {
             this.chain.process(requestContext);
-        } catch (SpeedyHttpException e) {
-            ExceptionUtils.writeException(response, e);
-            LOGGER.error("Exception {} ", request.getRequestURI(), e);
-        } catch (Exception e) {
-            ExceptionUtils.writeException(response,
-                    ExceptionUtils.getStatusFromException(e),
-                    "Internal Server Error");
-            LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;
-            ExceptionUtils.writeException(response,
-                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Internal Server Error");
+            int status = exceptionMapper.getStatus(e);
+            String message = exceptionMapper.getMessage(e);
+            ExceptionUtils.writeException(response, status, message);
             LOGGER.error("Exception {} ", request.getRequestURI(), e);
         } finally {
             response.getWriter().flush();

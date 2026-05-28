@@ -19,6 +19,8 @@ public class RegistryImpl implements ISpeedyRegistry {
 
     private final List<ISpeedyCustomValidation> validators = new LinkedList<>();
 
+    private final List<Object> controllerAdvices = new LinkedList<>();
+
     @Override
     public ISpeedyRegistry registerEventHandler(ISpeedyEventHandler eventHandler) {
         eventHandlers.add(eventHandler);
@@ -29,5 +31,15 @@ public class RegistryImpl implements ISpeedyRegistry {
     public ISpeedyRegistry registerValidator(ISpeedyCustomValidation validator) {
         validators.add(validator);
         return this;
+    }
+
+    @Override
+    public ISpeedyRegistry registerControllerAdvice(Object advice) {
+        controllerAdvices.add(advice);
+        return this;
+    }
+
+    public List<Object> getControllerAdvices() {
+        return controllerAdvices;
     }
 }

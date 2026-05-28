@@ -5,4 +5,6 @@ public interface ISpeedyRegistry {
     ISpeedyRegistry registerEventHandler(ISpeedyEventHandler eventHandler);
 
     ISpeedyRegistry registerValidator(ISpeedyCustomValidation validator);
+
+    ISpeedyRegistry registerControllerAdvice(Object advice);
 }

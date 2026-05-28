@@ -1,7 +1,7 @@
 # AGENTS.md
 
 <!-- SPECKIT START -->
-**Current Feature**: `002-sensitive-field-refs` — [Spec](./specs/002-sensitive-field-refs/spec.md) | [Plan](./specs/002-sensitive-field-refs/plan.md) | [Research](./specs/002-sensitive-field-refs/research.md) | [Data Model](./specs/002-sensitive-field-refs/data-model.md) | [Quickstart](./specs/002-sensitive-field-refs/quickstart.md)
+**Current Feature**: `005-exception-mapping` — [Spec](./specs/005-exception-mapping/spec.md) | [Plan](./specs/005-exception-mapping/plan.md) | [Research](./specs/005-exception-mapping/research.md) | [Data Model](./specs/005-exception-mapping/data-model.md) | [Quickstart](./specs/005-exception-mapping/quickstart.md)
 <!-- SPECKIT END -->
 
 ## Architecture
@@ -16,7 +16,6 @@
 | `speedy-jpa-impl` | JPA Bridge | `JpaMetaModelProcessorV2` scans `EntityManagerFactory` to build the `MetaModel` from `@Entity` classes. |
 | `speedy-static-impl` | Static Bridge | `FileMetaModelProcessor` builds `MetaModel` from a JSON file. |
 | `spring-boot-starter-speedy-api` | Auto-Configuration | `SpeedyApiAutoConfiguration` — conditionally creates `SpeedyFactory` and `SpeedyOpenApiCustomizer` beans. Entry point: `META-INF/spring/...AutoConfiguration.imports`. |
-| `spring-boot-starter-speedy-open-api` | OpenAPI | OpenAPI/Swagger spec generation from metamodel. |
 | `speedy-java-client` | Client SDK | Fluent Java client (`SpeedyApi`) with typed request builders for GET, query, create, update, delete. |
 | `speedy-test-app` | Integration Tests | Full Spring Boot app with 19 JPA entities, sample config, event handlers, validators. |
 | `jacoco-aggregate` | Coverage | Aggregates JaCoCo reports across all modules. |
@@ -101,6 +100,8 @@ All in `speedy-commons/.../annotations/`:
 - `@SpeedyEvent` — marks event handler methods (`value` = entity name, `eventType` = array of `SpeedyEventType`)
 - `@SpeedyValidator` — marks custom validator methods (`entity` = entity name, `requests` = array of `SpeedyValidationRequestType`)
 - `@SpeedyAction` — gates CRUD operations per entity/field (`ActionType[]`: READ, CREATE, UPDATE, DELETE, ALL)
+- `@SpeedyControllerAdvice` — marker for classes that contain `@SpeedyExceptionHandler` methods; scanned by `AdviceExceptionMapper`
+- `@SpeedyExceptionHandler` — method-level, maps `Throwable` types to an HTTP `status` and optional custom message (`value` = exception classes, `status` = HTTP code, default 500)
 - `@SpeedyIgnore` — excludes entity/field from metamodel
 - `@SpeedyType` — overrides column type in metamodel
 - `@SpeedySensitive` — marks entity/field as blocked from `$` field references
