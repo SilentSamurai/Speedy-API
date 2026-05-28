@@ -42,3 +42,4 @@ application-secret*
 *secret*.properties
 
 specs
+/.specify/feature.json

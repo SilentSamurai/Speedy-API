@@ -64,20 +64,17 @@ public class DefaultExceptionMapper implements ISpeedyExceptionMapper {
         // 1. Custom advice handlers (priority)
         String adviceMessage = adviceExceptionMapper.getMessage(throwable);
         if (adviceMessage != null) {
-            int adviceStatus = adviceExceptionMapper.getStatus(throwable);
-            if (adviceStatus >= 500) {
-                return "Internal Server Error";
-            }
+            // Respect custom messages even for 500+ errors
             return adviceMessage;
         }
 
-        // 2. Use throwable's message
+        // 2. Use throwable's message for non-500 errors
         String message = throwable.getMessage();
         if (message == null || message.isEmpty()) {
             message = throwable.getClass().getSimpleName();
         }
 
-        // 3. Smart message rule: expose for 4xx, mask for 5xx
+        // 3. Fallback masking for 5xx
         int status = getStatus(throwable);
         if (status >= 500) {
             return "Internal Server Error";

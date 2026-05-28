@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.config;
 
+import com.github.silent.samurai.speedy.advice.TestControllerAdvice;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.docs.SpeedyOpenApiCustomizer;
 import com.github.silent.samurai.speedy.events.EntityEvents;
@@ -25,13 +26,17 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     private final EntityManagerFactory entityManagerFactory;
     private final SpeedyValidation speedyValidation;
     private final EntityEvents entityEvents;
+    private final TestControllerAdvice testControllerAdvice;
     private final DataSource dataSource;
     private final Environment environment;
 
-    public SpeedyConfig(EntityManagerFactory entityManagerFactory, SpeedyValidation speedyValidation, EntityEvents entityEvents, DataSource dataSource, Environment environment) {
+    public SpeedyConfig(EntityManagerFactory entityManagerFactory, SpeedyValidation speedyValidation,
+                        EntityEvents entityEvents, TestControllerAdvice testControllerAdvice,
+                        DataSource dataSource, Environment environment) {
         this.entityManagerFactory = entityManagerFactory;
         this.speedyValidation = speedyValidation;
         this.entityEvents = entityEvents;
+        this.testControllerAdvice = testControllerAdvice;
         this.dataSource = dataSource;
         this.environment = environment;
     }
@@ -49,7 +54,8 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     @Override
     public void register(ISpeedyRegistry registry) {
         registry.registerEventHandler(entityEvents)
-                .registerValidator(speedyValidation);
+                .registerValidator(speedyValidation)
+                .registerControllerAdvice(testControllerAdvice);
     }
 
     @Override

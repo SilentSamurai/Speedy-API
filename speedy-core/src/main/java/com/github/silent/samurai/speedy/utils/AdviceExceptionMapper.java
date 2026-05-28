@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,32 +25,40 @@ public class AdviceExceptionMapper {
     }
 
     public int getStatus(Throwable throwable) {
-        HandlerMethod handler = resolveHandler(throwable);
-        if (handler != null) {
-            return handler.httpStatus;
+        ResolutionResult result = resolveHandler(throwable);
+        if (result != null) {
+            return result.handler.httpStatus;
         }
         return -1;
     }
 
     public String getMessage(Throwable throwable) {
-        HandlerMethod handler = resolveHandler(throwable);
-        if (handler != null) {
-            return invokeHandler(handler, throwable);
+        ResolutionResult result = resolveHandler(throwable);
+        if (result != null) {
+            return invokeHandler(result.handler, result.matchedThrowable);
         }
         return null;
     }
 
-    private HandlerMethod resolveHandler(Throwable throwable) {
+    private ResolutionResult resolveHandler(Throwable throwable) {
         Map<Class<? extends Throwable>, HandlerMethod> cache = getCache();
 
-        // Walk the cause chain first
+        // Collect the cause chain
+        List<Throwable> chain = new ArrayList<>();
         Throwable current = throwable;
         while (current != null) {
-            HandlerMethod handler = findHandlerForType(current.getClass(), cache);
-            if (handler != null) {
-                return handler;
-            }
+            chain.add(current);
             current = current.getCause();
+        }
+
+        // Walk from innermost to outermost (root cause first)
+        Collections.reverse(chain);
+
+        for (Throwable t : chain) {
+            HandlerMethod handler = findHandlerForType(t.getClass(), cache);
+            if (handler != null) {
+                return new ResolutionResult(handler, t);
+            }
         }
 
         return null;
@@ -120,10 +130,20 @@ public class AdviceExceptionMapper {
                 Object result = handler.method.invoke(handler.adviceInstance);
                 return result != null ? result.toString() : null;
             }
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
             Throwable cause = (e instanceof InvocationTargetException) ? e.getCause() : e;
             LOGGER.warn("Failed to invoke exception handler {}: {}", handler.method.getName(), cause.getMessage());
             return null;
+        }
+    }
+
+    static class ResolutionResult {
+        final HandlerMethod handler;
+        final Throwable matchedThrowable;
+
+        ResolutionResult(HandlerMethod handler, Throwable matchedThrowable) {
+            this.handler = handler;
+            this.matchedThrowable = matchedThrowable;
         }
     }
 

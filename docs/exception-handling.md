@@ -123,7 +123,7 @@ All exceptions produce a JSON error response:
 {
     "status": 400,
     "message": "Bad request: field email is invalid",
-    "timestamp": 1716912000000
+    "timestamp": "2026-05-28T13:45:00"
 }
 ```
 
@@ -133,6 +133,6 @@ Messages for 5xx responses are always masked:
 {
     "status": 500,
     "message": "Internal Server Error",
-    "timestamp": 1716912000000
+    "timestamp": "2026-05-28T13:45:00"
 }
 ```
