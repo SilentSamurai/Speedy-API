@@ -132,7 +132,7 @@ public class AdviceExceptionMapper {
             }
         } catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
             Throwable cause = (e instanceof InvocationTargetException) ? e.getCause() : e;
-            LOGGER.warn("Failed to invoke exception handler {}: {}", handler.method.getName(), cause.getMessage());
+            LOGGER.warn("Failed to invoke exception handler {}", handler.method.getName(), cause);
             return null;
         }
     }

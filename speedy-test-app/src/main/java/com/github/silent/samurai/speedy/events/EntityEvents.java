@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
@@ -28,6 +29,8 @@ public class EntityEvents implements ISpeedyEventHandler {
     public static final AtomicInteger POST_DELETE_COUNTER = new AtomicInteger(0);
     public static final ConcurrentHashMap<String, Boolean> POST_INSERT_CATEGORIES = new ConcurrentHashMap<>();
     public static volatile boolean POST_UPDATE_FIRED = false;
+    public static final AtomicBoolean throwOnNextCurrencyInsert = new AtomicBoolean(false);
+    public static final AtomicBoolean throwOnNextCurrencyDelete = new AtomicBoolean(false);
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -136,5 +139,19 @@ public class EntityEvents implements ISpeedyEventHandler {
     public void companyPostDelete(Company company) throws Exception {
         LOGGER.info("Company Post Delete Event");
         POST_DELETE_COUNTER.incrementAndGet();
+    }
+
+    @SpeedyEvent(value = "Currency", eventType = {SpeedyEventType.POST_INSERT})
+    public void currencyPostInsert(SpeedyEntity currency) {
+        if (throwOnNextCurrencyInsert.getAndSet(false)) {
+            throw new RuntimeException("Simulated POST_INSERT failure for testing");
+        }
+    }
+
+    @SpeedyEvent(value = "Currency", eventType = {SpeedyEventType.PRE_DELETE})
+    public void currencyPreDelete(SpeedyEntity currency) {
+        if (throwOnNextCurrencyDelete.getAndSet(false)) {
+            throw new RuntimeException("Simulated PRE_DELETE failure for testing");
+        }
     }
 }

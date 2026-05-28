@@ -1,7 +1,7 @@
 # AGENTS.md
 
 <!-- SPECKIT START -->
-**Current Feature**: `005-exception-mapping` — [Spec](./specs/005-exception-mapping/spec.md) | [Plan](./specs/005-exception-mapping/plan.md) | [Research](./specs/005-exception-mapping/research.md) | [Data Model](./specs/005-exception-mapping/data-model.md) | [Quickstart](./specs/005-exception-mapping/quickstart.md)
+**Current Feature**: `006-batch-transaction-support` — [Spec](./specs/006-batch-transaction-support/spec.md) | [Plan](./specs/006-batch-transaction-support/plan.md) | [Research](./specs/006-batch-transaction-support/research.md) | [Data Model](./specs/006-batch-transaction-support/data-model.md) | [Quickstart](./specs/006-batch-transaction-support/quickstart.md)
 <!-- SPECKIT END -->
 
 ## Architecture
@@ -172,6 +172,21 @@ The 12 handlers form a linear chain where each handler processes what it cares a
   - **Validation**: `validation/CategoryValidationIT.java`, `ProductDefaultValidationIT.java`, `DateValidationIT.java`, `WebsiteUrlValidationIT.java`
   - **Client**: `client/SpeedyApiTest.java`, `CompanyEventTest.java`, `EventExceptionTest.java`, `CompanyEnumTest.java`, `TaskEnumTest.java`
   - **Entity**: `entity/PkUuidTestTest.java` (UUID PK handling)
+
+## Coding Conventions
+
+### Debug Logging
+Always pass the exception object as the last argument to SLF4J log methods to print the full stack trace. Never call `.getMessage()` or pass exception message strings alone — that hides the root cause location.
+
+**Bad:**
+```java
+log.info("Entity #{} failed: {}", i, e.getMessage());
+```
+
+**Good:**
+```java
+log.info("Entity #{} failed", i, e);
+```
 
 ### CI/CD
 - **`main.yml`**: PR checks on `main` — Ubuntu, JDK 17, `mvn clean install`

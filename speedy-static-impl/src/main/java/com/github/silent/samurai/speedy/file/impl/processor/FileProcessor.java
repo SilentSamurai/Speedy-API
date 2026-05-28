@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.file.impl.processor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.silent.samurai.speedy.enums.ColumnType;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.file.impl.models.JsonEntity;
 import com.github.silent.samurai.speedy.file.impl.models.JsonField;
@@ -35,6 +36,11 @@ public class FileProcessor {
         eb.dbTableName(jsonEntity.dbTable);
         eb.sensitive(jsonEntity.sensitive);
 //        eb.setKeyType(jsonEntity.keyType);
+
+        if (jsonEntity.transactionMode != null && !jsonEntity.transactionMode.isEmpty()) {
+            TransactionMode mode = TransactionMode.valueOf(jsonEntity.transactionMode.toUpperCase());
+            eb.transactionMode(mode);
+        }
 
         for (JsonField jsonField : jsonEntity.fields) {
             // TODO: capture field-level validation rule metadata from JSON

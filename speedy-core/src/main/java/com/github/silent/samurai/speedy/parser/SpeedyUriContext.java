@@ -30,6 +30,7 @@ public class SpeedyUriContext {
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
     private SpeedyQueryImpl speedyQuery;
     private final int maxPageSize;
+    private String actionSuffix;
 
     public SpeedyUriContext(MetaModel metaModel, String requestURI) {
         this.metaModel = metaModel;
@@ -75,6 +76,7 @@ public class SpeedyUriContext {
                 .build();
 
         EntityMetadata entityMetadata = this.extractEntity(uriComponents);
+        this.actionSuffix = this.extractActionSuffix(uriComponents);
 
         this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
         this.speedyQuery.setMaxPageSize(maxPageSize);
@@ -143,6 +145,15 @@ public class SpeedyUriContext {
         } else {
             throw new BadRequestException("Invalid URL: Missing resource name in path");
         }
+    }
+
+    private String extractActionSuffix(UriComponents uriComponents) {
+        List<String> pathSegments = uriComponents.getPathSegments();
+        return pathSegments.isEmpty() ? "" : pathSegments.get(pathSegments.size() - 1);
+    }
+
+    public String getActionSuffix() {
+        return actionSuffix;
     }
 
     private void captureUrlParams(UriComponents uriComponents) throws SpeedyHttpException {

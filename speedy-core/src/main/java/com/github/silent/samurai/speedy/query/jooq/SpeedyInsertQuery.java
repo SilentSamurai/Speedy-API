@@ -30,12 +30,10 @@ public class SpeedyInsertQuery {
         this.converter = converter;
     }
 
-    public void insertEntity(List<SpeedyEntity> entities) {
-        dslContext.transaction(conf -> {
-            for (SpeedyEntity entity : entities) {
-                insertEntity(conf.dsl(), entity);
-            }
-        });
+    public void insertEntity(List<SpeedyEntity> entities) throws SpeedyHttpException {
+        for (SpeedyEntity entity : entities) {
+            insertEntity(dslContext, entity);
+        }
     }
 
     public void insertEntity(DSLContext context, SpeedyEntity entity) throws SpeedyHttpException {

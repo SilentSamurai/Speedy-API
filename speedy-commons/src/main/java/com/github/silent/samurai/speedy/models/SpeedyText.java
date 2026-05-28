@@ -21,7 +21,7 @@ public class SpeedyText implements SpeedyValue {
 
     @Override
     public boolean isEmpty() {
-        return value == null;
+        return value == null || value.isEmpty();
     }
 
     @Override

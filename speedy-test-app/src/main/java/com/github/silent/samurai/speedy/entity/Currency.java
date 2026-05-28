@@ -1,5 +1,7 @@
 package com.github.silent.samurai.speedy.entity;
 
+import com.github.silent.samurai.speedy.annotations.SpeedyTransaction;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @Table(name = "currencies")
 @Entity
+@SpeedyTransaction(TransactionMode.BATCH)
 public class Currency extends AbstractBaseEntity {
 
     @NotNull
@@ -33,7 +36,7 @@ public class Currency extends AbstractBaseEntity {
     private String country;
 
     @Generated(value = GenerationTime.ALWAYS)
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
 }

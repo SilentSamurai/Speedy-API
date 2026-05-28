@@ -225,7 +225,7 @@ class ExceptionMapperTest {
     }
 
     @Test
-    void customAdvice5xxReturnsMaskedMessage() {
+    void customAdvice5xxDoesNotReturnsMaskedMessage() {
         @SpeedyControllerAdvice
         class Advice5xx {
             @SpeedyExceptionHandler(value = CustomCheckedException.class, status = 502)
@@ -238,7 +238,7 @@ class ExceptionMapperTest {
         CustomCheckedException e = new CustomCheckedException("test");
 
         String message = mapper.getMessage(e);
-        Assertions.assertEquals("Internal Server Error", message);
+        Assertions.assertEquals("Custom handler details", message);
     }
 
     @Test

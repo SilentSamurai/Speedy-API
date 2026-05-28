@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.silent.samurai.speedy.client.builder.BulkCreateBuilder;
+import com.github.silent.samurai.speedy.client.builder.BulkDeleteBuilder;
 import com.github.silent.samurai.speedy.client.builder.CreateBuilder;
 import com.github.silent.samurai.speedy.client.builder.DeleteBuilder;
 import com.github.silent.samurai.speedy.client.builder.GetBuilder;
@@ -106,51 +108,35 @@ public class Speedy {
     }
 
     /**
+     * Creates a bulk-create builder for the given entity.
+     */
+    public BulkCreateBuilder createMany(String entity) {
+        return new BulkCreateBuilder(entity, paths, this::send, mapper, parser);
+    }
+
+    /**
      * Bulk create multiple entities (provided as ObjectNode list).
      */
     public SpeedyResult createMany(String entity, List<ObjectNode> entities) {
-        String url = paths.createPath(entity);
-        String jsonBody;
-        try {
-            ArrayNode array = mapper.createArrayNode();
-            for (ObjectNode entityNode : entities) {
-                array.add(entityNode);
-            }
-            jsonBody = mapper.writeValueAsString(array);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize request body", e);
-        }
-        SpeedyRequest request = new SpeedyRequest("POST", url, Collections.emptyMap(), jsonBody);
-        try {
-            SpeedyRawResponse response = send(request);
-            return parser.parseEntityResponse(response);
-        } catch (IOException e) {
-            throw new SpeedyConnectionException("CreateMany request failed: " + e.getMessage(), e);
-        }
+        return new BulkCreateBuilder(entity, paths, this::send, mapper, parser)
+                .items(entities)
+                .execute();
+    }
+
+    /**
+     * Creates a bulk-delete builder for the given entity.
+     */
+    public BulkDeleteBuilder deleteMany(String entity) {
+        return new BulkDeleteBuilder(entity, paths, this::send, mapper, parser);
     }
 
     /**
      * Bulk delete entities by primary key array.
      */
     public SpeedyResult deleteMany(String entity, List<ObjectNode> pks) {
-        String url = paths.deletePath(entity);
-        String jsonBody;
-        try {
-            ArrayNode array = mapper.createArrayNode();
-            for (ObjectNode pk : pks) {
-                array.add(pk);
-            }
-            jsonBody = mapper.writeValueAsString(array);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize request body", e);
-        }
-        SpeedyRequest request = new SpeedyRequest("DELETE", url, Collections.emptyMap(), jsonBody);
-        try {
-            SpeedyRawResponse response = send(request);
-            return parser.parseEntityResponse(response);
-        } catch (IOException e) {
-            throw new SpeedyConnectionException("DeleteMany request failed: " + e.getMessage(), e);
-        }
+        return new BulkDeleteBuilder(entity, paths, this::send, mapper, parser)
+                .items(pks)
+                .execute();
     }
 
     /**

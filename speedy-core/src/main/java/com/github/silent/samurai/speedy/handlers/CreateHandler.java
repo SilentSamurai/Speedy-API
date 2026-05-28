@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
@@ -16,11 +17,14 @@ import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.models.SpeedyPartialFailure;
 import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.serializers.BatchResultSerializer;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -42,69 +46,159 @@ public class CreateHandler implements Handler {
         JsonNode jsonBody = context.getBody();
 
         List<SpeedyEntity> speedyEntities = parserContent(context, resourceMetadata, jsonBody);
-        List<SpeedyEntity> savedObjects = new ArrayList<>();
-        if (!speedyEntities.isEmpty()) {
-            savedObjects = processPhysical(context, speedyEntities);
+
+        TransactionMode mode = context.getTransactionMode();
+        if (mode == TransactionMode.BATCH) {
+            processBatchCreate(context, speedyEntities);
+        } else {
+            processPerEntityCreate(context, speedyEntities);
         }
-
-        IResponseSerializerV2 jsonSerializer = new JSONSerializerV2(
-                KeyFieldMetadata.class::isInstance,
-                savedObjects,
-                0,
-                new HashSet<>()
-        );
-        context.setResponseSerializer(jsonSerializer);
-
 
         next.process(context);
     }
 
-    private List<SpeedyEntity> processPhysical(RequestContext context, List<SpeedyEntity> jsonBody) throws SpeedyHttpException {
-        EventProcessor eventProcessor = context.getEventProcessor();
+    private void processBatchCreate(RequestContext context, List<SpeedyEntity> entities)
+            throws SpeedyHttpException {
         EntityMetadata entityMetadata = context.getEntityMetadata();
+        EventProcessor eventProcessor = context.getEventProcessor();
         QueryProcessor queryProcessor = context.getQueryProcessor();
-        List<SpeedyEntity> savedObjects;
-        try {
-            for (SpeedyEntity parsedObject : jsonBody) {
-                // trigger should go first, then validate the entire thing
-                // trigger pre-insert event
-                eventProcessor.triggerEvent(
-                        SpeedyEventType.PRE_INSERT,
-                        entityMetadata,
-                        parsedObject
-                );
-                // validate entity
-                context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, parsedObject);
-            }
+        String entityLabel = entityMetadata.getName();
+        int totalCount = entities.size();
 
-            savedObjects = queryProcessor.create(jsonBody);
-
-            for (SpeedyEntity savedEntity : savedObjects) {
-                if (savedEntity == null || savedEntity.isEmpty()) {
-                    log.info("{} save failed", entityMetadata.getName());
-                } else {
-                    log.info("{} saved {}", entityMetadata.getName(), savedEntity);
-                }
-
-                // TODO: remove this may b not good to throw exception right after insert
-                // check if primary key is complete
-                if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
-                    throw new BadRequestException("Incomplete Key after save");
-                }
-                // trigger the post-insert event
-                eventProcessor.triggerEvent(
-                        SpeedyEventType.POST_INSERT,
-                        entityMetadata,
-                        savedEntity
-                );
-            }
-
-        } catch (SpeedyHttpException throwable) {
-            throw throwable;
-        } catch (Exception e) {
-            throw new InternalServerError("Internal Server Error", e);
+        if (entities.isEmpty()) {
+            context.setResponseSerializer(new JSONSerializerV2(
+                    KeyFieldMetadata.class::isInstance,
+                    List.of(), 0, new HashSet<>()));
+            return;
         }
-        return savedObjects;
+
+        try {
+            queryProcessor.runInTransaction(() -> {
+                try {
+                    for (SpeedyEntity entity : entities) {
+                        eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT, entityMetadata, entity);
+                        context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, entity);
+                    }
+
+                    List<SpeedyEntity> saved = queryProcessor.create(entities);
+
+                    for (SpeedyEntity entity : saved) {
+                        if (entity == null || entity.isEmpty()) {
+                            log.info("{} save failed", entityLabel);
+                        } else {
+                            log.info("{} saved {}", entityLabel, entity);
+                        }
+                        if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, entity)) {
+                            throw new BadRequestException("Incomplete Key after save");
+                        }
+                        eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT, entityMetadata, entity);
+                    }
+
+                    context.setResponseSerializer(new JSONSerializerV2(
+                            KeyFieldMetadata.class::isInstance,
+                            saved, 0, new HashSet<>()));
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+
+            log.info("BATCH commit succeeded: entity={}, count={}", entityLabel, totalCount);
+        } catch (Exception e) {
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            log.info("BATCH rolled back: entity={}, count={}", entityLabel, totalCount);
+            if (cause instanceof SpeedyHttpException) {
+                throw (SpeedyHttpException) cause;
+            }
+            throw new InternalServerError("Batch create failed", e);
+        }
+    }
+
+    private void processPerEntityCreate(RequestContext context, List<SpeedyEntity> entities)
+            throws SpeedyHttpException {
+        EntityMetadata entityMetadata = context.getEntityMetadata();
+        EventProcessor eventProcessor = context.getEventProcessor();
+        QueryProcessor queryProcessor = context.getQueryProcessor();
+        String entityLabel = entityMetadata.getName();
+
+        List<SpeedyEntity> succeeded = new ArrayList<>();
+        List<SpeedyPartialFailure> failed = new ArrayList<>();
+
+        for (int i = 0; i < entities.size(); i++) {
+            SpeedyEntity entity = entities.get(i);
+            try {
+                queryProcessor.runInTransaction(() -> {
+                    try {
+                        eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT, entityMetadata, entity);
+                        context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, entity);
+
+                        List<SpeedyEntity> singleBatch = List.of(entity);
+                        List<SpeedyEntity> saved = queryProcessor.create(singleBatch);
+                        SpeedyEntity savedEntity = saved.get(0);
+
+                        if (savedEntity == null || savedEntity.isEmpty()) {
+                            log.info("{} save failed", entityLabel);
+                        } else {
+                            log.info("{} saved {}", entityLabel, savedEntity);
+                        }
+                        if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
+                            throw new BadRequestException("Incomplete Key after save");
+                        }
+                        eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT, entityMetadata, savedEntity);
+                        succeeded.add(savedEntity);
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+            } catch (Exception e) {
+                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                // spec FR-006: capture SpeedyHttpException with the correct status (e.g. 400)
+                //   for per-entity partial failure reporting; wrap non-Speedy exceptions as 500.
+                //   Without the else the second adding always fires, duplicating every failure entry.
+                if (cause instanceof SpeedyHttpException she) {
+                    SpeedyEntityKey inputPk = extractInputPk(entity);
+                    failed.add(new SpeedyPartialFailure(i, she.getStatus(),
+                        she.getMessage(), Instant.now().toString(), inputPk));
+                    log.info("Entity #{} failed in per-entity transaction", i, she);
+                } else {
+                    SpeedyEntityKey inputPk = extractInputPk(entity);
+                    failed.add(new SpeedyPartialFailure(i, 500,
+                        e.getMessage(), Instant.now().toString(), inputPk));
+                    log.info("Entity #{} failed in per-entity transaction", i, e);
+                }
+            }
+        }
+
+        log.info("Transaction committed: entity={}, mode=PER_ENTITY, count={}, succeeded={}, failed={}",
+                entityLabel, entities.size(), succeeded.size(), failed.size());
+
+        IResponseSerializerV2 serializer;
+        if (failed.isEmpty()) {
+            serializer = new JSONSerializerV2(KeyFieldMetadata.class::isInstance,
+                succeeded, 0, new HashSet<>());
+        } else if (entities.size() == 1 && !failed.isEmpty()) {
+            SpeedyPartialFailure failure = failed.get(0);
+            if (failure.getStatus() == 400) {
+                throw new BadRequestException(failure.getMessage());
+            }
+            throw new InternalServerError(failure.getMessage());
+        } else {
+            serializer = new BatchResultSerializer(succeeded, failed, 0);
+        }
+        context.setResponseSerializer(serializer);
+    }
+
+    private SpeedyEntityKey extractInputPk(SpeedyEntity entity) {
+        EntityMetadata metadata = entity.getMetadata();
+        SpeedyEntityKey key = new SpeedyEntityKey(metadata);
+        boolean hasAtLeastOne = false;
+        for (KeyFieldMetadata keyField : metadata.getKeyFields()) {
+            if (entity.has(keyField) && !entity.get(keyField).isNull()
+                    && !entity.get(keyField).isEmpty()) {
+                key.put(keyField, entity.get(keyField));
+                hasAtLeastOne = true;
+            }
+        }
+        return hasAtLeastOne ? key : null;
     }
 
 

@@ -18,5 +18,6 @@ public class JsonEntity {
 
     public String dbTable;
     public String keyType;
+    public String transactionMode;
 
 }

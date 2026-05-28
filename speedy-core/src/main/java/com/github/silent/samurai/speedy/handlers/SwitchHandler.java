@@ -25,9 +25,8 @@ public class SwitchHandler implements Handler {
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         HttpMethod method = context.getHttpMethod();
-        String requestURI = context.getRequestUri();
         EntityMetadata entityMetadata = context.getEntityMetadata();
-        String lastPathSegment = lastPathSegment(requestURI);
+        String lastPathSegment = context.getActionSuffix();
 
         if (method.equals(HttpMethod.GET)) {
             if (!entityMetadata.isReadAllowed()) {
@@ -69,11 +68,5 @@ public class SwitchHandler implements Handler {
         throw new BadRequestException("not a valid request");
     }
 
-    private static String lastPathSegment(String uri) {
-        int lastSlash = uri.lastIndexOf('/');
-        if (lastSlash >= 0 && lastSlash < uri.length() - 1) {
-            return uri.substring(lastSlash + 1);
-        }
-        return "";
-    }
+
 }
