@@ -184,7 +184,6 @@ public class SpeedyUriContext {
             ConditionFactory conditionFactory = speedyQuery.getConditionFactory();
             for (Map.Entry<String, List<String>> entry : queryParameters.entrySet()) {
                 String field = entry.getKey();
-                // TODO check this condition
                 if (field.startsWith("$")) continue;
 
                 QueryField queryField = conditionFactory.createQueryField(field);
