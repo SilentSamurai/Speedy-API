@@ -282,3 +282,84 @@ include related entities in your results using the `$expand` parameter
 ```
 
 For detailed information about multi-level expansions, see [Multi-Level Expansions](multi-level-expansions.md).
+
+<hr>
+
+#### Select Fields
+
+Limit the response to specific fields using the `$select` parameter.
+
+```http
+[GET] /speedy/v1/User ? $select=id,name,email,type
+```
+
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab",
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "type": "ADMIN"
+        }
+    ],
+    "pageIndex": 0,
+    "pageSize": 10,
+    "totalPageCount": 1
+}
+```
+
+Only the fields listed in `$select` are included in the response payload. All other entity fields are omitted.
+
+**Combining `$select` with `$expand`:**
+
+```http
+[GET] /speedy/v1/Inventory ? $select=id,quantity & $expand=Product
+```
+
+When `$expand` is also specified, the select applies to the root entity while expanded entities return all their fields.
+
+<hr>
+
+#### Count Queries
+
+Return only the entity count without loading records using `$select=$count`.
+
+```http
+[GET] /speedy/v1/User ? $select=$count
+```
+
+**Response**
+
+```json
+{
+    "count": 42
+}
+```
+
+This executes a lightweight `COUNT(*)` query without fetching or serializing any entity data.
+
+<hr>
+
+#### Page Size Limits
+
+GET requests respect configurable page size limits:
+
+- **No `$pageSize` specified** — the server uses its configured `defaultPageSize`, clamped to `maxPageSize`.
+- **`$pageSize` specified** — the value must not exceed `maxPageSize`. If it does, the server responds with **400 Bad Request**.
+
+```http
+GET /speedy/v1/User ? $pageSize=5000
+```
+
+```json
+{
+    "status": 400,
+    "message": "Bad Request: page size exceeds maximum allowed",
+    "timestamp": "2026-05-29T12:00:00Z"
+}
+```
+
+Configure the limits by implementing `ISpeedyConfiguration.maxPageSize()` and `ISpeedyConfiguration.defaultPageSize()` in your application.

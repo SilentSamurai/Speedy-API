@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -43,14 +44,14 @@ public class JdkHttpTransport implements SpeedyTransport {
             String method = request.method();
             String body = request.body();
             if (body != null && !body.isEmpty()) {
-                builder.method(method, HttpRequest.BodyPublishers.ofString(body));
+                builder.method(method, HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8));
             } else {
                 builder.method(method, HttpRequest.BodyPublishers.noBody());
             }
 
-            builder.header("Accept", "application/json");
+            builder.header("Accept", "application/json;charset=UTF-8");
             if (body != null && !body.isEmpty()) {
-                builder.header("Content-Type", "application/json");
+                builder.header("Content-Type", "application/json;charset=UTF-8");
             }
 
             for (Map.Entry<String, List<String>> entry : request.headers().entrySet()) {

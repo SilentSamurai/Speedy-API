@@ -13,7 +13,10 @@ import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Test facade for MockMvc-based integration testing. Same builder API as
@@ -149,10 +152,16 @@ public class SpeedyTest {
     public class TestGetBuilder {
         private final String entity;
         private final ObjectNode pkNode;
+        private final List<String> selectFields;
+        private final List<String> expandRelations;
+        private Integer pageSize;
+        private Integer pageNo;
 
         TestGetBuilder(String entity) {
             this.entity = entity;
             this.pkNode = mapper.createObjectNode();
+            this.selectFields = new ArrayList<>();
+            this.expandRelations = new ArrayList<>();
         }
 
         public TestGetBuilder key(String field, Object value) {
@@ -160,13 +169,70 @@ public class SpeedyTest {
             return this;
         }
 
+        public TestGetBuilder select(String... fields) {
+            for (String field : fields) {
+                selectFields.add(field);
+            }
+            return this;
+        }
+
+        public TestGetBuilder pageSize(int pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public TestGetBuilder pageNo(int pageNo) {
+            this.pageNo = pageNo;
+            return this;
+        }
+
+        public TestGetBuilder expand(String... relations) {
+            for (String relation : relations) {
+                expandRelations.add(relation);
+            }
+            return this;
+        }
+
         public SpeedyTestResult execute() {
             String url = paths.entityPath(entity);
-            String qs = paths.formatPk(pkNode);
-            if (qs != null && !qs.isEmpty()) {
+            String qs = buildQueryString();
+            if (!qs.isEmpty()) {
                 url = url + "?" + qs;
             }
             return SpeedyTest.this.execute(url, "GET", null);
+        }
+
+        private String buildQueryString() {
+            StringBuilder sb = new StringBuilder();
+
+            Iterator<Map.Entry<String, com.fasterxml.jackson.databind.JsonNode>> fields = pkNode.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> entry = fields.next();
+                if (sb.length() > 0) sb.append("&");
+                sb.append(entry.getKey()).append("=").append(entry.getValue().asText());
+            }
+
+            if (!selectFields.isEmpty()) {
+                if (sb.length() > 0) sb.append("&");
+                sb.append("$select=").append(String.join(",", selectFields));
+            }
+
+            if (pageSize != null) {
+                if (sb.length() > 0) sb.append("&");
+                sb.append("$pageSize=").append(pageSize);
+            }
+
+            if (pageNo != null) {
+                if (sb.length() > 0) sb.append("&");
+                sb.append("$pageNo=").append(pageNo);
+            }
+
+            if (!expandRelations.isEmpty()) {
+                if (sb.length() > 0) sb.append("&");
+                sb.append("$expand=").append(String.join(",", expandRelations));
+            }
+
+            return sb.toString();
         }
     }
 

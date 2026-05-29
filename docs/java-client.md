@@ -103,6 +103,49 @@ SpeedyResponse response = client.query(query).execute();
 
 For detailed information about multi-level expansions, see [Multi-Level Expansions](multi-level-expansions.md).
 
+## GET List Queries
+
+When using `get()` without a primary key, you can apply field selection, pagination, and expansion via URL query parameters:
+
+```java
+Speedy speedy = Speedy.connect("http://localhost:8080");
+
+// Select specific fields
+List<Product> products = speedy.get("Product")
+    .select("id", "name", "description")
+    .execute()
+    .list(Product.class);
+
+// Select + pagination + expansion
+List<Product> products = speedy.get("Product")
+    .select("id", "name")
+    .pageSize(20)
+    .pageNo(0)
+    .expand("category")
+    .execute()
+    .list(Product.class);
+
+// Count query
+SpeedyResult result = speedy.get("Product")
+    .select("$count")
+    .execute();
+long count = result.raw().get("count").asLong();
+```
+
+These methods produce URL query parameters (`$select=id,name&$pageSize=20&...`) rather than JSON body fields, matching the [GET Operation](get-operation.md) API.
+
+## Character Encoding
+
+All transports guarantee UTF-8 encoding for both request and response:
+
+- `Content-Type: application/json;charset=UTF-8` on requests with a body
+- `Accept: application/json;charset=UTF-8` on all requests
+- `MockMvcTransport` sets `characterEncoding=UTF-8` on the request builder
+- `RestTemplateTransport` configures `StringHttpMessageConverter(StandardCharsets.UTF_8)`
+- `JdkHttpTransport` uses `BodyPublishers.ofString(body, StandardCharsets.UTF_8)`
+
+Response bodies are always decoded as UTF-8.
+
 ## HTTP Client Support
 
 The Java client supports multiple HTTP client implementations:

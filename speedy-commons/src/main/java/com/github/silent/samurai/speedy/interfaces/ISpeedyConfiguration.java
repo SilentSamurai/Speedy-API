@@ -18,6 +18,10 @@ public interface ISpeedyConfiguration {
         return true;
     }
 
+    default int getDefaultPageSize() {
+        return 20;
+    }
+
     default int getMaxPageSize() {
         return 1000;
     }

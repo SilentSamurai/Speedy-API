@@ -191,6 +191,8 @@ public class JsonQueryParser {
     /// Factory for creating various types of query conditions.
     final ConditionFactory conditionFactory;
 
+    private int defaultPageSize = 20;
+
     /// Creates a new JsonQueryBuilder with the specified entity name.
     /// 
     /// This constructor is used when the entity name is known in advance and provided
@@ -209,6 +211,10 @@ public class JsonQueryParser {
 
     public void setMaxPageSize(int maxPageSize) {
         this.speedyQuery.setMaxPageSize(maxPageSize);
+    }
+
+    public void setDefaultPageSize(int defaultPageSize) {
+        this.defaultPageSize = defaultPageSize;
     }
 
     /// Creates a new JsonQueryBuilder with the specified entity metadata.
@@ -494,7 +500,7 @@ public class JsonQueryParser {
     /// 
     /// If `$index` is not provided, it defaults to 0. If `$size` is not provided,
     /// it uses the default page size configured in the query implementation.
-    void buildPaging() {
+    void buildPaging() throws BadRequestException {
         if (rootNode.has("$page")) {
             JsonNode jsonNode = rootNode.get("$page");
             if (jsonNode.isObject()) {
@@ -502,7 +508,13 @@ public class JsonQueryParser {
                     speedyQuery.addPageNo(jsonNode.get("$index").asInt());
                 }
                 if (jsonNode.hasNonNull("$size")) {
-                    speedyQuery.addPageSize(jsonNode.get("$size").asInt());
+                    int pageSize = jsonNode.get("$size").asInt();
+                    if (pageSize > speedyQuery.getMaxPageSize()) {
+                        throw new BadRequestException(
+                                "Requested page size " + pageSize + " exceeds maximum allowed page size " + speedyQuery.getMaxPageSize()
+                        );
+                    }
+                    speedyQuery.addPageSize(pageSize);
                 }
             }
         }
@@ -586,17 +598,29 @@ public class JsonQueryParser {
     /// ```
     /// 
     /// If no `$select` is specified, all fields are returned by default.
-    void buildSelect() {
+    void buildSelect() throws BadRequestException {
         if (rootNode.has("$select")) {
             JsonNode jsonNode = rootNode.get("$select");
             if (jsonNode.isArray()) {
                 for (JsonNode node : jsonNode) {
                     if (node.isTextual()) {
-                        speedyQuery.addSelect(node.asText());
+                        if ("$count".equals(node.asText())) {
+                            speedyQuery.setCountRequest(true);
+                        } else {
+                            speedyQuery.addSelect(node.asText());
+                        }
                     }
                 }
             } else if (jsonNode.isTextual()) {
-                speedyQuery.addSelect(jsonNode.asText());
+                if ("$count".equals(jsonNode.asText())) {
+                    speedyQuery.setCountRequest(true);
+                } else {
+                    speedyQuery.addSelect(jsonNode.asText());
+                }
+            }
+            if (speedyQuery.isCountRequest() && !speedyQuery.getSelect().isEmpty()) {
+                throw new BadRequestException(
+                        "$select cannot mix '$count' with field names. Use '$count' alone to request a count.");
             }
         }
     }
@@ -619,6 +643,7 @@ public class JsonQueryParser {
         buildSelect();
         buildWhere();
         buildOrderBy();
+        speedyQuery.addPageSize(Math.min(defaultPageSize, speedyQuery.getMaxPageSize()));
         buildPaging();
         buildExpand();
         return speedyQuery;

@@ -11,6 +11,7 @@ import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -30,18 +31,22 @@ public class SpeedyUriContext {
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
     private SpeedyQueryImpl speedyQuery;
     private final int maxPageSize;
+    private final int defaultPageSize;
     private String actionSuffix;
 
     public SpeedyUriContext(MetaModel metaModel, String requestURI) {
         this.metaModel = metaModel;
         this.requestURI = requestURI;
         this.maxPageSize = Integer.MAX_VALUE;
+        this.defaultPageSize = 20;
     }
 
-    public SpeedyUriContext(MetaModel metaModel, String requestURI, int maxPageSize) {
+    @Builder
+    private SpeedyUriContext(MetaModel metaModel, String requestURI, int maxPageSize, int defaultPageSize) {
         this.metaModel = metaModel;
         this.requestURI = requestURI;
         this.maxPageSize = maxPageSize;
+        this.defaultPageSize = defaultPageSize;
     }
 
     Expression buildExpression(FieldMetadata metadata, String symbol) throws SpeedyHttpException {
@@ -59,6 +64,8 @@ public class SpeedyUriContext {
     public SpeedyQuery parse() throws SpeedyHttpException {
         try {
             return this.process();
+        } catch (BadRequestException e) {
+            throw e;
         } catch (Exception e) {
             throw new BadRequestException("Invalid URL", e);
         }
@@ -80,6 +87,7 @@ public class SpeedyUriContext {
 
         this.speedyQuery = new SpeedyQueryImpl(entityMetadata);
         this.speedyQuery.setMaxPageSize(maxPageSize);
+        this.speedyQuery.addPageSize(Math.min(defaultPageSize, maxPageSize));
 
         captureUrlParams(uriComponents);
 
@@ -88,19 +96,26 @@ public class SpeedyUriContext {
         addToOrderList("$orderBy", false);
         addToOrderList("$orderByDesc", true);
 
-        extractPageInfo(uriComponents);
-
+        capturePageInfo(uriComponents);
+        captureSelectParams(uriComponents);
 
         return this.speedyQuery;
     }
 
-    private void extractPageInfo(UriComponents uriComponents) throws SpeedyHttpException {
+    private void capturePageInfo(UriComponents uriComponents) throws SpeedyHttpException {
         if (uriComponents.getQueryParams().containsKey("$pageSize")) {
             String $pageSize = uriComponents.getQueryParams().getFirst("$pageSize");
             try {
                 Integer pageSize = TypeConverterRegistry.fromString($pageSize.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageSize);
+                if (pageSize > maxPageSize) {
+                    throw new BadRequestException(
+                            "Requested page size " + pageSize + " exceeds maximum allowed page size " + maxPageSize
+                    );
+                }
                 speedyQuery.addPageSize(pageSize);
+            } catch (BadRequestException e) {
+                throw e;
             } catch (NumberFormatException e) {
                 log.error("Invalid value for $pageSize. Must be an integer.");
             }
@@ -133,6 +148,28 @@ public class SpeedyUriContext {
                         speedyQuery.addExpand(exp);
                     }
                 }
+            }
+        }
+    }
+
+    private void captureSelectParams(UriComponents uriComponents) throws BadRequestException {
+        if (uriComponents.getQueryParams().containsKey("$select")) {
+            String $select = uriComponents.getQueryParams().getFirst("$select");
+            if ($select != null) {
+                String[] selects = $select.replaceAll("['\" ]", "").split(",");
+                for (String sel : selects) {
+                    if (!sel.isEmpty()) {
+                        if ("$count".equals(sel)) {
+                            speedyQuery.setCountRequest(true);
+                        } else {
+                            speedyQuery.addSelect(sel);
+                        }
+                    }
+                }
+            }
+            if (speedyQuery.isCountRequest() && !speedyQuery.getSelect().isEmpty()) {
+                throw new BadRequestException(
+                        "$select cannot mix '$count' with field names. Use '$count' alone to request a count.");
             }
         }
     }

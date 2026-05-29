@@ -7,10 +7,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +30,8 @@ public class RestTemplateTransport implements SpeedyTransport {
 
     public RestTemplateTransport() {
         this.restTemplate = new RestTemplate();
+        this.restTemplate.getMessageConverters().add(0,
+                new StringHttpMessageConverter(StandardCharsets.UTF_8));
     }
 
     public RestTemplateTransport(RestTemplate restTemplate) {
@@ -39,9 +43,9 @@ public class RestTemplateTransport implements SpeedyTransport {
         try {
             HttpMethod method = HttpMethod.valueOf(request.method());
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", "application/json");
+            headers.set("Accept", "application/json;charset=UTF-8");
             if (request.body() != null && !request.body().isEmpty()) {
-                headers.set("Content-Type", "application/json");
+                headers.set("Content-Type", "application/json;charset=UTF-8");
             }
             for (Map.Entry<String, List<String>> entry : request.headers().entrySet()) {
                 for (String value : entry.getValue()) {
