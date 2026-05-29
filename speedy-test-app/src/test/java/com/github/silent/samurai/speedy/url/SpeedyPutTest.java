@@ -31,6 +31,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -67,7 +68,7 @@ public class SpeedyPutTest {
 
         assertNotNull(category.getId());
 
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.patch(SpeedyConstant.URI + "/Category/$update")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.patch(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.UPDATE.suffix())
                 .content(CommonUtil.json().createObjectNode()
                         .put("id", String.valueOf(category.getId()))
                         .put("name", "generated-category-update-modified")

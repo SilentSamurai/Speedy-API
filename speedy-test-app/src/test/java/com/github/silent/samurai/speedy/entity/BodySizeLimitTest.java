@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -29,7 +30,7 @@ class BodySizeLimitTest {
         json.append("A".repeat(200));
         json.append("\"}");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(json.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(413))
@@ -43,7 +44,7 @@ class BodySizeLimitTest {
     void bodyWithinLimit_succeeds() throws Exception {
         String json = "[{\"name\":\"test-category\"}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful());
@@ -56,7 +57,7 @@ class BodySizeLimitTest {
         json.append("\"}");
         byte[] body = json.toString().getBytes();
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(413))
@@ -68,7 +69,7 @@ class BodySizeLimitTest {
         String fieldValue = "A".repeat(70);
         String json = "[{\"name\":\"" + fieldValue + "\"}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful());

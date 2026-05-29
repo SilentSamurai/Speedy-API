@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -33,7 +34,7 @@ public class SpeedyV2NegativeTest {
     void single_level_expand() throws Exception {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/NotPresent/$query")
+                .post(SpeedyConstant.URI + "/NotPresent/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery.from("Product")
                                 .prettyPrint()

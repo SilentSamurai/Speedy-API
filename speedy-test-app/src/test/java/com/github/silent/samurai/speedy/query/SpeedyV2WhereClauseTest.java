@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -62,7 +63,7 @@ public class SpeedyV2WhereClauseTest {
         body.putObject("$where")
                 .put("name", "cat-1-1");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -102,7 +103,7 @@ public class SpeedyV2WhereClauseTest {
         body.putObject("$where")
                 .put("id", "2");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -144,7 +145,7 @@ public class SpeedyV2WhereClauseTest {
         body.putObject("$where")
                 .put("currencyAbbr", "INR");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Currency/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Currency/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -189,7 +190,7 @@ public class SpeedyV2WhereClauseTest {
         inArray.add(30);
         inArray.add(50);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -236,7 +237,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("cost")
                 .put("$eq", 15);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -277,7 +278,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("cost")
                 .put("$ne", 15);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -318,7 +319,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("name")
                 .put("$ne", "cat-12-12");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -359,7 +360,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("cost")
                 .put("$gte", 10);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -400,7 +401,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("cost")
                 .put("$gt", 15);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -441,7 +442,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("cost")
                 .put("$lt", 50);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -482,7 +483,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("cost")
                 .put("$lte", 15);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -531,7 +532,7 @@ public class SpeedyV2WhereClauseTest {
                 .putObject("cost")
                 .put("$lte", 20);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -586,7 +587,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$gte", 50);
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -642,7 +643,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$lte", 50);
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -698,7 +699,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("name", "cat-12-12");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -744,7 +745,7 @@ public class SpeedyV2WhereClauseTest {
                 .putNull("modifiedAt");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -789,7 +790,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$neq", (String) null);
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -829,7 +830,7 @@ public class SpeedyV2WhereClauseTest {
         body.putObject("$where");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -861,7 +862,7 @@ public class SpeedyV2WhereClauseTest {
         body.put("$from", "Procurement");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -890,7 +891,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$matches", "*-10-10");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -927,7 +928,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$matches", ".10*");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -952,7 +953,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$matches", "cat-1*");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -993,7 +994,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$lt", "$dueAmount");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -1038,7 +1039,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$eq", "$created_at");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -1065,7 +1066,7 @@ public class SpeedyV2WhereClauseTest {
                 .put("$eq", "$createdAt");
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Invoice/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 

@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -43,7 +44,7 @@ class DeleteBuilderTest {
 
         DeleteBuilder builder = new DeleteBuilder("User", paths, sender, mapper, parser);
         builder.key("id", 1).execute();
-        assertTrue(capturedUrl.get().endsWith("/$delete"));
+        assertTrue(capturedUrl.get().endsWith(SpeedyEndpoint.DELETE.path()));
     }
 
     @Test

@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -49,7 +50,7 @@ class SpeedyV2EdgeCaseTest {
         ObjectNode body = mapper.createObjectNode();
         body.putObject("$where").put("name", "test");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -58,7 +59,7 @@ class SpeedyV2EdgeCaseTest {
 
     @Test
     void malformedJson_shouldReturn400() throws Exception {
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content("{\"$from\":")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -69,7 +70,7 @@ class SpeedyV2EdgeCaseTest {
         ObjectNode body = mapper.createObjectNode();
         body.put("name", "test");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.CREATE.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -77,7 +78,7 @@ class SpeedyV2EdgeCaseTest {
 
     @Test
     void postToMetadataEndpoint_shouldReturn4xx() throws Exception {
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$metadata")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
@@ -132,7 +133,7 @@ class SpeedyV2EdgeCaseTest {
         ObjectNode where = body.putObject("$where");
         where.put("nonexistent", "Karan");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -147,7 +148,7 @@ class SpeedyV2EdgeCaseTest {
         orNode.addObject().put("category.id", "1");
         orNode.addObject().put("id", "2");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

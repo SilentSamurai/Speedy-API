@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -55,7 +56,7 @@ class SpeedyPostTest {
         Category category = new Category();
         category.setName("generated-cat");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                 .content(CommonUtil.toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -82,7 +83,7 @@ class SpeedyPostTest {
         Category category = new Category();
         category.setName(RandomString.make(251));
 
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                 .content(CommonUtil.toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -97,7 +98,7 @@ class SpeedyPostTest {
         Category category = new Category();
         category.setName("");
 
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                 .content(CommonUtil.toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -114,7 +115,7 @@ class SpeedyPostTest {
         customer.setEmail("thisisatestemail");
         customer.setAddress("this is a address");
 
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Customer/$create")
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Customer/" + SpeedyEndpoint.CREATE.suffix())
                 .content(CommonUtil.toJson(List.of(customer)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -129,7 +130,7 @@ class SpeedyPostTest {
         Category category = new Category();
         category.setName("ex-gen-cat");
 
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                 .content(CommonUtil.toJson(List.of(category)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -166,7 +167,7 @@ class SpeedyPostTest {
             categories.add(category);
         }
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$create")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                 .content(CommonUtil.toJson(categories))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 

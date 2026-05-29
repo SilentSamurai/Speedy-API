@@ -126,6 +126,12 @@ All in `speedy-commons/.../annotations/`:
 
 ---
 
+## Documentation
+
+User-facing documentation lives in [`docs/`](docs/README.md). Keep docs updated when adding new features.
+
+---
+
 ## Design Patterns
 
 ### Chain of Responsibility

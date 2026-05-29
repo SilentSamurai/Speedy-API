@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -32,7 +33,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode ltCondition = where.putObject("cost");
         ltCondition.put("$lt", "$soldPrice");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Inventory/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -49,7 +50,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode gtCondition = where.putObject("cost");
         gtCondition.put("$gt", "$discount");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Inventory/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -65,7 +66,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode gtCondition = where.putObject("localDateTime");
         gtCondition.put("$gt", "2022-01-01T00:00:00");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -82,7 +83,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode ltCondition = where.putObject("localDateTime");
         ltCondition.put("$lt", "2023-01-01T00:00:00");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -99,7 +100,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode gteCondition = where.putObject("localDateTime");
         gteCondition.put("$gte", "2022-04-30T10:00:00");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -116,7 +117,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode lteCondition = where.putObject("localDateTime");
         lteCondition.put("$lte", "2022-04-30T10:00:00");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -132,7 +133,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("publicField", "$secretField");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -146,7 +147,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("publicField", "$amount");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -160,7 +161,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("publicField", "test-value");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -174,7 +175,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("name", "$sensitiveTestEntity.secretField");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveFkEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveFkEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -190,7 +191,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldB", "$fieldA");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -206,7 +207,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldA", "$fieldB");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -221,7 +222,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldA", "some-value");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -235,7 +236,7 @@ class SpeedyV2FieldRefTest {
         ObjectNode where = body.putObject("$where");
         where.put("name", "$sensitiveTestEntity.publicField");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveFkEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveFkEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

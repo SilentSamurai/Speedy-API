@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.handlers;
 
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -27,6 +28,7 @@ public class SwitchHandler implements Handler {
         HttpMethod method = context.getHttpMethod();
         EntityMetadata entityMetadata = context.getEntityMetadata();
         String lastPathSegment = context.getActionSuffix();
+        SpeedyEndpoint endpoint = SpeedyEndpoint.fromSuffix(lastPathSegment);
 
         if (method.equals(HttpMethod.GET)) {
             if (!entityMetadata.isReadAllowed()) {
@@ -35,13 +37,13 @@ public class SwitchHandler implements Handler {
             getRequestHandler.process(context);
             return;
         } else if (method.equals(HttpMethod.POST)) {
-            if ("$query".equals(lastPathSegment)) {
+            if (SpeedyEndpoint.QUERY == endpoint) {
                 if (!entityMetadata.isReadAllowed()) {
                     throw new BadRequestException(String.format("read not allowed for %s", entityMetadata.getName()));
                 }
                 queryHandler.process(context);
                 return;
-            } else if ("$create".equals(lastPathSegment)) {
+            } else if (SpeedyEndpoint.CREATE == endpoint) {
                 if (!entityMetadata.isCreateAllowed()) {
                     throw new BadRequestException(String.format("create not allowed for %s", entityMetadata.getName()));
                 }
@@ -49,7 +51,7 @@ public class SwitchHandler implements Handler {
                 return;
             }
         } else if (method.equals(HttpMethod.PUT) || method.equals(HttpMethod.PATCH)) {
-            if ("$update".equals(lastPathSegment)) {
+            if (SpeedyEndpoint.UPDATE == endpoint) {
                 if (!entityMetadata.isUpdateAllowed()) {
                     throw new BadRequestException(String.format("update not allowed for %s", entityMetadata.getName()));
                 }
@@ -57,7 +59,7 @@ public class SwitchHandler implements Handler {
                 return;
             }
         } else if (method.equals(HttpMethod.DELETE)) {
-            if ("$delete".equals(lastPathSegment)) {
+            if (SpeedyEndpoint.DELETE == endpoint) {
                 if (!entityMetadata.isDeleteAllowed()) {
                     throw new BadRequestException(String.format("delete not allowed for %s", entityMetadata.getName()));
                 }

@@ -28,6 +28,7 @@ import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.ne;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -51,7 +52,7 @@ public class SpeedyV2ExpandTest {
     void single_level_expand() throws Exception {
 
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Product")
@@ -112,7 +113,7 @@ public class SpeedyV2ExpandTest {
                 .prettyPrint()
                 .build();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(query))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -148,7 +149,7 @@ public class SpeedyV2ExpandTest {
 
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Procurement/$query")
+                .post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Procurement")
@@ -204,7 +205,7 @@ public class SpeedyV2ExpandTest {
     void multiple_expansions_same_entity_type() throws Exception {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/ExchangeRate/$query")
+                .post(SpeedyConstant.URI + "/ExchangeRate/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("ExchangeRate")
@@ -294,7 +295,7 @@ public class SpeedyV2ExpandTest {
     void nested_expansions_same_entity_different_levels() throws Exception {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Inventory/$query")
+                .post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Inventory")
@@ -421,7 +422,7 @@ public class SpeedyV2ExpandTest {
     void entity_based_expansion_with_nested() throws Exception {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Inventory/$query")
+                .post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Inventory")
@@ -477,7 +478,7 @@ public class SpeedyV2ExpandTest {
     @Test
     void invalid_expansion_path_should_handle_gracefully() throws Exception {
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Product/$query")
+                .post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Product")
@@ -519,7 +520,7 @@ public class SpeedyV2ExpandTest {
     @Test
     void invalid_nested_expansion_path_should_handle_gracefully() throws Exception {
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Product/$query")
+                .post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Product")
@@ -559,7 +560,7 @@ public class SpeedyV2ExpandTest {
     @Test
     void circular_reference_expansion_should_handle_gracefully() throws Exception {
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Product/$query")
+                .post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Product")
@@ -606,7 +607,7 @@ public class SpeedyV2ExpandTest {
     @Test
     void empty_expansion_list_should_work() throws Exception {
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Product/$query")
+                .post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Product")
@@ -640,7 +641,7 @@ public class SpeedyV2ExpandTest {
     void null_expansion_list_should_work() throws Exception {
         // Create a query without any expanded calls
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Product/$query")
+                .post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Product")
@@ -672,7 +673,7 @@ public class SpeedyV2ExpandTest {
     @Test
     void very_deep_expansion_path_should_handle_gracefully() throws Exception {
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/Product/$query")
+                .post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Product")
@@ -716,7 +717,7 @@ public class SpeedyV2ExpandTest {
     @Test
     void expansion_with_non_existent_entity_should_fail() throws Exception {
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/NonExistentEntity/$query")
+                .post(SpeedyConstant.URI + "/NonExistentEntity/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("NonExistentEntity")

@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -33,7 +34,7 @@ class SpeedySensitiveTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldB", "$fieldA");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -47,7 +48,7 @@ class SpeedySensitiveTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldA", "$fieldB");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -61,7 +62,7 @@ class SpeedySensitiveTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldA", "some-value");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -71,7 +72,7 @@ class SpeedySensitiveTest {
     @Test
     void classLevelSensitive_metadataShowsBothFields() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/$metadata")
+                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mockMvc.perform(getRequest)

@@ -32,6 +32,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -77,7 +78,7 @@ class SpeedyDatetimeTest {
                 .altPhoneNo("9013019322")
                 .phoneNo("9013019322");
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/$create")
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/" + SpeedyEndpoint.CREATE.suffix())
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 

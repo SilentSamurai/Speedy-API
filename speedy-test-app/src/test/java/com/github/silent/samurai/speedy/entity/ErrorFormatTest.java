@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -42,7 +43,7 @@ class ErrorFormatTest {
     void notFoundError_hasStandardFormat() throws Exception {
         String body = "{\"$from\":\"NonExistentEntity\"}";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/NonExistentEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/NonExistentEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -53,7 +54,7 @@ class ErrorFormatTest {
 
     @Test
     void methodNotAllowed_onMetadataPost() throws Exception {
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$metadata")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
