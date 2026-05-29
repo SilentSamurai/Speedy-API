@@ -13,9 +13,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(FIELD)
 @Retention(RUNTIME)
 public @interface SpeedyDecimalMin {
-    /** The minimum value expressed as a string to preserve precision. */
+    /**
+     * The minimum value expressed as a string to preserve precision.
+     */
     String value();
 
-    /** Whether the value is inclusive ("valid >= min") or exclusive ("> min"). Default true (inclusive). */
+    /**
+     * Whether the value is inclusive ("valid >= min") or exclusive ("> min"). Default true (inclusive).
+     */
     boolean inclusive() default true;
 }

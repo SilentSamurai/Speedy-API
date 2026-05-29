@@ -14,5 +14,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 public @interface SpeedyDecimalMax {
     String value();
+
     boolean inclusive() default true;
 }

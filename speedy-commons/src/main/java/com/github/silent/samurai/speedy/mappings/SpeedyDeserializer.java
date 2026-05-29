@@ -6,7 +6,10 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyInt;
+import com.github.silent.samurai.speedy.models.SpeedyNull;
+import com.github.silent.samurai.speedy.models.SpeedyText;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.PropertyAccessorFactory;
 

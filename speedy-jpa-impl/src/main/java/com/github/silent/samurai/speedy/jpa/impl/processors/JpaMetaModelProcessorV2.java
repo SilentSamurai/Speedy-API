@@ -2,11 +2,7 @@ package com.github.silent.samurai.speedy.jpa.impl.processors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.silent.samurai.speedy.annotations.SpeedyAction;
-import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
-import com.github.silent.samurai.speedy.annotations.SpeedySensitive;
-import com.github.silent.samurai.speedy.annotations.SpeedyTransaction;
-import com.github.silent.samurai.speedy.annotations.SpeedyType;
+import com.github.silent.samurai.speedy.annotations.*;
 import com.github.silent.samurai.speedy.annotations.validation.*;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
@@ -21,26 +17,12 @@ import com.github.silent.samurai.speedy.metadata.FieldBuilder;
 import com.github.silent.samurai.speedy.metadata.KeyFieldBuilder;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
-// Jakarta Bean Validation annotations
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Negative;
-import jakarta.validation.constraints.NegativeOrZero;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.Digits;
 import com.github.silent.samurai.speedy.validation.rules.*;
 import jakarta.persistence.*;
 import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.SingularAttribute;
+import jakarta.validation.constraints.*;
 import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.Generated;
 import org.slf4j.Logger;
@@ -55,6 +37,8 @@ import java.util.stream.Collectors;
 
 import static com.github.silent.samurai.speedy.enums.ActionType.*;
 import static com.github.silent.samurai.speedy.jpa.impl.util.JpaUtil.*;
+
+// Jakarta Bean Validation annotations
 
 public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
 

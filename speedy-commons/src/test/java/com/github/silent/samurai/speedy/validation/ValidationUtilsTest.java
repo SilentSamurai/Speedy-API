@@ -10,21 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ValidationUtilsTest {
 
-    /**
-     * A simple POJO with a single @NotNull field used for validation tests.
-     */
-    static class Dummy {
-        @NotNull
-        private String name;
-
-        Dummy() {
-        }
-
-        void setName(String name) {
-            this.name = name;
-        }
-    }
-
     @Test
     void validate_shouldThrowException_whenNotNullFieldIsNull() {
         Dummy dummy = new Dummy();
@@ -39,5 +24,20 @@ class ValidationUtilsTest {
         Dummy dummy = new Dummy();
         dummy.setName("Speedy");
         assertDoesNotThrow(() -> ValidationUtils.validate(dummy));
+    }
+
+    /**
+     * A simple POJO with a single @NotNull field used for validation tests.
+     */
+    static class Dummy {
+        @NotNull
+        private String name;
+
+        Dummy() {
+        }
+
+        void setName(String name) {
+            this.name = name;
+        }
     }
 }

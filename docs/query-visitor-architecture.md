@@ -2,7 +2,9 @@
 
 ## Problem
 
-`JooqQueryBuilder` fuses two concerns: walking the `SpeedyQuery` AST and emitting jOOQ DSL. This makes it impossible to support alternative backends (native SQL, MongoDB, R2DBC) without duplicating the walking logic. The jOOQ implementation also lives in `speedy-core`, creating a hard dependency.
+`JooqQueryBuilder` fuses two concerns: walking the `SpeedyQuery` AST and emitting jOOQ DSL. This makes it impossible to
+support alternative backends (native SQL, MongoDB, R2DBC) without duplicating the walking logic. The jOOQ implementation
+also lives in `speedy-core`, creating a hard dependency.
 
 ## Solution
 
@@ -627,7 +629,8 @@ speedy-core
 1. Add `QueryVisitor`, `MutationVisitor`, `QueryWalker`, `MutationWalker` to `speedy-commons`
 2. Create `speedy-jooq-impl` module with dependency on `speedy-commons` and jOOQ
 3. Implement `JooqSelectVisitor` by extracting emit logic from `JooqQueryBuilder`
-4. Implement `JooqInsertVisitor`, `JooqUpdateVisitor`, `JooqDeleteVisitor` from existing `SpeedyInsertQuery`, `SpeedyUpdateQuery`, `SpeedyDeleteQuery`
+4. Implement `JooqInsertVisitor`, `JooqUpdateVisitor`, `JooqDeleteVisitor` from existing `SpeedyInsertQuery`,
+   `SpeedyUpdateQuery`, `SpeedyDeleteQuery`
 5. Refactor `JooqQueryProcessorImpl` to use `QueryWalker.walk()` + visitors
 6. Move all jOOQ classes from `speedy-core` to `speedy-jooq-impl`
 7. Remove jOOQ dependency from `speedy-core`

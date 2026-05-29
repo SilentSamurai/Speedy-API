@@ -8,10 +8,10 @@ import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionExcepti
 import com.github.silent.samurai.speedy.client.exception.SpeedyException;
 import com.github.silent.samurai.speedy.client.internal.FieldUtil;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
+import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
-import com.github.silent.samurai.speedy.client.internal.RequestSender;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -56,7 +56,7 @@ public class DeleteBuilder {
      * Executes the delete request and returns the result.
      *
      * @return SpeedyResult containing the deleted entity(s)
-     * @throws SpeedyException on HTTP errors
+     * @throws SpeedyException           on HTTP errors
      * @throws SpeedyConnectionException on network failures
      */
     public SpeedyResult execute() {

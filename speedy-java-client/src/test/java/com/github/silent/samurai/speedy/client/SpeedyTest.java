@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 import com.github.silent.samurai.speedy.client.transport.SpeedyTransport;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -65,7 +66,7 @@ class SpeedyTest {
         speedy.create("User").field("name", "Test").execute();
         assertNotNull(captured.get());
         assertEquals("POST", captured.get().method());
-        assertTrue(captured.get().url().contains("$create"));
+        assertTrue(captured.get().url().contains(SpeedyEndpoint.CREATE.suffix()));
     }
 
     @Test
@@ -99,8 +100,14 @@ class SpeedyTest {
         Speedy speedy = Speedy.builder()
                 .baseUrl("http://localhost:8080")
                 .transport(fake)
-                .interceptor(req -> { calls.add("first"); return req; })
-                .interceptor(req -> { calls.add("second"); return req; })
+                .interceptor(req -> {
+                    calls.add("first");
+                    return req;
+                })
+                .interceptor(req -> {
+                    calls.add("second");
+                    return req;
+                })
                 .build();
 
         speedy.get("User").execute();
@@ -141,7 +148,7 @@ class SpeedyTest {
                 .build();
 
         JsonNode metadata = speedy.metadata();
-        assertTrue(capturedUrl.get().endsWith("/$metadata"));
+        assertTrue(capturedUrl.get().endsWith(SpeedyEndpoint.METADATA.path()));
         assertNotNull(metadata);
         assertTrue(metadata.has("entities"));
     }

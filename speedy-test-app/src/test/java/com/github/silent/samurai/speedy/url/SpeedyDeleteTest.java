@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -51,7 +52,7 @@ public class SpeedyDeleteTest {
         long count = categoryRepository.count();
 
 
-        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$delete")
+        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
                 .content("[{'id':'" + category.getId() + "'}]")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -64,7 +65,7 @@ public class SpeedyDeleteTest {
 
     @Test
     void incompleteKey() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$update")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.UPDATE.suffix())
                 .content("[{'name':'1'}]")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -74,7 +75,7 @@ public class SpeedyDeleteTest {
 
     @Test
     void emptyContent() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/$delete")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)

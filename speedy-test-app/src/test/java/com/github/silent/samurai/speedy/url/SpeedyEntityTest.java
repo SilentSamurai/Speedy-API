@@ -33,6 +33,7 @@ import java.util.List;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -146,7 +147,7 @@ class SpeedyEntityTest {
                 .altPhoneNo("8594093448")
                 .phoneNo("8594094438");
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/$create")
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/" + SpeedyEndpoint.CREATE.suffix())
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 

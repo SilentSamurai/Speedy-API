@@ -149,7 +149,8 @@
                     <charset>UTF-8</charset>
                     <docencoding>UTF-8</docencoding>
                     <additionalJOption>--enable-preview</additionalJOption>
-                    <additionalJOption>-J--add-opens=jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED</additionalJOption>
+                    <additionalJOption>-J--add-opens=jdk.javadoc/jdk.javadoc.internal.tool=ALL-UNNAMED
+                    </additionalJOption>
                 </configuration>
                 <executions>
                     <execution>

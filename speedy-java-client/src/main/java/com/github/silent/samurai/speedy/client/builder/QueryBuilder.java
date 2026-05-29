@@ -6,12 +6,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
-import com.github.silent.samurai.speedy.client.internal.FieldUtil;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
+import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
-import com.github.silent.samurai.speedy.client.internal.RequestSender;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -173,7 +172,7 @@ public class QueryBuilder {
      * Executes the query and returns entity results.
      *
      * @return SpeedyResult containing the matched entities
-     * @throws SpeedyException on HTTP errors
+     * @throws SpeedyException           on HTTP errors
      * @throws SpeedyConnectionException on network failures
      */
     public SpeedyResult execute() {
@@ -197,7 +196,7 @@ public class QueryBuilder {
      * Executes a count query and returns the count.
      *
      * @return the number of matching entities
-     * @throws SpeedyException on HTTP errors
+     * @throws SpeedyException           on HTTP errors
      * @throws SpeedyConnectionException on network failures
      */
     public long count() {

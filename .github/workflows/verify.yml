@@ -11,7 +11,7 @@ jobs:
             -   uses: actions/checkout@v4
                 with:
                     token: ${{ secrets.GITHUB_TOKEN }}
-            
+
             -   name: Set up Maven Central Repository
                 uses: actions/setup-java@v4
                 with:
@@ -21,12 +21,12 @@ jobs:
                     server-username: MAVEN_USERNAME
                     server-password: MAVEN_PASSWORD
                     gpg-passphrase: MAVEN_GPG_PASSPHRASE
-            
+
             -   name: Configure Git
                 run: |
                     git config --global user.name "github-actions[bot]"
                     git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            
+
             -   name: Verify Maven Central Credentials
                 env:
                     MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
@@ -51,7 +51,7 @@ jobs:
                     fi
                     
                     echo "✅ Central Portal credentials configured"
-            
+
             -   name: Install and Verify GPG Key
                 env:
                     MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_SIGNING_KEY_PASSWORD }}
@@ -63,26 +63,26 @@ jobs:
                         # Create .gnupg directory and configure GPG for non-interactive use
                         mkdir -p ~/.gnupg
                         echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-                        
+                    
                         # Import the GPG key
                         GPG_KEY_FILE=$(mktemp)
                         printf '%s' "$GPG_SIGNING_KEY" > "$GPG_KEY_FILE"
                         gpg --batch --import "$GPG_KEY_FILE"
                         rm -f "$GPG_KEY_FILE"
-                        
+                    
                         # List the imported keys
                         echo "📋 Imported GPG keys:"
                         gpg --list-secret-keys --keyid-format LONG
-                        
+                    
                         # Get the key ID
                         KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | grep -E "^sec" | head -1 | awk '{print $2}' | cut -d'/' -f2)
-                        
+                    
                         if [[ -n "$KEY_ID" ]]; then
                             echo "🔑 Testing GPG key passphrase for key: $KEY_ID"
-                            
+                    
                             # Test the passphrase by trying to sign a test file
                             echo "test" > /tmp/test.txt
-                            
+                    
                             if echo "$MAVEN_GPG_PASSPHRASE" | gpg --batch --pinentry-mode loopback --passphrase-fd 0 --sign /tmp/test.txt; then
                                 echo "✅ GPG key passphrase verified successfully"
                                 rm -f /tmp/test.txt /tmp/test.txt.gpg
@@ -95,19 +95,19 @@ jobs:
                             echo "❌ Error: No GPG key found after import"
                             exit 1
                         fi
-                        
+                    
                         echo "✅ GPG key installed and verified successfully"
                     else
                         echo "❌ Error: GPG_SIGNING_KEY secret is not set"
                         exit 1
                     fi
-            
+
             -   name: Verify Maven Build
                 run: |
                     echo "🔨 Verifying Maven build process..."
                     mvn --no-transfer-progress --batch-mode clean compile test-compile
                     echo "✅ Maven build verification completed"
-            
+
             -   name: Verify Central Portal Connection
                 env:
                     MAVEN_USERNAME: ${{ secrets.OSSRH_TOKEN_USERNAME }}
@@ -128,7 +128,7 @@ jobs:
                         echo "   This might indicate the API endpoint is not available or credentials need updating"
                         exit 1
                     fi
-            
+
             -   name: Verify Version Bump Script
                 run: |
                     echo "📝 Verifying version bump script..."
@@ -146,7 +146,7 @@ jobs:
                     fi
                     
                     echo "✅ Version bump script verified"
-            
+
             -   name: Summary
                 run: |
                     echo ""

@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import lombok.Getter;
 

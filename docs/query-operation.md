@@ -106,19 +106,21 @@ Content-Type: application/json
 | $gte     | >=     | Greater Than or Equals | `{ "cost": { "$gte": 50 } }`             |
 | $in      | <>     | In Array               | `{ "cost": { "$in": [50, 100, 150] } }`  |
 | $nin     | <!>    | Not In Array           | `{ "cost": { "$nin": [50, 100, 150] } }` |
-| $matches | =*     | Pattern Matching       | `{ "name": { "$matches": "*John*" } }`    |
+| $matches | =*     | Pattern Matching       | `{ "name": { "$matches": "*John*" } }`   |
 
 **Pattern Matching Syntax:**
+
 - `*` = 0 or more characters/spaces
 - `?` = exactly 1 character/space
 - Examples:
-  - `"*John*"` matches "John", "Johnny", "John Doe", "My John", etc.
-  - `"John*"` matches "John", "Johnny", "John Doe", etc.
-  - `"*John"` matches "John", "My John", "The John", etc.
+    - `"*John*"` matches "John", "Johnny", "John Doe", "My John", etc.
+    - `"John*"` matches "John", "Johnny", "John Doe", etc.
+    - `"*John"` matches "John", "My John", "The John", etc.
 
 ### Query Using Field References
 
-Speedy supports field-to-field comparisons using the `$` prefix. This allows you to compare values between different fields in the same entity or related entities.
+Speedy supports field-to-field comparisons using the `$` prefix. This allows you to compare values between different
+fields in the same entity or related entities.
 
 #### Basic Field Reference
 
@@ -216,12 +218,12 @@ Content-Type: application/json
 
 #### Field Reference Examples
 
-| Use Case | Query | Description |
-|----------|-------|-------------|
-| Price Comparison | `{ "salePrice": { "$lt": "$regularPrice" } }` | Find products on sale |
-| Date Range | `{ "startDate": { "$lte": "$endDate" } }` | Valid date ranges |
-| User Tracking | `{ "createdBy": "$updatedBy" }` | Self-updated records |
-| Inventory Check | `{ "currentStock": { "$gte": "$minimumStock" } }` | Sufficient inventory |
+| Use Case         | Query                                             | Description           |
+|------------------|---------------------------------------------------|-----------------------|
+| Price Comparison | `{ "salePrice": { "$lt": "$regularPrice" } }`     | Find products on sale |
+| Date Range       | `{ "startDate": { "$lte": "$endDate" } }`         | Valid date ranges     |
+| User Tracking    | `{ "createdBy": "$updatedBy" }`                   | Self-updated records  |
+| Inventory Check  | `{ "currentStock": { "$gte": "$minimumStock" } }` | Sufficient inventory  |
 
 ### Entity Expansion
 
@@ -313,12 +315,12 @@ Content-Type: application/json
 
 #### Multi-Level Expansion Examples
 
-| Use Case | Expansion | Description |
-|----------|-----------|-------------|
-| Product with Category | `["Product", "Product.Category"]` | Include product and its category |
-| Deep Supplier Chain | `["Product.Category.Supplier.Address"]` | Include complete supplier chain |
-| Multiple Paths | `["Product.Category", "Procurement.Product"]` | Different expansion paths |
-| Selective Expansion | `["Product", "Product.Category"]` | Only expand specific paths |
+| Use Case              | Expansion                                     | Description                      |
+|-----------------------|-----------------------------------------------|----------------------------------|
+| Product with Category | `["Product", "Product.Category"]`             | Include product and its category |
+| Deep Supplier Chain   | `["Product.Category.Supplier.Address"]`       | Include complete supplier chain  |
+| Multiple Paths        | `["Product.Category", "Procurement.Product"]` | Different expansion paths        |
+| Selective Expansion   | `["Product", "Product.Category"]`             | Only expand specific paths       |
 
 ### Select Fields
 

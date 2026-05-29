@@ -29,9 +29,9 @@ public class SpeedyUriContext {
     private final MetaModel metaModel;
     private final String requestURI;
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
-    private SpeedyQueryImpl speedyQuery;
     private final int maxPageSize;
     private final int defaultPageSize;
+    private SpeedyQueryImpl speedyQuery;
     private String actionSuffix;
 
     public SpeedyUriContext(MetaModel metaModel, String requestURI) {
@@ -66,6 +66,8 @@ public class SpeedyUriContext {
             return this.process();
         } catch (BadRequestException e) {
             throw e;
+        } catch (NotFoundException e) {
+            throw new BadRequestException(e.getMessage(), e);
         } catch (Exception e) {
             throw new BadRequestException("Invalid URL", e);
         }
@@ -117,7 +119,7 @@ public class SpeedyUriContext {
             } catch (BadRequestException e) {
                 throw e;
             } catch (NumberFormatException e) {
-                log.error("Invalid value for $pageSize. Must be an integer.");
+                throw new BadRequestException("Invalid value for $pageSize: '" + $pageSize + "'. Must be an integer.", e);
             }
         }
 
@@ -128,7 +130,7 @@ public class SpeedyUriContext {
                 Objects.requireNonNull(pageNo);
                 speedyQuery.addPageNo(pageNo);
             } catch (NumberFormatException e) {
-                log.error("Invalid value for $pageNo. Must be an integer.");
+                throw new BadRequestException("Invalid value for $pageNo: '" + $pageNo + "'. Must be an integer.", e);
             }
         }
 
@@ -198,8 +200,12 @@ public class SpeedyUriContext {
             MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
             for (Map.Entry<String, List<String>> entry : queryParams.entrySet()) {
                 String key = entry.getKey().strip().trim();
-                if (!key.startsWith("$") && speedyQuery.getConditionFactory().createQueryField(key) == null) {
-                    continue;
+                if (!key.startsWith("$")) {
+                    try {
+                        speedyQuery.getConditionFactory().createQueryField(key);
+                    } catch (NotFoundException e) {
+                        throw new BadRequestException("Unknown query field: '" + key + "' on entity '" + speedyQuery.getFrom().getName() + "'", e);
+                    }
                 }
                 List<String> valueList = entry.getValue()
                         .stream()

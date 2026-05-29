@@ -39,32 +39,37 @@ These interfaces define the contract that all implementations must follow:
 
 - `MetaModel` — registry of all entity metadata; lookup by entity name
 - `EntityMetadata` — describes one entity: fields, keys, associations, allowed actions (READ/CREATE/UPDATE/DELETE/ALL)
-- `FieldMetadata` — describes one field: column type, value type, nullability, associations, enum config, validation rules
+- `FieldMetadata` — describes one field: column type, value type, nullability, associations, enum config, validation
+  rules
 - `KeyFieldMetadata` — extends FieldMetadata for primary key fields
-- `SpeedyValue` — polymorphic value type (text, int, double, boolean, date, datetime, time, zoned datetime, enum, object, collection, null)
+- `SpeedyValue` — polymorphic value type (text, int, double, boolean, date, datetime, time, zoned datetime, enum,
+  object, collection, null)
 - `SpeedyEntity` — a map of field name → SpeedyValue, tied to an EntityMetadata
 - `SpeedyQuery` — query model: from, where (BooleanCondition tree), orderBy, pageInfo, expand, select
 - `QueryProcessor` — executes queries: `executeMany`, `executeCount`, `exists`, `create`, `update`, `delete`
-- `ISpeedyConfiguration` — user-provided config: MetaModelProcessor, DataSource, SpeedyDialect, event/validator registration
+- `ISpeedyConfiguration` — user-provided config: MetaModelProcessor, DataSource, SpeedyDialect, event/validator
+  registration
 - `ISpeedyRegistry` — registration point for `ISpeedyEventHandler` and `ISpeedyCustomValidation`
 
 ### Annotations
 
-| Annotation | Target | Purpose |
-|---|---|---|
-| `@SpeedyAction` | Entity class | Restrict allowed CRUD operations (READ, CREATE, UPDATE, DELETE, ALL) |
-| `@SpeedyIgnore` | Entity/Field | Exclude from MetaModel |
-| `@SpeedyType` | Field | Override the inferred ColumnType |
-| `@SpeedyEvent` | Method | Register lifecycle event handler (PRE/POST INSERT/UPDATE/DELETE) |
-| `@SpeedyValidator` | Method | Register custom validation for CREATE/UPDATE/DELETE |
+| Annotation         | Target       | Purpose                                                              |
+|--------------------|--------------|----------------------------------------------------------------------|
+| `@SpeedyAction`    | Entity class | Restrict allowed CRUD operations (READ, CREATE, UPDATE, DELETE, ALL) |
+| `@SpeedyIgnore`    | Entity/Field | Exclude from MetaModel                                               |
+| `@SpeedyType`      | Field        | Override the inferred ColumnType                                     |
+| `@SpeedyEvent`     | Method       | Register lifecycle event handler (PRE/POST INSERT/UPDATE/DELETE)     |
+| `@SpeedyValidator` | Method       | Register custom validation for CREATE/UPDATE/DELETE                  |
 
 ### Value Types
 
-`ValueType` enum: `TEXT, INT, FLOAT, BOOL, DATE, DATE_TIME, TIME, ZONED_DATE_TIME, ENUM, ENUM_ORD, OBJECT, COLLECTION, NULL`
+`ValueType` enum:
+`TEXT, INT, FLOAT, BOOL, DATE, DATE_TIME, TIME, ZONED_DATE_TIME, ENUM, ENUM_ORD, OBJECT, COLLECTION, NULL`
 
 ### Database Dialects
 
-`SpeedyDialect` enum mirrors jOOQ's `SQLDialect`. Common values: `H2`, `POSTGRES`, `MYSQL`, `ORACLE`, `SQLSERVER`, `SQLITE`, `MARIADB`.
+`SpeedyDialect` enum mirrors jOOQ's `SQLDialect`. Common values: `H2`, `POSTGRES`, `MYSQL`, `ORACLE`, `SQLSERVER`,
+`SQLITE`, `MARIADB`.
 
 ---
 
@@ -120,6 +125,7 @@ POST `$query` requests use a JSON body parsed by `JsonQueryParser`:
 ```
 
 The ANTLR grammar (`Speedy.g4`) defines a richer URL syntax used by the `antlr-parser` module:
+
 ```
 /Customer(id='1',name='jolly')
 /Customer(amount>0,amount<100)
@@ -143,9 +149,12 @@ public void onProductInsert(Product product) { ... }
 
 Event types: `PRE_INSERT`, `PRE_UPDATE`, `PRE_DELETE`, `POST_INSERT`, `POST_UPDATE`, `POST_DELETE`
 
-Handler methods receive either a `SpeedyEntity` or a typed Java entity (auto-converted via `SpeedySerializer`/`SpeedyDeserializer`). Modifications to the entity in PRE events are persisted. Throwing `SpeedyHttpException` from a handler propagates the error to the client.
+Handler methods receive either a `SpeedyEntity` or a typed Java entity (auto-converted via `SpeedySerializer`/
+`SpeedyDeserializer`). Modifications to the entity in PRE events are persisted. Throwing `SpeedyHttpException` from a
+handler propagates the error to the client.
 
 Register handlers via `ISpeedyConfiguration.register(registry)`:
+
 ```java
 registry.registerEventHandler(myEventHandler);
 ```
@@ -166,7 +175,8 @@ public boolean validateCategory(Category category) {
 - Return `boolean` — `false` throws `BadRequestException`
 - Or throw `SpeedyHttpException` directly for custom error responses
 - Validators can accept `SpeedyEntity` or typed Java entity (auto-converted)
-- If no custom validator is registered, `DefaultFieldValidator` runs (checks nullability, required fields, field-level rules from annotations)
+- If no custom validator is registered, `DefaultFieldValidator` runs (checks nullability, required fields, field-level
+  rules from annotations)
 
 Register via: `registry.registerValidator(myValidator);`
 
@@ -175,13 +185,16 @@ Register via: `registry.registerValidator(myValidator);`
 ## MetaModel Implementations
 
 ### JPA (speedy-jpa-impl)
+
 `JpaMetaModelProcessorV2` reads `EntityManagerFactory` metadata at startup. Supports:
+
 - All JPA entity annotations
 - Composite keys
 - Associations (ManyToOne, OneToMany, etc.)
 - Jakarta Validation annotations for field rules
 
 ### Static/File-based (speedy-static-impl)
+
 Reads entity metadata from JSON files. Useful for non-JPA data sources.
 
 ---
@@ -189,12 +202,14 @@ Reads entity metadata from JSON files. Useful for non-JPA data sources.
 ## Spring Boot Integration
 
 Add `spring-boot-starter-speedy-api` dependency. The auto-configuration:
+
 1. Detects an `ISpeedyConfiguration` bean
 2. Creates `SpeedyFactory` (builds MetaModel, event processor, validation processor, handler chain)
 3. Creates `SpeedyOpenApiCustomizer` for OpenAPI/Swagger doc generation
 4. Registers `SpeedyApiController` at `/speedy/v1/**`
 
 User must provide:
+
 ```java
 @Configuration
 public class SpeedyConfig implements ISpeedyConfiguration {
@@ -230,10 +245,10 @@ mvn test -pl antlr-parser
 
 ## CI/CD Pipelines
 
-| Workflow | Trigger | Action |
-|---|---|---|
-| `main.yml` | PR to `main` | `mvn clean install` |
-| `verify.yml` | PR to `release` | Verify Maven Central creds, GPG key, build, OSSRH connection |
+| Workflow      | Trigger           | Action                                                          |
+|---------------|-------------------|-----------------------------------------------------------------|
+| `main.yml`    | PR to `main`      | `mvn clean install`                                             |
+| `verify.yml`  | PR to `release`   | Verify Maven Central creds, GPG key, build, OSSRH connection    |
 | `release.yml` | Push to `release` | Auto bump patch version, GPG sign, deploy to Maven Central, tag |
 
 ---

@@ -7,18 +7,9 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.models.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SpeedyValueFactoryTest {
 

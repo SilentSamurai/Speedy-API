@@ -19,11 +19,14 @@ import static org.hamcrest.Matchers.containsString;
 @AutoConfigureMockMvc(addFilters = false)
 class DateValidationIT {
 
-    @Autowired MockMvc mockMvc;
+    @Autowired
+    MockMvc mockMvc;
     private SpeedyTest client;
 
     @BeforeEach
-    void setup() { client = SpeedyTest.mockMvc(mockMvc); }
+    void setup() {
+        client = SpeedyTest.mockMvc(mockMvc);
+    }
 
     @Nested
     @DisplayName("CREATE date validation")

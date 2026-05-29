@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.junit.jupiter.api.Assertions.*;
 
 class QueryBuilderTest {

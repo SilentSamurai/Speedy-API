@@ -746,5 +746,25 @@ class SpeedyUriContextTest {
         assertEquals(20, speedyQuery.getPageInfo().getPageSize());
     }
 
+    @Test
+    void invalid_page_size_throws() {
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?$pageSize=abc");
+        BadRequestException ex = assertThrows(BadRequestException.class, parser::parse);
+        assertTrue(ex.getMessage().contains("Invalid value for $pageSize"));
+    }
+
+    @Test
+    void invalid_page_no_throws() {
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?$pageNo=xyz");
+        BadRequestException ex = assertThrows(BadRequestException.class, parser::parse);
+        assertTrue(ex.getMessage().contains("Invalid value for $pageNo"));
+    }
+
+    @Test
+    void unknown_query_field_throws() {
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?typoField=5");
+        BadRequestException ex = assertThrows(BadRequestException.class, parser::parse);
+        assertTrue(ex.getMessage().contains("Unknown query field: 'typoField'"));
+    }
 
 }

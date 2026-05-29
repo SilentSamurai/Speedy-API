@@ -3,12 +3,11 @@ package com.github.silent.samurai.speedy.serializers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.models.SpeedyBoolean;
-import com.github.silent.samurai.speedy.models.SpeedyDouble;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyInt;
-import com.github.silent.samurai.speedy.models.SpeedyPartialFailure;
+import com.github.silent.samurai.speedy.interfaces.IResponseContext;
+import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.models.*;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -22,8 +21,8 @@ public class BatchResultSerializer implements IResponseSerializerV2 {
     private final ObjectMapper mapper;
 
     public BatchResultSerializer(List<SpeedyEntity> succeeded,
-                                  List<SpeedyPartialFailure> failures,
-                                  int pageIndex) {
+                                 List<SpeedyPartialFailure> failures,
+                                 int pageIndex) {
         this.succeeded = succeeded;
         this.failures = failures;
         this.pageIndex = pageIndex;
@@ -87,7 +86,7 @@ public class BatchResultSerializer implements IResponseSerializerV2 {
         ObjectNode node = mapper.createObjectNode();
         for (KeyFieldMetadata keyField : entity.getMetadata().getKeyFields()) {
             node.putPOJO(keyField.getOutputPropertyName(),
-                serializeSpeedyValue(entity.get(keyField)));
+                    serializeSpeedyValue(entity.get(keyField)));
         }
         return node;
     }

@@ -7,7 +7,6 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.slf4j.Logger;

@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.client.internal;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -29,19 +30,19 @@ public class PathBuilder {
     }
 
     public String createPath(String entity) {
-        return entityPath(entity) + "/$create";
+        return entityPath(entity) + SpeedyEndpoint.CREATE.path();
     }
 
     public String updatePath(String entity) {
-        return entityPath(entity) + "/$update";
+        return entityPath(entity) + SpeedyEndpoint.UPDATE.path();
     }
 
     public String deletePath(String entity) {
-        return entityPath(entity) + "/$delete";
+        return entityPath(entity) + SpeedyEndpoint.DELETE.path();
     }
 
     public String queryPath(String entity) {
-        return entityPath(entity) + "/$query";
+        return entityPath(entity) + SpeedyEndpoint.QUERY.path();
     }
 
     public String countPath(String entity) {
@@ -49,7 +50,7 @@ public class PathBuilder {
     }
 
     public String metadataPath() {
-        return baseUrl + apiPath + "$metadata";
+        return baseUrl + apiPath + SpeedyEndpoint.METADATA.suffix();
     }
 
     public String formatPk(ObjectNode pkNode) {

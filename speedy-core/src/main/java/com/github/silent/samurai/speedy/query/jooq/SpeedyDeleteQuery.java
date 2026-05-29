@@ -19,7 +19,7 @@ public class SpeedyDeleteQuery {
     final SQLDialect dialect;
     private final DSLContext dslContext;
     private final Converter converter;
-    
+
     public SpeedyDeleteQuery(DSLContext dslContext, SQLDialect dialect, Converter converter) {
         this.dslContext = dslContext;
         this.dialect = dialect;

@@ -4,11 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
-import com.github.silent.samurai.speedy.client.exception.SpeedyBadRequestException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyDeserializationException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyNotFoundException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyServerException;
+import com.github.silent.samurai.speedy.client.exception.*;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 
 /**

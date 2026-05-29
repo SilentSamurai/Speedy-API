@@ -1,7 +1,6 @@
 package com.github.silent.samurai.speedy.jpa.impl.util;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
 import java.math.BigDecimal;

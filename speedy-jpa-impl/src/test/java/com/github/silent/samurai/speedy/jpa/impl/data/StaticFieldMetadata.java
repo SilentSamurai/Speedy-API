@@ -119,15 +119,15 @@
 //        return field.get(idInstance);
 //    }
 //
-////    @Override
-////    public ActionType getIgnoreProperty() {
-////        return ActionType.ALL;
-////    }
-////
-////    @Override
-////    public Class<?> getFieldType() {
-////        return field.getType();
-////    }
+/// /    @Override
+/// /    public ActionType getIgnoreProperty() {
+/// /        return ActionType.ALL;
+/// /    }
+/// /
+/// /    @Override
+/// /    public Class<?> getFieldType() {
+/// /        return field.getType();
+/// /    }
 //
 //    @Override
 //    public EntityMetadata getEntityMetadata() {

@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.validation.rules;
 
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+
 import java.util.List;
 
 /**

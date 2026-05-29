@@ -23,7 +23,10 @@ import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 
 @Slf4j
 public class DeleteHandler implements Handler {
@@ -108,7 +111,7 @@ public class DeleteHandler implements Handler {
                     }
 
                     context.setResponseSerializer(new JSONSerializerV2(
-                        KeyFieldMetadata.class::isInstance, deleted, 0, new HashSet<>()));
+                            KeyFieldMetadata.class::isInstance, deleted, 0, new HashSet<>()));
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -164,13 +167,13 @@ public class DeleteHandler implements Handler {
                 //   every failure entry (same bug as CreateHandler, see plan.md §T054-T055).
                 if (cause instanceof SpeedyHttpException she) {
                     failed.add(new SpeedyPartialFailure(i, she.getStatus(),
-                        she.getMessage(), Instant.now().toString(),
-                        key));
+                            she.getMessage(), Instant.now().toString(),
+                            key));
                     log.info("Entity #{} failed in per-entity transaction", i, she);
                 } else {
                     failed.add(new SpeedyPartialFailure(i, 500,
-                        e.getMessage(), Instant.now().toString(),
-                        key));
+                            e.getMessage(), Instant.now().toString(),
+                            key));
                     log.info("Entity #{} failed in per-entity transaction", i, e);
                 }
             }
@@ -182,7 +185,7 @@ public class DeleteHandler implements Handler {
         IResponseSerializerV2 serializer;
         if (failed.isEmpty()) {
             serializer = new JSONSerializerV2(KeyFieldMetadata.class::isInstance,
-                succeeded, 0, new HashSet<>());
+                    succeeded, 0, new HashSet<>());
         } else if (keys.size() == 1 && !failed.isEmpty()) {
             SpeedyPartialFailure failure = failed.get(0);
             if (failure.getStatus() == 400) {

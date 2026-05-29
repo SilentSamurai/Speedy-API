@@ -6,16 +6,15 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
-import com.github.silent.samurai.speedy.utils.Speedy;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
 
 @Data
 public class StaticFieldMetadata implements KeyFieldMetadata {
@@ -27,6 +26,22 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         field.setAccessible(true);
         fieldMetadata.setField(field);
         return fieldMetadata;
+    }
+
+    public static ColumnType fromJavaType(Class<?> type) {
+        return switch (type.getSimpleName()) {
+            case "Boolean", "boolean" -> ColumnType.BOOLEAN;
+            case "UUID" -> ColumnType.UUID;
+            case "String" -> ColumnType.TEXT; // could also be ENUM, but TEXT is safer default
+            case "Long", "Integer", "Short", "Byte", "BigInteger" -> ColumnType.INTEGER;
+            case "Double", "Float", "BigDecimal" -> ColumnType.FLOAT;
+            case "LocalDate", "Date" -> ColumnType.DATE;
+            case "LocalTime", "Time" -> ColumnType.TIME;
+            case "LocalDateTime", "Timestamp", "Instant" -> ColumnType.TIMESTAMP;
+            case "ZonedDateTime" -> ColumnType.TIMESTAMP_WITH_ZONE;
+
+            default -> throw new IllegalArgumentException("Unsupported Java type: " + type);
+        };
     }
 
     @Override
@@ -98,15 +113,15 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
         return true;
     }
 
-    @Override
-    public boolean isSensitive() {
-        return false;
-    }
-
 //    @Override
 //    public String getClassFieldName() {
 //        return field.getName();
 //    }
+
+    @Override
+    public boolean isSensitive() {
+        return false;
+    }
 
     @Override
     public String getDbColumnName() {
@@ -171,22 +186,6 @@ public class StaticFieldMetadata implements KeyFieldMetadata {
             throw new IllegalArgumentException("Field is not an enum");
         }
         return DynamicEnum.of((Class<? extends Enum<?>>) field.getType());
-    }
-
-    public static ColumnType fromJavaType(Class<?> type) {
-        return switch (type.getSimpleName()) {
-            case "Boolean", "boolean" -> ColumnType.BOOLEAN;
-            case "UUID" -> ColumnType.UUID;
-            case "String" -> ColumnType.TEXT; // could also be ENUM, but TEXT is safer default
-            case "Long", "Integer", "Short", "Byte", "BigInteger" -> ColumnType.INTEGER;
-            case "Double", "Float", "BigDecimal" -> ColumnType.FLOAT;
-            case "LocalDate", "Date" -> ColumnType.DATE;
-            case "LocalTime", "Time" -> ColumnType.TIME;
-            case "LocalDateTime", "Timestamp", "Instant" -> ColumnType.TIMESTAMP;
-            case "ZonedDateTime" -> ColumnType.TIMESTAMP_WITH_ZONE;
-
-            default -> throw new IllegalArgumentException("Unsupported Java type: " + type);
-        };
     }
 
 }

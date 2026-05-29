@@ -1,6 +1,7 @@
 # Java Client
 
-The Speedy Java Client provides a fluent, type-safe API for interacting with Speedy-enabled backends. It offers a clean, builder-based interface for making CRUD operations and complex queries.
+The Speedy Java Client provides a fluent, type-safe API for interacting with Speedy-enabled backends. It offers a clean,
+builder-based interface for making CRUD operations and complex queries.
 
 ## Features
 
@@ -13,6 +14,7 @@ The Speedy Java Client provides a fluent, type-safe API for interacting with Spe
 ## Maven Dependency
 
 ```xml
+
 <dependency>
     <groupId>com.github.silentsamurai</groupId>
     <artifactId>speedy-java-client</artifactId>
@@ -29,19 +31,19 @@ import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
 
 // Create a client
 RestTemplate restTemplate = new RestTemplate();
-SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080");
+        SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080");
 
-// Create a new category
-SpeedyResponse response = client.create("Category")
-    .addField("name", "cat-client-1")
-    .execute();
+        // Create a new category
+        SpeedyResponse response = client.create("Category")
+                .addField("name", "cat-client-1")
+                .execute();
 
-// Query categories
-SpeedyQuery query = SpeedyQuery.from("Category")
-    .where(condition("name", eq("cat-client-1")))
-    .build();
+        // Query categories
+        SpeedyQuery query = SpeedyQuery.from("Category")
+                .where(condition("name", eq("cat-client-1")))
+                .build();
 
-SpeedyResponse categories = client.query(query).execute();
+        SpeedyResponse categories = client.query(query).execute();
 ```
 
 ### Testing with MockMvc
@@ -52,18 +54,18 @@ import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
 @SpringBootTest
 @AutoConfigureMockMvc
 class CategoryControllerTest {
-    
+
     @Autowired
     private MockMvc mockMvc;
-    
+
     @Test
     void testCreateCategory() {
         SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
-        
+
         ResultActions result = client.create("Category")
-            .addField("name", "test-category")
-            .execute();
-            
+                .addField("name", "test-category")
+                .execute();
+
         result.andExpect(status().isCreated());
     }
 }
@@ -72,10 +74,13 @@ class CategoryControllerTest {
 ## Components
 
 ### [SpeedyClient](speedy-client.md)
+
 The main client class that provides CRUD operations and query execution.
 
 ### [SpeedyQuery](speedy-query.md)
-A fluent query builder for constructing complex database queries with conditions, ordering, pagination, and entity expansions.
+
+A fluent query builder for constructing complex database queries with conditions, ordering, pagination, and entity
+expansions.
 
 ### Entity Expansions
 
@@ -84,18 +89,18 @@ The Java client supports both simple and multi-level entity expansions:
 ```java
 // Simple expansion
 SpeedyQuery query = SpeedyQuery.from("inventory")
-    .expand("Product")
-    .expand("Procurement")
-    .build();
+                .expand("Product")
+                .expand("Procurement")
+                .build();
 
 // Multi-level expansion with dot notation
 SpeedyQuery query = SpeedyQuery.from("inventory")
-    .expand("Product")
-    .expand("Product.Category")
-    .expand("Product.Category.Supplier")
-    .expand("Procurement")
-    .expand("Procurement.Product")
-    .build();
+        .expand("Product")
+        .expand("Product.Category")
+        .expand("Product.Category.Supplier")
+        .expand("Procurement")
+        .expand("Procurement.Product")
+        .build();
 
 // Execute the query
 SpeedyResponse response = client.query(query).execute();
@@ -105,34 +110,36 @@ For detailed information about multi-level expansions, see [Multi-Level Expansio
 
 ## GET List Queries
 
-When using `get()` without a primary key, you can apply field selection, pagination, and expansion via URL query parameters:
+When using `get()` without a primary key, you can apply field selection, pagination, and expansion via URL query
+parameters:
 
 ```java
 Speedy speedy = Speedy.connect("http://localhost:8080");
 
 // Select specific fields
 List<Product> products = speedy.get("Product")
-    .select("id", "name", "description")
-    .execute()
-    .list(Product.class);
+        .select("id", "name", "description")
+        .execute()
+        .list(Product.class);
 
 // Select + pagination + expansion
 List<Product> products = speedy.get("Product")
-    .select("id", "name")
-    .pageSize(20)
-    .pageNo(0)
-    .expand("category")
-    .execute()
-    .list(Product.class);
+        .select("id", "name")
+        .pageSize(20)
+        .pageNo(0)
+        .expand("category")
+        .execute()
+        .list(Product.class);
 
 // Count query
 SpeedyResult result = speedy.get("Product")
-    .select("$count")
-    .execute();
+        .select("$count")
+        .execute();
 long count = result.raw().get("count").asLong();
 ```
 
-These methods produce URL query parameters (`$select=id,name&$pageSize=20&...`) rather than JSON body fields, matching the [GET Operation](get-operation.md) API.
+These methods produce URL query parameters (`$select=id,name&$pageSize=20&...`) rather than JSON body fields, matching
+the [GET Operation](get-operation.md) API.
 
 ## Character Encoding
 
@@ -150,11 +157,11 @@ Response bodies are always decoded as UTF-8.
 
 The Java client supports multiple HTTP client implementations:
 
-| Client | Use Case | Factory Method |
-|--------|----------|----------------|
-| **RestTemplate** | Production applications | `SpeedyClient.restTemplate(restTemplate, baseUrl)` |
-| **MockMvc** | Unit/integration testing | `SpeedyClient.mockMvc(mockMvc)` |
-| **Custom** | Custom implementations | `SpeedyClient.from(httpClient)` |
+| Client           | Use Case                 | Factory Method                                     |
+|------------------|--------------------------|----------------------------------------------------|
+| **RestTemplate** | Production applications  | `SpeedyClient.restTemplate(restTemplate, baseUrl)` |
+| **MockMvc**      | Unit/integration testing | `SpeedyClient.mockMvc(mockMvc)`                    |
+| **Custom**       | Custom implementations   | `SpeedyClient.from(httpClient)`                    |
 
 ## Best Practices
 
@@ -189,30 +196,36 @@ The Java client supports multiple HTTP client implementations:
    ```
 
 3. **Use appropriate HTTP clients**:
-   - Use `RestTemplate` for production
-   - Use `MockMvc` for testing
-   - Create custom clients for special requirements
+    - Use `RestTemplate` for production
+    - Use `MockMvc` for testing
+    - Create custom clients for special requirements
 
 4. **Optimize queries**:
-   - Select only needed fields
-   - Use appropriate page sizes
-   - Add proper conditions to reduce data transfer
+    - Select only needed fields
+    - Use appropriate page sizes
+    - Add proper conditions to reduce data transfer
 
 ## Error Handling
 
 The client provides comprehensive error handling:
 
 ```java
-try {
-    SpeedyResponse response = client.create("users")
+try{
+SpeedyResponse response = client.create("users")
         .addField("name", "John Doe")
         .addField("email", "john@example.com")
         .execute();
-} catch (SpeedyClientException e) {
-    // Handle client-specific errors
-    log.error("Client error: {}", e.getMessage());
-} catch (Exception e) {
-    // Handle general errors
-    log.error("Unexpected error: {}", e.getMessage());
-}
+}catch(
+SpeedyClientException e){
+        // Handle client-specific errors
+        log.
+
+error("Client error: {}",e.getMessage());
+        }catch(
+Exception e){
+        // Handle general errors
+        log.
+
+error("Unexpected error: {}",e.getMessage());
+        }
 ```

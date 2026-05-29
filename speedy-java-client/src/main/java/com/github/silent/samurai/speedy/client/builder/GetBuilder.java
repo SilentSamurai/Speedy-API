@@ -7,10 +7,10 @@ import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionExcepti
 import com.github.silent.samurai.speedy.client.exception.SpeedyException;
 import com.github.silent.samurai.speedy.client.internal.FieldUtil;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
+import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
-import com.github.silent.samurai.speedy.client.internal.RequestSender;
 
 import java.io.IOException;
 import java.util.*;
@@ -31,11 +31,11 @@ public class GetBuilder {
     private final ObjectNode pkNode;
     private final List<String> selectFields;
     private final List<String> expandRelations;
-    private Integer pageSize;
-    private Integer pageNo;
     private final PathBuilder paths;
     private final RequestSender sender;
     private final ResponseParser parser;
+    private Integer pageSize;
+    private Integer pageNo;
 
     public GetBuilder(String entity, PathBuilder paths, RequestSender sender,
                       ObjectMapper mapper, ResponseParser parser) {
@@ -92,7 +92,7 @@ public class GetBuilder {
      * Executes the get request and returns the result.
      *
      * @return SpeedyResult containing the matched entity(s)
-     * @throws SpeedyException on HTTP errors
+     * @throws SpeedyException           on HTTP errors
      * @throws SpeedyConnectionException on network failures
      */
     public SpeedyResult execute() {

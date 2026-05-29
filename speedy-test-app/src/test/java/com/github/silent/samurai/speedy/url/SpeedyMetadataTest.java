@@ -10,7 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -21,7 +23,7 @@ class SpeedyMetadataTest {
 
     @Test
     void getCategoryMetadata_returnsEntitySpecificData() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/Category/$metadata")
+        mvc.perform(get(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
@@ -31,7 +33,7 @@ class SpeedyMetadataTest {
 
     @Test
     void getProductMetadata_returnsMetadata() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/Product/$metadata")
+        mvc.perform(get(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists())
@@ -40,7 +42,7 @@ class SpeedyMetadataTest {
 
     @Test
     void getGlobalMetadata_showsSensitiveFields() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/$metadata")
+        mvc.perform(get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.name=='SensitiveClassEntity')].sensitive").value(true))

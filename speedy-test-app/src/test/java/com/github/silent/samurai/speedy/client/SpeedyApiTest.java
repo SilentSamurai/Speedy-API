@@ -12,7 +12,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)

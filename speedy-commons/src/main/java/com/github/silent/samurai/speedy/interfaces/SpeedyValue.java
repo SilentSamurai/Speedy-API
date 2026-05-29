@@ -138,7 +138,7 @@ public interface SpeedyValue {
     default boolean isNumber() {
         return switch (getValueType()) {
             case INT, FLOAT, ENUM_ORD -> true;
-            case NULL, TEXT, DATE, TIME, DATE_TIME, ZONED_DATE_TIME, BOOL, OBJECT, COLLECTION, ENUM  -> false;
+            case NULL, TEXT, DATE, TIME, DATE_TIME, ZONED_DATE_TIME, BOOL, OBJECT, COLLECTION, ENUM -> false;
         };
     }
 

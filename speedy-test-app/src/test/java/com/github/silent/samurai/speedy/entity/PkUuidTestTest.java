@@ -25,16 +25,17 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class PkUuidTestTest {
 
     /// JavaDoc Markdown documentation comment example
-    /// 
+    ///
     /// This is an example of using Markdown in JavaDoc comments.
     /// You can use **bold**, *italic*, and `code` formatting.
-    /// 
+    ///
     /// ```java
     /// // Example code block
     /// public void example() {
@@ -77,7 +78,7 @@ class PkUuidTestTest {
         arrayNode.add(CommonUtil.json().createObjectNode()
                 .put("name", "test")
                 .put("description", "test des"));
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$create")
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.CREATE.suffix())
                 .content(arrayNode.toPrettyString())
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -94,7 +95,7 @@ class PkUuidTestTest {
 
         pkUuidTestRepository.save(test);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("PkUuidTest")

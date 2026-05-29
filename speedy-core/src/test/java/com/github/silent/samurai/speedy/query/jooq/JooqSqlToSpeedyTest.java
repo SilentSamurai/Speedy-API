@@ -8,7 +8,6 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.query.jooq.JooqConversionImpl;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.DSLContext;
@@ -25,7 +24,6 @@ import org.mockito.stubbing.OngoingStubbing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 

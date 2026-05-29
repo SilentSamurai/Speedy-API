@@ -34,8 +34,8 @@ public class JooqQueryBuilder {
     final Map<String, FieldMetadata> joins = new HashMap<>();
     final Map<String, String> joinAlias = new HashMap<>();
     final SQLDialect dialect;
-    SelectJoinStep<? extends Record> query;
     private final Converter converter;
+    SelectJoinStep<? extends Record> query;
 
     public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext, Converter converter) {
         this.speedyQuery = speedyQuery;

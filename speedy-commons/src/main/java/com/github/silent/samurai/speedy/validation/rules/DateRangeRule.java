@@ -4,10 +4,11 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 
-/** Validates that a date is between min and max (inclusive). Works on LocalDate values. */
+/**
+ * Validates that a date is between min and max (inclusive). Works on LocalDate values.
+ */
 public class DateRangeRule implements FieldRule {
     private final LocalDate min;
     private final LocalDate max;

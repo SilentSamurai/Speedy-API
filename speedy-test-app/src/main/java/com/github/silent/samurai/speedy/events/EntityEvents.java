@@ -1,18 +1,13 @@
 package com.github.silent.samurai.speedy.events;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
-import com.github.silent.samurai.speedy.entity.Category;
-import com.github.silent.samurai.speedy.entity.Company;
-import com.github.silent.samurai.speedy.entity.CompanyStatus;
-import com.github.silent.samurai.speedy.entity.User;
-import com.github.silent.samurai.speedy.entity.Product;
+import com.github.silent.samurai.speedy.entity.*;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.TestBusinessException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
-import com.github.silent.samurai.speedy.utils.Speedy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +23,12 @@ public class EntityEvents implements ISpeedyEventHandler {
 
     public static final AtomicInteger POST_DELETE_COUNTER = new AtomicInteger(0);
     public static final ConcurrentHashMap<String, Boolean> POST_INSERT_CATEGORIES = new ConcurrentHashMap<>();
-    public static volatile boolean POST_UPDATE_FIRED = false;
     public static final AtomicBoolean throwOnNextCurrencyInsert = new AtomicBoolean(false);
     public static final AtomicBoolean throwOnNextCurrencyDelete = new AtomicBoolean(false);
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(EntityEvents.class);
+    public static volatile boolean POST_UPDATE_FIRED = false;
     @Autowired
     private CategoryRepository categoryRepository;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EntityEvents.class);
 
     @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.POST_INSERT, SpeedyEventType.PRE_INSERT})
     public void categoryPostInsertEvent(SpeedyEntity category) throws Exception {

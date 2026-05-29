@@ -6,7 +6,6 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
@@ -18,38 +17,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A central, bidirectional registry that stores converters between
- *  - scalar {@link SpeedyValue} instances and ordinary Java types (TO_JAVA / TO_SPEEDY)
- *  - raw {@link String} literals and Java primitives (FROM_STRING)
- *
+ * - scalar {@link SpeedyValue} instances and ordinary Java types (TO_JAVA / TO_SPEEDY)
+ * - raw {@link String} literals and Java primitives (FROM_STRING)
+ * <p>
  * It replaces the duplicated static converter maps that used to live in
  * {@link SpeedySerializer} and {@link SpeedyDeserializer}.
- *
+ * <p>
  * For the first iteration, the registry will *delegate* to those legacy classes
  * when a converter has not yet been registered here. This guarantees
  * backward-compatibility while we migrate definitions gradually.
  */
 public final class TypeConverterRegistry {
 
-    /** Direction of transformation */
-    public enum Direction {
-        TO_JAVA,      // SpeedyValue  -> Java
-        TO_SPEEDY,    // Java         -> SpeedyValue
-        FROM_STRING   // raw String   -> Java
-    }
-
-    /** Small functional interface that allows throwing {@link SpeedyHttpException}. */
-    @FunctionalInterface
-    public interface Converter<S, T> {
-        T apply(S source) throws SpeedyHttpException;
-    }
-
-    private record ConverterKey(Class<?> javaType, ValueType speedyType, Direction direction) {
-        // Auto-generated equals / hashCode / toString by record.
-    }
-
     // Thread-safe map so the registry can be extended at runtime (e.g. by users)
     private static final Map<ConverterKey, Converter<?, ?>> REGISTRY = new ConcurrentHashMap<>();
-
     // Mapping from primitive classes to their wrapper counterparts to deduplicate converter entries
     private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER = Map.of(
             int.class, Integer.class,
@@ -71,10 +52,6 @@ public final class TypeConverterRegistry {
     private TypeConverterRegistry() {
     }
 
-    /* --------------------------------------------------
-       Registration helpers
-       -------------------------------------------------- */
-
     public static <J> void register(ValueType valueType,
                                     Class<J> javaType,
                                     Converter<SpeedyValue, J> toJava,
@@ -89,10 +66,6 @@ public final class TypeConverterRegistry {
                                        Converter<S, T> fn) {
         REGISTRY.put(new ConverterKey(javaType, valueType, direction), fn);
     }
-
-    /* --------------------------------------------------
-       Lookup helpers – public API
-       -------------------------------------------------- */
 
     public static <T> T toJava(SpeedyValue speedyValue, Class<T> targetClass) throws SpeedyHttpException {
         if (speedyValue == null || speedyValue instanceof SpeedyNull) {
@@ -117,6 +90,10 @@ public final class TypeConverterRegistry {
 
         throw new ConversionException("No converter found for " + vt + " -> " + wrapped.getName());
     }
+
+    /* --------------------------------------------------
+       Registration helpers
+       -------------------------------------------------- */
 
     public static SpeedyValue toSpeedy(Object instance, ValueType vt) throws SpeedyHttpException {
         if (instance == null) {
@@ -154,7 +131,7 @@ public final class TypeConverterRegistry {
     }
 
     /* --------------------------------------------------
-       Internal helpers
+       Lookup helpers – public API
        -------------------------------------------------- */
 
     private static Converter<?, ?> getConverter(ValueType vt, Class<?> javaType, Direction dir) {
@@ -187,6 +164,10 @@ public final class TypeConverterRegistry {
         return clazz.isPrimitive() ? PRIMITIVE_TO_WRAPPER.getOrDefault(clazz, clazz) : clazz;
     }
 
+    /* --------------------------------------------------
+       Internal helpers
+       -------------------------------------------------- */
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static <E extends Enum<E>> E convertEnumFromSpeedy(SpeedyValue sv, Class<? extends Enum> enumClass) {
         if (sv.isText()) {
@@ -209,13 +190,10 @@ public final class TypeConverterRegistry {
         return switch (vt) {
             case TEXT, ENUM -> new SpeedyText(en.name());
             case INT, ENUM_ORD -> new SpeedyInt((long) en.ordinal());
-            default -> throw new ConversionException("Cannot convert enum " + en.getClass().getSimpleName() + " to " + vt);
+            default ->
+                    throw new ConversionException("Cannot convert enum " + en.getClass().getSimpleName() + " to " + vt);
         };
     }
-
-    /* --------------------------------------------------
-       Capability helpers for callers that need to check conversion availability
-       -------------------------------------------------- */
 
     public static boolean canToJava(ValueType vt, Class<?> javaType) {
         return getConverter(vt, wrap(javaType), Direction.TO_JAVA) != null;
@@ -224,10 +202,6 @@ public final class TypeConverterRegistry {
     public static boolean canToSpeedy(ValueType vt, Class<?> javaType) {
         return getConverter(vt, wrap(javaType), Direction.TO_SPEEDY) != null;
     }
-
-    /* --------------------------------------------------
-       Placeholder for future – load defaults into registry to decouple from legacy classes
-       -------------------------------------------------- */
 
     private static void initDefaultConverters() {
         /* ---------------- TEXT ---------------- */
@@ -339,5 +313,34 @@ public final class TypeConverterRegistry {
         register(null, LocalTime.class, Direction.FROM_STRING, (String v) -> LocalTime.parse(v));
         register(null, ZonedDateTime.class, Direction.FROM_STRING, (String v) -> ZonedDateTime.parse(v));
         register(null, Instant.class, Direction.FROM_STRING, (String v) -> Instant.parse(v));
+    }
+
+    /* --------------------------------------------------
+       Capability helpers for callers that need to check conversion availability
+       -------------------------------------------------- */
+
+    /**
+     * Direction of transformation
+     */
+    public enum Direction {
+        TO_JAVA,      // SpeedyValue  -> Java
+        TO_SPEEDY,    // Java         -> SpeedyValue
+        FROM_STRING   // raw String   -> Java
+    }
+
+    /**
+     * Small functional interface that allows throwing {@link SpeedyHttpException}.
+     */
+    @FunctionalInterface
+    public interface Converter<S, T> {
+        T apply(S source) throws SpeedyHttpException;
+    }
+
+    /* --------------------------------------------------
+       Placeholder for future – load defaults into registry to decouple from legacy classes
+       -------------------------------------------------- */
+
+    private record ConverterKey(Class<?> javaType, ValueType speedyType, Direction direction) {
+        // Auto-generated equals / hashCode / toString by record.
     }
 }

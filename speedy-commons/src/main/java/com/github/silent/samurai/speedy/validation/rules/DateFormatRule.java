@@ -6,10 +6,15 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
 
-/** Ensures that a date/datetime value matches the desired ISO style (DATE or DATE_TIME).*/
+/**
+ * Ensures that a date/datetime value matches the desired ISO style (DATE or DATE_TIME).
+ */
 public class DateFormatRule implements FieldRule {
     private final DateTimeFormat.ISO iso;
-    public DateFormatRule(DateTimeFormat.ISO iso) { this.iso = iso; }
+
+    public DateFormatRule(DateTimeFormat.ISO iso) {
+        this.iso = iso;
+    }
 
     @Override
     public void validate(FieldMetadata fm, SpeedyValue val, List<String> errors) {

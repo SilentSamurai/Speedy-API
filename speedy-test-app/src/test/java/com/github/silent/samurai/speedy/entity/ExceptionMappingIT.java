@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -28,7 +29,7 @@ class ExceptionMappingIT {
         String categoryName = "test-cat-" + java.util.UUID.randomUUID();
         String catJson = "[{\"name\":\"" + categoryName + "\"}]";
 
-        String catResponse = mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        String catResponse = mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -38,7 +39,7 @@ class ExceptionMappingIT {
 
         String productJson = "[{\"name\":\"throw-business-exception\",\"category\":{\"id\":\"" + catId + "\"}}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.CREATE.suffix())
                         .content(productJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(422))
@@ -52,7 +53,7 @@ class ExceptionMappingIT {
         String categoryName = "test-cat-" + java.util.UUID.randomUUID();
         String catJson = "[{\"name\":\"" + categoryName + "\"}]";
 
-        String catResponse = mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        String catResponse = mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -62,7 +63,7 @@ class ExceptionMappingIT {
 
         String productJson = "[{\"name\":\"throw-illegal-state\",\"category\":{\"id\":\"" + catId + "\"}}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.CREATE.suffix())
                         .content(productJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(409))
@@ -75,7 +76,7 @@ class ExceptionMappingIT {
         String categoryName = "test-cat-" + java.util.UUID.randomUUID();
         String catJson = "[{\"name\":\"" + categoryName + "\"}]";
 
-        String catResponse = mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        String catResponse = mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -87,7 +88,7 @@ class ExceptionMappingIT {
 
         // RuntimeException (501) wraps IllegalStateException (409)
         // Should pick 409 because it's innermost
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.CREATE.suffix())
                         .content(productJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(409))
@@ -101,7 +102,7 @@ class ExceptionMappingIT {
     void defaultMapping_malformedJson_returns400() throws Exception {
         String malformedBody = "{ \"broken\": ";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                         .content(malformedBody)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(400))
@@ -114,7 +115,7 @@ class ExceptionMappingIT {
     void defaultMapping_unknownEntity_returns400() throws Exception {
         String body = "{\"$from\":\"NonExistentEntity\"}";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/NonExistentEntity/$query")
+        mockMvc.perform(post(SpeedyConstant.URI + "/NonExistentEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(400))
@@ -128,12 +129,12 @@ class ExceptionMappingIT {
         String categoryName = "dup-cat-" + java.util.UUID.randomUUID();
         String catJson = "[{\"name\":\"" + categoryName + "\"}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(400))
@@ -146,7 +147,7 @@ class ExceptionMappingIT {
     void defaultMapping_genericException_returns500WithMaskedMessage() throws Exception {
         String catJson = "[{\"name\":\"generic-error-trigger\"}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(500))
@@ -160,12 +161,12 @@ class ExceptionMappingIT {
         String categoryName = "dup-cat-" + java.util.UUID.randomUUID();
         String catJson = "[{\"name\":\"" + categoryName + "\"}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/$create")
+        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(catJson)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(400))

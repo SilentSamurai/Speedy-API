@@ -1,8 +1,9 @@
 package com.github.silent.samurai.speedy.client.internal;
 
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PathBuilderTest {
 
@@ -15,22 +16,22 @@ class PathBuilderTest {
 
     @Test
     void createPathShouldAppendSuffix() {
-        assertEquals("http://localhost:8080/speedy/v1/User/$create", paths.createPath("User"));
+        assertEquals("http://localhost:8080/speedy/v1/User/" + SpeedyEndpoint.CREATE.suffix(), paths.createPath("User"));
     }
 
     @Test
     void updatePathShouldAppendSuffix() {
-        assertEquals("http://localhost:8080/speedy/v1/User/$update", paths.updatePath("User"));
+        assertEquals("http://localhost:8080/speedy/v1/User/" + SpeedyEndpoint.UPDATE.suffix(), paths.updatePath("User"));
     }
 
     @Test
     void deletePathShouldAppendSuffix() {
-        assertEquals("http://localhost:8080/speedy/v1/User/$delete", paths.deletePath("User"));
+        assertEquals("http://localhost:8080/speedy/v1/User/" + SpeedyEndpoint.DELETE.suffix(), paths.deletePath("User"));
     }
 
     @Test
     void queryPathShouldAppendSuffix() {
-        assertEquals("http://localhost:8080/speedy/v1/User/$query", paths.queryPath("User"));
+        assertEquals("http://localhost:8080/speedy/v1/User/" + SpeedyEndpoint.QUERY.suffix(), paths.queryPath("User"));
     }
 
     @Test
@@ -40,13 +41,13 @@ class PathBuilderTest {
 
     @Test
     void metadataPathShouldNotIncludeEntity() {
-        assertEquals("http://localhost:8080/speedy/v1/$metadata", paths.metadataPath());
+        assertEquals("http://localhost:8080/speedy/v1" + SpeedyEndpoint.METADATA.path(), paths.metadataPath());
     }
 
     @Test
     void baseUrlTrailingSlashShouldBeHandled() {
         PathBuilder p = new PathBuilder("http://localhost:8080/", "/speedy/v1/");
-        assertEquals("http://localhost:8080/speedy/v1/User/$create", p.createPath("User"));
+        assertEquals("http://localhost:8080/speedy/v1/User/" + SpeedyEndpoint.CREATE.suffix(), p.createPath("User"));
     }
 
     @Test

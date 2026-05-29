@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -40,7 +41,7 @@ class SpeedyV2ForgeinKeyWhereClauseTest {
 
         procurementRepository.findById("1").orElseThrow();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Procurement")
@@ -85,7 +86,7 @@ class SpeedyV2ForgeinKeyWhereClauseTest {
 
         procurementRepository.findById("1").orElseThrow();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Procurement")

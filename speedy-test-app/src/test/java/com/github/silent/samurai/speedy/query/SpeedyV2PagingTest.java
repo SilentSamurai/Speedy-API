@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -60,7 +61,7 @@ public class SpeedyV2PagingTest {
                 .put("$index", 0)
                 .put("$size", 2);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -109,7 +110,7 @@ public class SpeedyV2PagingTest {
                 .prettyPrint()
                 .build();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(query))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -164,7 +165,7 @@ public class SpeedyV2PagingTest {
                 .prettyPrint()
                 .build();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/$query")
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(query))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 

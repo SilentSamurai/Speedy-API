@@ -7,10 +7,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Validates that the supplied date/datetime is strictly in the future. */
+/**
+ * Validates that the supplied date/datetime is strictly in the future.
+ */
 public class FutureRule implements FieldRule {
     private final String message;
-    public FutureRule(String msg) { this.message = msg == null || msg.isBlank() ? "must be in the future" : msg; }
+
+    public FutureRule(String msg) {
+        this.message = msg == null || msg.isBlank() ? "must be in the future" : msg;
+    }
 
     @Override
     public void validate(FieldMetadata fm, SpeedyValue val, List<String> errors) {

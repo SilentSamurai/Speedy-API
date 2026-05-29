@@ -1,6 +1,9 @@
 package com.github.silent.samurai.speedy.validation.rules;
 
-import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 

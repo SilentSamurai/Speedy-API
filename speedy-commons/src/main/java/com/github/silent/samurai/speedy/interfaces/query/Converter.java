@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.interfaces.query;
 
-import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;

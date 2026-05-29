@@ -3,10 +3,12 @@ package com.github.silent.samurai.speedy.query;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.query.*;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
+import com.github.silent.samurai.speedy.interfaces.query.Expression;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.query.jooq.JooqConversionImpl;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import java.util.HashMap;
 import java.util.Map;

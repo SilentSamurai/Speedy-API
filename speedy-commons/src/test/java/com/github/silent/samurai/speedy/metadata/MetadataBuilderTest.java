@@ -5,9 +5,6 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.metadata.EntityBuilder;
-import com.github.silent.samurai.speedy.metadata.FieldBuilder;
-import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

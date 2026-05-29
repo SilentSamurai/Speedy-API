@@ -1,11 +1,10 @@
 package com.github.silent.samurai.speedy.validation;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyValidator;
-import com.github.silent.samurai.speedy.enums.SpeedyValidationRequestType;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.entity.Supplier;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.enums.SpeedyValidationRequestType;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import org.springframework.stereotype.Component;
 
 @Component

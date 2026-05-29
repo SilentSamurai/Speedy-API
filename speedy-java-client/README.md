@@ -1,6 +1,7 @@
 # Speedy Java Client
 
-A library-agnostic Java client for Speedy API. Zero framework dependency on the default classpath — bring your own HTTP transport.
+A library-agnostic Java client for Speedy API. Zero framework dependency on the default classpath — bring your own HTTP
+transport.
 
 ## Quick Start
 
@@ -10,22 +11,22 @@ A library-agnostic Java client for Speedy API. Zero framework dependency on the 
 Speedy speedy = Speedy.connect("http://localhost:8080");
 
 List<User> users = speedy.get("User")
-    .execute()
-    .list(User.class);
+        .execute()
+        .list(User.class);
 ```
 
 ### Spring RestTemplate (optional)
 
 ```java
 Speedy speedy = Speedy.builder()
-    .baseUrl("http://localhost:8080")
-    .transport(new RestTemplateTransport(new RestTemplate()))
-    .build();
+        .baseUrl("http://localhost:8080")
+        .transport(new RestTemplateTransport(new RestTemplate()))
+        .build();
 
 User user = speedy.get("User")
-    .key("id", 123)
-    .execute()
-    .first(User.class);
+        .key("id", 123)
+        .execute()
+        .first(User.class);
 ```
 
 ### MockMvc Integration Testing
@@ -126,12 +127,12 @@ try {
 }
 ```
 
-| Exception | HTTP Status |
-|-----------|-------------|
-| `SpeedyBadRequestException` | 400 |
-| `SpeedyNotFoundException` | 404 |
-| `SpeedyServerException` | 500+ |
-| `SpeedyConnectionException` | network failure |
+| Exception                        | HTTP Status        |
+|----------------------------------|--------------------|
+| `SpeedyBadRequestException`      | 400                |
+| `SpeedyNotFoundException`        | 404                |
+| `SpeedyServerException`          | 500+               |
+| `SpeedyConnectionException`      | network failure    |
 | `SpeedyDeserializationException` | JSON parse failure |
 
 ## Custom Transport
@@ -154,25 +155,25 @@ Chain interceptors for auth headers, logging, tracing:
 
 ```java
 Speedy speedy = Speedy.builder()
-    .baseUrl("http://localhost:8080")
-    .interceptor(req -> req.withHeader("Authorization", "Bearer token"))
-    .interceptor(req -> req.withHeader("X-Trace-Id", UUID.randomUUID().toString()))
-    .build();
+        .baseUrl("http://localhost:8080")
+        .interceptor(req -> req.withHeader("Authorization", "Bearer token"))
+        .interceptor(req -> req.withHeader("X-Trace-Id", UUID.randomUUID().toString()))
+        .build();
 ```
 
 ## Query Operators
 
-| Operator | Method |
-|----------|--------|
-| `$eq` | `eq(value)` |
-| `$ne` | `ne(value)` |
-| `$gt` | `gt(value)` |
-| `$lt` | `lt(value)` |
-| `$gte` | `gte(value)` |
-| `$lte` | `lte(value)` |
-| `$in` | `in(values...)` |
-| `$nin` | `nin(values...)` |
-| `$matches` | `matches(value)` |
+| Operator    | Method            |
+|-------------|-------------------|
+| `$eq`       | `eq(value)`       |
+| `$ne`       | `ne(value)`       |
+| `$gt`       | `gt(value)`       |
+| `$lt`       | `lt(value)`       |
+| `$gte`      | `gte(value)`      |
+| `$lte`      | `lte(value)`      |
+| `$in`       | `in(values...)`   |
+| `$nin`      | `nin(values...)`  |
+| `$matches`  | `matches(value)`  |
 | `$contains` | `contains(value)` |
 
 Logical: `and(conditions...)`, `or(conditions...)`
@@ -180,5 +181,6 @@ Logical: `and(conditions...)`, `or(conditions...)`
 ## Dependencies
 
 - **Required**: Jackson (`jackson-databind`, `jackson-datatype-jsr310`)
-- **Optional**: Spring Web (`RestTemplateTransport`), Spring Test (`MockMvcTransport`), Hamcrest + json-path (`SpeedyTestResult` assertions)
+- **Optional**: Spring Web (`RestTemplateTransport`), Spring Test (`MockMvcTransport`), Hamcrest + json-path (
+  `SpeedyTestResult` assertions)
 - **No** Spring, Lombok, or `speedy-commons` on default classpath

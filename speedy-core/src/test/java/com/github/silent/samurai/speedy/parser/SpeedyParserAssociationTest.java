@@ -11,7 +11,6 @@ import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

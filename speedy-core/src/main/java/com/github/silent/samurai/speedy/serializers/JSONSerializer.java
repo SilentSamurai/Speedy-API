@@ -85,7 +85,7 @@
 //    public void write(List<SpeedyEntity> speedyEntities) throws SpeedyHttpException {
 //        MultiPayloadWrapper responseWrapper = MultiPayloadWrapper.wrapperInResponse(speedyEntities);
 //        responseWrapper.setPageIndex(getContext().getPageNo());
-////        responseWrapper.setPageSize(getContext().getPageSize());
+/// /        responseWrapper.setPageSize(getContext().getPageSize());
 //        HttpServletResponse response = getContext().getResponse();
 //        response.setContentType(this.getContentType());
 //        response.setStatus(HttpServletResponse.SC_OK);

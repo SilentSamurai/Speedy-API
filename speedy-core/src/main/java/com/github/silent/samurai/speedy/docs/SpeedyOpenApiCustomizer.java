@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.docs;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.*;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -93,19 +94,19 @@ public class SpeedyOpenApiCustomizer {
             String basePath = String.format("%s/%s", SpeedyConstant.URI, entityMetadata.getName());
             openApi.path(basePath, basePathItem);
 
-            String querypath = String.format("%s/%s/$query", SpeedyConstant.URI, entityMetadata.getName());
+            String querypath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.QUERY.suffix());
             openApi.path(querypath, queryPathItem);
 
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
 
             if (!entityMetadata.isReadOnly()) {
-                String createPath = String.format("%s/%s/$create", SpeedyConstant.URI, entityMetadata.getName());
+                String createPath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.CREATE.suffix());
                 openApi.path(createPath, createPathItem);
 
-                String updatePath = String.format("%s/%s/$update", SpeedyConstant.URI, entityMetadata.getName());
+                String updatePath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.UPDATE.suffix());
                 openApi.path(updatePath, updatePathItem);
 
-                String deletePath = String.format("%s/%s/$delete", SpeedyConstant.URI, entityMetadata.getName());
+                String deletePath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.DELETE.suffix());
                 openApi.path(deletePath, deletePathItem);
             }
 
