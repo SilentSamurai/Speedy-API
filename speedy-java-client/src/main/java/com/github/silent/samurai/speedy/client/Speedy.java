@@ -3,16 +3,9 @@ package com.github.silent.samurai.speedy.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.github.silent.samurai.speedy.client.builder.BulkCreateBuilder;
-import com.github.silent.samurai.speedy.client.builder.BulkDeleteBuilder;
-import com.github.silent.samurai.speedy.client.builder.CreateBuilder;
-import com.github.silent.samurai.speedy.client.builder.DeleteBuilder;
-import com.github.silent.samurai.speedy.client.builder.GetBuilder;
-import com.github.silent.samurai.speedy.client.builder.QueryBuilder;
-import com.github.silent.samurai.speedy.client.builder.UpdateBuilder;
+import com.github.silent.samurai.speedy.client.builder.*;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
@@ -172,10 +165,10 @@ public class Speedy {
      * Fluent builder for constructing {@link Speedy} instances.
      */
     public static class Builder {
+        private final List<SpeedyInterceptor> interceptors = new ArrayList<>();
         private String baseUrl;
         private String apiPath = "/speedy/v1/";
         private SpeedyTransport transport;
-        private final List<SpeedyInterceptor> interceptors = new ArrayList<>();
         private ObjectMapper objectMapper;
 
         public Builder baseUrl(String baseUrl) {

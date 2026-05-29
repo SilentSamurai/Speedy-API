@@ -59,7 +59,6 @@ public class Entity {
 
 ### Speedy Ignore
 
-
 **Ignore Entity**
 
 tell speedy to ignore entity
@@ -89,7 +88,6 @@ public class Entity {
     private String internal;
 }
 ```
-
 
 ### Speedy Sensitive
 
@@ -133,7 +131,6 @@ public class Entity {
 ```
 
 See [Field References](field-references.md#sensitivity-control-with-speedysensitive) for runtime behavior.
-
 
 ### Jpa Entity
 

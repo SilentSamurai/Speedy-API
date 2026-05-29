@@ -65,7 +65,7 @@ public class CreateBuilder {
      * Executes the create request and returns the result.
      *
      * @return SpeedyResult containing the created entity(s)
-     * @throws SpeedyException on HTTP errors
+     * @throws SpeedyException           on HTTP errors
      * @throws SpeedyConnectionException on network failures
      */
     public SpeedyResult execute() {

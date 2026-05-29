@@ -397,6 +397,7 @@ class AnnotatedPersonValidationIT {
                     .execute()
                     .expectOk();
         }
+
         @Test
         @DisplayName("CREATE valid payload should succeed")
         void createValid_shouldSucceed() {

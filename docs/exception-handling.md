@@ -2,14 +2,16 @@
 
 ### Overview
 
-Speedy provides a built-in `DefaultExceptionMapper` that translates exceptions to HTTP status codes. You can **override default mappings** or **add custom mappings** using `@SpeedyControllerAdvice` and `@SpeedyExceptionHandler` annotations.
+Speedy provides a built-in `DefaultExceptionMapper` that translates exceptions to HTTP status codes. You can **override
+default mappings** or **add custom mappings** using `@SpeedyControllerAdvice` and `@SpeedyExceptionHandler` annotations.
 
 ### Built-in Resolution Order
 
 When an exception is thrown during request processing, Speedy resolves the HTTP status in this order:
 
 1. **Custom advice handlers** — `@SpeedyExceptionHandler` methods (highest priority)
-2. **`SpeedyHttpException`** hierarchy — maps `BadRequestException` (400), `NotFoundException` (404), `InternalServerError` (500)
+2. **`SpeedyHttpException`** hierarchy — maps `BadRequestException` (400), `NotFoundException` (404),
+   `InternalServerError` (500)
 3. **Persistence exceptions** — Hibernate `ConstraintViolationException` / `DataException` → 400
 4. **Jackson `JsonProcessingException`** → 400
 5. **`IllegalArgumentException`** → 400
@@ -47,7 +49,8 @@ public class MyExceptionAdvice {
 }
 ```
 
-Handler methods can optionally accept the thrown exception as a parameter. If the parameter is present, use it to craft a dynamic message.
+Handler methods can optionally accept the thrown exception as a parameter. If the parameter is present, use it to craft
+a dynamic message.
 
 #### Step 2: Register the Advice
 
@@ -75,11 +78,11 @@ public class SpeedyConfig implements ISpeedyConfiguration {
 
 Custom exception handlers resolve matches using these rules:
 
-| Rule | Description |
-|------|-------------|
-| **Exact match** | `@SpeedyExceptionHandler(value = NotFoundException.class)` matches exactly `NotFoundException` |
+| Rule                     | Description                                                                                                               |
+|--------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| **Exact match**          | `@SpeedyExceptionHandler(value = NotFoundException.class)` matches exactly `NotFoundException`                            |
 | **Superclass hierarchy** | If no exact match, Speedy walks up the superclass chain. A handler for `RuntimeException` catches all runtime subclasses. |
-| **Cause chain** | If the top-level exception has no match, Speedy walks the `getCause()` chain. A handler for the root cause will be used. |
+| **Cause chain**          | If the top-level exception has no match, Speedy walks the `getCause()` chain. A handler for the root cause will be used.  |
 
 **Example:**
 

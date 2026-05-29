@@ -99,8 +99,14 @@ class SpeedyTest {
         Speedy speedy = Speedy.builder()
                 .baseUrl("http://localhost:8080")
                 .transport(fake)
-                .interceptor(req -> { calls.add("first"); return req; })
-                .interceptor(req -> { calls.add("second"); return req; })
+                .interceptor(req -> {
+                    calls.add("first");
+                    return req;
+                })
+                .interceptor(req -> {
+                    calls.add("second");
+                    return req;
+                })
                 .build();
 
         speedy.get("User").execute();

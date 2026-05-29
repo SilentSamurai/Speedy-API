@@ -16,6 +16,17 @@ public class DefaultExceptionMapper implements ISpeedyExceptionMapper {
         this.adviceExceptionMapper = adviceExceptionMapper;
     }
 
+    private static boolean hasClassInHierarchy(Throwable throwable, String className) {
+        Class<?> current = throwable.getClass();
+        while (current != null) {
+            if (current.getName().equals(className)) {
+                return true;
+            }
+            current = current.getSuperclass();
+        }
+        return false;
+    }
+
     @Override
     public int getStatus(Throwable throwable) {
         // 1. Custom advice handlers (priority)
@@ -81,16 +92,5 @@ public class DefaultExceptionMapper implements ISpeedyExceptionMapper {
         }
 
         return message;
-    }
-
-    private static boolean hasClassInHierarchy(Throwable throwable, String className) {
-        Class<?> current = throwable.getClass();
-        while (current != null) {
-            if (current.getName().equals(className)) {
-                return true;
-            }
-            current = current.getSuperclass();
-        }
-        return false;
     }
 }

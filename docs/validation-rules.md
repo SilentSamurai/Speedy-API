@@ -21,7 +21,7 @@ Jakarta
 private BigDecimal salary;
 ```
 
-Speedy 
+Speedy
 
 ```java
 @Column(name = "salary", nullable = false)
@@ -39,26 +39,26 @@ HTTP 400  –  salary must be > 0
 
 ## Built-in Rules
 
-| Category | Speedy Annotation | Jakarta Equivalent | Description |
-|----------|------------------|--------------------|-------------|
-| Numeric Bounds | `@SpeedyMin(long)` | `@Min` | Value must be `>= min` |
-|                | `@SpeedyMax(long)` | `@Max` | Value must be `<= max` |
-| Numeric Sign   | `@SpeedyPositive` | `@Positive` | Value `> 0` |
-|                | `@SpeedyPositiveOrZero` | `@PositiveOrZero` | Value `>= 0` |
-|                | `@SpeedyNegative` | `@Negative` | Value `< 0` |
-|                | `@SpeedyNegativeOrZero` | `@NegativeOrZero` | Value `<= 0` |
-| Decimal Bounds | `@SpeedyDecimalMin(value, inclusive)` | `@DecimalMin` | Decimal `>= / > value` |
-|                | `@SpeedyDecimalMax(value, inclusive)` | `@DecimalMax` | Decimal `<= / < value` |
-| Precision      | `@SpeedyDigits(integer, fraction)` | `@Digits` | Max digits before / after decimal |
-| String Length  | `@SpeedyLength(min, max)` | `@Size` | Length between `min..max` |
-| Pattern        | `@SpeedyRegex("regex")` | `@Pattern` | Must match regex |
-| E-mail         | `@SpeedyEmail` | `@Email` | Must be valid email |
-| URL            | `@SpeedyUrl`   | — | Must be valid URL |
-| Date & Time    | `@SpeedyDateWithFormat(ISO_DATE)` | — | Value must match ISO format (DATE or DATE_TIME) |
-|                | `@SpeedyFuture` | — | Date/time strictly in the future |
-|                | `@SpeedyPast` | — | Date/time strictly in the past |
-|                | `@SpeedyDateRange(min,max)` | — | Date within inclusive range |
-| Blank Check    | `@SpeedyNotBlank` | `@NotBlank` | Not null / empty / whitespace |
+| Category       | Speedy Annotation                     | Jakarta Equivalent | Description                                     |
+|----------------|---------------------------------------|--------------------|-------------------------------------------------|
+| Numeric Bounds | `@SpeedyMin(long)`                    | `@Min`             | Value must be `>= min`                          |
+|                | `@SpeedyMax(long)`                    | `@Max`             | Value must be `<= max`                          |
+| Numeric Sign   | `@SpeedyPositive`                     | `@Positive`        | Value `> 0`                                     |
+|                | `@SpeedyPositiveOrZero`               | `@PositiveOrZero`  | Value `>= 0`                                    |
+|                | `@SpeedyNegative`                     | `@Negative`        | Value `< 0`                                     |
+|                | `@SpeedyNegativeOrZero`               | `@NegativeOrZero`  | Value `<= 0`                                    |
+| Decimal Bounds | `@SpeedyDecimalMin(value, inclusive)` | `@DecimalMin`      | Decimal `>= / > value`                          |
+|                | `@SpeedyDecimalMax(value, inclusive)` | `@DecimalMax`      | Decimal `<= / < value`                          |
+| Precision      | `@SpeedyDigits(integer, fraction)`    | `@Digits`          | Max digits before / after decimal               |
+| String Length  | `@SpeedyLength(min, max)`             | `@Size`            | Length between `min..max`                       |
+| Pattern        | `@SpeedyRegex("regex")`               | `@Pattern`         | Must match regex                                |
+| E-mail         | `@SpeedyEmail`                        | `@Email`           | Must be valid email                             |
+| URL            | `@SpeedyUrl`                          | —                  | Must be valid URL                               |
+| Date & Time    | `@SpeedyDateWithFormat(ISO_DATE)`     | —                  | Value must match ISO format (DATE or DATE_TIME) |
+|                | `@SpeedyFuture`                       | —                  | Date/time strictly in the future                |
+|                | `@SpeedyPast`                         | —                  | Date/time strictly in the past                  |
+|                | `@SpeedyDateRange(min,max)`           | —                  | Date within inclusive range                     |
+| Blank Check    | `@SpeedyNotBlank`                     | `@NotBlank`        | Not null / empty / whitespace                   |
 
 > **Tip:** You can freely mix Speedy and Jakarta annotations – duplicates are
 > ignored, only one instance of each rule is added.

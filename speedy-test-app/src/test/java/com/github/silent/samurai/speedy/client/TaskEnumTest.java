@@ -19,10 +19,9 @@ import static org.hamcrest.Matchers.*;
 @AutoConfigureMockMvc(addFilters = false)
 class TaskEnumTest {
 
+    SpeedyTest speedyClient;
     @Autowired
     private MockMvc mvc;
-
-    SpeedyTest speedyClient;
 
     @BeforeEach
     void setUp() {

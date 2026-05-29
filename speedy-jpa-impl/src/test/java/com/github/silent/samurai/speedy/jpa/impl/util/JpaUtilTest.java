@@ -1,9 +1,9 @@
 package com.github.silent.samurai.speedy.jpa.impl.util;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
-import jakarta.persistence.Id;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.Type;
 import org.junit.jupiter.api.DisplayName;
@@ -16,50 +16,11 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JpaUtilTest {
-
-    // ----------------------------------------
-    // Test fixtures (entities and helper classes)
-    // ----------------------------------------
-    @Entity
-    @Table(name = "my_table")
-    static class EntityWithTable {
-        @Id
-        Long id;
-    }
-
-    @Entity
-    static class SimpleEntity {
-        @Id
-        Long id;
-    }
-
-    static class NoEntityAnnotated { }
-
-    static class CompositeId implements Serializable {
-        Long id1;
-        Long id2;
-    }
-
-    @Entity
-    @IdClass(CompositeId.class)
-    static class EntityWithIdClass {
-        @Id
-        Long id1;
-        @Id
-        Long id2;
-    }
-
-    static class BaseClass { protected String baseField; }
-    static class SubClass extends BaseClass { private int subField; }
-
-    static class GenericHolder {
-        List<String> names;
-        String title;
-    }
 
     // ----------------------------------------
     // Tests for getIdClassType
@@ -159,5 +120,51 @@ class JpaUtilTest {
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> JpaUtil.resolveGenericFieldType(titleField));
         assertEquals("Field is not Generic", ex.getMessage());
+    }
+
+    // ----------------------------------------
+    // Test fixtures (entities and helper classes)
+    // ----------------------------------------
+    @Entity
+    @Table(name = "my_table")
+    static class EntityWithTable {
+        @Id
+        Long id;
+    }
+
+    @Entity
+    static class SimpleEntity {
+        @Id
+        Long id;
+    }
+
+    static class NoEntityAnnotated {
+    }
+
+    static class CompositeId implements Serializable {
+        Long id1;
+        Long id2;
+    }
+
+    @Entity
+    @IdClass(CompositeId.class)
+    static class EntityWithIdClass {
+        @Id
+        Long id1;
+        @Id
+        Long id2;
+    }
+
+    static class BaseClass {
+        protected String baseField;
+    }
+
+    static class SubClass extends BaseClass {
+        private int subField;
+    }
+
+    static class GenericHolder {
+        List<String> names;
+        String title;
     }
 }

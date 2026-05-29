@@ -99,11 +99,11 @@ public class UpdateHandler implements Handler {
             });
 
             log.info("Update committed: entity={}, mode={}, pk={}",
-                entityLabel, mode, pk);
+                    entityLabel, mode, pk);
             return result[0];
         } catch (Exception e) {
             log.info("Update rolled back: entity={}, mode={}, pk={}",
-                entityLabel, mode, pk);
+                    entityLabel, mode, pk);
             if (e instanceof SpeedyHttpException) {
                 throw (SpeedyHttpException) e;
             }

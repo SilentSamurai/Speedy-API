@@ -10,7 +10,7 @@ Content-Type: application/json
 {
     "$where": {
         "name": {
-            "$eq" : "John Doe"
+            "$eq": "John Doe"
         }
     }
 }

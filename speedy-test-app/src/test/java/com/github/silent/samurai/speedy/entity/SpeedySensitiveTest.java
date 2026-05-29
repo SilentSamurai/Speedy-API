@@ -22,10 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedySensitiveTest {
 
+    private final ObjectMapper mapper = CommonUtil.json();
     @Autowired
     private MockMvc mockMvc;
-
-    private final ObjectMapper mapper = CommonUtil.json();
 
     @Test
     void classLevelSensitive_inheritedFieldRef_shouldBeRejected() throws Exception {

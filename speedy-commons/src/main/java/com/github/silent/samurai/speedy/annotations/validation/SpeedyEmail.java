@@ -6,7 +6,9 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/** Marks a field that must contain a valid email string. */
+/**
+ * Marks a field that must contain a valid email string.
+ */
 @Target(FIELD)
 @Retention(RUNTIME)
 public @interface SpeedyEmail {

@@ -1,10 +1,12 @@
 # SpeedyClient
 
-The `SpeedyClient<T>` is a generic client class that provides a fluent API for interacting with the Speedy API. It serves as the main entry point for making CRUD operations and queries against a Speedy-enabled backend.
+The `SpeedyClient<T>` is a generic client class that provides a fluent API for interacting with the Speedy API. It
+serves as the main entry point for making CRUD operations and queries against a Speedy-enabled backend.
 
 ## Overview
 
 The SpeedyClient offers:
+
 - **Generic Type Support**: Uses type parameter `T` to handle different response types
 - **Builder Pattern**: Provides builder classes for different HTTP operations
 - **HTTP Client Abstraction**: Supports different HTTP client implementations
@@ -491,18 +493,18 @@ public class UserService {
 
 ## Factory Methods Reference
 
-| Method | Description | Use Case |
-|--------|-------------|----------|
-| `restTemplate(RestTemplate, String)` | Creates client with RestTemplate | Production applications |
-| `mockMvc(MockMvc)` | Creates client with MockMvc | Unit/integration testing |
-| `from(HttpClient<T>)` | Creates client with custom HTTP client | Custom implementations |
+| Method                               | Description                            | Use Case                 |
+|--------------------------------------|----------------------------------------|--------------------------|
+| `restTemplate(RestTemplate, String)` | Creates client with RestTemplate       | Production applications  |
+| `mockMvc(MockMvc)`                   | Creates client with MockMvc            | Unit/integration testing |
+| `from(HttpClient<T>)`                | Creates client with custom HTTP client | Custom implementations   |
 
 ## Available Operations
 
-| Operation | Method | Description | Returns |
-|-----------|--------|-------------|---------|
-| Create | `create(String entityName)` | Create new entities | `SpeedyCreateRequestBuilder<T>` |
-| Read | `get(String entityName)` | Retrieve entities | `SpeedyGetRequestBuilder<T>` |
-| Update | `update(String entityName)` | Update existing entities | `SpeedyUpdateRequestBuilder<T>` |
-| Delete | `delete(String entityName)` | Delete entities | `SpeedyDeleteRequestBuilder<T>` |
-| Query | `query(SpeedyQuery query)` | Execute custom queries | `SpeedyQueryRequest<T>` |
+| Operation | Method                      | Description              | Returns                         |
+|-----------|-----------------------------|--------------------------|---------------------------------|
+| Create    | `create(String entityName)` | Create new entities      | `SpeedyCreateRequestBuilder<T>` |
+| Read      | `get(String entityName)`    | Retrieve entities        | `SpeedyGetRequestBuilder<T>`    |
+| Update    | `update(String entityName)` | Update existing entities | `SpeedyUpdateRequestBuilder<T>` |
+| Delete    | `delete(String entityName)` | Delete entities          | `SpeedyDeleteRequestBuilder<T>` |
+| Query     | `query(SpeedyQuery query)`  | Execute custom queries   | `SpeedyQueryRequest<T>`         |

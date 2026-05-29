@@ -1,10 +1,12 @@
 # Field References in Speedy
 
-Field references allow you to compare values between different fields in the same entity or related entities. This powerful feature enables complex queries that would otherwise require multiple database calls or complex joins.
+Field references allow you to compare values between different fields in the same entity or related entities. This
+powerful feature enables complex queries that would otherwise require multiple database calls or complex joins.
 
 ## Overview
 
-Field references use the `$` prefix in JSON queries and the `field()` method in the Java client to reference other fields in comparisons.
+Field references use the `$` prefix in JSON queries and the `field()` method in the Java client to reference other
+fields in comparisons.
 
 ## JSON API Usage
 
@@ -290,11 +292,13 @@ public class User {
 ```
 
 This blocks queries like:
+
 ```http
 [GET] /speedy/v1/User?publicField=$secretField
 ```
 
 But allows:
+
 ```http
 [GET] /speedy/v1/User?secretField=literalValue
 [GET] /speedy/v1/User?secretField=$publicField
@@ -354,13 +358,13 @@ levels so clients can discover which fields accept `$` references:
 
 All comparison operators support field references:
 
-| Operator | JSON Example | Java Example |
-|----------|--------------|--------------|
-| Equal | `"field1": "$field2"` | `eq("$field2")` |
-| Not Equal | `"field1": {"$ne": "$field2"}` | `ne("$field2")` |
-| Less Than | `"field1": {"$lt": "$field2"}` | `lt("$field2")` |
-| Greater Than | `"field1": {"$gt": "$field2"}` | `gt("$field2")` |
-| Less Than or Equal | `"field1": {"$lte": "$field2"}` | `lte("$field2")` |
+| Operator              | JSON Example                    | Java Example     |
+|-----------------------|---------------------------------|------------------|
+| Equal                 | `"field1": "$field2"`           | `eq("$field2")`  |
+| Not Equal             | `"field1": {"$ne": "$field2"}`  | `ne("$field2")`  |
+| Less Than             | `"field1": {"$lt": "$field2"}`  | `lt("$field2")`  |
+| Greater Than          | `"field1": {"$gt": "$field2"}`  | `gt("$field2")`  |
+| Less Than or Equal    | `"field1": {"$lte": "$field2"}` | `lte("$field2")` |
 | Greater Than or Equal | `"field1": {"$gte": "$field2"}` | `gte("$field2")` |
 
 ## Best Practices
@@ -447,4 +451,5 @@ System.out.println("Available fields: " + entityMetadata.getAllFieldNames());
 - **Query Complexity**: Complex field reference queries may impact performance
 - **Database Support**: Field references work with all supported databases (H2, PostgreSQL, MySQL)
 
-For more information about querying, see the [Query Operations](query-operation.md) and [SpeedyQuery](speedy-query.md) documentation. 
+For more information about querying, see the [Query Operations](query-operation.md) and [SpeedyQuery](speedy-query.md)
+documentation. 

@@ -12,41 +12,14 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RoundTripConversionTest {
-
-    @Getter
-    @Setter
-    public static class TestEntity {
-
-        @Id
-        public UUID id;
-
-        // Basic types
-        private String name;
-        private Integer age;
-        private boolean active;
-        private Double salary;
-
-        // Numeric types
-        private Long longValue;
-        private Float floatValue;
-        private BigInteger bigIntegerValue;
-        private BigDecimal bigDecimalValue;
-
-        // Date/Time types
-        private LocalDate date;
-        private LocalDateTime dateTime;
-        private ZonedDateTime zonedDateTime;
-
-        // Default constructor
-        public TestEntity() {
-        }
-    }
 
     @Test
     void convertSpeedyEntityToJavaObjectAndBack_shouldMaintainDataIntegrity() throws SpeedyHttpException {
@@ -218,7 +191,7 @@ class RoundTripConversionTest {
         // Arrange - Set values in class
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(TestEntity.class);
         SpeedyEntity entity = new SpeedyEntity(entityMetadata);
-        
+
         UUID id = UUID.randomUUID();
         String name = "Test User";
         Integer age = 25;
@@ -248,7 +221,7 @@ class RoundTripConversionTest {
 
         // Act - Convert to Speedy entity
         SpeedyEntity speedyEntity = SpeedyDeserializer.updateEntity(originalEntity, entity);
-        
+
         // Convert back to class
         TestEntity convertedEntity = SpeedySerializer.toJavaEntity(speedyEntity, TestEntity.class);
 
@@ -273,31 +246,31 @@ class RoundTripConversionTest {
         // Arrange - Create a SpeedyEntity with initial values
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(TestEntity.class);
         SpeedyEntity initialEntity = new SpeedyEntity(entityMetadata);
-        
+
         // Set initial values in the SpeedyEntity
         UUID initialId = UUID.randomUUID();
         String initialName = "Initial Name";
         Integer initialAge = 30;
         boolean initialActive = true;
         Double initialSalary = 60000.0;
-        
+
         initialEntity.put("id", SpeedyValueFactory.fromText(initialId.toString()));
         initialEntity.put("name", SpeedyValueFactory.fromText(initialName));
         initialEntity.put("age", SpeedyValueFactory.fromInt(initialAge.longValue()));
         initialEntity.put("active", SpeedyValueFactory.fromBool(initialActive));
         initialEntity.put("salary", SpeedyValueFactory.fromDouble(initialSalary));
-        
+
         // Convert SpeedyEntity to Java object
         TestEntity javaObject = SpeedySerializer.toJavaEntity(initialEntity, TestEntity.class);
-        
+
         // Set some fields to null in the Java object
         javaObject.setName(null);
         javaObject.setAge(null);
         javaObject.setSalary(null);
-        
+
         // Act - Convert the Java object (with null values) back to SpeedyEntity
         SpeedyEntity finalEntity = SpeedyDeserializer.updateEntity(javaObject, initialEntity);
-        
+
         // Assert - Verify that the original values are preserved for fields that were null in the Java object
         assertNotNull(finalEntity);
         assertEquals(initialId.toString(), finalEntity.get("id").asText());
@@ -307,5 +280,34 @@ class RoundTripConversionTest {
         assertEquals(initialActive, finalEntity.get("active").asBoolean()); // Boolean is primitive, so can't be null
         assertEquals(initialSalary, finalEntity.get("salary").asDouble(), 0.001); // Should preserve initial value
 
+    }
+
+    @Getter
+    @Setter
+    public static class TestEntity {
+
+        @Id
+        public UUID id;
+
+        // Basic types
+        private String name;
+        private Integer age;
+        private boolean active;
+        private Double salary;
+
+        // Numeric types
+        private Long longValue;
+        private Float floatValue;
+        private BigInteger bigIntegerValue;
+        private BigDecimal bigDecimalValue;
+
+        // Date/Time types
+        private LocalDate date;
+        private LocalDateTime dateTime;
+        private ZonedDateTime zonedDateTime;
+
+        // Default constructor
+        public TestEntity() {
+        }
     }
 }

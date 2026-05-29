@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 /// String currentPath = tracker.getCurrentDotPath(category); // "Product.Category"
 /// int depth = tracker.getPathDepth(); // 2
 /// tracker.popEntity(); // removes product
-///```
+/// ```
 public class ExpansionPathTracker {
 
     private final Deque<EntityMetadata> currentPath = new LinkedList<>();

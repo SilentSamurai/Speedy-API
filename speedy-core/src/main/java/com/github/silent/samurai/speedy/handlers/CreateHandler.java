@@ -157,12 +157,12 @@ public class CreateHandler implements Handler {
                 if (cause instanceof SpeedyHttpException she) {
                     SpeedyEntityKey inputPk = extractInputPk(entity);
                     failed.add(new SpeedyPartialFailure(i, she.getStatus(),
-                        she.getMessage(), Instant.now().toString(), inputPk));
+                            she.getMessage(), Instant.now().toString(), inputPk));
                     log.info("Entity #{} failed in per-entity transaction", i, she);
                 } else {
                     SpeedyEntityKey inputPk = extractInputPk(entity);
                     failed.add(new SpeedyPartialFailure(i, 500,
-                        e.getMessage(), Instant.now().toString(), inputPk));
+                            e.getMessage(), Instant.now().toString(), inputPk));
                     log.info("Entity #{} failed in per-entity transaction", i, e);
                 }
             }
@@ -174,7 +174,7 @@ public class CreateHandler implements Handler {
         IResponseSerializerV2 serializer;
         if (failed.isEmpty()) {
             serializer = new JSONSerializerV2(KeyFieldMetadata.class::isInstance,
-                succeeded, 0, new HashSet<>());
+                    succeeded, 0, new HashSet<>());
         } else if (entities.size() == 1 && !failed.isEmpty()) {
             SpeedyPartialFailure failure = failed.get(0);
             if (failure.getStatus() == 400) {

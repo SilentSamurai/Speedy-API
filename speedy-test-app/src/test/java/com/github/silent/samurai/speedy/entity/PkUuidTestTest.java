@@ -31,10 +31,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PkUuidTestTest {
 
     /// JavaDoc Markdown documentation comment example
-    /// 
+    ///
     /// This is an example of using Markdown in JavaDoc comments.
     /// You can use **bold**, *italic*, and `code` formatting.
-    /// 
+    ///
     /// ```java
     /// // Example code block
     /// public void example() {

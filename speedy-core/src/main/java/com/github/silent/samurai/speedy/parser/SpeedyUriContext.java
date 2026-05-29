@@ -29,9 +29,9 @@ public class SpeedyUriContext {
     private final MetaModel metaModel;
     private final String requestURI;
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
-    private SpeedyQueryImpl speedyQuery;
     private final int maxPageSize;
     private final int defaultPageSize;
+    private SpeedyQueryImpl speedyQuery;
     private String actionSuffix;
 
     public SpeedyUriContext(MetaModel metaModel, String requestURI) {

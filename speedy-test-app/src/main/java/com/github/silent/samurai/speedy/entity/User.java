@@ -1,9 +1,7 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
-import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
 import com.github.silent.samurai.speedy.enums.ActionType;
-import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;

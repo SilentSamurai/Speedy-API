@@ -26,7 +26,7 @@ public interface QueryProcessor {
 
     default void runInTransaction(Runnable block) {
         throw new UnsupportedOperationException(
-            "runInTransaction not supported by this QueryProcessor"
+                "runInTransaction not supported by this QueryProcessor"
         );
     }
 

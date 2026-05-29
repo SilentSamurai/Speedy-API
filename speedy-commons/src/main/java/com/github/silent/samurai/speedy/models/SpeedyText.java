@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.models;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Getter;
+
 import java.util.Objects;
 
 @Getter

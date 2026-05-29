@@ -1,10 +1,12 @@
 # Multi-Level Expansions
 
-Speedy API supports multi-level entity expansions using dot notation, allowing you to include deeply nested related entities in your query results.
+Speedy API supports multi-level entity expansions using dot notation, allowing you to include deeply nested related
+entities in your query results.
 
 ## Overview
 
-Multi-level expansions enable you to traverse entity relationships and include data from related entities at any depth. This is particularly useful for complex data models where entities have multiple levels of relationships.
+Multi-level expansions enable you to traverse entity relationships and include data from related entities at any depth.
+This is particularly useful for complex data models where entities have multiple levels of relationships.
 
 ## Basic Syntax
 
@@ -262,6 +264,7 @@ The system uses an `ExpansionPathTracker` to manage multi-level expansions:
 ### Validation
 
 Expansion paths are validated to ensure:
+
 - Each segment is a valid entity association
 - No empty segments in the path
 - Proper dot notation formatting
@@ -270,6 +273,7 @@ Expansion paths are validated to ensure:
 ### Serialization
 
 The `JSONSerializerV2` handles serialization of multi-level expansions:
+
 - Supports dot notation expansions
 - Maintains backward compatibility
 - Efficient field filtering

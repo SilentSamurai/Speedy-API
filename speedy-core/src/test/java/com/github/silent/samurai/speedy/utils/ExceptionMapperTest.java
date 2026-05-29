@@ -4,8 +4,6 @@ import com.github.silent.samurai.speedy.annotations.SpeedyControllerAdvice;
 import com.github.silent.samurai.speedy.annotations.SpeedyExceptionHandler;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyExceptionMapper;
 import jakarta.persistence.PersistenceException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,39 +25,6 @@ class ExceptionMapperTest {
         controllerAdvices = new ArrayList<>();
     }
 
-    @SpeedyControllerAdvice
-    static class TestAdvice {
-
-        @SpeedyExceptionHandler(value = NotFoundException.class, status = 404)
-        public String handleNotFound(NotFoundException e) {
-            return "Entity not found: " + e.getMessage();
-        }
-
-        @SpeedyExceptionHandler(value = IllegalArgumentException.class, status = 400)
-        public String handleIllegalArg(IllegalArgumentException e) {
-            return "Invalid argument: " + e.getMessage();
-        }
-
-        @SpeedyExceptionHandler(value = RuntimeException.class, status = 500)
-        public String handleRuntimeException() {
-            return "Unexpected error";
-        }
-    }
-
-    static class CustomException extends RuntimeException {
-        CustomException(String message) {
-            super(message);
-        }
-    }
-
-    static class CustomCheckedException extends Exception {
-        CustomCheckedException(String message) {
-            super(message);
-        }
-    }
-
-    // --- AdviceExceptionMapper tests ---
-
     @Test
     void adviceMapperReturnsMinusOneWhenNoAdvice() {
         AdviceExceptionMapper mapper = new AdviceExceptionMapper(controllerAdvices);
@@ -80,6 +45,8 @@ class ExceptionMapperTest {
         int status = mapper.getStatus(new IllegalArgumentException("bad arg"));
         Assertions.assertEquals(400, status);
     }
+
+    // --- AdviceExceptionMapper tests ---
 
     @Test
     void adviceMapperReturnsMessageFromHandlerWithParameter() {
@@ -133,8 +100,6 @@ class ExceptionMapperTest {
         Assertions.assertEquals(400, status);
     }
 
-    // --- DefaultExceptionMapper tests ---
-
     @Test
     void defaultMapperHandlesSpeedyHttpException() {
         DefaultExceptionMapper mapper = new DefaultExceptionMapper(new AdviceExceptionMapper(controllerAdvices));
@@ -159,6 +124,8 @@ class ExceptionMapperTest {
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, status);
     }
 
+    // --- DefaultExceptionMapper tests ---
+
     @Test
     void defaultMapperHandlesPersistenceExceptionWithConstraintViolation() {
         DefaultExceptionMapper mapper = new DefaultExceptionMapper(new AdviceExceptionMapper(controllerAdvices));
@@ -182,7 +149,8 @@ class ExceptionMapperTest {
     @Test
     void defaultMapperHandlesJsonProcessingException() {
         DefaultExceptionMapper mapper = new DefaultExceptionMapper(new AdviceExceptionMapper(controllerAdvices));
-        com.fasterxml.jackson.core.JsonProcessingException e = new com.fasterxml.jackson.core.JsonProcessingException("invalid json") {};
+        com.fasterxml.jackson.core.JsonProcessingException e = new com.fasterxml.jackson.core.JsonProcessingException("invalid json") {
+        };
 
         int status = mapper.getStatus(e);
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, status);
@@ -276,5 +244,36 @@ class ExceptionMapperTest {
 
         Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, mapper.getStatus(e));
         Assertions.assertEquals("Validation failed", mapper.getMessage(e));
+    }
+
+    @SpeedyControllerAdvice
+    static class TestAdvice {
+
+        @SpeedyExceptionHandler(value = NotFoundException.class, status = 404)
+        public String handleNotFound(NotFoundException e) {
+            return "Entity not found: " + e.getMessage();
+        }
+
+        @SpeedyExceptionHandler(value = IllegalArgumentException.class, status = 400)
+        public String handleIllegalArg(IllegalArgumentException e) {
+            return "Invalid argument: " + e.getMessage();
+        }
+
+        @SpeedyExceptionHandler(value = RuntimeException.class, status = 500)
+        public String handleRuntimeException() {
+            return "Unexpected error";
+        }
+    }
+
+    static class CustomException extends RuntimeException {
+        CustomException(String message) {
+            super(message);
+        }
+    }
+
+    static class CustomCheckedException extends Exception {
+        CustomCheckedException(String message) {
+            super(message);
+        }
     }
 }

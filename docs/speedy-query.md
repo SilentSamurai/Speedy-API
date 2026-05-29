@@ -1,10 +1,12 @@
 # SpeedyQuery
 
-A fluent query builder for constructing complex database queries in the Speedy API. This class provides a type-safe and intuitive way to build queries with conditions, ordering, pagination, field selection, and entity expansion.
+A fluent query builder for constructing complex database queries in the Speedy API. This class provides a type-safe and
+intuitive way to build queries with conditions, ordering, pagination, field selection, and entity expansion.
 
 ## Overview
 
 SpeedyQuery offers:
+
 - **Fluent API**: Chain methods for building complex queries
 - **Type Safety**: Compile-time validation of query structure
 - **Conditional Logic**: Support for AND/OR conditions with nested logic
@@ -161,12 +163,12 @@ SpeedyQuery query = SpeedyQuery.from("inventory")
 
 #### Multi-Level Expansion Examples
 
-| Use Case | Query | Description |
-|----------|-------|-------------|
-| Product with Category | `.expand("Product").expand("Product.Category")` | Include product and its category |
-| Deep Supplier Chain | `.expand("Product.Category.Supplier.Address")` | Include complete supplier chain |
-| Multiple Paths | `.expand("Product.Category").expand("Procurement.Product")` | Different expansion paths |
-| Selective Expansion | `.expand("Product").expand("Product.Category")` | Only expand specific paths |
+| Use Case              | Query                                                       | Description                      |
+|-----------------------|-------------------------------------------------------------|----------------------------------|
+| Product with Category | `.expand("Product").expand("Product.Category")`             | Include product and its category |
+| Deep Supplier Chain   | `.expand("Product.Category.Supplier.Address")`              | Include complete supplier chain  |
+| Multiple Paths        | `.expand("Product.Category").expand("Procurement.Product")` | Different expansion paths        |
+| Selective Expansion   | `.expand("Product").expand("Product.Category")`             | Only expand specific paths       |
 
 ### Ordering
 
@@ -251,17 +253,19 @@ SpeedyQuery query = SpeedyQuery.from("users")
 ```
 
 **Wildcard Syntax:**
+
 - `*` = 0 or more characters/spaces
 - `?` = exactly 1 character/space
 - Examples:
-  - `"*john*"` matches "john", "johnny", "john doe", "my john", etc.
-  - `"john*"` matches "john", "johnny", "john doe", etc.
-  - `"*john"` matches "john", "my john", "the john", etc.
-  - `"j?hn"` matches "john", "jahn", etc.
+    - `"*john*"` matches "john", "johnny", "john doe", "my john", etc.
+    - `"john*"` matches "john", "johnny", "john doe", etc.
+    - `"*john"` matches "john", "my john", "the john", etc.
+    - `"j?hn"` matches "john", "jahn", etc.
 
 ### Field References
 
-SpeedyQuery supports field-to-field comparisons using the `field()` method. This allows you to compare values between different fields in the same entity.
+SpeedyQuery supports field-to-field comparisons using the `field()` method. This allows you to compare values between
+different fields in the same entity.
 
 #### Basic Field Reference
 
@@ -314,12 +318,12 @@ SpeedyQuery query = SpeedyQuery.from("products")
 
 #### Field Reference Examples
 
-| Use Case | Query | Description |
-|----------|-------|-------------|
-| Price Comparison | `condition("salePrice", lt("$regularPrice"))` | Find products on sale |
-| Date Range | `condition("startDate", lte("$endDate"))` | Valid date ranges |
-| User Tracking | `condition("createdBy", eq("$updatedBy"))` | Self-updated records |
-| Inventory Check | `condition("currentStock", gte("$minimumStock"))` | Sufficient inventory |
+| Use Case         | Query                                             | Description           |
+|------------------|---------------------------------------------------|-----------------------|
+| Price Comparison | `condition("salePrice", lt("$regularPrice"))`     | Find products on sale |
+| Date Range       | `condition("startDate", lte("$endDate"))`         | Valid date ranges     |
+| User Tracking    | `condition("createdBy", eq("$updatedBy"))`        | Self-updated records  |
+| Inventory Check  | `condition("currentStock", gte("$minimumStock"))` | Sufficient inventory  |
 
 ## Logical Operators
 
@@ -630,34 +634,34 @@ SpeedyQuery adminQuery = UserQueries.usersByRole("admin");
 
 ### Comparison Operators
 
-| Operator | Method | Description | Example |
-|----------|--------|-------------|---------|
-| `$eq` | `eq(Object)` | Equal to | `eq("active")` |
-| `$ne` | `ne(Object)` | Not equal to | `ne("inactive")` |
-| `$gt` | `gt(Object)` | Greater than | `gt(18)` |
-| `$lt` | `lt(Object)` | Less than | `lt(100)` |
-| `$gte` | `gte(Object)` | Greater than or equal | `gte(80)` |
-| `$lte` | `lte(Object)` | Less than or equal | `lte(10)` |
-| `$in` | `in(Object...)` | In array of values | `in("A", "B", "C")` |
-| `$nin` | `nin(Object...)` | Not in array | `nin("deleted", "archived")` |
-| `$matches` | `matches(Object)` | Pattern matching | `matches("*john*")` |
+| Operator   | Method            | Description           | Example                      |
+|------------|-------------------|-----------------------|------------------------------|
+| `$eq`      | `eq(Object)`      | Equal to              | `eq("active")`               |
+| `$ne`      | `ne(Object)`      | Not equal to          | `ne("inactive")`             |
+| `$gt`      | `gt(Object)`      | Greater than          | `gt(18)`                     |
+| `$lt`      | `lt(Object)`      | Less than             | `lt(100)`                    |
+| `$gte`     | `gte(Object)`     | Greater than or equal | `gte(80)`                    |
+| `$lte`     | `lte(Object)`     | Less than or equal    | `lte(10)`                    |
+| `$in`      | `in(Object...)`   | In array of values    | `in("A", "B", "C")`          |
+| `$nin`     | `nin(Object...)`  | Not in array          | `nin("deleted", "archived")` |
+| `$matches` | `matches(Object)` | Pattern matching      | `matches("*john*")`          |
 
 ### Logical Operators
 
-| Operator | Method | Description | Example |
-|----------|--------|-------------|---------|
-| `$and` | `and(JsonNode...)` | Logical AND | `and(cond1, cond2, cond3)` |
-| `$or` | `or(JsonNode...)` | Logical OR | `or(cond1, cond2)` |
+| Operator | Method             | Description | Example                    |
+|----------|--------------------|-------------|----------------------------|
+| `$and`   | `and(JsonNode...)` | Logical AND | `and(cond1, cond2, cond3)` |
+| `$or`    | `or(JsonNode...)`  | Logical OR  | `or(cond1, cond2)`         |
 
 ### Query Methods
 
-| Category | Methods | Description |
-|----------|---------|-------------|
-| **Builder** | `from()`, `from(String entity)` | Create new query instances |
-| **Source** | `fromEntity(String entity)` | Set the target entity |
-| **Conditions** | `where(JsonNode...)` | Add WHERE conditions |
-| **Selection** | `select(String...)` | Choose fields to return |
-| **Expansion** | `expand(String...)` | Include related entities |
-| **Ordering** | `orderByAsc(String)`, `orderByDesc(String)` | Sort results |
-| **Pagination** | `pageNo(int)`, `pageSize(int)` | Control result pagination |
-| **Execution** | `build()`, `prettyPrint()` | Generate final query | 
+| Category       | Methods                                     | Description                |
+|----------------|---------------------------------------------|----------------------------|
+| **Builder**    | `from()`, `from(String entity)`             | Create new query instances |
+| **Source**     | `fromEntity(String entity)`                 | Set the target entity      |
+| **Conditions** | `where(JsonNode...)`                        | Add WHERE conditions       |
+| **Selection**  | `select(String...)`                         | Choose fields to return    |
+| **Expansion**  | `expand(String...)`                         | Include related entities   |
+| **Ordering**   | `orderByAsc(String)`, `orderByDesc(String)` | Sort results               |
+| **Pagination** | `pageNo(int)`, `pageSize(int)`              | Control result pagination  |
+| **Execution**  | `build()`, `prettyPrint()`                  | Generate final query       | 

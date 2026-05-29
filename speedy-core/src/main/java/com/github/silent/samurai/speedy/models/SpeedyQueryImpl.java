@@ -13,7 +13,10 @@ import com.github.silent.samurai.speedy.parser.ConditionFactory;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter

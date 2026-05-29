@@ -107,17 +107,20 @@ VALUES ('1', '1', 100.00, 0.00, 0.00, 0.00, 'No notes', '2023-04-28', '2022-04-3
        ('3', '2', 50.00, 10.00, -5.00, 45.00, '15% discount for loyal customers', '2023-04-30', '2022-04-30 10:00:00',
         'admin', NULL,
         NULL),
-       ('4', '3', 0.00, 5.00, 0.00, 95.00, 'Early payment discount of 5%', '2022-04-30 10:00:00', '2022-04-30 10:00:00', 'susan',
+       ('4', '3', 0.00, 5.00, 0.00, 95.00, 'Early payment discount of 5%', '2022-04-30 10:00:00', '2022-04-30 10:00:00',
+        'susan',
         NULL, NULL);
 
 
 INSERT INTO companies (id, status, name, address, email, phone, details_top, extra, currency, invoice_no, created_at,
                        updated_at, deleted_at)
-VALUES ('1', 'DRAFT', 'ABC Company', '123 Main St, Anytown USA', 'info@abccompany.com', '+1 555-1234', 'ABC Company Invoice',
+VALUES ('1', 'DRAFT', 'ABC Company', '123 Main St, Anytown USA', 'info@abccompany.com', '+1 555-1234',
+        'ABC Company Invoice',
         'Some extra details', 'USD', 1000, '2022-04-30 10:00:00', '2022-04-30 10:00:00', NULL),
-       ('2','DRAFT', 'XYZ Corporation', '456 High St, Anytown USA', 'info@xyzcorp.com', '+1 555-5678', 'XYZ Corp Invoice',
+       ('2', 'DRAFT', 'XYZ Corporation', '456 High St, Anytown USA', 'info@xyzcorp.com', '+1 555-5678',
+        'XYZ Corp Invoice',
         'Some other details', 'EUR', 2000, '2022-04-30 10:00:00', '2022-04-30 10:00:00', NULL),
-       ('3', 'DRAFT','PQR Inc.', '789 Elm St, Anytown USA', 'info@pqrinc.com', '+1 555-9012', 'PQR Inc. Invoice',
+       ('3', 'DRAFT', 'PQR Inc.', '789 Elm St, Anytown USA', 'info@pqrinc.com', '+1 555-9012', 'PQR Inc. Invoice',
         'Some more details', 'CAD', 3000, '2022-04-30 10:00:00', '2022-04-30 10:00:00', NULL);
 
 
@@ -150,25 +153,25 @@ VALUES ('1', 'United States', 'USD', 'US Dollar', 'U$', NOW()),
        ('14', 'Singapore', 'SGD', 'Singapore Dollar', 'S$', NOW());
 
 INSERT INTO exchange_rates (id, base_currency_id, foreign_currency_id, exchange_rate, inv_exchange_rate, created_at)
-VALUES ('1', '1', '2', 0.85, 1.18, NOW()),  -- USD to GBP
-       ('2', '1', '3', 1.25, 0.80, NOW()),  -- USD to CAD
-       ('3', '1', '4', 1.35, 0.74, NOW()),  -- USD to AUD
-       ('4', '1', '5', 110.50, 0.009, NOW()), -- USD to JPY
-       ('5', '1', '6', 75.25, 0.013, NOW()),  -- USD to INR
-       ('6', '2', '1', 1.18, 0.85, NOW()),  -- GBP to USD
-       ('7', '2', '3', 1.47, 0.68, NOW()),  -- GBP to CAD
-       ('8', '2', '4', 1.59, 0.63, NOW()),  -- GBP to AUD
-       ('9', '3', '1', 0.80, 1.25, NOW()),  -- CAD to USD
-       ('10', '3', '2', 0.68, 1.47, NOW()), -- CAD to GBP
-       ('11', '4', '1', 0.74, 1.35, NOW()), -- AUD to USD
-       ('12', '4', '2', 0.63, 1.59, NOW()), -- AUD to GBP
-       ('13', '5', '1', 0.009, 110.50, NOW()), -- JPY to USD
-       ('14', '6', '1', 0.013, 75.25, NOW()),  -- INR to USD
-       ('15', '7', '1', 0.15, 6.67, NOW()),   -- CNY to USD
-       ('16', '8', '1', 0.014, 71.43, NOW()), -- RUB to USD
+VALUES ('1', '1', '2', 0.85, 1.18, NOW()),        -- USD to GBP
+       ('2', '1', '3', 1.25, 0.80, NOW()),        -- USD to CAD
+       ('3', '1', '4', 1.35, 0.74, NOW()),        -- USD to AUD
+       ('4', '1', '5', 110.50, 0.009, NOW()),     -- USD to JPY
+       ('5', '1', '6', 75.25, 0.013, NOW()),      -- USD to INR
+       ('6', '2', '1', 1.18, 0.85, NOW()),        -- GBP to USD
+       ('7', '2', '3', 1.47, 0.68, NOW()),        -- GBP to CAD
+       ('8', '2', '4', 1.59, 0.63, NOW()),        -- GBP to AUD
+       ('9', '3', '1', 0.80, 1.25, NOW()),        -- CAD to USD
+       ('10', '3', '2', 0.68, 1.47, NOW()),       -- CAD to GBP
+       ('11', '4', '1', 0.74, 1.35, NOW()),       -- AUD to USD
+       ('12', '4', '2', 0.63, 1.59, NOW()),       -- AUD to GBP
+       ('13', '5', '1', 0.009, 110.50, NOW()),    -- JPY to USD
+       ('14', '6', '1', 0.013, 75.25, NOW()),     -- INR to USD
+       ('15', '7', '1', 0.15, 6.67, NOW()),       -- CNY to USD
+       ('16', '8', '1', 0.014, 71.43, NOW()),     -- RUB to USD
        ('17', '9', '1', 0.00075, 1333.33, NOW()), -- KRW to USD
-       ('18', '10', '1', 0.05, 20.00, NOW()), -- MXN to USD
-       ('19', '11', '1', 0.20, 5.00, NOW()),  -- BRL to USD
+       ('18', '10', '1', 0.05, 20.00, NOW()),     -- MXN to USD
+       ('19', '11', '1', 0.20, 5.00, NOW()),      -- BRL to USD
        ('20', '12', '1', 0.055, 18.18, NOW()); -- ZAR to USD
 
 INSERT INTO value_test_table (id, local_date_time, local_date, local_time, instant_time, zoned_date_time, boolean_value,

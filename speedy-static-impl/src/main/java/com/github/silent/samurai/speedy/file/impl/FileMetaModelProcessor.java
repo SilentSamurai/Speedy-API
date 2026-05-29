@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.ResourceUtils;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class FileMetaModelProcessor implements MetaModelProcessor {
 

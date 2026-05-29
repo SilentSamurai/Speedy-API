@@ -3,6 +3,7 @@
 ## Executive Summary
 
 Full redesign of `speedy-java-client` to fix fundamental issues:
+
 - **Broken client-server contract** (`asCount()` doesn't work, `totalPageCount` is never sent)
 - **Generic `<T>` complexity** leaks transport concerns into user-facing API
 - **No error handling** — raw `HttpClientErrorException` leaks to users
@@ -146,7 +147,8 @@ speedy-java-client/
 </dependencies>
 ```
 
-**Key change:** `speedy-commons` dependency is **removed**. The client should not depend on server internals. Only Jackson is needed.
+**Key change:** `speedy-commons` dependency is **removed**. The client should not depend on server internals. Only
+Jackson is needed.
 
 ---
 
@@ -164,41 +166,50 @@ public class Speedy {
     /**
      * Minimal construction with JDK HttpClient.
      */
-    public static Speedy connect(String baseUrl) { ... }
+    public static Speedy connect(String baseUrl) { ...}
 
     /**
      * Full builder for advanced configuration.
      */
-    public static Builder builder() { ... }
+    public static Builder builder() { ...}
 
     public static class Builder {
-        public Builder baseUrl(String url) { ... }
-        public Builder transport(SpeedyTransport transport) { ... }
-        public Builder interceptor(SpeedyInterceptor interceptor) { ... }
-        public Builder objectMapper(ObjectMapper mapper) { ... }
-        public Builder apiPath(String path) { ... }  // default: "/speedy/v1/"
-        public Speedy build() { ... }
+        public Builder baseUrl(String url) { ...}
+
+        public Builder transport(SpeedyTransport transport) { ...}
+
+        public Builder interceptor(SpeedyInterceptor interceptor) { ...}
+
+        public Builder objectMapper(ObjectMapper mapper) { ...}
+
+        public Builder apiPath(String path) { ...}  // default: "/speedy/v1/"
+
+        public Speedy build() { ...}
     }
 
     // ─── CRUD Operations ────────────────────────────────────────────
 
-    public CreateBuilder create(String entity) { ... }
-    public GetBuilder get(String entity) { ... }
-    public UpdateBuilder update(String entity) { ... }
-    public DeleteBuilder delete(String entity) { ... }
+    public CreateBuilder create(String entity) { ...}
+
+    public GetBuilder get(String entity) { ...}
+
+    public UpdateBuilder update(String entity) { ...}
+
+    public DeleteBuilder delete(String entity) { ...}
 
     // ─── Query ──────────────────────────────────────────────────────
 
-    public QueryBuilder query(String entity) { ... }
+    public QueryBuilder query(String entity) { ...}
 
     // ─── Bulk Operations ────────────────────────────────────────────
 
-    public SpeedyResult createMany(String entity, List<ObjectNode> entities) { ... }
-    public SpeedyResult deleteMany(String entity, List<ObjectNode> pks) { ... }
+    public SpeedyResult createMany(String entity, List<ObjectNode> entities) { ...}
+
+    public SpeedyResult deleteMany(String entity, List<ObjectNode> pks) { ...}
 
     // ─── Metadata ───────────────────────────────────────────────────
 
-    public JsonNode metadata() { ... }
+    public JsonNode metadata() { ...}
 }
 ```
 
@@ -512,65 +523,83 @@ import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 // ─── Setup (once) ───────────────────────────────────────────────────
 
 Speedy speedy = Speedy.builder()
-    .baseUrl("http://localhost:8080")
-    .interceptor(req -> req.withHeader("Authorization", "Bearer " + jwt))
-    .interceptor(req -> req.withHeader("X-Tenant-Id", tenantId))
-    .build();
+        .baseUrl("http://localhost:8080")
+        .interceptor(req -> req.withHeader("Authorization", "Bearer " + jwt))
+        .interceptor(req -> req.withHeader("X-Tenant-Id", tenantId))
+        .build();
 
 // ─── Create ─────────────────────────────────────────────────────────
 
 User created = speedy.create("User")
-    .field("name", "Alice")
-    .field("email", "alice@example.com")
-    .field("address.city", "Seattle")       // dot-notation for nested/FK
-    .execute()
-    .first(User.class);
+        .field("name", "Alice")
+        .field("email", "alice@example.com")
+        .field("address.city", "Seattle")       // dot-notation for nested/FK
+        .execute()
+        .first(User.class);
 
-System.out.println("Created user: " + created.getId());
+System.out.
+
+println("Created user: "+created.getId());
 
 // ─── Get by PK ──────────────────────────────────────────────────────
 
 User user = speedy.get("User")
-    .key("id", created.getId())
-    .execute()
-    .first(User.class);
+        .key("id", created.getId())
+        .execute()
+        .first(User.class);
 
 // ─── Update ─────────────────────────────────────────────────────────
 
-speedy.update("User")
-    .key("id", user.getId())
-    .field("name", "Bob")
-    .field("address.city", "Portland")
-    .execute();
+speedy.
+
+update("User")
+    .
+
+key("id",user.getId())
+        .
+
+field("name","Bob")
+    .
+
+field("address.city","Portland")
+    .
+
+execute();
 
 // ─── Delete ─────────────────────────────────────────────────────────
 
-speedy.delete("User")
-    .key("id", user.getId())
-    .execute();
+speedy.
+
+delete("User")
+    .
+
+key("id",user.getId())
+        .
+
+execute();
 
 // ─── Query ──────────────────────────────────────────────────────────
 
 List<User> activeAdults = speedy.query("User")
-    .where(
-        and(
-            condition("active", eq(true)),
-            condition("age", gte(18))
+        .where(
+                and(
+                        condition("active", eq(true)),
+                        condition("age", gte(18))
+                )
         )
-    )
-    .orderByAsc("name")
-    .pageSize(20)
-    .pageNo(0)
-    .expand("profile", "permissions")
-    .select("id", "name", "email", "age")
-    .execute()
-    .list(User.class);
+        .orderByAsc("name")
+        .pageSize(20)
+        .pageNo(0)
+        .expand("profile", "permissions")
+        .select("id", "name", "email", "age")
+        .execute()
+        .list(User.class);
 
 // ─── Count ──────────────────────────────────────────────────────────
 
 long totalActive = speedy.query("User")
-    .where(condition("active", eq(true)))
-    .count();
+        .where(condition("active", eq(true)))
+        .count();
 
 // ─── Metadata ───────────────────────────────────────────────────────
 
@@ -717,11 +746,11 @@ Speedy speedy = Speedy.builder()
 
 ```java
 Speedy speedy = Speedy.builder()
-    .baseUrl("http://localhost:8080")
-    .interceptor(req -> req.withHeader("Authorization", "Bearer " + tokenProvider.getToken()))
-    .interceptor(req -> req.withHeader("X-Tenant-Id", TenantContext.current()))
-    .interceptor(req -> req.withHeader("X-Correlation-Id", UUID.randomUUID().toString()))
-    .build();
+        .baseUrl("http://localhost:8080")
+        .interceptor(req -> req.withHeader("Authorization", "Bearer " + tokenProvider.getToken()))
+        .interceptor(req -> req.withHeader("X-Tenant-Id", TenantContext.current()))
+        .interceptor(req -> req.withHeader("X-Correlation-Id", UUID.randomUUID().toString()))
+        .build();
 ```
 
 ---
@@ -855,8 +884,8 @@ class PathBuilder {
             Map.Entry<String, JsonNode> entry = fields.next();
             if (sb.length() > 1) sb.append("&");
             sb.append(URLEncoder.encode(entry.getKey(), UTF_8))
-              .append("=")
-              .append(URLEncoder.encode(entry.getValue().asText(), UTF_8));
+                    .append("=")
+                    .append(URLEncoder.encode(entry.getValue().asText(), UTF_8));
         }
         return sb.toString();
     }
@@ -916,8 +945,8 @@ public class JdkHttpTransport implements SpeedyTransport {
 
     public JdkHttpTransport() {
         this.httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(30))
-            .build();
+                .connectTimeout(Duration.ofSeconds(30))
+                .build();
     }
 
     public JdkHttpTransport(HttpClient httpClient) {
@@ -927,26 +956,26 @@ public class JdkHttpTransport implements SpeedyTransport {
     @Override
     public SpeedyRawResponse send(SpeedyRequest request) throws IOException {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
-            .uri(URI.create(request.url()))
-            .timeout(Duration.ofSeconds(60));
+                .uri(URI.create(request.url()))
+                .timeout(Duration.ofSeconds(60));
 
         // Set headers
         request.headers().forEach((name, values) ->
-            values.forEach(v -> builder.header(name, v)));
+                values.forEach(v -> builder.header(name, v)));
         builder.header("Content-Type", "application/json");
         builder.header("Accept", "application/json");
 
         // Set method + body
         HttpRequest.BodyPublisher bodyPublisher = request.body() != null
-            ? HttpRequest.BodyPublishers.ofString(request.body())
-            : HttpRequest.BodyPublishers.noBody();
+                ? HttpRequest.BodyPublishers.ofString(request.body())
+                : HttpRequest.BodyPublishers.noBody();
 
         builder.method(request.method(), bodyPublisher);
 
         try {
             HttpResponse<String> response = httpClient.send(
-                builder.build(),
-                HttpResponse.BodyHandlers.ofString()
+                    builder.build(),
+                    HttpResponse.BodyHandlers.ofString()
             );
 
             Map<String, List<String>> responseHeaders = response.headers().map();
@@ -988,28 +1017,28 @@ public class RestTemplateTransport implements SpeedyTransport {
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
         HttpEntity<String> entity = request.body() != null
-            ? new HttpEntity<>(request.body(), headers)
-            : new HttpEntity<>(headers);
+                ? new HttpEntity<>(request.body(), headers)
+                : new HttpEntity<>(headers);
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(
-                request.url(),
-                HttpMethod.valueOf(request.method()),
-                entity,
-                String.class
+                    request.url(),
+                    HttpMethod.valueOf(request.method()),
+                    entity,
+                    String.class
             );
 
             return new SpeedyRawResponse(
-                response.getStatusCode().value(),
-                response.getHeaders(),
-                response.getBody()
+                    response.getStatusCode().value(),
+                    response.getHeaders(),
+                    response.getBody()
             );
         } catch (HttpStatusCodeException e) {
             // Don't let RestTemplate throw — we handle status codes ourselves
             return new SpeedyRawResponse(
-                e.getStatusCode().value(),
-                e.getResponseHeaders() != null ? e.getResponseHeaders() : new HttpHeaders(),
-                e.getResponseBodyAsString()
+                    e.getStatusCode().value(),
+                    e.getResponseHeaders() != null ? e.getResponseHeaders() : new HttpHeaders(),
+                    e.getResponseBodyAsString()
             );
         }
     }
@@ -1117,44 +1146,58 @@ assertThrows(HttpClientErrorException.BadRequest.class, () -> {
 ```java
 // Setup
 Speedy speedy = Speedy.builder()
-    .baseUrl("http://localhost:8080")
-    .transport(new RestTemplateTransport(restTemplate))
-    .build();
+                .baseUrl("http://localhost:8080")
+                .transport(new RestTemplateTransport(restTemplate))
+                .build();
 
 // Create
 String id = speedy.create("Category")
-    .field("name", "cat-1")
-    .execute()
-    .first(Category.class)
-    .getId();
+        .field("name", "cat-1")
+        .execute()
+        .first(Category.class)
+        .getId();
 
 // Query
 List<Category> categories = speedy.query("Category")
-    .where(condition("name", eq("cat-1")))
-    .execute()
-    .list(Category.class);
+        .where(condition("name", eq("cat-1")))
+        .execute()
+        .list(Category.class);
 
 // Count (WORKS correctly)
 long count = speedy.query("Category")
-    .where(condition("active", eq(true)))
-    .count();
+        .where(condition("active", eq(true)))
+        .count();
 
 // Error handling
 SpeedyBadRequestException ex = assertThrows(SpeedyBadRequestException.class, () -> {
     speedy.create("User").field("email", "invalid").execute();
 });
-assertEquals(400, ex.statusCode());
-assertTrue(ex.serverMessage().contains("email"));
+
+assertEquals(400,ex.statusCode());
+
+assertTrue(ex.serverMessage().
+
+contains("email"));
 
 // ─── Test mode ──────────────────────────────────────────────────────
 
 SpeedyTest test = SpeedyTest.mockMvc(mockMvc);
 
-test.create("User")
-    .field("email", "invalid")
-    .execute()
-    .expectBadRequest()
-    .expectJsonPath("$.message", containsString("email"));
+test.
+
+create("User")
+    .
+
+field("email","invalid")
+    .
+
+execute()
+    .
+
+expectBadRequest()
+    .
+
+expectJsonPath("$.message",containsString("email"));
 ```
 
 ---
@@ -1163,13 +1206,14 @@ test.create("User")
 
 ### Why remove the `<T>` generic?
 
-| Generic `<T>` | Problems |
-|---|---|
-| `SpeedyClient<SpeedyResponse>` | Leaks transport type into all builder signatures |
-| `SpeedyClient<ResultActions>` | Incompatible return types — can't call `.asList()` on `ResultActions` |
-| `SpeedyCreateRequestBuilder<T>` | Generic noise provides zero type safety for the entity being created |
+| Generic `<T>`                   | Problems                                                              |
+|---------------------------------|-----------------------------------------------------------------------|
+| `SpeedyClient<SpeedyResponse>`  | Leaks transport type into all builder signatures                      |
+| `SpeedyClient<ResultActions>`   | Incompatible return types — can't call `.asList()` on `ResultActions` |
+| `SpeedyCreateRequestBuilder<T>` | Generic noise provides zero type safety for the entity being created  |
 
-The generic exists solely to return different types from `execute()`. The new design solves this by having **two separate classes** (`Speedy` and `SpeedyTest`) that share builders internally but present different result types.
+The generic exists solely to return different types from `execute()`. The new design solves this by having **two
+separate classes** (`Speedy` and `SpeedyTest`) that share builders internally but present different result types.
 
 ### Why unchecked exceptions?
 
@@ -1180,12 +1224,12 @@ The generic exists solely to return different types from `execute()`. The new de
 
 ### Why separate `Speedy` and `SpeedyTest`?
 
-| Concern | `Speedy` | `SpeedyTest` |
-|---|---|---|
-| Return type | `SpeedyResult` (typed data) | `SpeedyTestResult` (assertions) |
-| Error handling | Throws `SpeedyException` | Returns result with status for assertion |
-| Use case | Production code, service-to-service | Integration tests |
-| Response parsing | Full deserialization | Optionally lazy — assert first, parse later |
+| Concern          | `Speedy`                            | `SpeedyTest`                                |
+|------------------|-------------------------------------|---------------------------------------------|
+| Return type      | `SpeedyResult` (typed data)         | `SpeedyTestResult` (assertions)             |
+| Error handling   | Throws `SpeedyException`            | Returns result with status for assertion    |
+| Use case         | Production code, service-to-service | Integration tests                           |
+| Response parsing | Full deserialization                | Optionally lazy — assert first, parse later |
 
 Trying to unify these into one class with `<T>` creates friction for both use cases.
 
@@ -1199,7 +1243,8 @@ Trying to unify these into one class with `<T>` creates friction for both use ca
 
 ### Why single ObjectMapper?
 
-Current code has 3 instances with different configs. The redesign uses ONE mapper configured at `Speedy.builder().objectMapper(...)` time, defaulting to:
+Current code has 3 instances with different configs. The redesign uses ONE mapper configured at
+`Speedy.builder().objectMapper(...)` time, defaulting to:
 
 ```java
 ObjectMapper mapper = new ObjectMapper();
@@ -1214,21 +1259,21 @@ This single instance flows through all builders, response parsing, and field con
 
 ## Implementation Order
 
-| Phase | Task | Effort |
-|---|---|---|
-| **1** | Transport layer (`SpeedyTransport`, `SpeedyRequest`, `SpeedyRawResponse`, `JdkHttpTransport`) | 1 day |
-| **2** | Exception hierarchy (`SpeedyException` + subclasses) | 0.5 day |
-| **3** | `ResponseParser` (central parsing logic) | 0.5 day |
-| **4** | Internal utilities (`PathBuilder`, `FieldUtil`) | 0.5 day |
-| **5** | `SpeedyResult` (typed response wrapper) | 0.5 day |
-| **6** | `SpeedyQuery` (port operators, keep DSL unchanged) | 0.5 day |
-| **7** | Builders (`CreateBuilder`, `GetBuilder`, `UpdateBuilder`, `DeleteBuilder`, `QueryBuilder`) | 1 day |
-| **8** | `Speedy` class (main facade + builder) | 0.5 day |
-| **9** | `RestTemplateTransport` (Spring adapter) | 0.5 day |
-| **10** | `SpeedyTest` + `SpeedyTestResult` + `MockMvcTransport` | 1 day |
-| **11** | Unit tests for all new classes | 1.5 days |
-| **12** | Migrate integration tests in `speedy-test-app` | 1 day |
-| **13** | Remove old code, update POM, update README | 0.5 day |
+| Phase  | Task                                                                                          | Effort   |
+|--------|-----------------------------------------------------------------------------------------------|----------|
+| **1**  | Transport layer (`SpeedyTransport`, `SpeedyRequest`, `SpeedyRawResponse`, `JdkHttpTransport`) | 1 day    |
+| **2**  | Exception hierarchy (`SpeedyException` + subclasses)                                          | 0.5 day  |
+| **3**  | `ResponseParser` (central parsing logic)                                                      | 0.5 day  |
+| **4**  | Internal utilities (`PathBuilder`, `FieldUtil`)                                               | 0.5 day  |
+| **5**  | `SpeedyResult` (typed response wrapper)                                                       | 0.5 day  |
+| **6**  | `SpeedyQuery` (port operators, keep DSL unchanged)                                            | 0.5 day  |
+| **7**  | Builders (`CreateBuilder`, `GetBuilder`, `UpdateBuilder`, `DeleteBuilder`, `QueryBuilder`)    | 1 day    |
+| **8**  | `Speedy` class (main facade + builder)                                                        | 0.5 day  |
+| **9**  | `RestTemplateTransport` (Spring adapter)                                                      | 0.5 day  |
+| **10** | `SpeedyTest` + `SpeedyTestResult` + `MockMvcTransport`                                        | 1 day    |
+| **11** | Unit tests for all new classes                                                                | 1.5 days |
+| **12** | Migrate integration tests in `speedy-test-app`                                                | 1 day    |
+| **13** | Remove old code, update POM, update README                                                    | 0.5 day  |
 
 **Total estimated effort: ~9 days**
 
@@ -1246,12 +1291,12 @@ This single instance flows through all builders, response parsing, and field con
 
 ## Comparison With Industry SDKs
 
-| Feature | Speedy (New) | Stripe Java | AWS SDK v2 | Supabase-js |
-|---|---|---|---|---|
-| Typed responses | `first(T.class)` | Auto-typed | `response.items()` | `.returns<T>()` |
-| Error hierarchy | 3 exception classes | `StripeException` tree | `AwsServiceException` | Error objects |
-| Interceptors | `SpeedyInterceptor` | `RequestOptions` | `ExecutionInterceptor` | Headers config |
-| Transport SPI | `SpeedyTransport` | `HttpClient` | `SdkHttpClient` | Fetch adapter |
-| Builder pattern | Fluent | Params objects | Request builders | Method chaining |
-| Framework deps | None (Jackson only) | None (Gson) | None | None |
-| Test support | `SpeedyTest` | Mock server | Mock client | Mock fetch |
+| Feature         | Speedy (New)        | Stripe Java            | AWS SDK v2             | Supabase-js     |
+|-----------------|---------------------|------------------------|------------------------|-----------------|
+| Typed responses | `first(T.class)`    | Auto-typed             | `response.items()`     | `.returns<T>()` |
+| Error hierarchy | 3 exception classes | `StripeException` tree | `AwsServiceException`  | Error objects   |
+| Interceptors    | `SpeedyInterceptor` | `RequestOptions`       | `ExecutionInterceptor` | Headers config  |
+| Transport SPI   | `SpeedyTransport`   | `HttpClient`           | `SdkHttpClient`        | Fetch adapter   |
+| Builder pattern | Fluent              | Params objects         | Request builders       | Method chaining |
+| Framework deps  | None (Jackson only) | None (Gson)            | None                   | None            |
+| Test support    | `SpeedyTest`        | Mock server            | Mock client            | Mock fetch      |

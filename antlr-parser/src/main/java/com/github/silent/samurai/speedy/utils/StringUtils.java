@@ -11,8 +11,7 @@ public class StringUtils {
             if (c == '\'' || c == '"') {
                 if (previous == null) {
                     previous = c;
-                }
-                else if (previous == c && p != '\\') {
+                } else if (previous == c && p != '\\') {
                     previous = null;
                 }
             }

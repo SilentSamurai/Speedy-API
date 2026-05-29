@@ -3,15 +3,11 @@ package com.github.silent.samurai.speedy.client.internal;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
-import com.github.silent.samurai.speedy.client.exception.SpeedyBadRequestException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyDeserializationException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyNotFoundException;
-import com.github.silent.samurai.speedy.client.exception.SpeedyServerException;
+import com.github.silent.samurai.speedy.client.exception.*;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 

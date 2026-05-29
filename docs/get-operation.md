@@ -348,7 +348,8 @@ This executes a lightweight `COUNT(*)` query without fetching or serializing any
 GET requests respect configurable page size limits:
 
 - **No `$pageSize` specified** — the server uses its configured `defaultPageSize`, clamped to `maxPageSize`.
-- **`$pageSize` specified** — the value must not exceed `maxPageSize`. If it does, the server responds with **400 Bad Request**.
+- **`$pageSize` specified** — the value must not exceed `maxPageSize`. If it does, the server responds with **400 Bad
+  Request**.
 
 ```http
 GET /speedy/v1/User ? $pageSize=5000
@@ -362,4 +363,5 @@ GET /speedy/v1/User ? $pageSize=5000
 }
 ```
 
-Configure the limits by implementing `ISpeedyConfiguration.maxPageSize()` and `ISpeedyConfiguration.defaultPageSize()` in your application.
+Configure the limits by implementing `ISpeedyConfiguration.maxPageSize()` and `ISpeedyConfiguration.defaultPageSize()`
+in your application.

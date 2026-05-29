@@ -24,9 +24,10 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.ne;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -493,7 +494,7 @@ public class SpeedyV2ExpandTest {
                 .andReturn();
 
         int status = mvcResult.getResponse().getStatus();
-        
+
         if (status == 200) {
             // If it returns 200, verify that the invalid expansion is not present
             mvc.perform(mockHttpServletRequest)
@@ -533,7 +534,7 @@ public class SpeedyV2ExpandTest {
                 .andReturn();
 
         int status = mvcResult.getResponse().getStatus();
-        
+
         if (status == 200) {
             // If it returns 200, verify that the invalid nested expansion is not present
             mvc.perform(mockHttpServletRequest)
@@ -573,7 +574,7 @@ public class SpeedyV2ExpandTest {
                 .andReturn();
 
         int status = mvcResult.getResponse().getStatus();
-        
+
         if (status == 200) {
             // If it returns 200, verify that the circular expansion is handled properly
             mvc.perform(mockHttpServletRequest)
@@ -581,17 +582,17 @@ public class SpeedyV2ExpandTest {
                     .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].category").exists())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].category.products").doesNotExist());
-            
+
             // The circular reference should either be limited in depth or handled gracefully
             // We don't expect infinite nesting, so we check that it doesn't go too deep
             String responseBody = mvcResult.getResponse().getContentAsString();
             LOGGER.info("Circular reference response: {}", responseBody);
-            
+
         } else {
             // If it returns 400 or 500, that's also acceptable for circular references
             int responseStatus = mvcResult.getResponse().getStatus();
-            assertTrue(responseStatus >= 400 && responseStatus < 600, 
-                "Expected 4xx or 5xx status code, but got: " + responseStatus);
+            assertTrue(responseStatus >= 400 && responseStatus < 600,
+                    "Expected 4xx or 5xx status code, but got: " + responseStatus);
         }
     }
 
@@ -686,22 +687,22 @@ public class SpeedyV2ExpandTest {
                 .andReturn();
 
         int status = mvcResult.getResponse().getStatus();
-        
+
         if (status == 200) {
             // If it returns 200, verify that the deep expansion is handled properly
             mvc.perform(mockHttpServletRequest)
                     .andExpect(status().isOk())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                     .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].category").exists());
-            
+
             String responseBody = mvcResult.getResponse().getContentAsString();
             LOGGER.info("Deep expansion response: {}", responseBody);
-            
+
         } else {
             // If it returns 400 or 500, that's also acceptable for very deep expansions
             int responseStatus = mvcResult.getResponse().getStatus();
-            assertTrue(responseStatus >= 400 && responseStatus < 600, 
-                "Expected 4xx or 5xx status code, but got: " + responseStatus);
+            assertTrue(responseStatus >= 400 && responseStatus < 600,
+                    "Expected 4xx or 5xx status code, but got: " + responseStatus);
         }
     }
 
@@ -729,10 +730,10 @@ public class SpeedyV2ExpandTest {
         MvcResult result = mvc.perform(mockHttpServletRequest)
                 .andDo(MockMvcResultHandlers.print())
                 .andReturn();
-        
+
         int responseStatus = result.getResponse().getStatus();
-        assertTrue(responseStatus == 400 || responseStatus == 404, 
-            "Expected 400 or 404 status code, but got: " + responseStatus);
+        assertTrue(responseStatus == 400 || responseStatus == 404,
+                "Expected 400 or 404 status code, but got: " + responseStatus);
     }
 
 }

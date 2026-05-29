@@ -2,13 +2,13 @@ package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.util.Set;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -46,7 +46,7 @@ class ExpansionPathTrackerTest {
         void shouldCreateTrackerWithValidExpansions() {
             Set<String> expansions = Set.of("Product", "Product.Category");
             ExpansionPathTracker tracker = new ExpansionPathTracker(expansions);
-            
+
             assertNotNull(tracker);
             assertEquals(2, tracker.getRequestedExpansions().size());
             assertTrue(tracker.getRequestedExpansions().contains("Product"));
@@ -66,7 +66,7 @@ class ExpansionPathTrackerTest {
         void shouldHandleEmptyExpansionsSet() {
             Set<String> expansions = Set.of();
             ExpansionPathTracker tracker = new ExpansionPathTracker(expansions);
-            
+
             assertNotNull(tracker);
             assertTrue(tracker.getRequestedExpansions().isEmpty());
         }
@@ -291,9 +291,9 @@ class ExpansionPathTrackerTest {
         @DisplayName("Should handle complex nested expansion scenarios")
         void shouldHandleComplexNestedExpansionScenarios() {
             Set<String> expansions = Set.of(
-                "Product.Category",
-                "Product.Category.Supplier",
-                "Product.Category.Supplier.Address"
+                    "Product.Category",
+                    "Product.Category.Supplier",
+                    "Product.Category.Supplier.Address"
             );
             ExpansionPathTracker tracker = new ExpansionPathTracker(expansions);
 
@@ -356,10 +356,10 @@ class ExpansionPathTrackerTest {
         @DisplayName("Should handle multiple expansion paths correctly")
         void shouldHandleMultipleExpansionPathsCorrectly() {
             Set<String> expansions = Set.of(
-                "Product",
-                "Product.Category",
-                "Product.Category.Supplier",
-                "Supplier.Address"
+                    "Product",
+                    "Product.Category",
+                    "Product.Category.Supplier",
+                    "Supplier.Address"
             );
             ExpansionPathTracker tracker = new ExpansionPathTracker(expansions);
 

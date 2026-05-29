@@ -7,10 +7,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** Validates that the supplied date/datetime is strictly in the past. */
+/**
+ * Validates that the supplied date/datetime is strictly in the past.
+ */
 public class PastRule implements FieldRule {
     private final String message;
-    public PastRule(String msg) { this.message = msg == null || msg.isBlank() ? "must be in the past" : msg; }
+
+    public PastRule(String msg) {
+        this.message = msg == null || msg.isBlank() ? "must be in the past" : msg;
+    }
 
     @Override
     public void validate(FieldMetadata fm, SpeedyValue val, List<String> errors) {
