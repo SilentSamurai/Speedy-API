@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,6 +35,13 @@ public class SpeedyV2PagingTest {
 
     @Autowired
     private MockMvc mvc;
+
+    private SpeedyTest speedyClient;
+
+    @BeforeEach
+    void setUp() {
+        speedyClient = SpeedyTest.mockMvc(mvc);
+    }
 
     /*
        {
@@ -187,6 +196,15 @@ public class SpeedyV2PagingTest {
                         )))
                 .andReturn();
 
+    }
+
+    @Test
+    void page_size_exceeds_max_returns_400() throws Exception {
+        speedyClient.query("Category")
+                .pageNo(0)
+                .pageSize(5000)
+                .execute()
+                .expectBadRequest();
     }
 
 

@@ -320,6 +320,72 @@ Content-Type: application/json
 | Multiple Paths | `["Product.Category", "Procurement.Product"]` | Different expansion paths |
 | Selective Expansion | `["Product", "Product.Category"]` | Only expand specific paths |
 
+### Select Fields
+
+Limit the response to specific fields using the `$select` parameter — works with or without `$expand`.
+
+**Usage without `$expand`:**
+
+```http
+POST /speedy/v1/User/$query
+Accept: application/json;charset=UTF-8
+Content-Type: application/json;charset=UTF-8
+
+{
+    "$from": "User",
+    "$select": ["id", "name", "email", "type"],
+    "$where": {
+        "active": true
+    }
+}
+```
+
+**Response**
+
+```json
+{
+    "payload": [
+        {
+            "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab",
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "type": "ADMIN"
+        }
+    ],
+    "pageIndex": 0,
+    "pageSize": 10,
+    "totalPageCount": 1
+}
+```
+
+Only the fields listed in `$select` are included in the response payload. All other entity fields are omitted.
+
+**Count queries with `$select`:**
+
+Set `$select` to an array containing the string `"$count"` to execute a lightweight `COUNT(*)` query:
+
+```http
+POST /speedy/v1/User/$query
+Accept: application/json;charset=UTF-8
+Content-Type: application/json;charset=UTF-8
+
+{
+    "$from": "User",
+    "$select": ["$count"],
+    "$where": {
+        "active": true
+    }
+}
+```
+
+**Response**
+
+```json
+{
+    "count": 42
+}
+```
+
 ### Query Using Logical Operator - AND and OR
 
 Combine multiple conditions using logical operators.
@@ -423,6 +489,23 @@ Content-Type: application/json
     "pageSize": 2
 }
 ```
+
+#### Page Size Limits
+
+The server enforces a configurable maximum page size:
+
+- **No `$page` specified** — the server uses its configured `defaultPageSize`, clamped to `maxPageSize`.
+- **`$page.$size` exceeds `maxPageSize`** — the server responds with **400 Bad Request**.
+
+```json
+{
+    "status": 400,
+    "message": "Bad Request: page size exceeds maximum allowed",
+    "timestamp": "..."
+}
+```
+
+Configure the limits via `ISpeedyConfiguration.maxPageSize()` and `ISpeedyConfiguration.defaultPageSize()`.
 
 ### Order By Query
 

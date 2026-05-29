@@ -25,4 +25,6 @@ public interface SpeedyQuery {
 
     Set<String> getSelect();
 
+    boolean isCountRequest();
+
 }

@@ -658,5 +658,93 @@ class SpeedyUriContextTest {
 
     }
 
+    @Test
+    void page_size_exceeds_max_throws_400() {
+        SpeedyUriContext parser = SpeedyUriContext.builder()
+                .metaModel(metaModel)
+                .requestURI(UriRoot + "/ValueTest?$pageSize=100&$pageNo=0")
+                .maxPageSize(10)
+                .defaultPageSize(20)
+                .build();
+
+        BadRequestException ex = assertThrows(BadRequestException.class, parser::parse);
+        assertTrue(ex.getMessage().contains("exceeds maximum allowed page size"));
+    }
+
+    @Test
+    void default_page_size_is_clamped_to_max() throws Exception {
+        SpeedyUriContext parser = SpeedyUriContext.builder()
+                .metaModel(metaModel)
+                .requestURI(UriRoot + "/ValueTest")
+                .maxPageSize(5)
+                .defaultPageSize(20)
+                .build();
+
+        SpeedyQuery speedyQuery = parser.parse();
+        assertEquals(5, speedyQuery.getPageInfo().getPageSize());
+    }
+
+    @Test
+    void select_url_param() throws Exception {
+        SpeedyUriContext parser = SpeedyUriContext.builder()
+                .metaModel(metaModel)
+                .requestURI(UriRoot + "/ValueTest?$select=id,name")
+                .maxPageSize(100)
+                .defaultPageSize(20)
+                .build();
+
+        SpeedyQuery speedyQuery = parser.parse();
+        assertTrue(speedyQuery.getSelect().contains("id"));
+        assertTrue(speedyQuery.getSelect().contains("name"));
+        assertEquals(2, speedyQuery.getSelect().size());
+    }
+
+    @Test
+    void select_url_param_single_field() throws Exception {
+        SpeedyUriContext parser = SpeedyUriContext.builder()
+                .metaModel(metaModel)
+                .requestURI(UriRoot + "/ValueTest?$select=id")
+                .maxPageSize(100)
+                .defaultPageSize(20)
+                .build();
+
+        SpeedyQuery speedyQuery = parser.parse();
+        assertTrue(speedyQuery.getSelect().contains("id"));
+        assertEquals(1, speedyQuery.getSelect().size());
+    }
+
+    @Test
+    void select_url_param_count() throws Exception {
+        SpeedyUriContext parser = SpeedyUriContext.builder()
+                .metaModel(metaModel)
+                .requestURI(UriRoot + "/ValueTest?$select=$count")
+                .maxPageSize(100)
+                .defaultPageSize(20)
+                .build();
+
+        SpeedyQuery speedyQuery = parser.parse();
+        assertTrue(speedyQuery.isCountRequest());
+        assertFalse(speedyQuery.getSelect().contains("$count"));
+    }
+
+    @Test
+    void select_url_param_mixed_count_and_fields_should_throw() {
+        SpeedyUriContext parser = SpeedyUriContext.builder()
+                .metaModel(metaModel)
+                .requestURI(UriRoot + "/ValueTest?$select=$count,id,name")
+                .maxPageSize(100)
+                .defaultPageSize(20)
+                .build();
+
+        assertThrows(BadRequestException.class, parser::parse);
+    }
+
+    @Test
+    void default_page_size_unset_uses_20() throws Exception {
+        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest");
+        SpeedyQuery speedyQuery = parser.parse();
+        assertEquals(20, speedyQuery.getPageInfo().getPageSize());
+    }
+
 
 }

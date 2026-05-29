@@ -377,4 +377,84 @@ class BuildQueryFromJsonTests {
 
         assertThrows(NotFoundException.class, () -> new JsonQueryParser(metaModel, rootNode).build());
     }
+
+    @Test
+    void query_with_select_array() throws Exception {
+        String json = """
+                {
+                    "$from": "Product",
+                    "$select": ["id", "name"]
+                }
+                """;
+
+        when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
+
+        rootNode = objectMapper.readTree(json);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+
+        SpeedyQuery query = builder.build();
+        assertNotNull(query);
+        assertTrue(query.getSelect().contains("id"));
+        assertTrue(query.getSelect().contains("name"));
+        assertEquals(2, query.getSelect().size());
+    }
+
+    @Test
+    void query_with_select_single_field() throws Exception {
+        String json = """
+                {
+                    "$from": "Product",
+                    "$select": "id"
+                }
+                """;
+
+        when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
+
+        rootNode = objectMapper.readTree(json);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+
+        SpeedyQuery query = builder.build();
+        assertNotNull(query);
+        assertTrue(query.getSelect().contains("id"));
+    }
+
+    @Test
+    void query_with_page_size_exceeding_max_throws() throws Exception {
+        String json = """
+                {
+                    "$from": "Product",
+                    "$page": {
+                        "$size": 50
+                    }
+                }
+                """;
+
+        when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
+
+        rootNode = objectMapper.readTree(json);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder.setMaxPageSize(10);
+
+        assertThrows(BadRequestException.class, builder::build);
+    }
+
+    @Test
+    void query_with_default_page_size_clamped_to_max() throws Exception {
+        String json = """
+                {
+                    "$from": "Product"
+                }
+                """;
+
+        when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
+
+        rootNode = objectMapper.readTree(json);
+        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder.setMaxPageSize(5);
+        builder.setDefaultPageSize(20);
+
+        SpeedyQuery query = builder.build();
+        assertNotNull(query);
+        assertEquals(5, query.getPageInfo().getPageSize());
+    }
 }

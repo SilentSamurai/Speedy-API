@@ -29,6 +29,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private PageInfoImpl pageInfo = new PageInfoImpl();
     private Set<String> expand = new HashSet<>();
     private Set<String> select = new HashSet<>();
+    private boolean countRequest = false;
     private String responseFormat;
     private int maxPageSize = Integer.MAX_VALUE;
 
@@ -57,7 +58,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
 
     public void addPageSize(int pageSize) {
         if (pageSize > 0) {
-            pageInfo.setPageSize(Math.min(pageSize, maxPageSize));
+            pageInfo.setPageSize(pageSize);
         }
     }
 

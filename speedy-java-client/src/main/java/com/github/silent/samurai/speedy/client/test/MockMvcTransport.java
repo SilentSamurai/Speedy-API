@@ -10,6 +10,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ public class MockMvcTransport implements SpeedyTransport {
             return new SpeedyRawResponse(
                     response.getStatus(),
                     headers,
-                    response.getContentAsString());
+                    response.getContentAsString(StandardCharsets.UTF_8));
 
         } catch (RuntimeException | IOException e) {
             throw e;
@@ -73,9 +74,10 @@ public class MockMvcTransport implements SpeedyTransport {
             default -> throw new IllegalArgumentException("Unsupported HTTP method: " + method);
         }
 
-        builder.header("Accept", "application/json");
+        builder.characterEncoding("UTF-8");
+        builder.header("Accept", "application/json;charset=UTF-8");
         if (request.body() != null && !request.body().isEmpty()) {
-            builder.contentType("application/json");
+            builder.contentType("application/json;charset=UTF-8");
             builder.content(request.body());
         }
 

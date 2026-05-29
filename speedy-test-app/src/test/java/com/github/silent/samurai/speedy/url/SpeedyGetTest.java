@@ -2,9 +2,11 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,13 @@ class SpeedyGetTest {
 
     @Autowired
     private MockMvc mvc;
+
+    private SpeedyTest speedyClient;
+
+    @BeforeEach
+    void setUp() {
+        speedyClient = SpeedyTest.mockMvc(mvc);
+    }
 
     @Test
     void getViaPrimaryKey() throws Exception {
@@ -180,5 +189,45 @@ class SpeedyGetTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
                 .andReturn();
+    }
+
+    @Test
+    void getWithSelectFields() throws Exception {
+        speedyClient.get("Product")
+                .select("id", "name", "description")
+                .execute()
+                .expectOk()
+                .expectJsonPathExists("$.payload")
+                .expectJsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThan(0)))
+                .expectJsonPathExists("$.payload[*].id")
+                .expectJsonPathExists("$.payload[*].name")
+                .expectJsonPathExists("$.payload[*].description");
+    }
+
+    @Test
+    void getWithSelectCount() throws Exception {
+        speedyClient.get("Product")
+                .select("$count")
+                .execute()
+                .expectOk()
+                .expectJsonPathExists("$.count")
+                .expectJsonPath("$.count", Matchers.isA(Number.class));
+    }
+
+    @Test
+    void getSelectMixedCountAndFieldsShouldBadRequest() {
+        speedyClient.get("Product")
+                .select("$count", "id")
+                .execute()
+                .expectBadRequest();
+    }
+
+    @Test
+    void getWithPageSizeExceedsMax() throws Exception {
+        speedyClient.get("Product")
+                .pageSize(5000)
+                .pageNo(0)
+                .execute()
+                .expectBadRequest();
     }
 }
