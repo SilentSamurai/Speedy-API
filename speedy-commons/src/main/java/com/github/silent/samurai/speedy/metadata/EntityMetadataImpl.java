@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
@@ -20,9 +21,8 @@ public class EntityMetadataImpl implements EntityMetadata {
     boolean hasCompositeKey = false;
     private String name;
     private String dbTableName;
-    // Set from @SpeedySensitive on the entity class; cascaded to fields
-    // that lack their own @SpeedySensitive annotation during build.
     private boolean isSensitive;
+    private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     private Set<ActionType> actionType;
     private Map<String, FieldMetadata> fieldMap;
 
@@ -90,6 +90,11 @@ public class EntityMetadataImpl implements EntityMetadata {
         return fieldMap.values().stream()
                 .filter(FieldMetadata::isAssociation)
                 .collect(Collectors.toUnmodifiableSet());
+    }
+
+    @Override
+    public TransactionMode getTransactionMode() {
+        return transactionMode;
     }
 
     @Override

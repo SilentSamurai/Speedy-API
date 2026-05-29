@@ -24,4 +24,10 @@ public interface QueryProcessor {
 
     ConversionFactory getConversionProcessor();
 
+    default void runInTransaction(Runnable block) {
+        throw new UnsupportedOperationException(
+            "runInTransaction not supported by this QueryProcessor"
+        );
+    }
+
 }

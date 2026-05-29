@@ -68,15 +68,12 @@ public class SpeedyTest {
         return new TestCreateBuilder(entity);
     }
 
+    public TestBulkCreateBuilder createMany(String entity) {
+        return new TestBulkCreateBuilder(entity);
+    }
+
     public SpeedyTestResult createMany(String entity, List<ObjectNode> entities) {
-        String url = paths.createPath(entity);
-        ArrayNode array = mapper.createArrayNode();
-        entities.forEach(array::add);
-        try {
-            return execute(url, "POST", mapper.writeValueAsString(array));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize createMany body", e);
-        }
+        return new TestBulkCreateBuilder(entity).items(entities).execute();
     }
 
     public TestGetBuilder get(String entity) {
@@ -91,15 +88,12 @@ public class SpeedyTest {
         return new TestDeleteBuilder(entity);
     }
 
+    public TestBulkDeleteBuilder deleteMany(String entity) {
+        return new TestBulkDeleteBuilder(entity);
+    }
+
     public SpeedyTestResult deleteMany(String entity, List<ObjectNode> pks) {
-        String url = paths.deletePath(entity);
-        ArrayNode array = mapper.createArrayNode();
-        pks.forEach(array::add);
-        try {
-            return execute(url, "DELETE", mapper.writeValueAsString(array));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize deleteMany body", e);
-        }
+        return new TestBulkDeleteBuilder(entity).items(pks).execute();
     }
 
     public TestQueryBuilder query(String entity) {
@@ -312,6 +306,74 @@ public class SpeedyTest {
                 throw new RuntimeException("Failed to serialize", e);
             }
             return SpeedyTest.this.execute(url, "POST", jsonBody);
+        }
+    }
+
+    public class TestBulkCreateBuilder {
+        private final String entity;
+        private List<ObjectNode> items;
+        private String transactionMode;
+
+        TestBulkCreateBuilder(String entity) {
+            this.entity = entity;
+        }
+
+        public TestBulkCreateBuilder items(List<ObjectNode> items) {
+            this.items = items;
+            return this;
+        }
+
+        public TestBulkCreateBuilder transaction(String mode) {
+            this.transactionMode = mode;
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.createPath(entity);
+            if (transactionMode != null && !transactionMode.isEmpty()) {
+                url += "?$transaction=" + transactionMode;
+            }
+            ArrayNode array = mapper.createArrayNode();
+            items.forEach(array::add);
+            try {
+                return SpeedyTest.this.execute(url, "POST", mapper.writeValueAsString(array));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize createMany body", e);
+            }
+        }
+    }
+
+    public class TestBulkDeleteBuilder {
+        private final String entity;
+        private List<ObjectNode> items;
+        private String transactionMode;
+
+        TestBulkDeleteBuilder(String entity) {
+            this.entity = entity;
+        }
+
+        public TestBulkDeleteBuilder items(List<ObjectNode> items) {
+            this.items = items;
+            return this;
+        }
+
+        public TestBulkDeleteBuilder transaction(String mode) {
+            this.transactionMode = mode;
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.deletePath(entity);
+            if (transactionMode != null && !transactionMode.isEmpty()) {
+                url += "?$transaction=" + transactionMode;
+            }
+            ArrayNode array = mapper.createArrayNode();
+            items.forEach(array::add);
+            try {
+                return SpeedyTest.this.execute(url, "DELETE", mapper.writeValueAsString(array));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize deleteMany body", e);
+            }
         }
     }
 }

@@ -1,11 +1,14 @@
 package com.github.silent.samurai.speedy.handlers;
 
+import com.github.silent.samurai.speedy.enums.TransactionMode;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 /// # EntityCaptureHandler
 /// 
@@ -74,7 +77,56 @@ public class EntityCaptureHandler implements Handler {
         context.setEntityMetadata(resourceMetadata);
         context.setSpeedyQuery(uriSpeedyQuery);
 
-        // Continue processing with the next handler
+        TransactionMode effectiveMode = resolveTransactionMode(
+            context.getHttpServletRequest(),
+            resourceMetadata
+        );
+        context.setTransactionMode(effectiveMode);
+        context.setActionSuffix(parser.getActionSuffix());
+
         next.process(context);
+    }
+
+    private TransactionMode resolveTransactionMode(
+            HttpServletRequest request,
+            EntityMetadata entityMetadata) throws SpeedyHttpException {
+        String override = request.getParameter("$transaction");
+        TransactionMode entityDefault = entityMetadata.getTransactionMode();
+
+        if (override == null || override.isBlank()) {
+            return entityDefault;
+        }
+
+        TransactionMode requested = parseTransactionMode(override);
+        return validateOverride(requested, entityDefault, entityMetadata.getName());
+    }
+
+    private TransactionMode parseTransactionMode(String value) throws SpeedyHttpException {
+        try {
+            return TransactionMode.valueOf(value.trim().toUpperCase().replace('-', '_'));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException(
+                "Invalid $transaction value: '" + value +
+                "'. Allowed values: per-entity, batch"
+            );
+        }
+    }
+
+    private TransactionMode validateOverride(
+            TransactionMode requested,
+            TransactionMode entityDefault,
+            String entityName) throws SpeedyHttpException {
+        if (entityDefault == TransactionMode.PER_ENTITY
+                && requested == TransactionMode.BATCH) {
+            return requested;
+        }
+        if (requested == entityDefault) {
+            return requested;
+        }
+        throw new BadRequestException(
+            "Entity '" + entityName + "' is configured with transaction mode 'batch'. " +
+            "Cannot downgrade to 'per-entity' per request. " +
+            "Remove the $transaction parameter or use 'batch'."
+        );
     }
 }

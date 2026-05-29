@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.request;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
@@ -36,6 +37,8 @@ public class RequestContext {
     String requestUri;
     HttpMethod httpMethod;
     JsonNode body;
+    TransactionMode transactionMode;
+    String actionSuffix;
 
     public RequestContext(ISpeedyConfiguration configuration, SpeedyDialect dialect, MetaModel metaModel, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, EventProcessor eventProcessor, ValidationProcessor validationProcessor) {
         this.configuration = configuration;

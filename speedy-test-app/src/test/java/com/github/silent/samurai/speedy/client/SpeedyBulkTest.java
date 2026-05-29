@@ -7,7 +7,6 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
 import com.github.silent.samurai.speedy.entity.Supplier;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -16,16 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -48,7 +43,7 @@ class SpeedyBulkTest {
 
     @Test
     void bulkDelete_removesMultipleSuppliers() throws Exception {
-        String phoneBase = "+98-" + Long.toString(System.nanoTime()).substring(4);
+        String phoneBase = "+98-" + Long.toString(System.nanoTime()).substring(9);
         String phone1 = phoneBase + "1";
         String phone2 = phoneBase + "2";
 
@@ -69,20 +64,14 @@ class SpeedyBulkTest {
         String id1 = r1.jsonPath("$.payload[0].id");
         String id2 = r2.jsonPath("$.payload[0].id");
 
-        ArrayNode deleteBody = mapper.createArrayNode();
         ObjectNode pk1 = mapper.createObjectNode();
         pk1.put("id", id1);
-        deleteBody.add(pk1);
         ObjectNode pk2 = mapper.createObjectNode();
         pk2.put("id", id2);
-        deleteBody.add(pk2);
 
-        mockMvc.perform(delete(SpeedyConstant.URI + "/Supplier/$delete")
-                        .content(mapper.writeValueAsString(deleteBody))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.payload").isArray())
-                .andExpect(jsonPath("$.payload[*]", hasSize(2)));
+        client.deleteMany("Supplier").items(List.of(pk1, pk2)).execute()
+                .expectOk()
+                .expectJsonPath("$.payload[*]", hasSize(2));
 
         EntityManager em = entityManagerFactory.createEntityManager();
         List<Supplier> suppliers = em.createQuery(
@@ -97,32 +86,26 @@ class SpeedyBulkTest {
 
     @Test
     void bulkCreate_createsMultipleSuppliers() throws Exception {
-        String phoneBase = "+97-" + Long.toString(System.nanoTime()).substring(4);
+        String phoneBase = "+97-" + Long.toString(System.nanoTime()).substring(9);
         String name1 = "BulkCreate 1 " + System.nanoTime();
         String name2 = "BulkCreate 2 " + System.nanoTime();
         String phone1 = phoneBase + "1";
         String phone2 = phoneBase + "2";
 
-        ArrayNode createBody = mapper.createArrayNode();
         ObjectNode entity1 = mapper.createObjectNode();
         entity1.put("name", name1);
         entity1.put("phoneNo", phone1);
         entity1.put("altPhoneNo", phone1);
-        createBody.add(entity1);
 
         ObjectNode entity2 = mapper.createObjectNode();
         entity2.put("name", name2);
         entity2.put("phoneNo", phone2);
         entity2.put("altPhoneNo", phone2);
-        createBody.add(entity2);
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Supplier/$create")
-                        .content(mapper.writeValueAsString(createBody))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.payload").isArray())
-                .andExpect(jsonPath("$.payload[*]", hasSize(2)))
-                .andExpect(jsonPath("$.payload[*].id", not(empty())));
+        client.createMany("Supplier").items(List.of(entity1, entity2)).execute()
+                .expectOk()
+                .expectJsonPath("$.payload[*]", hasSize(2))
+                .expectJsonPath("$.payload[*].id", not(empty()));
 
         EntityManager em = entityManagerFactory.createEntityManager();
         List<Supplier> created = em.createQuery(
@@ -139,11 +122,7 @@ class SpeedyBulkTest {
 
     @Test
     void emptyCreateArray_shouldSucceed() throws Exception {
-        ArrayNode emptyBody = mapper.createArrayNode();
-
-        mockMvc.perform(post(SpeedyConstant.URI + "/Supplier/$create")
-                        .content(mapper.writeValueAsString(emptyBody))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful());
+        client.createMany("Supplier", List.of())
+                .expectOk();
     }
 }

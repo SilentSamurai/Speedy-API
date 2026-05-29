@@ -117,9 +117,10 @@ public class EventProcessor {
                     SpeedyDeserializer.updateEntity(value, entity);
                 }
             } catch (InvocationTargetException ite) {
-                // Surface the underlying exception if it's a SpeedyHttpException so HTTP status can propagate
-                if (ite.getCause() instanceof SpeedyHttpException she) {
-                    throw she;
+                // Surface the underlying exception so the exception mapper can resolve the correct handler
+                Throwable cause = ite.getCause();
+                if (cause instanceof Exception e) {
+                    throw e;
                 }
                 throw ite;
             }

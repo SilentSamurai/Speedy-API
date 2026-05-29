@@ -40,6 +40,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     private final Converter converter = new JooqConversionImpl();
 
     private final DSLContext dslContext;
+    private final ThreadLocal<DSLContext> transactionalDslContext = new ThreadLocal<>();
 
     public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect) {
         this.dataSource = dataSource;
@@ -47,10 +48,16 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
         this.dslContext = DSL.using(dataSource, dialect, settings);
     }
 
+    private DSLContext getDsl() {
+        DSLContext tx = transactionalDslContext.get();
+        return tx != null ? tx : dslContext;
+    }
+
     @Override
     public BigInteger executeCount(SpeedyQuery query) throws SpeedyHttpException {
         try {
-            JooqQueryBuilder qb = new JooqQueryBuilder(query, dslContext, converter);
+            DSLContext dsl = getDsl();
+            JooqQueryBuilder qb = new JooqQueryBuilder(query, dsl, converter);
             return qb.executeCountQuery();
         } catch (Exception e) {
             throw new BadRequestException("Invalid Request", e);
@@ -60,10 +67,11 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public List<SpeedyEntity> executeMany(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
-            JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dslContext, converter);
+            DSLContext dsl = getDsl();
+            JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dsl, converter);
             Result<? extends Record> result = qb.executeQuery();
             List<SpeedyEntity> list = new ArrayList<>();
-            JooqSqlToSpeedy jooqSQLToSpeedy = new JooqSqlToSpeedy(dslContext, converter);
+            JooqSqlToSpeedy jooqSQLToSpeedy = new JooqSqlToSpeedy(dsl, converter);
             for (Record record : result) {
                 SpeedyEntity speedyEntity = jooqSQLToSpeedy
                         .fromRecord(record, speedyQuery.getFrom(), speedyQuery.getExpand());
@@ -78,7 +86,8 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
-            Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect, converter)
+            DSLContext dsl = getDsl();
+            Result<Record> result = new JooqPkQueryBuilder(dsl, dialect, converter)
                     .findByPrimaryKey(entityKey);
             return !result.isEmpty();
         } catch (Exception e) {
@@ -89,16 +98,17 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public List<SpeedyEntity> create(List<SpeedyEntity> entities) throws SpeedyHttpException {
         try {
-            SpeedyInsertQuery speedyInsertQuery = new SpeedyInsertQuery(dslContext, dialect, converter);
+            DSLContext dsl = getDsl();
+            SpeedyInsertQuery speedyInsertQuery = new SpeedyInsertQuery(dsl, dialect, converter);
             speedyInsertQuery.insertEntity(entities);
 
             List<SpeedyEntity> entityList = new ArrayList<>(entities.size());
 
             for (SpeedyEntity entity : entities) {
                 SpeedyEntityKey entityKey = SpeedyEntityUtil.toEntityKey(entity);
-                Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect, converter).findByPrimaryKey(entityKey);
+                Result<Record> result = new JooqPkQueryBuilder(dsl, dialect, converter).findByPrimaryKey(entityKey);
 
-                SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dslContext, converter)
+                SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dsl, converter)
                         .fromRecord(result.get(0), entity.getMetadata(), Set.of());
 
                 entityList.add(speedyEntity);
@@ -113,12 +123,13 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
         try {
-            SpeedyUpdateQuery speedyUpdateQuery = new SpeedyUpdateQuery(dslContext, dialect, converter);
+            DSLContext dsl = getDsl();
+            SpeedyUpdateQuery speedyUpdateQuery = new SpeedyUpdateQuery(dsl, dialect, converter);
             speedyUpdateQuery.updateEntity(pk, entity);
 
-            Result<Record> result = new JooqPkQueryBuilder(dslContext, dialect, converter).findByPrimaryKey(pk);
+            Result<Record> result = new JooqPkQueryBuilder(dsl, dialect, converter).findByPrimaryKey(pk);
 
-            return new JooqSqlToSpeedy(dslContext, converter)
+            return new JooqSqlToSpeedy(dsl, converter)
                     .fromRecord(result.get(0), entity.getMetadata(), Set.of());
         } catch (Exception e) {
             throw new BadRequestException("Invalid Request", e);
@@ -128,18 +139,19 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public List<SpeedyEntity> delete(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
         try {
+            DSLContext dsl = getDsl();
             List<SpeedyEntity> entities = new ArrayList<>(pks.size());
-            JooqPkQueryBuilder jooqPkQueryBuilder = new JooqPkQueryBuilder(dslContext, dialect, converter);
+            JooqPkQueryBuilder jooqPkQueryBuilder = new JooqPkQueryBuilder(dsl, dialect, converter);
 
             for (SpeedyEntityKey pk : pks) {
                 Result<Record> result = jooqPkQueryBuilder.findByPrimaryKey(pk);
-                SpeedyEntity entity = new JooqSqlToSpeedy(dslContext, converter)
+                SpeedyEntity entity = new JooqSqlToSpeedy(dsl, converter)
                         .fromRecord(result.get(0), pk.getMetadata(), Set.of());
 
                 entities.add(entity);
             }
 
-            new SpeedyDeleteQuery(dslContext, dialect, converter).deleteEntity(pks);
+            new SpeedyDeleteQuery(dsl, dialect, converter).deleteEntity(pks);
             return entities;
         } catch (Exception e) {
             throw new BadRequestException("Invalid Request", e);
@@ -149,5 +161,17 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     @Override
     public JooqConversionImpl getConversionProcessor() {
         return new JooqConversionImpl();
+    }
+
+    @Override
+    public void runInTransaction(Runnable block) {
+        dslContext.transaction(conf -> {
+            transactionalDslContext.set(conf.dsl());
+            try {
+                block.run();
+            } finally {
+                transactionalDslContext.remove();
+            }
+        });
     }
 }

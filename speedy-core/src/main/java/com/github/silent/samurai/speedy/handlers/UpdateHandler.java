@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
@@ -19,10 +20,8 @@ import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class UpdateHandler implements Handler {
@@ -37,21 +36,14 @@ public class UpdateHandler implements Handler {
     public void process(RequestContext context) throws SpeedyHttpException {
         EntityMetadata entityMetadata = context.getEntityMetadata();
 
-        Optional<SpeedyEntity> savedEntity;
-        try {
-            UpdateParams up = parse(context);
-            savedEntity = runBatch(context, up);
-        } catch (SpeedyHttpException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new InternalServerError("Update failed", e);
-        }
+        UpdateParams up = parse(context);
+        SpeedyEntity savedEntity = updateInTransaction(context, up);
 
-        if (savedEntity.isEmpty()) {
+        if (savedEntity == null) {
             throw new NotFoundException();
         }
 
-        List<SpeedyEntity> speedyEntities = List.of(savedEntity.get());
+        List<SpeedyEntity> speedyEntities = List.of(savedEntity);
         context.setResponseSerializer(new JSONSerializerV2(
                 speedyEntities,
                 0,
@@ -83,26 +75,43 @@ public class UpdateHandler implements Handler {
         return new UpdateParams(pk, entity);
     }
 
-    private Optional<SpeedyEntity> runBatch(RequestContext context, UpdateParams updateParams) throws Exception {
+    private SpeedyEntity updateInTransaction(RequestContext context, UpdateParams updateParams)
+            throws SpeedyHttpException {
         EntityMetadata entityMetadata = context.getEntityMetadata();
         EventProcessor eventProcessor = context.getEventProcessor();
+        QueryProcessor queryProcessor = context.getQueryProcessor();
+        TransactionMode mode = context.getTransactionMode();
+        String entityLabel = entityMetadata.getName();
         SpeedyEntity entity = updateParams.entity;
         SpeedyEntityKey pk = updateParams.pk;
 
-        SpeedyEntity savedEntity = null;
-        if (entity != null) {
-            // trigger b4 validate
-            eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
+        try {
+            SpeedyEntity[] result = new SpeedyEntity[1];
+            queryProcessor.runInTransaction(() -> {
+                try {
+                    eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
+                    context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entity);
+                    result[0] = queryProcessor.update(pk, entity);
+                    eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
 
-            context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entity);
-
-            QueryProcessor queryProcessor = context.getQueryProcessor();
-            savedEntity = queryProcessor.update(pk, entity);
-
-            eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
+            log.info("Update committed: entity={}, mode={}, pk={}",
+                entityLabel, mode, pk);
+            return result[0];
+        } catch (Exception e) {
+            log.info("Update rolled back: entity={}, mode={}, pk={}",
+                entityLabel, mode, pk);
+            if (e instanceof SpeedyHttpException) {
+                throw (SpeedyHttpException) e;
+            }
+            if (e.getCause() instanceof SpeedyHttpException) {
+                throw (SpeedyHttpException) e.getCause();
+            }
+            throw new InternalServerError("Update failed", e);
         }
-
-        return Optional.ofNullable(savedEntity);
     }
 
     static class UpdateParams {

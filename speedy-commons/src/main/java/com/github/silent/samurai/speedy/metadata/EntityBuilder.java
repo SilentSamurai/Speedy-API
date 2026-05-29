@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.metadata;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import lombok.Getter;
 
@@ -16,9 +17,8 @@ public class EntityBuilder {
     Map<String, FieldBuilder> fieldMap = new HashMap<>();
     private String name;
     private String dbTableName;
-    // Default sensitivity for all fields on this entity. Fields without
-    // their own @SpeedySensitive inherit this value during build.
     private boolean isSensitive = false;
+    private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
 
     public Iterable<FieldBuilder> fields() {
         return fieldMap.values();
@@ -54,6 +54,11 @@ public class EntityBuilder {
 
     public EntityBuilder sensitive(boolean isSensitive) {
         this.isSensitive = isSensitive;
+        return this;
+    }
+
+    public EntityBuilder transactionMode(TransactionMode transactionMode) {
+        this.transactionMode = transactionMode;
         return this;
     }
 
@@ -114,6 +119,7 @@ public class EntityBuilder {
         }
 
         EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, isSensitive, actionTypes, fieldMetadataMap);
+        entityMetadata.setTransactionMode(transactionMode);
 
         for (FieldMetadata fieldMetadata : fieldMetadataMap.values()) {
             FieldMetadataImpl fieldMetadataImpl = (FieldMetadataImpl) fieldMetadata;

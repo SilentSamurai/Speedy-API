@@ -12,6 +12,7 @@
 * [PUT Operations](put-operation.md)
 * [DELETE Operations](delete-operation.md)
 * [Speedy Events](speedy-events.md)
+* [Exception Handling](exception-handling.md)
 * [Speedy Jpa](speedy-jpa.md)
 * [Java Client](java-client.md)
   * [SpeedyClient](speedy-client.md)

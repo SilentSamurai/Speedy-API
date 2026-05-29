@@ -7,9 +7,10 @@ import com.github.silent.samurai.speedy.entity.CompanyStatus;
 import com.github.silent.samurai.speedy.entity.User;
 import com.github.silent.samurai.speedy.entity.Product;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.TestBusinessException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
@@ -27,6 +29,8 @@ public class EntityEvents implements ISpeedyEventHandler {
     public static final AtomicInteger POST_DELETE_COUNTER = new AtomicInteger(0);
     public static final ConcurrentHashMap<String, Boolean> POST_INSERT_CATEGORIES = new ConcurrentHashMap<>();
     public static volatile boolean POST_UPDATE_FIRED = false;
+    public static final AtomicBoolean throwOnNextCurrencyInsert = new AtomicBoolean(false);
+    public static final AtomicBoolean throwOnNextCurrencyDelete = new AtomicBoolean(false);
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -36,9 +40,19 @@ public class EntityEvents implements ISpeedyEventHandler {
     @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.POST_INSERT, SpeedyEventType.PRE_INSERT})
     public void categoryPostInsertEvent(SpeedyEntity category) throws Exception {
         LOGGER.info("Category Post Insert Event");
+        boolean shouldThrowRuntime = false;
         try {
+            if ("generic-error-trigger".equalsIgnoreCase(category.get("name").asText())) {
+                shouldThrowRuntime = true;
+                throw new RuntimeException("Simulated unexpected runtime error");
+            }
             String id = category.get("id").asText();
             POST_INSERT_CATEGORIES.put(id, true);
+        } catch (RuntimeException e) {
+            if (shouldThrowRuntime) {
+                throw e;
+            }
+            LOGGER.warn("Failed to extract category ID from SpeedyEntity in POST_INSERT handler", e);
         } catch (Exception e) {
             LOGGER.warn("Failed to extract category ID from SpeedyEntity in POST_INSERT handler", e);
         }
@@ -67,6 +81,15 @@ public class EntityEvents implements ISpeedyEventHandler {
         LOGGER.info("Product Insert Event");
         if ("invalid-trigger".equalsIgnoreCase(product.getName())) {
             throw new BadRequestException("Product name 'invalid-trigger' is not allowed");
+        }
+        if ("throw-business-exception".equalsIgnoreCase(product.getName())) {
+            throw new TestBusinessException("Test business error for exception mapping");
+        }
+        if ("throw-illegal-state".equalsIgnoreCase(product.getName())) {
+            throw new IllegalStateException("Test illegal state for no-param handler");
+        }
+        if ("throw-nested-exception".equalsIgnoreCase(product.getName())) {
+            throw new RuntimeException("Outer wrapper", new IllegalStateException("Inner cause"));
         }
         product.setDescription("created-by-event");
         if (product.getCategory() != null && product.getCategory().getId() != null && !product.getCategory().getId().isBlank()) {
@@ -116,5 +139,19 @@ public class EntityEvents implements ISpeedyEventHandler {
     public void companyPostDelete(Company company) throws Exception {
         LOGGER.info("Company Post Delete Event");
         POST_DELETE_COUNTER.incrementAndGet();
+    }
+
+    @SpeedyEvent(value = "Currency", eventType = {SpeedyEventType.POST_INSERT})
+    public void currencyPostInsert(SpeedyEntity currency) {
+        if (throwOnNextCurrencyInsert.getAndSet(false)) {
+            throw new RuntimeException("Simulated POST_INSERT failure for testing");
+        }
+    }
+
+    @SpeedyEvent(value = "Currency", eventType = {SpeedyEventType.PRE_DELETE})
+    public void currencyPreDelete(SpeedyEntity currency) {
+        if (throwOnNextCurrencyDelete.getAndSet(false)) {
+            throw new RuntimeException("Simulated PRE_DELETE failure for testing");
+        }
     }
 }

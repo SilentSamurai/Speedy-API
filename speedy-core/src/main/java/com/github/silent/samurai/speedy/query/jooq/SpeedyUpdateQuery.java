@@ -102,9 +102,7 @@ public class SpeedyUpdateQuery {
         LOGGER.info("Update query: {}", returnQuery);
     }
 
-    public void updateEntity(SpeedyEntityKey pk, SpeedyEntity entity) {
-        dslContext.transaction(conf -> {
-            updateEntityInTransaction(conf.dsl(), pk, entity);
-        });
+    public void updateEntity(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
+        updateEntityInTransaction(dslContext, pk, entity);
     }
 }

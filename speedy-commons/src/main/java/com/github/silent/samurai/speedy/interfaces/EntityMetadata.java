@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
 import java.util.Optional;
@@ -75,5 +76,9 @@ public interface EntityMetadata {
 
     default boolean isDeleteAllowed() {
         return getActionType().contains(ActionType.DELETE) || getActionType().contains(ActionType.ALL);
+    }
+
+    default TransactionMode getTransactionMode() {
+        return TransactionMode.PER_ENTITY;
     }
 }

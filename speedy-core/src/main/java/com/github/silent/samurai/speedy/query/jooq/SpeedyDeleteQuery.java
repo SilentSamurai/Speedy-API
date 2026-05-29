@@ -52,12 +52,10 @@ public class SpeedyDeleteQuery {
         return true;
     }
 
-    public void deleteEntity(List<SpeedyEntityKey> pks) {
-        dslContext.transaction(conf -> {
-            for (SpeedyEntityKey pk : pks) {
-                deleteEntity(conf.dsl(), pk);
-            }
-        });
+    public void deleteEntity(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
+        for (SpeedyEntityKey pk : pks) {
+            deleteEntity(dslContext, pk);
+        }
     }
 
 }

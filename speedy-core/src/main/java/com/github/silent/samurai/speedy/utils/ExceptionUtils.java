@@ -2,40 +2,14 @@ package com.github.silent.samurai.speedy.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.exceptions.PayloadTooLargeException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import jakarta.persistence.PersistenceException;
 import jakarta.servlet.http.HttpServletResponse;
-import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.exception.DataException;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ExceptionUtils {
-
-    public static Map<String, Integer> exceptionToStatusMap = new HashMap<>();
-
-    static {
-        exceptionToStatusMap.put(NotFoundException.class.getName(), HttpServletResponse.SC_NOT_FOUND);
-        exceptionToStatusMap.put(BadRequestException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
-        exceptionToStatusMap.put(ConstraintViolationException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
-        exceptionToStatusMap.put(DataException.class.getName(), HttpServletResponse.SC_BAD_REQUEST);
-        exceptionToStatusMap.put(PayloadTooLargeException.class.getName(), HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
-
-    }
-
-    public static int getStatusFromException(Exception e) {
-        if (e instanceof PersistenceException && e.getCause() != null) {
-            return exceptionToStatusMap.getOrDefault(e.getCause().getClass().getName(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
-        return exceptionToStatusMap.getOrDefault(e.getClass().getName(), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-    }
 
     public static void writeException(HttpServletResponse response, SpeedyHttpException e) throws IOException {
         response.setStatus(e.getStatus());

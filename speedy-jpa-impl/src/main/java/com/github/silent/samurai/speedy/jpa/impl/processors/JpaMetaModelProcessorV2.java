@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
 import com.github.silent.samurai.speedy.annotations.SpeedyIgnore;
 import com.github.silent.samurai.speedy.annotations.SpeedySensitive;
+import com.github.silent.samurai.speedy.annotations.SpeedyTransaction;
 import com.github.silent.samurai.speedy.annotations.SpeedyType;
 import com.github.silent.samurai.speedy.annotations.validation.*;
 import com.github.silent.samurai.speedy.enums.ActionType;
@@ -41,6 +42,7 @@ import jakarta.persistence.metamodel.Attribute;
 import jakarta.persistence.metamodel.EntityType;
 import jakarta.persistence.metamodel.SingularAttribute;
 import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.Generated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -114,6 +116,10 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (annotation != null) {
             Arrays.stream(annotation.value())
                     .forEach(entity::addActionType);
+        }
+        SpeedyTransaction txAnnotation = entityType.getBindableJavaType().getAnnotation(SpeedyTransaction.class);
+        if (txAnnotation != null) {
+            entity.transactionMode(txAnnotation.value());
         }
         // Entity-level @SpeedySensitive sets the default sensitivity for all fields
         SpeedySensitive speedySensitive = entityType.getBindableJavaType().getAnnotation(SpeedySensitive.class);
@@ -221,6 +227,12 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.updatable(false);
             fieldMetadata.nullable(false);
             fieldMetadata.deserializable(false);
+        }
+
+        Generated hibernateGenerated = AnnotationUtils.getAnnotation(field, Generated.class);
+        if (hibernateGenerated != null) {
+            fieldMetadata.insertable(false);
+            fieldMetadata.updatable(false);
         }
 
         Formula formulaAnnotation = AnnotationUtils.getAnnotation(field, Formula.class);
