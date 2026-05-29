@@ -129,3 +129,56 @@ public class User {
     private Integer loginCount;
 }
 ```
+
+### Authentication & Authorization
+
+Speedy-API is a library — it does **not** enforce authentication or per-user authorization. These responsibilities belong to the consuming application (e.g., Spring Security filters) that run before requests reach `/speedy/v1/**`.
+
+#### Securing Endpoints with Spring Security
+
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/speedy/v1/**")
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(GET, "/speedy/v1/$metadata").permitAll()
+                .anyRequest().authenticated()
+            )
+            .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+    }
+}
+```
+
+Replace `oauth2ResourceServer` with any authentication mechanism your application uses (basic auth, JWT, OAuth2, API keys, etc.).
+
+#### `@SpeedyAction` — Static CRUD Gating
+
+The `@SpeedyAction` annotation provides **static** per-entity and per-field CRUD gating enforced in the `SwitchHandler`:
+
+```java
+@SpeedyAction(ActionType.READ)  // field-level: only GET requests may read this field
+@Column(name = "created_at")
+private LocalDateTime createdAt;
+```
+
+- **Entity-level**: Place `@SpeedyAction` on the entity class to gate the entire entity.
+- **Field-level**: Place it on a field to override or restrict access to that field.
+- `ActionType.READ`, `CREATE`, `UPDATE`, `DELETE`, `ALL` control which HTTP verbs are allowed.
+- This is a **static** check (same rules for all users). Per-user or role-based access control must be implemented in your own middleware.
+
+#### Per-Field & Per-User Access Control
+
+Because Speedy-API runs behind your security layer, you can:
+
+1. Use Spring Security method security (`@PreAuthorize`) on your service layer.
+2. Inject `Authentication` into a custom `ISpeedyEventHandler` or `ISpeedyCustomValidation` to enforce user-specific rules.
+3. Apply field-level filtering in your own serialization layer if needed.
+
+Speedy-API deliberately stays out of auth so you can use whatever security model fits your application.

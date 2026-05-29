@@ -23,8 +23,6 @@ public class FileProcessor {
         });
 
         for (JsonEntity jsonEntity : entityMetadata) {
-            // TODO: capture any validation rule metadata defined in JSON
-            // (no Bean Validation execution)
             processEntityMetadata(jsonEntity, mmb);
         }
     }
@@ -35,15 +33,12 @@ public class FileProcessor {
         eb.hasCompositeKey(jsonEntity.hasCompositeKey);
         eb.dbTableName(jsonEntity.dbTable);
         eb.sensitive(jsonEntity.sensitive);
-//        eb.setKeyType(jsonEntity.keyType);
-
         if (jsonEntity.transactionMode != null && !jsonEntity.transactionMode.isEmpty()) {
             TransactionMode mode = TransactionMode.valueOf(jsonEntity.transactionMode.toUpperCase());
             eb.transactionMode(mode);
         }
 
         for (JsonField jsonField : jsonEntity.fields) {
-            // TODO: capture field-level validation rule metadata from JSON
             processFieldMetadata(jsonField, eb);
         }
     }

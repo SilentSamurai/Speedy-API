@@ -60,18 +60,11 @@ public record MapEntityDeserializer(Map<String, String> entityMap, EntityMetadat
         String propertyName = fieldMetadata.getOutputPropertyName();
         if (fieldsMap.containsKey(propertyName)) {
             if (fieldMetadata.isAssociation()) {
-                // TODO: array of association & association
             } else {
                 value = fromBasicString(fieldMetadata.getValueType(), fieldsMap.get(propertyName));
             }
         }
         return value;
     }
-
-//    private Object createEntityKey(EntityMetadata association, Map<String, String> keyMap) throws Exception {
-//        MapEntityKeyDeserializer deserializer = new MapEntityKeyDeserializer(keyMap, association);
-//        return deserializer.deserialize();
-//    }
-
 
 }

@@ -88,7 +88,6 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
         basePayload.set("payload", jsonElement);
         basePayload.put("pageIndex", pageIndex);
         basePayload.put("pageSize", payload.size());
-//        basePayload.put("totalPageCount", totalPageCount);
 
         HttpServletResponse response = context.getResponse();
         response.setContentType(this.getContentType());

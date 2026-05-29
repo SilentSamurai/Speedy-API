@@ -48,7 +48,6 @@ public class EntityMetadataImpl implements EntityMetadata {
         throw new NotFoundException(name + "." + fieldName);
     }
 
-    // TODO: improve performance
     @Override
     public Set<FieldMetadata> getAllFields() {
         return fieldMap.values().stream()
