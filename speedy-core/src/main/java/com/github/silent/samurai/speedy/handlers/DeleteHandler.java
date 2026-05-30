@@ -116,6 +116,9 @@ public class DeleteHandler implements Handler {
                 } catch (Exception ex) {
                     if (ex instanceof SpeedyHttpRuntimeException re) throw re;
                     if (ex instanceof RuntimeException re) throw re;
+                    if (ex instanceof SpeedyHttpException she) {
+                        throw new SpeedyHttpRuntimeException(she.getStatus(), she);
+                    }
                     throw new SpeedyHttpRuntimeException(500, ex);
                 }
             });
@@ -126,6 +129,9 @@ public class DeleteHandler implements Handler {
             log.info("BATCH delete rolled back: entity={}, count={}", entityLabel, totalCount);
             if (cause instanceof SpeedyHttpException she) {
                 throw she;
+            }
+            if (cause instanceof SpeedyHttpRuntimeException sre) {
+                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
             }
             throw new InternalServerError("Batch delete failed", e);
         }
@@ -161,20 +167,24 @@ public class DeleteHandler implements Handler {
                     } catch (Exception ex) {
                         if (ex instanceof SpeedyHttpRuntimeException re) throw re;
                         if (ex instanceof RuntimeException re) throw re;
+                        if (ex instanceof SpeedyHttpException she) {
+                            throw new SpeedyHttpRuntimeException(she.getStatus(), she);
+                        }
                         throw new SpeedyHttpRuntimeException(500, ex);
                     }
                 });
             } catch (Exception e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
-                // spec FR-006: capture SpeedyHttpException with correct status (e.g. 400)
-                //   for per-entity partial failure reporting; wrap non-Speedy exceptions as 500.
-                //   Fixed missing else — without it the second add always fired, duplicating
-                //   every failure entry (same bug as CreateHandler, see plan.md §T054-T055).
                 if (cause instanceof SpeedyHttpException she) {
                     failed.add(new SpeedyPartialFailure(i, she.getStatus(),
                             she.getMessage(), Instant.now().toString(),
                             key, she));
                     log.info("Entity #{} failed in per-entity transaction", i, she);
+                } else if (cause instanceof SpeedyHttpRuntimeException sre) {
+                    failed.add(new SpeedyPartialFailure(i, sre.getStatus(),
+                            sre.getMessage(), Instant.now().toString(),
+                            key, sre));
+                    log.info("Entity #{} failed in per-entity transaction", i, sre);
                 } else {
                     failed.add(new SpeedyPartialFailure(i, 500,
                             e.getMessage(), Instant.now().toString(),

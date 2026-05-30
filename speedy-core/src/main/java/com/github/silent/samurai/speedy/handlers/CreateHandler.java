@@ -101,14 +101,20 @@ public class CreateHandler implements Handler {
                 } catch (Exception ex) {
                     if (ex instanceof SpeedyHttpRuntimeException re) throw re;
                     if (ex instanceof RuntimeException re) throw re;
+                    if (ex instanceof SpeedyHttpException she) {
+                        throw new SpeedyHttpRuntimeException(she.getStatus(), she);
+                    }
                     throw new SpeedyHttpRuntimeException(500, ex);
                 }
             });
         } catch (Exception e) {
             log.info("BATCH rolled back: entity={}, count={}", entityLabel, totalCount);
-            Throwable cause = e.getCause();
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
             if (cause instanceof SpeedyHttpException she) {
                 throw she;
+            }
+            if (cause instanceof SpeedyHttpRuntimeException sre) {
+                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
             }
             throw new InternalServerError("Batch create failed", e);
         }
@@ -149,21 +155,24 @@ public class CreateHandler implements Handler {
                     } catch (Exception ex) {
                         if (ex instanceof SpeedyHttpRuntimeException re) throw re;
                         if (ex instanceof RuntimeException re) throw re;
+                        if (ex instanceof SpeedyHttpException she) {
+                            throw new SpeedyHttpRuntimeException(she.getStatus(), she);
+                        }
                         throw new SpeedyHttpRuntimeException(500, ex);
                     }
                 });
             } catch (Exception e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
-                // spec FR-006: capture SpeedyHttpException with the correct status (e.g. 400)
-                //   for per-entity partial failure reporting; wrap non-Speedy exceptions as 500.
-                //   Without the else the second adding always fires, duplicating every failure entry.
+                SpeedyEntityKey inputPk = extractInputPk(entity);
                 if (cause instanceof SpeedyHttpException she) {
-                    SpeedyEntityKey inputPk = extractInputPk(entity);
                     failed.add(new SpeedyPartialFailure(i, she.getStatus(),
                             she.getMessage(), Instant.now().toString(), inputPk, she));
                     log.info("Entity #{} failed in per-entity transaction", i, she);
+                } else if (cause instanceof SpeedyHttpRuntimeException sre) {
+                    failed.add(new SpeedyPartialFailure(i, sre.getStatus(),
+                            sre.getMessage(), Instant.now().toString(), inputPk, sre));
+                    log.info("Entity #{} failed in per-entity transaction", i, sre);
                 } else {
-                    SpeedyEntityKey inputPk = extractInputPk(entity);
                     failed.add(new SpeedyPartialFailure(i, 500,
                             e.getMessage(), Instant.now().toString(), inputPk, e));
                     log.info("Entity #{} failed in per-entity transaction", i, e);

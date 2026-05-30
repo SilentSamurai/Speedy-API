@@ -97,6 +97,9 @@ public class UpdateHandler implements Handler {
                 } catch (Exception ex) {
                     if (ex instanceof SpeedyHttpRuntimeException re) throw re;
                     if (ex instanceof RuntimeException re) throw re;
+                    if (ex instanceof SpeedyHttpException she) {
+                        throw new SpeedyHttpRuntimeException(she.getStatus(), she);
+                    }
                     throw new SpeedyHttpRuntimeException(500, ex);
                 }
             });
@@ -107,11 +110,17 @@ public class UpdateHandler implements Handler {
         } catch (Exception e) {
             log.info("Update rolled back: entity={}, mode={}, pk={}",
                     entityLabel, mode, pk);
-            if (e instanceof SpeedyHttpException) {
-                throw (SpeedyHttpException) e;
+            if (e instanceof SpeedyHttpException she) {
+                throw she;
             }
-            if (e.getCause() instanceof SpeedyHttpException) {
-                throw (SpeedyHttpException) e.getCause();
+            if (e instanceof SpeedyHttpRuntimeException sre) {
+                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
+            }
+            if (e.getCause() instanceof SpeedyHttpException she) {
+                throw she;
+            }
+            if (e.getCause() instanceof SpeedyHttpRuntimeException sre) {
+                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
             }
             throw new InternalServerError("Update failed", e);
         }
