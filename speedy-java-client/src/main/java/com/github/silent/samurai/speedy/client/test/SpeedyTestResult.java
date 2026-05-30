@@ -105,6 +105,18 @@ public class SpeedyTestResult {
     }
 
     /**
+     * Asserts a JSONPath expression does NOT exist (field is absent from the response).
+     */
+    public SpeedyTestResult expectJsonPathDoesNotExist(String expression) {
+        try {
+            resultActions.andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(expression).doesNotExist());
+        } catch (Exception e) {
+            throw new AssertionError("JSONPath doesNotExist assertion failed for '" + expression + "': " + e.getMessage(), e);
+        }
+        return this;
+    }
+
+    /**
      * Deserializes all entities as a typed list.
      */
     public <T> List<T> list(Class<T> type) {
