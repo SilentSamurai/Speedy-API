@@ -83,6 +83,8 @@ public class SpeedyConfig implements ISpeedyConfiguration {
 
 ```
 
+> **Note:** The `QueryProcessor` (and its underlying JOOQ `DSLContext`) is cached per unique `DataSource` instance returned by `dataSourcePerReq()`. A new instance is only created when the `DataSource` reference changes — for example when switching tenant databases in a multi-tenant setup. Most single-tenant applications will see exactly one `QueryProcessor` created for the application lifetime.
+
 ### Jpa Entity
 
 Configure Jpa Entity so that speedy can retrieve the resource details

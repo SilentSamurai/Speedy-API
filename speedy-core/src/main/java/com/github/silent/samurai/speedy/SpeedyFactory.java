@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
 public class SpeedyFactory {
@@ -41,6 +42,7 @@ public class SpeedyFactory {
     private final SpeedyDialect dialect;
     private final ISpeedyConfiguration configuration;
     private final long maxRequestBodySize;
+    private final ConcurrentHashMap<DataSource, QueryProcessor> queryProcessorCache = new ConcurrentHashMap<>();
     Handler chain;
 
 
@@ -76,11 +78,6 @@ public class SpeedyFactory {
         this.chain = createHandlerChain();
     }
 
-    private QueryProcessor createQueryProcessor() {
-        DataSource dataSource = speedyConfiguration.dataSourcePerReq();
-        return new JooqQueryProcessorImpl(dataSource, dialect);
-    }
-
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
         RequestContext requestContext = new RequestContext(
                 configuration,
@@ -92,6 +89,11 @@ public class SpeedyFactory {
                 validationProcessor
         );
         try {
+            DataSource dataSource = configuration.dataSourcePerReq();
+            QueryProcessor queryProcessor = queryProcessorCache.computeIfAbsent(
+                    dataSource, ds -> new JooqQueryProcessorImpl(ds, dialect));
+            requestContext.setQueryProcessor(queryProcessor);
+
             this.chain.process(requestContext);
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;
@@ -121,8 +123,7 @@ public class SpeedyFactory {
         // switch
         Handler sh = new SwitchHandler(gh, qh, ch, uh, dh);
 
-        Handler queryProcessorInit = new CreateQueryProcessorHandler(sh);
-        Handler ech = new EntityCaptureHandler(queryProcessorInit);
+        Handler ech = new EntityCaptureHandler(sh);
         Handler requestParserHandler = new RequestParserHandler(ech, maxRequestBodySize);
         return new HeadHandler(requestParserHandler);
     }
