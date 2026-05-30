@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import java.util.List;
 
 /**
- * Validates that the numeric value is strictly negative (< 0).
+ * Validates that the numeric value is strictly negative (&lt; 0).
  * <p>
  * Supports {@code jakarta.validation.constraints.Negative}.
  */

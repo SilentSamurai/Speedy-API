@@ -7,7 +7,7 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks a numeric field that must be strictly negative (<0).
+ * Marks a numeric field that must be strictly negative (&lt;0).
  */
 @Target(FIELD)
 @Retention(RUNTIME)

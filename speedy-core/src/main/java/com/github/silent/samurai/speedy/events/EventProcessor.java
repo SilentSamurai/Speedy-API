@@ -14,7 +14,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -69,8 +70,13 @@ public class EventProcessor {
                         eventMap.putIfAbsent(event, new LinkedMultiValueMap<>());
                         MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(event);
                         if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == event)) {
-                            EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, declaredMethod, ioClass);
-                            eventEntityMap.add(entityMetadata.getName(), metadata);
+                            try {
+                                MethodHandle mh = MethodHandles.lookup().unreflect(declaredMethod);
+                                EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, mh, ioClass);
+                                eventEntityMap.add(entityMetadata.getName(), metadata);
+                            } catch (IllegalAccessException e) {
+                                throw new RuntimeException("Cannot access event handler method " + declaredMethod.getName(), e);
+                            }
                         }
                     }
                 }
@@ -97,31 +103,29 @@ public class EventProcessor {
 
     static class EventHandlerMetadata {
         final Object instance;
-        final Method method;
+        final MethodHandle methodHandle;
         final Class<?> ioClass;
 
-        public EventHandlerMetadata(Object instance, Method method, Class<?> ioClass) {
+        public EventHandlerMetadata(Object instance, MethodHandle methodHandle, Class<?> ioClass) {
             this.instance = instance;
-            this.method = method;
+            this.methodHandle = methodHandle;
             this.ioClass = ioClass;
         }
 
         private Object invokeEventHandler(SpeedyEntity entity) throws Exception {
             try {
                 if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
-                    method.invoke(instance, entity);
+                    methodHandle.invoke(instance, entity);
                 } else {
                     Object value = SpeedySerializer.toJavaEntity(entity, ioClass);
-                    method.invoke(instance, value);
+                    methodHandle.invoke(instance, value);
                     SpeedyDeserializer.updateEntity(value, entity);
                 }
-            } catch (InvocationTargetException ite) {
-                // Surface the underlying exception so the exception mapper can resolve the correct handler
-                Throwable cause = ite.getCause();
-                if (cause instanceof Exception e) {
+            } catch (Throwable t) {
+                if (t instanceof Exception e) {
                     throw e;
                 }
-                throw ite;
+                throw new RuntimeException(t);
             }
             return entity;
         }
