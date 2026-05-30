@@ -10,6 +10,7 @@ import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
@@ -98,16 +99,16 @@ public class CreateHandler implements Handler {
                             KeyFieldMetadata.class::isInstance,
                             saved, 0, new HashSet<>()));
                 } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                    if (ex instanceof SpeedyHttpRuntimeException re) throw re;
+                    if (ex instanceof RuntimeException re) throw re;
+                    throw new SpeedyHttpRuntimeException(500, ex);
                 }
             });
-
-            log.info("BATCH commit succeeded: entity={}, count={}", entityLabel, totalCount);
         } catch (Exception e) {
-            Throwable cause = e.getCause() != null ? e.getCause() : e;
             log.info("BATCH rolled back: entity={}, count={}", entityLabel, totalCount);
-            if (cause instanceof SpeedyHttpException) {
-                throw (SpeedyHttpException) cause;
+            Throwable cause = e.getCause();
+            if (cause instanceof SpeedyHttpException she) {
+                throw she;
             }
             throw new InternalServerError("Batch create failed", e);
         }
@@ -146,7 +147,9 @@ public class CreateHandler implements Handler {
                         eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT, entityMetadata, savedEntity);
                         succeeded.add(savedEntity);
                     } catch (Exception ex) {
-                        throw new RuntimeException(ex);
+                        if (ex instanceof SpeedyHttpRuntimeException re) throw re;
+                        if (ex instanceof RuntimeException re) throw re;
+                        throw new SpeedyHttpRuntimeException(500, ex);
                     }
                 });
             } catch (Exception e) {
@@ -157,12 +160,12 @@ public class CreateHandler implements Handler {
                 if (cause instanceof SpeedyHttpException she) {
                     SpeedyEntityKey inputPk = extractInputPk(entity);
                     failed.add(new SpeedyPartialFailure(i, she.getStatus(),
-                            she.getMessage(), Instant.now().toString(), inputPk));
+                            she.getMessage(), Instant.now().toString(), inputPk, she));
                     log.info("Entity #{} failed in per-entity transaction", i, she);
                 } else {
                     SpeedyEntityKey inputPk = extractInputPk(entity);
                     failed.add(new SpeedyPartialFailure(i, 500,
-                            e.getMessage(), Instant.now().toString(), inputPk));
+                            e.getMessage(), Instant.now().toString(), inputPk, e));
                     log.info("Entity #{} failed in per-entity transaction", i, e);
                 }
             }
@@ -178,9 +181,9 @@ public class CreateHandler implements Handler {
         } else if (entities.size() == 1 && !failed.isEmpty()) {
             SpeedyPartialFailure failure = failed.get(0);
             if (failure.getStatus() == 400) {
-                throw new BadRequestException(failure.getMessage());
+                throw new BadRequestException(failure.getMessage(), failure.getCause());
             }
-            throw new InternalServerError(failure.getMessage());
+            throw new InternalServerError(failure.getMessage(), failure.getCause());
         } else {
             serializer = new BatchResultSerializer(succeeded, failed, 0);
         }

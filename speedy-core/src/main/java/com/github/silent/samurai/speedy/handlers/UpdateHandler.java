@@ -10,6 +10,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
@@ -94,7 +95,9 @@ public class UpdateHandler implements Handler {
                     result[0] = queryProcessor.update(pk, entity);
                     eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
                 } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                    if (ex instanceof SpeedyHttpRuntimeException re) throw re;
+                    if (ex instanceof RuntimeException re) throw re;
+                    throw new SpeedyHttpRuntimeException(500, ex);
                 }
             });
 

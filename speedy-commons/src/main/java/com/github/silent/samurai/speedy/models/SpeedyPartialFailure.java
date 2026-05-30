@@ -6,14 +6,17 @@ public class SpeedyPartialFailure {
     private final String message;
     private final String timestamp;
     private final SpeedyEntityKey inputPk;
+    private final Throwable cause;
 
     public SpeedyPartialFailure(int index, int status, String message,
-                                String timestamp, SpeedyEntityKey inputPk) {
+                                String timestamp, SpeedyEntityKey inputPk,
+                                Throwable cause) {
         this.index = index;
         this.status = status;
         this.message = message;
         this.timestamp = timestamp;
         this.inputPk = inputPk;
+        this.cause = cause;
     }
 
     public int getIndex() {
@@ -34,5 +37,9 @@ public class SpeedyPartialFailure {
 
     public SpeedyEntityKey getInputPk() {
         return inputPk;
+    }
+
+    public Throwable getCause() {
+        return cause;
     }
 }

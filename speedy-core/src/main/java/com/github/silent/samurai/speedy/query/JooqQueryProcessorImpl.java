@@ -2,7 +2,9 @@ package com.github.silent.samurai.speedy.query;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
@@ -62,7 +64,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             JooqQueryBuilder qb = new JooqQueryBuilder(query, dsl, converter);
             return qb.executeCountQuery();
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -81,7 +83,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             }
             return list;
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -102,7 +104,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             }
             return new QueryResult(list, totalCount);
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -114,7 +116,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                     .findByPrimaryKey(entityKey);
             return !result.isEmpty();
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -158,7 +160,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
 
             return entityList;
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -174,7 +176,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             return new JooqSqlToSpeedy(dsl, converter)
                     .fromRecord(result.get(0), entity.getMetadata(), Set.of());
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -215,7 +217,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             new SpeedyDeleteQuery(dsl, dialect, converter).deleteEntity(pks);
             return entities;
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -234,5 +236,24 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                 transactionalDslContext.remove();
             }
         });
+    }
+
+    private SpeedyHttpException wrapSqlException(String message, Exception cause) {
+        if (cause instanceof SpeedyHttpException she) {
+            return she;
+        }
+        if (cause instanceof SpeedyHttpRuntimeException re) {
+            return new InternalServerError(re.getMessage(), re);
+        }
+        if (cause instanceof org.jooq.exception.DataAccessException dae) {
+            Throwable sqlCause = dae.getCause();
+            if (sqlCause instanceof java.sql.SQLException sqle) {
+                String state = sqle.getSQLState();
+                if (state != null && (state.startsWith("23") || state.startsWith("22"))) {
+                    return new BadRequestException(message, dae);
+                }
+            }
+        }
+        return new InternalServerError(message, cause);
     }
 }
