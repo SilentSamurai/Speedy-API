@@ -8,7 +8,6 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -90,7 +89,7 @@ public class JsonNode2SpeedyValue {
     public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if ((fieldMetadata.isDeserializable() || fieldMetadata instanceof KeyFieldMetadata)
+            if (fieldMetadata.isDeserializable()
                     && jsonNode.has(fieldMetadata.getOutputPropertyName())
                     && !jsonNode.get(fieldMetadata.getOutputPropertyName()).isNull()) {
                 JsonNode fieldObject = jsonNode.get(fieldMetadata.getOutputPropertyName());

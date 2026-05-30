@@ -82,20 +82,19 @@ The factory builds a Chain of Responsibility at startup:
 HeadHandler
   → RequestParserHandler      (extract URI, HTTP method, parse JSON body)
     → EntityCaptureHandler     (resolve entity from URI, build SpeedyQuery from URL or JSON body)
-      → CreateQueryProcessorHandler  (create jOOQ QueryProcessor with DataSource)
-        → SwitchHandler        (route by HTTP method + URI action)
-          ├── GET              → GetHandler → SpeedyResponseWriterHandler → TailHandler
-          ├── POST $query      → QueryHandler → SpeedyResponseWriterHandler → TailHandler
-          ├── POST $create     → CreateHandler → SpeedyResponseWriterHandler → TailHandler
-          ├── PUT/PATCH $update → UpdateHandler → SpeedyResponseWriterHandler → TailHandler
-          └── DELETE $delete   → DeleteHandler → SpeedyResponseWriterHandler → TailHandler
+      → SwitchHandler        (route by HTTP method + URI action)
+        ├── GET              → GetHandler → SpeedyResponseWriterHandler → TailHandler
+        ├── POST $query      → QueryHandler → SpeedyResponseWriterHandler → TailHandler
+        ├── POST $create     → CreateHandler → SpeedyResponseWriterHandler → TailHandler
+        ├── PUT/PATCH $update → UpdateHandler → SpeedyResponseWriterHandler → TailHandler
+        └── DELETE $delete   → DeleteHandler → SpeedyResponseWriterHandler → TailHandler
 ```
 
 ### Key Design Decisions
 
 - Handler chain is immutable after construction — no runtime modification
 - `RequestContext` is the mutable state bag that flows through the chain
-- `QueryProcessor` is created per-request (fresh DataSource/connection per request)
+- `QueryProcessor` is cached per unique `DataSource` returned by `dataSourcePerReq()`. For single-tenant apps this means one `QueryProcessor` (and one JOOQ `DSLContext`) for the application lifetime. Multi-tenant deployments automatically get a cached instance per tenant's DataSource.
 - jOOQ is used for SQL generation and execution (not JPA/Hibernate at runtime)
 - JPA/Hibernate is only used at startup for metadata introspection via `EntityManagerFactory`
 

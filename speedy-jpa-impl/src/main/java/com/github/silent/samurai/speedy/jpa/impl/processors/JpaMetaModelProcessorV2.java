@@ -210,7 +210,9 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.insertable(false);
             fieldMetadata.updatable(false);
             fieldMetadata.nullable(false);
-            fieldMetadata.deserializable(false);
+            if (!isId) {
+                fieldMetadata.deserializable(false);
+            }
         }
 
         Generated hibernateGenerated = AnnotationUtils.getAnnotation(field, Generated.class);

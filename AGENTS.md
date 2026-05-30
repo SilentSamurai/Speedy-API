@@ -27,7 +27,7 @@ All requests enter through `SpeedyApiController` (`/speedy/v1/**`) and are deleg
 which runs the **handler chain** (Chain of Responsibility):
 
 ```
-HeadHandler -> RequestParserHandler -> EntityCaptureHandler -> CreateQueryProcessorHandler
+HeadHandler -> RequestParserHandler -> EntityCaptureHandler
   -> SwitchHandler -> [ GetHandler | QueryHandler | CreateHandler | UpdateHandler | DeleteHandler ]
     -> SpeedyResponseWriterHandler -> TailHandler
 ```
@@ -39,7 +39,6 @@ HeadHandler -> RequestParserHandler -> EntityCaptureHandler -> CreateQueryProces
 | `HeadHandler`                 | Entry; passthrough decorator.                                                                                                                                          |
 | `RequestParserHandler`        | Reads `HttpMethod`, request URI, and JSON body from `HttpServletRequest`.                                                                                              |
 | `EntityCaptureHandler`        | Parses URI via `SpeedyUriContext` to resolve `EntityMetadata` from `MetaModel`.                                                                                        |
-| `CreateQueryProcessorHandler` | Creates a `JooqQueryProcessorImpl` per request from `ISpeedyConfiguration.dataSourcePerReq()`.                                                                         |
 | `SwitchHandler`               | Routes by HTTP method + URI suffix (`$query`, `$create`, `$update`, `$delete`). Checks action permissions via `EntityMetadata.is{Read/Create/Update/Delete}Allowed()`. |
 | `GetHandler`                  | Parses URI query params into `SpeedyQuery`, executes `executeMany()`, sets `JSONSerializerV2`.                                                                         |
 | `QueryHandler`                | Parses POST JSON body (`$from`, `$where`, `$orderBy`, `$page`, `$expand`, `$select`) into `SpeedyQuery`, supports count queries.                                       |

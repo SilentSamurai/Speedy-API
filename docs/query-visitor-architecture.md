@@ -634,7 +634,7 @@ speedy-core
 5. Refactor `JooqQueryProcessorImpl` to use `QueryWalker.walk()` + visitors
 6. Move all jOOQ classes from `speedy-core` to `speedy-jooq-impl`
 7. Remove jOOQ dependency from `speedy-core`
-8. Update `CreateQueryProcessorHandler` to use a factory/SPI to instantiate the `QueryProcessor`
+8. `QueryProcessor` instantiation moved to `SpeedyFactory.processReqV2()` with per-`DataSource` caching (removed `CreateQueryProcessorHandler`)
 9. Update parent POM to include `speedy-jooq-impl` module
 
 Each step is independently testable. The existing test suite in `speedy-test-app` validates correctness throughout.

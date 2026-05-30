@@ -109,6 +109,33 @@ class JsonNode2SpeedyValueTest {
     }
 
     @Test
+    void testFromEntityMetadata_KeyFieldDeserializable() throws SpeedyHttpException {
+        when(mockKeyFieldMetadata.isDeserializable()).thenReturn(true);
+        when(mockKeyFieldMetadata.getOutputPropertyName()).thenReturn("id");
+        when(mockKeyFieldMetadata.getValueType()).thenReturn(ValueType.TEXT);
+        when(mockKeyFieldMetadata.isAssociation()).thenReturn(false);
+        when(mockKeyFieldMetadata.isCollection()).thenReturn(false);
+        when(mockEntityMetadata.getAllFields()).thenReturn(Set.of(mockKeyFieldMetadata));
+        jsonNode.put("id", "test-uuid");
+
+        SpeedyEntity result = JsonNode2SpeedyValue.fromEntityMetadata(mockEntityMetadata, jsonNode);
+        assertNotNull(result);
+        assertTrue(result.has(mockKeyFieldMetadata));
+    }
+
+    @Test
+    void testFromEntityMetadata_KeyFieldNotDeserializable() throws SpeedyHttpException {
+        when(mockKeyFieldMetadata.isDeserializable()).thenReturn(false);
+        when(mockKeyFieldMetadata.getOutputPropertyName()).thenReturn("id");
+        when(mockEntityMetadata.getAllFields()).thenReturn(Set.of(mockKeyFieldMetadata));
+        jsonNode.put("id", "test-uuid");
+
+        SpeedyEntity result = JsonNode2SpeedyValue.fromEntityMetadata(mockEntityMetadata, jsonNode);
+        assertNotNull(result);
+        assertFalse(result.has(mockKeyFieldMetadata));
+    }
+
+    @Test
     void testFromPkJson_MissingKeyField() {
         when(mockEntityMetadata.getKeyFields()).thenReturn(Set.of(mockKeyFieldMetadata));
         when(mockKeyFieldMetadata.getOutputPropertyName()).thenReturn("id");
