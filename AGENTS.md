@@ -1,8 +1,8 @@
 # AGENTS.md
 
 <!-- SPECKIT START -->
-**Current Feature**:
-`006-batch-transaction-support` — [Spec](./specs/006-batch-transaction-support/spec.md) | [Plan](./specs/006-batch-transaction-support/plan.md) | [Research](./specs/006-batch-transaction-support/research.md) | [Data Model](./specs/006-batch-transaction-support/data-model.md) | [Quickstart](./specs/006-batch-transaction-support/quickstart.md)
+**Completed Feature**:
+`001-between-isnull-operators` — [Spec](./specs/001-between-isnull-operators/spec.md) | [Plan](./specs/001-between-isnull-operators/plan.md) | [Research](./specs/001-between-isnull-operators/research.md) | [Data Model](./specs/001-between-isnull-operators/data-model.md) | [Quickstart](./specs/001-between-isnull-operators/quickstart.md)
 <!-- SPECKIT END -->
 
 ## Architecture

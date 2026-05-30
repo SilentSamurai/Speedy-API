@@ -491,6 +491,66 @@ public class UserService {
 }
 ```
 
+## Query Operators
+
+The `SpeedyQuery` builder provides these operator methods for constructing WHERE conditions:
+
+### Range Operator
+
+```java
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
+
+// $between: Inclusive range (equivalent to $gte AND $lte)
+SpeedyQuery query = from("Inventory")
+    .where(
+        condition("cost", between(10, 50))
+    )
+    .build();
+```
+
+### Null Check Operators
+
+```java
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
+
+// $isnull: IS NULL check
+SpeedyQuery nullQuery = from("Procurement")
+    .where(
+        condition("modifiedAt", isnull())
+    )
+    .build();
+
+// $isnotnull: IS NOT NULL check
+SpeedyQuery notNullQuery = from("Procurement")
+    .where(
+        condition("createdAt", isnotnull())
+    )
+    .build();
+```
+
+### Composition
+
+```java
+SpeedyQuery combined = from("Procurement")
+    .where(
+        or(
+            condition("createdAt", between("2024-01-01", "2024-03-31")),
+            condition("modifiedAt", isnull())
+        )
+    )
+    .build();
+```
+
+### Error Handling
+
+| Operator | Error Condition | Message |
+|----------|----------------|---------|
+| `$between` | Non-array value | "$between only accepts an array" |
+| `$between` | Wrong array size (≠ 2) | "$between requires exactly 2 values" |
+| `$isnull` | Non-boolean value | "$isnull only accepts a boolean value" |
+| `$isnull` | `false` value | "$isnull requires true. Use $isnotnull for IS NOT NULL" |
+| `$isnotnull` | `false` value | "$isnotnull requires true. Use $isnull for IS NULL" |
+
 ## Factory Methods Reference
 
 | Method                               | Description                            | Use Case                 |

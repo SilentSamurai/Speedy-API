@@ -33,6 +33,9 @@ public class ConditionFactory {
             case IN -> new InCondition(field, expression);
             case NOT_IN -> new NotInCondition(field, expression);
             case PATTERN_MATCHING -> new MatchingCondition(field, expression);
+            case BETWEEN -> new BetweenCondition(field, expression);
+            case ISNULL -> new IsNullCondition(field, expression);
+            case ISNOTNULL -> new IsNotNullCondition(field, expression);
             case AND, OR -> throw new BadRequestException("");
         };
     }

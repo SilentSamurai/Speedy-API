@@ -19,12 +19,20 @@ public class SpeedyResult {
     private final JsonNode payload;
     private final int pageIndex;
     private final int pageSize;
+    private final long totalCount;
+    private final int totalPages;
     private final ObjectMapper mapper;
 
     public SpeedyResult(JsonNode payload, int pageIndex, int pageSize, ObjectMapper mapper) {
+        this(payload, pageIndex, pageSize, 0, 0, mapper);
+    }
+
+    public SpeedyResult(JsonNode payload, int pageIndex, int pageSize, long totalCount, int totalPages, ObjectMapper mapper) {
         this.payload = payload != null ? payload : mapper.createArrayNode();
         this.pageIndex = pageIndex;
         this.pageSize = pageSize;
+        this.totalCount = totalCount;
+        this.totalPages = totalPages;
         this.mapper = mapper;
     }
 
@@ -82,6 +90,14 @@ public class SpeedyResult {
 
     public int pageSize() {
         return pageSize;
+    }
+
+    public long totalCount() {
+        return totalCount;
+    }
+
+    public int totalPages() {
+        return totalPages;
     }
 
     public boolean isEmpty() {

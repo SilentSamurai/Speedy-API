@@ -10,8 +10,11 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
 import com.github.silent.samurai.speedy.interfaces.query.Converter;
+import com.github.silent.samurai.speedy.models.conditions.BetweenCondition;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.models.conditions.InCondition;
+import com.github.silent.samurai.speedy.models.conditions.IsNotNullCondition;
+import com.github.silent.samurai.speedy.models.conditions.IsNullCondition;
 import com.github.silent.samurai.speedy.models.conditions.MatchingCondition;
 import com.github.silent.samurai.speedy.models.conditions.NotInCondition;
 import org.jooq.*;
@@ -258,6 +261,34 @@ public class JooqQueryBuilder {
         return path.notIn(List.of(DSL.value(rawValue)));
     }
 
+    /**
+     * Translates a {@code $between} condition to a JOOQ {@code Field.between(low, high)} predicate.
+     */
+    org.jooq.Condition betweenPredicate(BetweenCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = bCondition.getExpression().value();
+        SpeedyValue[] arr = speedyValue.asCollection().toArray(new SpeedyValue[0]);
+        Field<Object> path = getPath(bCondition.getField());
+        Object low = toJooqType(bCondition, arr[0]);
+        Object high = toJooqType(bCondition, arr[1]);
+        return path.between(DSL.value(low), DSL.value(high));
+    }
+
+    /**
+     * Translates an {@code $isnull} condition to a JOOQ {@code Field.isNull()} predicate.
+     */
+    org.jooq.Condition isNullPredicate(IsNullCondition bCondition) {
+        Field<Object> path = getPath(bCondition.getField());
+        return path.isNull();
+    }
+
+    /**
+     * Translates an {@code $isnotnull} condition to a JOOQ {@code Field.isNotNull()} predicate.
+     */
+    org.jooq.Condition isNotNullPredicate(IsNotNullCondition bCondition) {
+        Field<Object> path = getPath(bCondition.getField());
+        return path.isNotNull();
+    }
+
     org.jooq.Condition conditionToPredicate(Condition condition) throws SpeedyHttpException {
         ConditionOperator operator = condition.getOperator();
         if (operator == ConditionOperator.AND || operator == ConditionOperator.OR) {
@@ -285,6 +316,12 @@ public class JooqQueryBuilder {
                 yield notInPredicate((NotInCondition) bCondition);
             case PATTERN_MATCHING:
                 yield matchPredicate((MatchingCondition) bCondition);
+            case BETWEEN:
+                yield betweenPredicate((BetweenCondition) bCondition);
+            case ISNULL:
+                yield isNullPredicate((IsNullCondition) bCondition);
+            case ISNOTNULL:
+                yield isNotNullPredicate((IsNotNullCondition) bCondition);
             case AND:
             case OR:
                 throw new BadRequestException("Unknown Operator");

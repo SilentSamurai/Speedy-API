@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -36,6 +37,8 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     private final List<? extends SpeedyValue> payload;
     private final Integer pageIndex;
     private final Set<String> expands;
+    private final BigInteger totalCount;
+    private final int requestedPageSize;
 
     /// Creates a JSON serializer with the default field predicate (includes all fields).
     ///
@@ -43,10 +46,7 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     /// @param pageIndex the current page index
     /// @param expands   the set of expansions (supports dot notation like `["Inventory.Product"]`)
     public JSONSerializerV2(List<? extends SpeedyValue> payload, Integer pageIndex, Set<String> expands) {
-        this.payload = payload;
-        this.pageIndex = pageIndex;
-        this.expands = expands;
-        this.fieldPredicate = fieldMetadata -> true;
+        this(payload, pageIndex, expands, null, 0);
     }
 
     /// Creates a JSON serializer with custom field predicate for filtering fields.
@@ -58,10 +58,40 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     public JSONSerializerV2(Predicate<FieldMetadata> fieldPredicate,
                             List<? extends SpeedyValue> payload,
                             Integer pageIndex, Set<String> expands) {
+        this(fieldPredicate, payload, pageIndex, expands, null, 0);
+    }
+
+    /// Creates a JSON serializer with custom field predicate and total count metadata.
+    ///
+    /// @param fieldPredicate     predicate to filter which fields to include in serialization
+    /// @param payload            the list of entities to serialize
+    /// @param pageIndex          the current page index
+    /// @param expands            the set of expansions
+    /// @param totalCount         the total number of records matching the query (without pagination)
+    /// @param requestedPageSize  the requested page size used to calculate totalPages
+    public JSONSerializerV2(Predicate<FieldMetadata> fieldPredicate,
+                            List<? extends SpeedyValue> payload,
+                            Integer pageIndex, Set<String> expands,
+                            BigInteger totalCount, int requestedPageSize) {
         this.fieldPredicate = fieldPredicate;
         this.payload = payload;
         this.pageIndex = pageIndex;
         this.expands = expands;
+        this.totalCount = totalCount;
+        this.requestedPageSize = requestedPageSize;
+    }
+
+    /// Creates a JSON serializer with default field predicate and total count metadata.
+    ///
+    /// @param payload            the list of entities to serialize
+    /// @param pageIndex          the current page index
+    /// @param expands            the set of expansions
+    /// @param totalCount         the total number of records matching the query (without pagination)
+    /// @param requestedPageSize  the requested page size used to calculate totalPages
+    public JSONSerializerV2(List<? extends SpeedyValue> payload,
+                            Integer pageIndex, Set<String> expands,
+                            BigInteger totalCount, int requestedPageSize) {
+        this(fieldMetadata -> true, payload, pageIndex, expands, totalCount, requestedPageSize);
     }
 
     @Override
@@ -88,6 +118,10 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
         basePayload.set("payload", jsonElement);
         basePayload.put("pageIndex", pageIndex);
         basePayload.put("pageSize", payload.size());
+        if (totalCount != null) {
+            basePayload.put("totalCount", totalCount);
+            basePayload.put("totalPages", calculateTotalPages());
+        }
 
         HttpServletResponse response = context.getResponse();
         response.setContentType(this.getContentType());
@@ -98,6 +132,14 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
         } catch (IOException e) {
             throw new InternalServerError("Internal Server Error", e);
         }
+    }
+
+    private int calculateTotalPages() {
+        if (requestedPageSize <= 0) {
+            return 1;
+        }
+        long tc = totalCount.longValue();
+        return (int) Math.ceil((double) tc / requestedPageSize);
     }
 
 }

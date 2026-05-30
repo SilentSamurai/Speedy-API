@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.request.RequestContext;
@@ -38,9 +39,10 @@ public class GetHandler implements Handler {
             return;
         }
 
-        List<SpeedyEntity> result = queryProcessor.executeMany(speedyQuery);
+        QueryResult result = queryProcessor.executeManyWithCount(speedyQuery);
+        List<SpeedyEntity> entities = result.getEntities();
 
-        Optional<List<SpeedyEntity>> requestedData = Optional.ofNullable(result);
+        Optional<List<SpeedyEntity>> requestedData = Optional.ofNullable(entities);
         if (requestedData.isEmpty()) {
             throw new NotFoundException("Not data found for " + resourceMetadata.getName());
         }
@@ -50,7 +52,9 @@ public class GetHandler implements Handler {
                 fieldPredicate,
                 requestedData.get(),
                 speedyQuery.getPageInfo().getPageNo(),
-                speedyQuery.getExpand()
+                speedyQuery.getExpand(),
+                result.getTotalCount(),
+                speedyQuery.getPageInfo().getPageSize()
         ));
 
         next.process(context);

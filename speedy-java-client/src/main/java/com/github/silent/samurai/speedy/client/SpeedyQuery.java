@@ -102,6 +102,28 @@ public class SpeedyQuery {
         return toJsonNode(values, "$contains");
     }
 
+    /**
+     * Creates a {@code $between} value node for a range query.
+     * Generates an equivalent {@code field &gt;= low AND field &lt;= high}.
+     */
+    public static ObjectNode between(Object low, Object high) {
+        return toJsonNode(new Object[]{low, high}, "$between");
+    }
+
+    /**
+     * Creates a {@code $isnull} value node for an IS NULL query.
+     */
+    public static ObjectNode isnull() {
+        return toJsonNode(true, "$isnull");
+    }
+
+    /**
+     * Creates a {@code $isnotnull} value node for an IS NOT NULL query.
+     */
+    public static ObjectNode isnotnull() {
+        return toJsonNode(true, "$isnotnull");
+    }
+
     public static JsonNode condition(String key, JsonNode value) {
         ObjectNode jsonNodes = MAPPER.createObjectNode();
         jsonNodes.set(key, value);

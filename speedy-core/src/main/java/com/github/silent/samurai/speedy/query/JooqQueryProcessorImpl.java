@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -78,6 +79,27 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                 list.add(speedyEntity);
             }
             return list;
+        } catch (Exception e) {
+            throw new BadRequestException("Invalid Request", e);
+        }
+    }
+
+    @Override
+    public QueryResult executeManyWithCount(SpeedyQuery speedyQuery) throws SpeedyHttpException {
+        try {
+            DSLContext dsl = getDsl();
+            JooqQueryBuilder countQb = new JooqQueryBuilder(speedyQuery, dsl, converter);
+            BigInteger totalCount = countQb.executeCountQuery();
+            JooqQueryBuilder qb = new JooqQueryBuilder(speedyQuery, dsl, converter);
+            Result<? extends Record> result = qb.executeQuery();
+            List<SpeedyEntity> list = new ArrayList<>();
+            JooqSqlToSpeedy jooqSQLToSpeedy = new JooqSqlToSpeedy(dsl, converter);
+            for (Record record : result) {
+                SpeedyEntity speedyEntity = jooqSQLToSpeedy
+                        .fromRecord(record, speedyQuery.getFrom(), speedyQuery.getExpand());
+                list.add(speedyEntity);
+            }
+            return new QueryResult(list, totalCount);
         } catch (Exception e) {
             throw new BadRequestException("Invalid Request", e);
         }

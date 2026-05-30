@@ -53,7 +53,8 @@ Content-Type: application/json
     ],
     "pageIndex": 0,
     "pageSize": 1,
-    "totalPageCount": 1
+    "totalCount": 1,
+    "totalPages": 1
 }
 ```
 
@@ -90,9 +91,10 @@ Content-Type: application/json
         }
     ],
     "pageIndex": 0,
-    "pageSize": 2
+    "pageSize": 2,
+    "totalCount": 2,
+    "totalPages": 1
 }
-```
 
 #### Supported Operators
 
@@ -356,7 +358,8 @@ Content-Type: application/json;charset=UTF-8
     ],
     "pageIndex": 0,
     "pageSize": 10,
-    "totalPageCount": 1
+    "totalCount": 1,
+    "totalPages": 1
 }
 ```
 

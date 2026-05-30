@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.parser.JsonQueryParser;
@@ -46,13 +47,16 @@ public class QueryHandler implements Handler {
                     count
             ));
         } else {
-            List<SpeedyEntity> speedyEntities = queryProcessor.executeMany(speedyQuery);
+            QueryResult result = queryProcessor.executeManyWithCount(speedyQuery);
+            List<SpeedyEntity> speedyEntities = result.getEntities();
             Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
             context.setResponseSerializer(new JSONSerializerV2(
                     fieldPredicate,
                     speedyEntities,
                     speedyQuery.getPageInfo().getPageNo(),
-                    speedyQuery.getExpand()
+                    speedyQuery.getExpand(),
+                    result.getTotalCount(),
+                    speedyQuery.getPageInfo().getPageSize()
             ));
         }
         next.process(context);
