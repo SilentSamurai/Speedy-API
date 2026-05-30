@@ -14,6 +14,12 @@ public interface QueryProcessor {
 
     List<SpeedyEntity> executeMany(SpeedyQuery query) throws SpeedyHttpException;
 
+    default QueryResult executeManyWithCount(SpeedyQuery query) throws SpeedyHttpException {
+        List<SpeedyEntity> entities = executeMany(query);
+        BigInteger totalCount = executeCount(query);
+        return new QueryResult(entities, totalCount);
+    }
+
     boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException;
 
     List<SpeedyEntity> create(List<SpeedyEntity> entities) throws SpeedyHttpException;

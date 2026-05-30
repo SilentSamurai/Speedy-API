@@ -81,6 +81,22 @@ class SpeedyResultTest {
     }
 
     @Test
+    void totalCountAndTotalPagesShouldBePreserved() {
+        SpeedyResult result = new SpeedyResult(mapper.createArrayNode(), 0, 20, 100L, 5, mapper);
+        assertEquals(100L, result.totalCount());
+        assertEquals(5, result.totalPages());
+        assertEquals(0, result.pageIndex());
+        assertEquals(20, result.pageSize());
+    }
+
+    @Test
+    void totalCountDefaultsToZeroWithOldConstructor() {
+        SpeedyResult result = new SpeedyResult(mapper.createArrayNode(), 1, 10, mapper);
+        assertEquals(0, result.totalCount());
+        assertEquals(0, result.totalPages());
+    }
+
+    @Test
     void firstRawShouldReturnFirstJsonNode() {
         ArrayNode payload = mapper.createArrayNode();
         payload.addObject().put("id", 123);

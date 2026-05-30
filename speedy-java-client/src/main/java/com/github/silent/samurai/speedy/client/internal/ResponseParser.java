@@ -21,7 +21,7 @@ public class ResponseParser {
 
     /**
      * Parses an entity list response (create, get, update, delete, query).
-     * Expects {@code {"payload": [...], "pageIndex": N, "pageSize": M}}.
+     * Expects {@code {"payload": [...], "pageIndex": N, "pageSize": M, "totalCount": T, "totalPages": P}}.
      *
      * @param response the raw HTTP response
      * @return a SpeedyResult with typed access to the payload
@@ -34,7 +34,7 @@ public class ResponseParser {
         try {
             String body = response.body();
             if (body == null || body.isEmpty()) {
-                return new SpeedyResult(mapper.createArrayNode(), 0, 0, mapper);
+                return new SpeedyResult(mapper.createArrayNode(), 0, 0, 0, 0, mapper);
             }
             JsonNode root = mapper.readTree(body);
             JsonNode payload = root.has("payload") ? root.get("payload") : mapper.createArrayNode();
@@ -43,7 +43,9 @@ public class ResponseParser {
             }
             int pageIndex = root.has("pageIndex") ? root.get("pageIndex").asInt(0) : 0;
             int pageSize = root.has("pageSize") ? root.get("pageSize").asInt(0) : 0;
-            return new SpeedyResult(payload, pageIndex, pageSize, mapper);
+            long totalCount = root.has("totalCount") ? root.get("totalCount").asLong(0) : 0;
+            int totalPages = root.has("totalPages") ? root.get("totalPages").asInt(0) : 0;
+            return new SpeedyResult(payload, pageIndex, pageSize, totalCount, totalPages, mapper);
         } catch (JsonProcessingException e) {
             throw new SpeedyDeserializationException("Failed to parse entity response: " + e.getMessage(), e);
         }

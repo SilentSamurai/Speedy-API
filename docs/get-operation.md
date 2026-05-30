@@ -47,7 +47,8 @@ retrieve all resource in a single resource type / entity
     ],
     "pageIndex": 0,
     "pageSize": 2,
-    "totalPageCount": 1
+    "totalCount": 2,
+    "totalPages": 1
 }
 ```
 
@@ -81,8 +82,10 @@ retrieve a single resource with primary key
             "deletedAt": null
         }
     ],
-    "pageCount": 1,
-    "pageIndex": 0
+    "pageSize": 1,
+    "pageIndex": 0,
+    "totalCount": 1,
+    "totalPages": 1
 }
 ```
 
@@ -118,7 +121,7 @@ get all admin users
             "deletedAt": null
         }
     ],
-    "pageCount": 1,
+    "pageSize": 1,
     "pageIndex": 0
 }
 ```
@@ -155,7 +158,7 @@ get all admin user with name John Doe
             "deletedAt": null
         }
     ],
-    "pageCount": 1,
+    "pageSize": 1,
     "pageIndex": 0
 }
 ```
@@ -188,7 +191,7 @@ the paging the request
             ...
         }
     ],
-    "pageCount": 2,
+    "pageSize": 2,
     "pageIndex": 0
     // page starts from 0 indexed
 }
@@ -215,7 +218,7 @@ order the request with different columns
             ...
         }
     ],
-    "pageCount": 2,
+    "pageSize": 2,
     "pageIndex": 0
 }
 ```
@@ -276,7 +279,7 @@ include related entities in your results using the `$expand` parameter
             }
         }
     ],
-    "pageCount": 1,
+    "pageSize": 1,
     "pageIndex": 0
 }
 ```
@@ -307,7 +310,8 @@ Limit the response to specific fields using the `$select` parameter.
     ],
     "pageIndex": 0,
     "pageSize": 10,
-    "totalPageCount": 1
+    "totalCount": 1,
+    "totalPages": 1
 }
 ```
 

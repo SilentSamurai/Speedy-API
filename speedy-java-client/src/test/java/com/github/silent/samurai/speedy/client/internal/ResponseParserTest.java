@@ -19,7 +19,7 @@ class ResponseParserTest {
 
     @Test
     void parseEntityResponseShouldReturnResultFor2xx() {
-        String body = "{\"payload\":[{\"id\":1,\"name\":\"Alice\"}],\"pageIndex\":0,\"pageSize\":10}";
+        String body = "{\"payload\":[{\"id\":1,\"name\":\"Alice\"}],\"pageIndex\":0,\"pageSize\":10,\"totalCount\":5,\"totalPages\":1}";
         SpeedyRawResponse response = new SpeedyRawResponse(200, Map.of(), body);
 
         SpeedyResult result = parser.parseEntityResponse(response);
@@ -27,6 +27,8 @@ class ResponseParserTest {
         assertEquals(1, result.size());
         assertEquals(0, result.pageIndex());
         assertEquals(10, result.pageSize());
+        assertEquals(5, result.totalCount());
+        assertEquals(1, result.totalPages());
     }
 
     @Test
@@ -61,6 +63,16 @@ class ResponseParserTest {
 
         SpeedyResult result = parser.parseEntityResponse(response);
         assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void parseEntityResponseShouldDefaultMissingTotalCountToZero() {
+        String body = "{\"payload\":[{\"id\":1}],\"pageIndex\":0,\"pageSize\":10}";
+        SpeedyRawResponse response = new SpeedyRawResponse(200, Map.of(), body);
+
+        SpeedyResult result = parser.parseEntityResponse(response);
+        assertEquals(0, result.totalCount());
+        assertEquals(0, result.totalPages());
     }
 
     @Test
