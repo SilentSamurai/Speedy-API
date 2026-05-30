@@ -19,6 +19,8 @@ import org.springframework.util.unit.DataSize;
 public class SpeedyApiAutoConfiguration {
 
     private DataSize maxRequestBodySize = DataSize.ofMegabytes(1);
+    private int maxQueryStringLength = 2048;
+    private int maxFilterCount = 100;
 
     public DataSize getMaxRequestBodySize() {
         return maxRequestBodySize;
@@ -26,6 +28,22 @@ public class SpeedyApiAutoConfiguration {
 
     public void setMaxRequestBodySize(DataSize maxRequestBodySize) {
         this.maxRequestBodySize = maxRequestBodySize;
+    }
+
+    public int getMaxQueryStringLength() {
+        return maxQueryStringLength;
+    }
+
+    public void setMaxQueryStringLength(int maxQueryStringLength) {
+        this.maxQueryStringLength = maxQueryStringLength;
+    }
+
+    public int getMaxFilterCount() {
+        return maxFilterCount;
+    }
+
+    public void setMaxFilterCount(int maxFilterCount) {
+        this.maxFilterCount = maxFilterCount;
     }
 
     @Bean

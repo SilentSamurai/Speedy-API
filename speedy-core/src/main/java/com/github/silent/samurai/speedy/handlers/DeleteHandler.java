@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
@@ -113,7 +114,12 @@ public class DeleteHandler implements Handler {
                     context.setResponseSerializer(new JSONSerializerV2(
                             KeyFieldMetadata.class::isInstance, deleted, 0, new HashSet<>()));
                 } catch (Exception ex) {
-                    throw new RuntimeException(ex);
+                    if (ex instanceof SpeedyHttpRuntimeException re) throw re;
+                    if (ex instanceof RuntimeException re) throw re;
+                    if (ex instanceof SpeedyHttpException she) {
+                        throw new SpeedyHttpRuntimeException(she.getStatus(), she);
+                    }
+                    throw new SpeedyHttpRuntimeException(500, ex);
                 }
             });
 
@@ -121,8 +127,11 @@ public class DeleteHandler implements Handler {
         } catch (Exception e) {
             Throwable cause = e.getCause() != null ? e.getCause() : e;
             log.info("BATCH delete rolled back: entity={}, count={}", entityLabel, totalCount);
-            if (cause instanceof SpeedyHttpException) {
-                throw (SpeedyHttpException) cause;
+            if (cause instanceof SpeedyHttpException she) {
+                throw she;
+            }
+            if (cause instanceof SpeedyHttpRuntimeException sre) {
+                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
             }
             throw new InternalServerError("Batch delete failed", e);
         }
@@ -156,24 +165,30 @@ public class DeleteHandler implements Handler {
                             succeeded.add(singleResult.get(0));
                         }
                     } catch (Exception ex) {
-                        throw new RuntimeException(ex);
+                        if (ex instanceof SpeedyHttpRuntimeException re) throw re;
+                        if (ex instanceof RuntimeException re) throw re;
+                        if (ex instanceof SpeedyHttpException she) {
+                            throw new SpeedyHttpRuntimeException(she.getStatus(), she);
+                        }
+                        throw new SpeedyHttpRuntimeException(500, ex);
                     }
                 });
             } catch (Exception e) {
                 Throwable cause = e.getCause() != null ? e.getCause() : e;
-                // spec FR-006: capture SpeedyHttpException with correct status (e.g. 400)
-                //   for per-entity partial failure reporting; wrap non-Speedy exceptions as 500.
-                //   Fixed missing else — without it the second add always fired, duplicating
-                //   every failure entry (same bug as CreateHandler, see plan.md §T054-T055).
                 if (cause instanceof SpeedyHttpException she) {
                     failed.add(new SpeedyPartialFailure(i, she.getStatus(),
                             she.getMessage(), Instant.now().toString(),
-                            key));
+                            key, she));
                     log.info("Entity #{} failed in per-entity transaction", i, she);
+                } else if (cause instanceof SpeedyHttpRuntimeException sre) {
+                    failed.add(new SpeedyPartialFailure(i, sre.getStatus(),
+                            sre.getMessage(), Instant.now().toString(),
+                            key, sre));
+                    log.info("Entity #{} failed in per-entity transaction", i, sre);
                 } else {
                     failed.add(new SpeedyPartialFailure(i, 500,
                             e.getMessage(), Instant.now().toString(),
-                            key));
+                            key, e));
                     log.info("Entity #{} failed in per-entity transaction", i, e);
                 }
             }
@@ -189,9 +204,9 @@ public class DeleteHandler implements Handler {
         } else if (keys.size() == 1 && !failed.isEmpty()) {
             SpeedyPartialFailure failure = failed.get(0);
             if (failure.getStatus() == 400) {
-                throw new BadRequestException(failure.getMessage());
+                throw new BadRequestException(failure.getMessage(), failure.getCause());
             }
-            throw new InternalServerError(failure.getMessage());
+            throw new InternalServerError(failure.getMessage(), failure.getCause());
         } else {
             serializer = new BatchResultSerializer(succeeded, failed, 0);
         }

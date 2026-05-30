@@ -81,7 +81,7 @@ public class EventProcessor {
                     }
                 }
             } catch (NotFoundException e) {
-                LOGGER.warn("Exception during validation capture ", e);
+                throw new RuntimeException("Misconfigured @SpeedyEvent: entity '" + declaredMethod.getAnnotation(SpeedyEvent.class).value() + "' not found in metamodel", e);
             }
         }
     }

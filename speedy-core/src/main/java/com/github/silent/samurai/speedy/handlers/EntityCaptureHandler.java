@@ -74,6 +74,8 @@ public class EntityCaptureHandler implements Handler {
                 .requestURI(requestURI)
                 .maxPageSize(context.getConfiguration().getMaxPageSize())
                 .defaultPageSize(context.getConfiguration().getDefaultPageSize())
+                .maxQueryStringLength(context.getConfiguration().getMaxQueryStringLength())
+                .maxFilterCount(context.getConfiguration().getMaxFilterCount())
                 .build();
         SpeedyQuery uriSpeedyQuery = parser.parse();
 

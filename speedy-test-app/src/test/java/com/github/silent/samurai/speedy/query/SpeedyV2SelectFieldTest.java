@@ -33,8 +33,10 @@ public class SpeedyV2SelectFieldTest {
                 .expectOk()
                 .expectJsonPathExists("$.payload")
                 .expectJsonPath("$.payload[*]", Matchers.hasSize(Matchers.greaterThan(0)))
-                .expectJsonPathExists("$.payload[*].id")
-                .expectJsonPathExists("$.payload[*].name");
+                .expectJsonPathExists("$.payload[0].id")
+                .expectJsonPathExists("$.payload[0].name")
+                .expectJsonPathDoesNotExist("$.payload[0].description")
+                .expectJsonPathDoesNotExist("$.payload[0].category");
     }
 
     @Test

@@ -2,11 +2,14 @@ package com.github.silent.samurai.speedy.query;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.query.jooq.*;
@@ -25,14 +28,15 @@ import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class JooqQueryProcessorImpl implements QueryProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryProcessorImpl.class);
 
-    private final DataSource dataSource;
     private final SQLDialect dialect;
     private final Settings settings = new Settings()
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
@@ -44,7 +48,6 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     private final ThreadLocal<DSLContext> transactionalDslContext = new ThreadLocal<>();
 
     public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect) {
-        this.dataSource = dataSource;
         this.dialect = JooqUtil.toJooqDialect(speedyDialect);
         this.dslContext = DSL.using(dataSource, dialect, settings);
     }
@@ -61,7 +64,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             JooqQueryBuilder qb = new JooqQueryBuilder(query, dsl, converter);
             return qb.executeCountQuery();
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -80,7 +83,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             }
             return list;
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -101,7 +104,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             }
             return new QueryResult(list, totalCount);
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -113,7 +116,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                     .findByPrimaryKey(entityKey);
             return !result.isEmpty();
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -126,19 +129,38 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
 
             List<SpeedyEntity> entityList = new ArrayList<>(entities.size());
 
-            for (SpeedyEntity entity : entities) {
-                SpeedyEntityKey entityKey = SpeedyEntityUtil.toEntityKey(entity);
-                Result<Record> result = new JooqPkQueryBuilder(dsl, dialect, converter).findByPrimaryKey(entityKey);
+            if (!entities.isEmpty()) {
+                List<SpeedyEntityKey> keys = new ArrayList<>(entities.size());
+                for (SpeedyEntity entity : entities) {
+                    keys.add(SpeedyEntityUtil.toEntityKey(entity));
+                }
+                Result<Record> result = new JooqPkQueryBuilder(dsl, dialect, converter).findByPrimaryKeys(keys);
 
-                SpeedyEntity speedyEntity = new JooqSqlToSpeedy(dsl, converter)
-                        .fromRecord(result.get(0), entity.getMetadata(), Set.of());
+                JooqSqlToSpeedy jooqSqlToSpeedy = new JooqSqlToSpeedy(dsl, converter);
+                EntityMetadata entityMetadata = entities.get(0).getMetadata();
 
-                entityList.add(speedyEntity);
+                Map<SpeedyEntityKey, SpeedyEntity> entityMap = new HashMap<>();
+                for (Record record : result) {
+                    SpeedyEntity entity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
+                    entityMap.put(SpeedyEntityUtil.toEntityKey(entity), entity);
+                }
+
+                for (SpeedyEntityKey key : keys) {
+                    SpeedyEntity entity = entityMap.get(key);
+                    if (entity != null) {
+                        entityList.add(entity);
+                    }
+                }
+
+                if (entityList.size() != keys.size()) {
+                    LOGGER.warn("findByPrimaryKeys returned {} results for {} keys for entity '{}'",
+                            entityList.size(), keys.size(), entityMetadata.getName());
+                }
             }
 
             return entityList;
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -154,7 +176,7 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             return new JooqSqlToSpeedy(dsl, converter)
                     .fromRecord(result.get(0), entity.getMetadata(), Set.of());
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -162,21 +184,40 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
     public List<SpeedyEntity> delete(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
         try {
             DSLContext dsl = getDsl();
-            List<SpeedyEntity> entities = new ArrayList<>(pks.size());
-            JooqPkQueryBuilder jooqPkQueryBuilder = new JooqPkQueryBuilder(dsl, dialect, converter);
+            List<SpeedyEntity> entities;
+            if (pks.isEmpty()) {
+                entities = new ArrayList<>();
+            } else {
+                JooqPkQueryBuilder jooqPkQueryBuilder = new JooqPkQueryBuilder(dsl, dialect, converter);
+                Result<Record> result = jooqPkQueryBuilder.findByPrimaryKeys(pks);
 
-            for (SpeedyEntityKey pk : pks) {
-                Result<Record> result = jooqPkQueryBuilder.findByPrimaryKey(pk);
-                SpeedyEntity entity = new JooqSqlToSpeedy(dsl, converter)
-                        .fromRecord(result.get(0), pk.getMetadata(), Set.of());
+                JooqSqlToSpeedy jooqSqlToSpeedy = new JooqSqlToSpeedy(dsl, converter);
+                EntityMetadata entityMetadata = pks.get(0).getMetadata();
 
-                entities.add(entity);
+                Map<SpeedyEntityKey, SpeedyEntity> entityMap = new HashMap<>();
+                for (Record record : result) {
+                    SpeedyEntity entity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
+                    entityMap.put(SpeedyEntityUtil.toEntityKey(entity), entity);
+                }
+
+                entities = new ArrayList<>(pks.size());
+                for (SpeedyEntityKey key : pks) {
+                    SpeedyEntity entity = entityMap.get(key);
+                    if (entity != null) {
+                        entities.add(entity);
+                    }
+                }
+
+                if (entities.size() != pks.size()) {
+                    LOGGER.warn("findByPrimaryKeys returned {} results for {} keys for entity '{}'",
+                            entities.size(), pks.size(), entityMetadata.getName());
+                }
             }
 
             new SpeedyDeleteQuery(dsl, dialect, converter).deleteEntity(pks);
             return entities;
         } catch (Exception e) {
-            throw new BadRequestException("Invalid Request", e);
+            throw wrapSqlException("Invalid Request", e);
         }
     }
 
@@ -195,5 +236,24 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
                 transactionalDslContext.remove();
             }
         });
+    }
+
+    private SpeedyHttpException wrapSqlException(String message, Exception cause) {
+        if (cause instanceof SpeedyHttpException she) {
+            return she;
+        }
+        if (cause instanceof SpeedyHttpRuntimeException re) {
+            return new InternalServerError(re.getMessage(), re);
+        }
+        if (cause instanceof org.jooq.exception.DataAccessException dae) {
+            Throwable sqlCause = dae.getCause();
+            if (sqlCause instanceof java.sql.SQLException sqle) {
+                String state = sqle.getSQLState();
+                if (state != null && (state.startsWith("23") || state.startsWith("22"))) {
+                    return new BadRequestException(message, dae);
+                }
+            }
+        }
+        return new InternalServerError(message, cause);
     }
 }

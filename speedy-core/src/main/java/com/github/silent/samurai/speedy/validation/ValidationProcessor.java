@@ -63,7 +63,7 @@ public class ValidationProcessor {
                         }
                     }
                 } catch (NotFoundException | IllegalAccessException e) {
-                    LOGGER.warn("Exception during instance capture ", e);
+                    throw new RuntimeException("Misconfigured @SpeedyValidator: entity '" + declaredMethod.getAnnotation(SpeedyValidator.class).entity() + "' could not be registered", e);
                 }
             }
         }

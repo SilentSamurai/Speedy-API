@@ -12,6 +12,9 @@ import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JooqPkQueryBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqPkQueryBuilder.class);
@@ -43,6 +46,51 @@ public class JooqPkQueryBuilder {
         }
 
         LOGGER.info("Executing findByPrimaryKey query for entity '{}': {}", entityMetadata.getName(), query);
+        return query.fetch();
+    }
+
+    public Result<Record> findByPrimaryKeys(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
+        if (pks == null || pks.isEmpty()) {
+            return dslContext.newResult();
+        }
+
+        EntityMetadata entityMetadata = pks.get(0).getMetadata();
+        SelectJoinStep<Record> query = dslContext.select()
+                .from(JooqUtil.getTable(entityMetadata, dslContext.dialect()));
+
+        List<KeyFieldMetadata> keyFields = new ArrayList<>(entityMetadata.getKeyFields());
+
+        if (keyFields.size() == 1) {
+            KeyFieldMetadata keyField = keyFields.get(0);
+            List<Object> values = new ArrayList<>(pks.size());
+            for (SpeedyEntityKey pk : pks) {
+                values.add(converter.toColumnType(pk.get(keyField), keyField));
+            }
+            Field<Object> field = JooqUtil.getColumn(keyField, dslContext.dialect());
+            query.where(field.in(values));
+        } else {
+            Condition combinedCondition = null;
+            for (SpeedyEntityKey pk : pks) {
+                Condition pkCondition = null;
+                for (KeyFieldMetadata keyField : keyFields) {
+                    Object value = converter.toColumnType(pk.get(keyField), keyField);
+                    Field<Object> field = JooqUtil.getColumn(keyField, dslContext.dialect());
+                    if (pkCondition == null) {
+                        pkCondition = field.eq(value);
+                    } else {
+                        pkCondition = pkCondition.and(field.eq(value));
+                    }
+                }
+                if (combinedCondition == null) {
+                    combinedCondition = pkCondition;
+                } else {
+                    combinedCondition = combinedCondition.or(pkCondition);
+                }
+            }
+            query.where(combinedCondition);
+        }
+
+        LOGGER.debug("Executing findByPrimaryKeys query for entity '{}': {}", entityMetadata.getName(), query);
         return query.fetch();
     }
 

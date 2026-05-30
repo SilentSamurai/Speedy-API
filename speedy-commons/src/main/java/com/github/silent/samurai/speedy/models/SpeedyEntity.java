@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 import java.util.HashMap;
@@ -90,12 +91,26 @@ public class SpeedyEntity implements SpeedyValue {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SpeedyEntity that = (SpeedyEntity) o;
-        return Objects.equals(entityMetadata, that.entityMetadata) &&
-                Objects.equals(fields, that.fields);
+        if (!Objects.equals(entityMetadata, that.entityMetadata)) {
+            return false;
+        }
+        for (KeyFieldMetadata kf : entityMetadata.getKeyFields()) {
+            if (!Objects.equals(
+                    this.fields.get(kf.getOutputPropertyName()),
+                    that.fields.get(kf.getOutputPropertyName()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityMetadata, fields);
+        int result = Objects.hashCode(entityMetadata);
+        for (KeyFieldMetadata kf : entityMetadata.getKeyFields()) {
+            SpeedyValue v = fields.get(kf.getOutputPropertyName());
+            result = 31 * result + (v != null ? v.hashCode() : 0);
+        }
+        return result;
     }
 }

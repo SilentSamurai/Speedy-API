@@ -25,29 +25,21 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Builder
 public class SpeedyUriContext {
     private final MetaModel metaModel;
     private final String requestURI;
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
-    private final int maxPageSize;
-    private final int defaultPageSize;
+    @Builder.Default
+    private final int maxPageSize = Integer.MAX_VALUE;
+    @Builder.Default
+    private final int defaultPageSize = 20;
+    @Builder.Default
+    private final int maxQueryStringLength = Integer.MAX_VALUE;
+    @Builder.Default
+    private final int maxFilterCount = Integer.MAX_VALUE;
     private SpeedyQueryImpl speedyQuery;
     private String actionSuffix;
-
-    public SpeedyUriContext(MetaModel metaModel, String requestURI) {
-        this.metaModel = metaModel;
-        this.requestURI = requestURI;
-        this.maxPageSize = Integer.MAX_VALUE;
-        this.defaultPageSize = 20;
-    }
-
-    @Builder
-    private SpeedyUriContext(MetaModel metaModel, String requestURI, int maxPageSize, int defaultPageSize) {
-        this.metaModel = metaModel;
-        this.requestURI = requestURI;
-        this.maxPageSize = maxPageSize;
-        this.defaultPageSize = defaultPageSize;
-    }
 
     Expression buildExpression(FieldMetadata metadata, String symbol) throws SpeedyHttpException {
         if (symbol.startsWith("$")) {
@@ -76,6 +68,10 @@ public class SpeedyUriContext {
     public SpeedyQuery process() throws Exception {
 
         String sanitizedURI = URLDecoder.decode(requestURI, StandardCharsets.UTF_8);
+        if (sanitizedURI.length() > maxQueryStringLength) {
+            throw new BadRequestException(
+                    "Query string length " + sanitizedURI.length() + " exceeds maximum " + maxQueryStringLength);
+        }
         if (sanitizedURI.contains(SpeedyConstant.URI)) {
             int indexOf = sanitizedURI.indexOf(SpeedyConstant.URI);
             sanitizedURI = sanitizedURI.substring(indexOf + SpeedyConstant.URI.length());
@@ -198,9 +194,15 @@ public class SpeedyUriContext {
     private void captureUrlParams(UriComponents uriComponents) throws SpeedyHttpException {
         if (!uriComponents.getQueryParams().isEmpty()) {
             MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
+            int filterCount = 0;
             for (Map.Entry<String, List<String>> entry : queryParams.entrySet()) {
                 String key = entry.getKey().strip().trim();
                 if (!key.startsWith("$")) {
+                    filterCount++;
+                    if (filterCount > maxFilterCount) {
+                        throw new BadRequestException(
+                                "Filter count exceeds maximum " + maxFilterCount);
+                    }
                     try {
                         speedyQuery.getConditionFactory().createQueryField(key);
                     } catch (NotFoundException e) {

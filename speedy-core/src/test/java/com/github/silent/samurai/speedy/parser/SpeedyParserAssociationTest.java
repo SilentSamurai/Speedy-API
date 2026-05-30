@@ -40,7 +40,7 @@ public class SpeedyParserAssociationTest {
     void processRequest1_1() throws Exception {
         Mockito.when(metaModel.findEntityMetadata("ComposedProduct")).thenReturn(entityMetadata);
 
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ComposedProduct?productItem.id=1");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ComposedProduct?productItem.id=1").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
