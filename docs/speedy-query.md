@@ -534,6 +534,94 @@ JsonNode queryJson = query.build();
 System.out.println(queryJson.toPrettyString());
 ```
 
+## New Operators
+
+### `$between` — Inclusive Range Filtering
+
+The `$between` operator filters records where a field falls within an inclusive range (equivalent to `$gte` AND `$lte`).
+
+```json
+POST /speedy/v1/Inventory/$query
+{
+  "$from": "Inventory",
+  "$where": {
+    "cost": { "$between": [10, 50] }
+  }
+}
+```
+
+Works with numeric, date, datetime, and string (lexicographic) fields:
+
+```json
+{
+  "$from": "Category",
+  "$where": {
+    "name": { "$between": ["A", "M"] }
+  }
+}
+```
+
+```java
+SpeedyQuery query = SpeedyQuery.from("Inventory")
+    .where(condition("cost", between(10, 50)))
+    .build();
+```
+
+**Error conditions:**
+- Non-array value → `400 BadRequest` — "$between only accepts an array"
+- Array with ≠ 2 values → `400 BadRequest` — "$between requires exactly 2 values"
+
+### `$isnull` — IS NULL Check
+
+Two forms — shorthand (recommended) and explicit:
+
+```json
+// Shorthand
+{ "modifiedAt": "$isnull" }
+
+// Explicit
+{ "modifiedAt": { "$isnull": true } }
+```
+
+Both generate `modifiedAt IS NULL`. The `$isnotnull` operator works identically for IS NOT NULL.
+
+```java
+SpeedyQuery query = SpeedyQuery.from("Procurement")
+    .where(condition("modifiedAt", isnull()))
+    .build();
+```
+
+**Error conditions:**
+- Non-boolean value → `400 BadRequest` — "$isnull only accepts a boolean value"
+- `false` value → `400 BadRequest` — "$isnull requires true. Use $isnotnull for IS NOT NULL"
+
+### `$isnotnull` — IS NOT NULL Check
+
+```json
+// Shorthand
+{ "modifiedAt": "$isnotnull" }
+
+// Explicit
+{ "modifiedAt": { "$isnotnull": true } }
+```
+
+**Error conditions:**
+- `false` value → `400 BadRequest` — "$isnotnull requires true. Use $isnull for IS NULL"
+
+All three operators compose inside `$and`/`$or`:
+
+```json
+{
+  "$from": "Procurement",
+  "$where": {
+    "$or": [
+      { "createdAt": { "$between": ["2024-01-01", "2024-03-31"] } },
+      { "modifiedAt": { "$isnull": true } }
+    ]
+  }
+}
+```
+
 ## Best Practices
 
 ### 1. Use Static Imports
@@ -645,6 +733,9 @@ SpeedyQuery adminQuery = UserQueries.usersByRole("admin");
 | `$in`      | `in(Object...)`   | In array of values    | `in("A", "B", "C")`          |
 | `$nin`     | `nin(Object...)`  | Not in array          | `nin("deleted", "archived")` |
 | `$matches` | `matches(Object)` | Pattern matching      | `matches("*john*")`          |
+| `$between` | `between(low, high)` | Inclusive range     | `between(10, 50)`           |
+| `$isnull`  | `isnull()`          | IS NULL check       | `isnull()`                  |
+| `$isnotnull`| `isnotnull()`       | IS NOT NULL check   | `isnotnull()`               |
 
 ### Logical Operators
 

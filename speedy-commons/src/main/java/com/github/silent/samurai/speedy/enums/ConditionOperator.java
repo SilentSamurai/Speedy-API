@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.enums;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 
 public enum ConditionOperator {
-    EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR, PATTERN_MATCHING;
+    EQ, NEQ, LT, GT, LTE, GTE, IN, NOT_IN, AND, OR, PATTERN_MATCHING, BETWEEN, ISNULL, ISNOTNULL;
 
     public static ConditionOperator fromSymbol(String symbol) throws BadRequestException {
         return switch (symbol) {
@@ -17,12 +17,15 @@ public enum ConditionOperator {
             case "<>", "$in" -> IN;
             case "<!>", "$nin" -> NOT_IN;
             case "&", ",", "&&", "$and" -> AND;
+            case "$between" -> BETWEEN;
+            case "$isnull" -> ISNULL;
+            case "$isnotnull" -> ISNOTNULL;
             case "|", "||", "$or" -> OR;
             default -> throw new BadRequestException("Operator not recognized: " + symbol);
         };
     }
 
     public boolean doesAcceptMultipleValues() {
-        return this == IN || this == NOT_IN;
+        return this == IN || this == NOT_IN || this == BETWEEN;
     }
 }

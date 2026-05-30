@@ -12,6 +12,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
+import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
@@ -287,6 +288,15 @@ public class JsonQueryParser {
         QueryField queryField = speedyQuery.getConditionFactory().createQueryField(fieldName);
         // if equals short-handed a: b
         if (fieldNode.isValueNode()) {
+            if (fieldNode.isTextual()) {
+                String text = fieldNode.asText();
+                if ("$isnull".equals(text)) {
+                    return conditionFactory.createBiCondition(queryField, ConditionOperator.ISNULL, new Literal(new SpeedyBoolean(true)));
+                }
+                if ("$isnotnull".equals(text)) {
+                    return conditionFactory.createBiCondition(queryField, ConditionOperator.ISNOTNULL, new Literal(new SpeedyBoolean(true)));
+                }
+            }
             Expression expression = buildExpression(queryField.getMetadataForParsing(), (ValueNode) fieldNode);
             return conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, expression);
         }
@@ -314,6 +324,16 @@ public class JsonQueryParser {
                     // standard SQL does not support the syntax: COLA IN [COLB, COLC]
                     return conditionFactory.createBiCondition(queryField, operator, new Literal(fieldValue));
                 }
+                // ISNULL/ISNOTNULL values must be parsed as booleans, not as the field's type
+                if (operator == ConditionOperator.ISNULL || operator == ConditionOperator.ISNOTNULL) {
+                    if (!valueNode.isBoolean()) {
+                        throw new BadRequestException("$" + operator.name().toLowerCase()
+                                + " only accepts a boolean value");
+                    }
+                    return conditionFactory.createBiCondition(queryField, operator,
+                            new Literal(new SpeedyBoolean(valueNode.asBoolean())));
+                }
+
                 // if operator is $eq $lte $matches , value will be basic a : { $matches : "sup*" }
                 if (valueNode.isValueNode()) {
                     Expression expression = buildExpression(queryField.getMetadataForParsing(), (ValueNode) valueNode);

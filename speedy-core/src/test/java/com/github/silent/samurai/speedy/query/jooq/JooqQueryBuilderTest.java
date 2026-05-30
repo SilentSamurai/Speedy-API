@@ -544,4 +544,68 @@ class JooqQueryBuilderTest {
                 fetch next 10 rows only""";
         assertEquals(sqlQuery, json2SqlQuery);
     }
+
+    // T012 - User Story 1: $between SQL generation
+    @Test
+    void where_between() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(
+                        condition("cost", between(10, 50))
+                )
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."COST" between 10 and 50
+                offset 0 rows
+                fetch next 10 rows only""";
+
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    // T021 - User Story 2: $isnull SQL generation
+    @Test
+    void where_isnull() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("category", isnull())
+                )
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select *
+                from "MULTIPLEFK"
+                where "MULTIPLEFK"."CATEGORY" is null
+                offset 0 rows
+                fetch next 10 rows only""";
+
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    // T021 - User Story 2: $isnotnull SQL generation
+    @Test
+    void where_isnotnull() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("category", isnotnull())
+                )
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select *
+                from "MULTIPLEFK"
+                where "MULTIPLEFK"."CATEGORY" is not null
+                offset 0 rows
+                fetch next 10 rows only""";
+
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
 }

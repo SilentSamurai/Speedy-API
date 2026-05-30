@@ -1092,7 +1092,6 @@ public class SpeedyV2WhereClauseTest {
         JsonNode root = CommonUtil.json().readTree(content);
         JsonNode payload = root.get("payload");
 
-        // Assert: discount < dueAmount
         for (JsonNode item : payload) {
             double invoiceDate = item.get("invoiceDate").asDouble();
             double createdAt = item.get("createdAt").asDouble();
@@ -1101,5 +1100,479 @@ public class SpeedyV2WhereClauseTest {
 
     }
 
+    // T007 - User Story 1: $between on numeric field (cost)
+    // Inventory costs: 10, 15, 25, 30, 45, 50, 60, 75, 80, 100
+    // $between [10, 50] should return 6 records (10, 15, 25, 30, 45, 50)
+    @Test
+    void testQuery20_between_numeric() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Inventory");
+        ArrayNode betweenArray = body.putObject("$where")
+                .putObject("cost")
+                .putArray("$between");
+        betweenArray.add(10);
+        betweenArray.add(50);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(6)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
+                        .value(Matchers.everyItem(
+                                Matchers.allOf(
+                                        Matchers.greaterThanOrEqualTo(10.0),
+                                        Matchers.lessThanOrEqualTo(50.0)
+                                )
+                        )))
+                .andReturn();
+    }
+
+    // T008 - User Story 1: $between on date field (purchaseDate)
+    // Procurement purchaseDate values: 2022-01-01, 2022-01-02, 2022-01-03, 2022-01-04, 2022-01-05, 2022-01-05
+    // $between ["2022-01-01T00:00:00Z", "2022-01-03T23:59:59Z"] should return 3 records (IDs 1, 2, 3)
+    @Test
+    void testQuery21_between_date() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        ArrayNode betweenArray = body.putObject("$where")
+                .putObject("purchaseDate")
+                .putArray("$between");
+        betweenArray.add("2022-01-01T00:00:00Z");
+        betweenArray.add("2022-01-03T23:59:59Z");
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(3)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
+    }
+
+    // T009 - User Story 1: $between with empty result set
+    // Inventory costs: 10, 15, 25, 30, 45, 50, 60, 75, 80, 100
+    // $between [200, 300] should return 0 records
+    @Test
+    void testQuery22_between_empty_result() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Inventory");
+        ArrayNode betweenArray = body.putObject("$where")
+                .putObject("cost")
+                .putArray("$between");
+        betweenArray.add(200);
+        betweenArray.add(300);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(0)))
+                .andReturn();
+    }
+
+    // T010 - User Story 1: $between on datetime field (createdAt)
+    // All procurements have createdAt = '2022-04-30 10:00:00'
+    @Test
+    void testQuery23_between_datetime() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        ArrayNode betweenArray = body.putObject("$where")
+                .putObject("createdAt")
+                .putArray("$between");
+        betweenArray.add("2022-04-30T00:00:00");
+        betweenArray.add("2022-04-30T23:59:59");
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(6)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
+    }
+
+    // T011 - User Story 1: $between on string field (name)
+    // Category names: cat-1-1 through cat-13-13
+    // $between ["cat-10-10", "cat-13-13"] should return 4 records (10, 11, 12, 13)
+    @Test
+    void testQuery24_between_string() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Category");
+        ArrayNode betweenArray = body.putObject("$where")
+                .putObject("name")
+                .putArray("$between");
+        betweenArray.add("cat-10-10");
+        betweenArray.add("cat-13-13");
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(4)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].name")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
+    }
+
+    // T016 - User Story 2: $isnull shorthand on modifiedAt
+    // All procurements have modifiedAt = NULL
+    @Test
+    void testQuery25_isnull_shorthand() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        body.putObject("$where")
+                .put("modifiedAt", "$isnull");
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(6)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].modifiedAt")
+                        .value(Matchers.everyItem(Matchers.is(IsNull.nullValue()))))
+                .andReturn();
+    }
+
+    // T017 - User Story 2: $isnull explicit form
+    @Test
+    void testQuery26_isnull_explicit() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        body.putObject("$where")
+                .putObject("modifiedAt")
+                .put("$isnull", true);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(6)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].modifiedAt")
+                        .value(Matchers.everyItem(Matchers.is(IsNull.nullValue()))))
+                .andReturn();
+    }
+
+    // T018 - User Story 2: $isnotnull shorthand on modifiedAt (all NULL, expect empty)
+    @Test
+    void testQuery27_isnotnull_shorthand() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        body.putObject("$where")
+                .put("modifiedAt", "$isnotnull");
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(0)))
+                .andReturn();
+    }
+
+    // T019 - User Story 2: $isnotnull explicit on createdAt (all non-null, expect all 6)
+    @Test
+    void testQuery28_isnotnull_explicit() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        body.putObject("$where")
+                .putObject("createdAt")
+                .put("$isnotnull", true);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(6)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].createdAt")
+                        .value(Matchers.everyItem(Matchers.is(IsNull.notNullValue()))))
+                .andReturn();
+    }
+
+    // T020 - User Story 2: $isnull with false value → 400 error
+    @Test
+    void testQuery29_isnull_false_error() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        body.putObject("$where")
+                .putObject("modifiedAt")
+                .put("$isnull", false);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isBadRequest())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value(Matchers.containsString("$isnull requires true")))
+                .andReturn();
+    }
+
+    // T027 - $isnull with non-boolean value (integer) → 400 error
+    @Test
+    void testQuery29b_isnull_nonboolean_error() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        body.putObject("$where")
+                .putObject("modifiedAt")
+                .put("$isnull", 123);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isBadRequest())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value(Matchers.containsString("$isnull only accepts a boolean value")));
+    }
+
+    // T028 - $isnotnull with non-boolean value (string) → 400 error
+    @Test
+    void testQuery29c_isnotnull_nonboolean_error() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        body.putObject("$where")
+                .putObject("modifiedAt")
+                .put("$isnotnull", "yes");
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isBadRequest())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message")
+                        .value(Matchers.containsString("$isnotnull only accepts a boolean value")));
+    }
+
+    // T027 - User Story 3: $between inside $or with $isnull
+    @Test
+    void testQuery30_between_in_or_with_isnull() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Procurement");
+        ArrayNode orArray = body.putObject("$where")
+                .putArray("$or");
+
+        // Branch 1: purchaseDate between 2022-01-01 and 2022-01-02
+        ObjectNode betweenCondition = orArray.addObject();
+        betweenCondition.putObject("purchaseDate")
+                .putArray("$between")
+                .add("2022-01-01T00:00:00Z")
+                .add("2022-01-02T23:59:59Z");
+
+        // Branch 2: modifiedAt $isnull
+        ObjectNode isnullCondition = orArray.addObject();
+        isnullCondition.putObject("modifiedAt")
+                .put("$isnull", true);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andReturn();
+
+        String content = mvcResult.getResponse().getContentAsString();
+        JsonNode root = CommonUtil.json().readTree(content);
+        JsonNode payload = root.get("payload");
+
+        // All 6 procurements have modifiedAt=NULL, so this $or should return all 6
+        assertEquals(6, payload.size());
+    }
+
+    // T028 - User Story 3: $between inside $and with another field condition
+    @Test
+    void testQuery31_between_in_and_with_field() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "Inventory");
+        ArrayNode andArray = body.putObject("$where")
+                .putArray("$and");
+
+        // Condition 1: cost between 30 and 80
+        ObjectNode betweenCondition = andArray.addObject();
+        betweenCondition.putObject("cost")
+                .putArray("$between")
+                .add(30)
+                .add(80);
+
+        // Condition 2: cost != 75 (or some other field condition)
+        ObjectNode neCondition = andArray.addObject();
+        neCondition.putObject("cost")
+                .put("$ne", 75);
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult mvcResult = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id").isNotEmpty())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].id")
+                        .value(Matchers.everyItem(Matchers.isA(String.class))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].cost")
+                        .value(Matchers.everyItem(
+                                Matchers.allOf(
+                                        Matchers.greaterThanOrEqualTo(30.0),
+                                        Matchers.lessThanOrEqualTo(80.0),
+                                        Matchers.not(Matchers.equalTo(75.0))
+                                )
+                        )))
+                .andReturn();
+    }
+
+    // T029 - User Story 3: $between produces same results as $and + $gte + $lte
+    @Test
+    void testQuery32_between_equals_gte_lte() throws Exception {
+        // Query 1: cost $between [15, 50]
+        ObjectNode betweenBody = CommonUtil.json().createObjectNode();
+        betweenBody.put("$from", "Inventory");
+        betweenBody.putObject("$where")
+                .putObject("cost")
+                .putArray("$between")
+                .add(15)
+                .add(50);
+
+        MockHttpServletRequestBuilder betweenReq = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(betweenBody))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult betweenResult = mvc.perform(betweenReq)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andReturn();
+
+        JsonNode betweenPayload = CommonUtil.json().readTree(betweenResult.getResponse().getContentAsString()).get("payload");
+
+        // Query 2: cost $gte 15 AND cost $lte 50
+        ObjectNode andBody = CommonUtil.json().createObjectNode();
+        andBody.put("$from", "Inventory");
+        ArrayNode andArray = andBody.putObject("$where")
+                .putArray("$and");
+        andArray.addObject()
+                .putObject("cost")
+                .put("$gte", 15);
+        andArray.addObject()
+                .putObject("cost")
+                .put("$lte", 50);
+
+        MockHttpServletRequestBuilder andReq = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(andBody))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        MvcResult andResult = mvc.perform(andReq)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(1))))
+                .andReturn();
+
+        JsonNode andPayload = CommonUtil.json().readTree(andResult.getResponse().getContentAsString()).get("payload");
+
+        // Both must return the same number of records
+        assertEquals(betweenPayload.size(), andPayload.size(),
+                "$between and $and+$gte+$lte should return the same number of records");
+
+        // Both must return the same IDs
+        for (int i = 0; i < betweenPayload.size(); i++) {
+            String betweenId = betweenPayload.get(i).get("id").asText();
+            String andId = andPayload.get(i).get("id").asText();
+            assertEquals(betweenId, andId,
+                    "Record IDs must match between $between and $and+$gte+$lte at index " + i);
+        }
+    }
 
 }
