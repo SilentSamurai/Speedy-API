@@ -53,7 +53,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, SpeedyConstant.URI + "/Product");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
         assertEquals("Product", speedyQuery.getFrom().getName());
@@ -62,7 +62,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest_1() {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, SpeedyConstant.URI + "Product");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(SpeedyConstant.URI + "Product").build();
         try {
             parser.parse();
         } catch (RuntimeException e) {
@@ -74,7 +74,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, SpeedyConstant.URI + "/Product?id=1");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product?id=1").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -89,7 +89,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, SpeedyConstant.URI + "/Product/");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product/").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -99,7 +99,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, SpeedyConstant.URI + "/Product/?id='1'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product/?id='1'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -114,7 +114,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest6() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, SpeedyConstant.URI + "/Product");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -124,7 +124,7 @@ class SpeedyUriContextTest {
 
     @Test
     void association_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, SpeedyConstant.URI + "/ComposedProduct?productItem.id='1'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(SpeedyConstant.URI + "/ComposedProduct?productItem.id='1'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -139,7 +139,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest6_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?id='1'&name='apple'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?id='1'&name='apple'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -161,7 +161,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest6_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?id='fdc0bff1-8cc6-446e-a74e-5295039a92dd'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?id='fdc0bff1-8cc6-446e-a74e-5295039a92dd'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -177,7 +177,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest7() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?name='apple'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?name='apple'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -193,7 +193,7 @@ class SpeedyUriContextTest {
 
     @Test
     void string_multiple_value() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?name=apple&name=ball&name=cat");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?name=apple&name=ball&name=cat").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -213,13 +213,13 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest7_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?name='apple?&*'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?name='apple?&*'").build();
         assertThrows(BadRequestException.class, () -> parser.parse());
     }
 
     @Test
     void processRequest8() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?name='Test-01%42'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?name='Test-01%42'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -235,7 +235,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?name=Test&cost=12");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?name=Test&cost=12").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -257,7 +257,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?cost=25");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?cost=25").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -275,7 +275,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest8_4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?cost = 25");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?cost = 25").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -294,7 +294,7 @@ class SpeedyUriContextTest {
 
 //    @Test
 //    void processRequest8_5() throws Exception {
-//        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost > 25)");
+//        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product(cost > 25).build()");
 //        SpeedyQuery speedyQuery = parser.parse();
 //        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 //
@@ -310,7 +310,7 @@ class SpeedyUriContextTest {
 
 //    @Test
 //    void processRequest8_6() throws Exception {
-//        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product(cost >= 25)");
+//        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product(cost >= 25).build()");
 //        SpeedyQuery speedyQuery = parser.parse();
 //        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 //
@@ -327,7 +327,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest9() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$format='JSON'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?$format='JSON'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -339,7 +339,7 @@ class SpeedyUriContextTest {
 
 //    @Test
 //    void processRequest10() throws Exception {
-//        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$format='JSON'&$metadata='true'");
+//        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?$format='JSON'&$metadata='true'").build();
 //        SpeedyQuery speedyQuery = parser.parse();
 //        SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 //
@@ -352,7 +352,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$format='JSON'&");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?$format='JSON'&").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -364,7 +364,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_2() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?intVal='2'&doubleVal='2.0'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?intVal='2'&doubleVal='2.0'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -384,13 +384,13 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_3() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?intVal");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?intVal").build();
         assertThrows(BadRequestException.class, () -> parser.parse());
     }
 
     @Test
     void processRequest10_4() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?intVal=2");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?intVal=2").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -406,7 +406,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest10_5() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?intVal=2&doubleVal='2.0'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?intVal=2&doubleVal='2.0'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -426,7 +426,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest11() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$orderBy='name,id'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?$orderBy='name,id'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -452,7 +452,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest11_1() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$orderBy='name'&$orderBy='id'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?$orderBy='name'&$orderBy='id'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -478,7 +478,7 @@ class SpeedyUriContextTest {
 
     @Test
     void order_by_desc() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/Product?$orderByDesc='name'&$orderByDesc='id'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/Product?$orderByDesc='name'&$orderByDesc='id'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -505,7 +505,7 @@ class SpeedyUriContextTest {
 
     @Test
     void localDate_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?localDate='2024-03-13'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?localDate='2024-03-13'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -518,14 +518,14 @@ class SpeedyUriContextTest {
 
     @Test
     void localDate_empty_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?localDate=''");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?localDate=''").build();
         assertThrows(BadRequestException.class, () -> parser.parse());
 //        SpeedyQuery speedyQuery = parser.parse();
     }
 
     @Test
     void localTime_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?localTime='12:30:45'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?localTime='12:30:45'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -538,13 +538,13 @@ class SpeedyUriContextTest {
 
     @Test
     void localTime_empty_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?localTime=''");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?localTime=''").build();
         assertThrows(BadRequestException.class, () -> parser.parse());
     }
 
     @Test
     void localDateTime_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?localDateTime='2024-03-13T12:30:45'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?localDateTime='2024-03-13T12:30:45'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -557,13 +557,13 @@ class SpeedyUriContextTest {
 
     @Test
     void localDateTime_empty_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?localDateTime=''");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?localDateTime=''").build();
         assertThrows(BadRequestException.class, parser::parse);
     }
 
     @Test
     void zonedDateTime_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?zonedDateTime='2024-03-13T12:30:45%2B05%3A30'");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?zonedDateTime='2024-03-13T12:30:45%2B05%3A30'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
         ZonedDateTime zonedDateTime = ZonedDateTime.of(2024, 3, 13, 12, 30, 45, 0,
@@ -580,14 +580,14 @@ class SpeedyUriContextTest {
 
     @Test
     void zonedDateTime_empty_value_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?zonedDateTime=''");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?zonedDateTime=''").build();
         assertThrows(BadRequestException.class, parser::parse);
     }
 
     @Test
     void boolean_value_test() throws Exception {
         // Given: URL with boolean value
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?booleanVal=true");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?booleanVal=true").build();
 
         // When: Parsing the URL
         SpeedyQuery speedyQuery = parser.parse();
@@ -602,7 +602,7 @@ class SpeedyUriContextTest {
 
     @Test
     void boolean_value_false_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?booleanVal=false");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?booleanVal=false").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -614,7 +614,7 @@ class SpeedyUriContextTest {
 
     @Test
     void boolean_value_numeric_true_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?booleanVal=1");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?booleanVal=1").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -626,7 +626,7 @@ class SpeedyUriContextTest {
 
     @Test
     void boolean_value_numeric_false_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?booleanVal=0");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?booleanVal=0").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -638,7 +638,7 @@ class SpeedyUriContextTest {
 
     @Test
     void boolean_value_invalid_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?booleanVal=invalid");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?booleanVal=invalid").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -651,7 +651,7 @@ class SpeedyUriContextTest {
 
     @Test
     void page_size_test() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?$pageSize=10&$pageNo=0");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?$pageSize=10&$pageNo=0").build();
         SpeedyQuery speedyQuery = parser.parse();
         assertEquals(0, speedyQuery.getPageInfo().getPageNo());
         assertEquals(10, speedyQuery.getPageInfo().getPageSize());
@@ -741,28 +741,28 @@ class SpeedyUriContextTest {
 
     @Test
     void default_page_size_unset_uses_20() throws Exception {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest").build();
         SpeedyQuery speedyQuery = parser.parse();
         assertEquals(20, speedyQuery.getPageInfo().getPageSize());
     }
 
     @Test
     void invalid_page_size_throws() {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?$pageSize=abc");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?$pageSize=abc").build();
         BadRequestException ex = assertThrows(BadRequestException.class, parser::parse);
         assertTrue(ex.getMessage().contains("Invalid value for $pageSize"));
     }
 
     @Test
     void invalid_page_no_throws() {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?$pageNo=xyz");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?$pageNo=xyz").build();
         BadRequestException ex = assertThrows(BadRequestException.class, parser::parse);
         assertTrue(ex.getMessage().contains("Invalid value for $pageNo"));
     }
 
     @Test
     void unknown_query_field_throws() {
-        SpeedyUriContext parser = new SpeedyUriContext(metaModel, UriRoot + "/ValueTest?typoField=5");
+        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ValueTest?typoField=5").build();
         BadRequestException ex = assertThrows(BadRequestException.class, parser::parse);
         assertTrue(ex.getMessage().contains("Unknown query field: 'typoField'"));
     }

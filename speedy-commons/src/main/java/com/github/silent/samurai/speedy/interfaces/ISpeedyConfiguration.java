@@ -26,6 +26,14 @@ public interface ISpeedyConfiguration {
         return 1000;
     }
 
+    default int getMaxQueryStringLength() {
+        return 2048;
+    }
+
+    default int getMaxFilterCount() {
+        return 100;
+    }
+
     default long getMaxRequestBodySize() {
         return 1_048_576;
     }
