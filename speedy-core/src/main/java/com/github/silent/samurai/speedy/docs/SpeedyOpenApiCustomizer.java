@@ -148,6 +148,8 @@ public class SpeedyOpenApiCustomizer {
 
         Schema<String> updateSchema = OASGenerator.createEntitySchema(
                 entityMetadata,
+                // Key fields are not updatable (isUpdatable=false for @GeneratedValue PKs),
+                // but must still appear in the update schema so clients can identify the entity to update.
                 fm -> fm.isUpdatable() || fm instanceof KeyFieldMetadata,
                 OASGenerator.ENTITY_KEY,
                 true

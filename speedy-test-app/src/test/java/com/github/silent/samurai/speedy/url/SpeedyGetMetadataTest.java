@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.hamcrest.Matchers;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -91,6 +92,24 @@ class SpeedyGetMetadataTest {
         mvc.perform(getRequest)
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.components.schemas.Category").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.components.schemas.CategoryKey.properties.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.components.schemas.CategoryKey.properties.name").doesNotExist())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.components.schemas.UpdateCategoryRequest.properties.id").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.components.schemas.CreateCategoryRequest.properties.id").doesNotExist())
+                .andReturn();
+    }
+
+    @Test
+    void generatedKeyIsDeserializable() throws Exception {
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(getRequest)
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath(
+                        "$[?(@.name == 'Category')].fields[?(@.outputProperty == 'id')].isDeserializable",
+                        Matchers.everyItem(Matchers.is(true))))
                 .andReturn();
     }
 
