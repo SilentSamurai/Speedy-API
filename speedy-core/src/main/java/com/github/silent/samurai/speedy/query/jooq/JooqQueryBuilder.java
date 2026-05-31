@@ -3,9 +3,11 @@ package com.github.silent.samurai.speedy.query.jooq;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
@@ -393,8 +395,49 @@ public class JooqQueryBuilder {
     }
 
     void prepareQuery() throws SpeedyHttpException {
-        this.query = this.dslContext.select()
-                .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
+        Set<String> selectFields = speedyQuery.getSelect();
+        if (selectFields != null && !selectFields.isEmpty()) {
+            boolean hasValidUserField = false;
+            for (String fieldName : selectFields) {
+                try {
+                    FieldMetadata field = entityMetadata.getField(fieldName);
+                    if (field.getDbColumnName() != null && !(field.isAssociation() && field.isCollection())) {
+                        hasValidUserField = true;
+                        break;
+                    }
+                } catch (NotFoundException ignored) {
+                }
+            }
+            if (!hasValidUserField) {
+                this.query = this.dslContext.select()
+                        .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
+            } else {
+                Set<FieldMetadata> addedFields = new LinkedHashSet<>();
+                for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
+                    if (keyField.getDbColumnName() != null) {
+                        addedFields.add(keyField);
+                    }
+                }
+                for (String fieldName : selectFields) {
+                    try {
+                        FieldMetadata field = entityMetadata.getField(fieldName);
+                        if (field.getDbColumnName() == null) continue;
+                        if (field.isAssociation() && field.isCollection()) continue;
+                        addedFields.add(field);
+                    } catch (NotFoundException ignored) {
+                    }
+                }
+                List<Field<?>> fields = new ArrayList<>(addedFields.size());
+                for (FieldMetadata fm : addedFields) {
+                    fields.add(JooqUtil.getColumn(fm, dialect));
+                }
+                this.query = this.dslContext.select(fields)
+                        .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
+            }
+        } else {
+            this.query = this.dslContext.select()
+                    .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
+        }
         if (Objects.nonNull(speedyQuery.getWhere())) {
             var predicates = conditionToPredicate(this.speedyQuery.getWhere());
             query.where(predicates);

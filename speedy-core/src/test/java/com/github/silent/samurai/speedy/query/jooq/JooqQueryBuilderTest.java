@@ -27,7 +27,6 @@ import javax.sql.DataSource;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Disabled
 @Slf4j
 @ExtendWith(MockitoExtension.class)
 class JooqQueryBuilderTest {
@@ -605,6 +604,113 @@ class JooqQueryBuilderTest {
                 offset 0 rows
                 fetch next 10 rows only""";
 
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    // T00X - $select with valid fields
+    @Test
+    void select_valid_fields() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(condition("id", eq("1")))
+                .select("name", "cost")
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select "PRODUCT"."ID", "PRODUCT"."NAME", "PRODUCT"."COST"
+                from "PRODUCT"
+                where "PRODUCT"."ID" = '1'
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    @Test
+    void select_pk_no_duplicate() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(condition("id", eq("1")))
+                .select("id", "name")
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select "PRODUCT"."ID", "PRODUCT"."NAME"
+                from "PRODUCT"
+                where "PRODUCT"."ID" = '1'
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    @Test
+    void select_skips_nonexistent_fields() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(condition("id", eq("1")))
+                .select("name", "nonexistent")
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select "PRODUCT"."ID", "PRODUCT"."NAME"
+                from "PRODUCT"
+                where "PRODUCT"."ID" = '1'
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    @Test
+    void select_only_nonexistent_fields_falls_back() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .where(condition("id", eq("1")))
+                .select("nonexistent", "bogus")
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."ID" = '1'
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    @Test
+    void select_association_fk_field() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(condition("id", eq("1")))
+                .select("category", "a")
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select "MULTIPLEFK"."ID", "MULTIPLEFK"."CATEGORY", "MULTIPLEFK"."A"
+                from "MULTIPLEFK"
+                where "MULTIPLEFK"."ID" = '1'
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    @Test
+    void select_without_where() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("Product")
+                .select("name")
+                .prettyPrint()
+                .build();
+
+        String expected = """
+                select "PRODUCT"."ID", "PRODUCT"."NAME"
+                from "PRODUCT"
+                offset 0 rows
+                fetch next 10 rows only""";
         assertEquals(expected, json2SqlQuery(jsonQuery));
     }
 
