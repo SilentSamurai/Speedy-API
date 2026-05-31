@@ -37,6 +37,28 @@ class CategoryUpdateDeleteValidationIT {
                     .execute()
                     .expectBadRequest();
         }
+
+        @Test
+        @DisplayName("UPDATE with valid key but empty name should fail - custom validator")
+        void updateWithEmptyName_shouldFail() {
+            SpeedyTestResult createResult = client.create("Category")
+                    .field("name", "temp-for-update")
+                    .execute()
+                    .expectOk();
+
+            String id = createResult.jsonPath("$.payload[0].id");
+
+            client.update("Category")
+                    .key("id", id)
+                    .field("name", "")
+                    .execute()
+                    .expectBadRequest();
+
+            client.delete("Category")
+                    .key("id", id)
+                    .execute()
+                    .expectOk();
+        }
     }
 
     @Nested
@@ -46,6 +68,15 @@ class CategoryUpdateDeleteValidationIT {
         @DisplayName("DELETE without key should fail with 400 Bad Request")
         void deleteMissingKey_shouldFail() {
             client.delete("Category")
+                    .execute()
+                    .expectBadRequest();
+        }
+
+        @Test
+        @DisplayName("DELETE with empty ID should fail - custom validator")
+        void deleteWithEmptyId_shouldFail() {
+            client.delete("Category")
+                    .key("id", "")
                     .execute()
                     .expectBadRequest();
         }
