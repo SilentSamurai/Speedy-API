@@ -13,6 +13,28 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+/// # BatchResultSerializer
+///
+/// Serializes partial-failure responses for bulk create and delete operations
+/// in {@code PER_ENTITY} transaction mode. Separates results into succeeded
+/// and failed arrays with per-failure metadata.
+///
+/// ## Purpose
+/// - Reports mixed success/failure outcomes for multi-entity operations
+/// - Sets appropriate HTTP status: 200 (all succeeded), 207 Multi-Status (partial),
+///   or 400 (all failed)
+/// - Each failure includes index, status code, message, timestamp, and input PK
+///
+/// ## Output Format
+/// ```json
+/// {
+///   "succeeded": [{"id": 1}, {"id": 2}],
+///   "failed": [
+///     {"index": 3, "status": 400, "message": "...", "timestamp": "...", "inputPk": {"id": 3}}
+///   ],
+///   "pageIndex": 0
+/// }
+/// ```
 public class BatchResultSerializer implements IResponseSerializerV2 {
 
     private final List<SpeedyEntity> succeeded;

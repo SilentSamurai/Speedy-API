@@ -30,6 +30,31 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
+/// # DeleteHandler
+///
+/// Handles {@code DELETE /{Entity}/$delete} requests. Parses a JSON array of
+/// primary keys, fires PRE/POST_DELETE events, validates, and bulk-deletes entities.
+/// Supports both {@code BATCH} and {@code PER_ENTITY} transaction modes.
+///
+/// ## Purpose
+/// - Parses a JSON array of PK objects into {@link SpeedyEntityKey} instances
+/// - Verifies each entity exists before attempting deletion
+/// - Supports two transaction modes: BATCH (all-or-nothing) and PER_ENTITY (partial success)
+/// - Returns key-only projection for successful deletes, or a {@link BatchResultSerializer}
+///   response with succeeded/failed arrays on partial failure
+///
+/// ## Processing Flow
+/// 1. Parses the JSON array body into a list of {@code SpeedyEntityKey} objects
+/// 2. Ensures each PK is complete before proceeding
+/// 3. Branches by transaction mode:
+///    - **BATCH**: Validates all keys exist, then deletes in a single transaction
+///    - **PER_ENTITY**: Runs each delete in its own transaction; collects partial failures
+/// 4. For each entity: validates → triggers PRE_DELETE event → deletes → triggers POST_DELETE
+/// 5. On success: sets {@link JSONSerializerV2} with key-only projection
+/// 6. On partial failure (PER_ENTITY with multiple keys): sets {@link BatchResultSerializer}
+///
+/// ## Chain Position
+/// Dispatched by {@link SwitchHandler} for DELETE requests with {@code $delete} suffix.
 public class DeleteHandler implements Handler {
 
     final Handler next;

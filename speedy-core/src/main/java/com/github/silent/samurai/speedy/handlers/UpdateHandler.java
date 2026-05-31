@@ -25,6 +25,30 @@ import java.util.HashSet;
 import java.util.List;
 
 @Slf4j
+/// # UpdateHandler
+///
+/// Handles {@code PUT/PATCH /{Entity}/$update} requests. Parses the primary key
+/// and field values from a JSON body, fires PRE/POST_UPDATE events, validates
+/// the entity, and updates it in a single transaction.
+///
+/// ## Purpose
+/// - Updates a single entity identified by its primary key in the request body
+/// - Validates that the entity exists before attempting the update
+/// - Runs update inside a transaction with PRE/POST event lifecycle hooks
+///
+/// ## Processing Flow
+/// 1. Parses the JSON body to extract the primary key and entity fields
+/// 2. Verifies the entity exists via {@code QueryProcessor.exists(pk)}
+/// 3. Runs in a transaction:
+///    - Triggers PRE_UPDATE event
+///    - Validates the updated entity via {@code ValidationProcessor}
+///    - Executes the update via {@code QueryProcessor.update(pk, entity)}
+///    - Triggers POST_UPDATE event
+/// 4. On success: sets {@link JSONSerializerV2} with the saved entity
+/// 5. On failure: throws 404 if entity not found, 500 for internal errors
+///
+/// ## Chain Position
+/// Dispatched by {@link SwitchHandler} for PUT/PATCH requests with {@code $update} suffix.
 public class UpdateHandler implements Handler {
 
     final Handler next;

@@ -32,6 +32,31 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
+/// # CreateHandler
+///
+/// Handles {@code POST /{Entity}/$create} requests. Parses a JSON array body,
+/// fires PRE/POST_INSERT events, validates each entity, and bulk-creates them.
+/// Supports both {@code BATCH} and {@code PER_ENTITY} transaction modes.
+///
+/// ## Purpose
+/// - Parses a JSON array of entity objects into {@link SpeedyEntity} instances
+/// - Detects duplicate entities by checking primary key existence before insert
+/// - Supports two transaction modes: BATCH (all-or-nothing) and PER_ENTITY (partial success)
+/// - Returns key-only projection for successful creates, or a {@link BatchResultSerializer}
+///   response with succeeded/failed arrays on partial failure
+///
+/// ## Processing Flow
+/// 1. Parses the JSON array body into a list of {@code SpeedyEntity} objects
+/// 2. For each entity, checks if the PK already exists (rejects if duplicate)
+/// 3. Branches by transaction mode:
+///    - **BATCH**: Runs all inserts in a single transaction; rolls back on any failure
+///    - **PER_ENTITY**: Runs each insert in its own transaction; collects partial failures
+/// 4. For each entity: triggers PRE_INSERT event → validates → inserts → triggers POST_INSERT
+/// 5. On success: sets {@link JSONSerializerV2} with key-only projection
+/// 6. On partial failure (PER_ENTITY with multiple entities): sets {@link BatchResultSerializer}
+///
+/// ## Chain Position
+/// Dispatched by {@link SwitchHandler} for POST requests with {@code $create} suffix.
 public class CreateHandler implements Handler {
 
     final Handler next;
