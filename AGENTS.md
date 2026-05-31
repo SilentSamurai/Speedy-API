@@ -1,8 +1,6 @@
 # AGENTS.md
 
 <!-- SPECKIT START -->
-**Completed Feature**:
-`001-between-isnull-operators` — [Spec](./specs/001-between-isnull-operators/spec.md) | [Plan](./specs/001-between-isnull-operators/plan.md) | [Research](./specs/001-between-isnull-operators/research.md) | [Data Model](./specs/001-between-isnull-operators/data-model.md) | [Quickstart](./specs/001-between-isnull-operators/quickstart.md)
 <!-- SPECKIT END -->
 
 ## Architecture

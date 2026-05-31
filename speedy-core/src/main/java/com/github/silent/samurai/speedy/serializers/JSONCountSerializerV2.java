@@ -13,6 +13,21 @@ import org.springframework.http.MediaType;
 import java.io.IOException;
 import java.math.BigInteger;
 
+/// # JSONCountSerializerV2
+///
+/// Serializes a count-only response for {@code $count} requests.
+/// Produces the minimal JSON envelope {@code {"count": N}}.
+///
+/// ## Purpose
+/// - Lightweight serializer for count queries (no entity data to serialize)
+/// - Used by {@link com.github.silent.samurai.speedy.handlers.GetHandler GetHandler}
+///   and {@link com.github.silent.samurai.speedy.handlers.QueryHandler QueryHandler}
+///   when {@code $count=true}
+///
+/// ## Output Format
+/// ```json
+/// {"count": 42}
+/// ```
 public class JSONCountSerializerV2 implements IResponseSerializerV2 {
 
     private final BigInteger count;

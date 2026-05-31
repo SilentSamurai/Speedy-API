@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -43,7 +43,7 @@ public class SpeedyQuery {
     private final ObjectNode where = MAPPER.createObjectNode();
     private final ObjectNode orderBy = MAPPER.createObjectNode();
     private final ArrayNode expand = MAPPER.createArrayNode();
-    private final Set<String> select = new HashSet<>();
+    private final Set<String> select = new LinkedHashSet<>();
     int pageNo = 0;
     int pageSize = 10;
 

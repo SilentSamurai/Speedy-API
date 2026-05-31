@@ -257,34 +257,35 @@ class UserControllerTest {
 
 ## Response Handling
 
-### SpeedyResponse Structure
+### SpeedyResult Structure
 
-The `SpeedyResponse` class contains the following fields:
+The `SpeedyResult` class contains the following fields:
 
 ```java
-public class SpeedyResponse {
-    private Integer pageIndex;        // Current page index (0-based)
-    private Integer pageSize;         // Number of items per page
-    private Integer totalPageCount;   // Total number of pages
-    private JsonNode payload;         // The actual response data
+public class SpeedyResult {
+    private final JsonNode payload;      // The actual response data (JSON array)
+    private final int pageIndex;         // Current page index (0-based)
+    private final int pageSize;          // Number of items per page
+    private final long totalCount;       // Total number of records
+    private final int totalPages;        // Total number of pages
 }
 ```
 
 ### Basic Response Handling
 
 ```java
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
+import com.github.silent.samurai.speedy.client.SpeedyResult;
 
-SpeedyResponse response = client.get("users").execute();
+SpeedyResult result = client.get("users").execute();
 
 // Access pagination information
-Integer pageIndex = response.getPageIndex();
-Integer pageSize = response.getPageSize();
-Integer totalPageCount = response.getTotalPageCount();
+int pageIndex = result.pageIndex();
+int pageSize = result.pageSize();
+long totalCount = result.totalCount();
+int totalPages = result.totalPages();
 
-// Access the payload as JsonNode
-JsonNode payload = response.getPayload();
+// Access the payload as raw JsonNode
+JsonNode payload = result.raw();
 
 // Check if payload contains data
 if (payload != null && !payload.isEmpty()) {

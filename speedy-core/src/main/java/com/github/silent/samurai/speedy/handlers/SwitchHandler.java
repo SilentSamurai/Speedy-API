@@ -7,6 +7,29 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import org.springframework.http.HttpMethod;
 
+/// # SwitchHandler
+///
+/// Routes requests by HTTP method and URI suffix
+/// ({@code $query}, {@code $create}, {@code $update}, {@code $delete}).
+/// Checks CRUD permissions via {@code EntityMetadata.is{Read/Create/Update/Delete}Allowed()}
+/// before dispatching to the appropriate CRUD handler.
+///
+/// ## Purpose
+/// - Acts as the routing dispatcher for CRUD operations
+/// - Enforces per-entity action permissions before processing
+/// - Rejects invalid method/endpoint combinations with a 400 error
+///
+/// ## Routing Table
+/// | Method      | Suffix  | Dispatches to  | Permission check    |
+/// |-------------|---------|----------------|---------------------|
+/// | GET         | (none)  | GetHandler     | isReadAllowed()     |
+/// | POST        | $query  | QueryHandler   | isReadAllowed()     |
+/// | POST        | $create | CreateHandler  | isCreateAllowed()   |
+/// | PUT / PATCH | $update | UpdateHandler  | isUpdateAllowed()   |
+/// | DELETE      | $delete | DeleteHandler  | isDeleteAllowed()   |
+///
+/// ## Chain Position
+/// Dispatches to one of five CRUD handlers; does not call a next handler directly.
 public class SwitchHandler implements Handler {
 
     final Handler getRequestHandler;

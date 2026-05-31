@@ -59,22 +59,30 @@ public class Entity {
 
 ### Speedy Ignore
 
-**Ignore Entity**
+Exclude entities or individual fields from the Speedy metamodel. Ignored entities and fields
+are completely invisible to all Speedy operations — they do not appear in `$metadata`, cannot
+be queried, filtered, selected, created, updated, or deleted.
 
-tell speedy to ignore entity
+**Entity-Level Ignore**
+
+Annotate an entity class with `@SpeedyIgnore` to exclude the entire entity from the metamodel.
+The entity will be absent from `$metadata` and all CRUD requests targeting it will return
+**400 Bad Request**.
 
 ```java
 @SpeedyIgnore
-@Table(name = "entity")
+@Table(name = "internal_entity")
 @Entity
-public class Entity {
+public class InternalEntity {
     
 }
 ```
 
-**Ignore Fields**
+**Field-Level Ignore**
 
-tell speedy to ignore entity
+Annotate individual fields with `@SpeedyIgnore` to exclude them from the entity's metadata.
+Ignored fields do not appear in the `fields` array of `$metadata`, cannot be used as query
+filters (URL params or `$where`), and cannot be referenced in `$select` or `$expand`.
 
 ```java
 import jakarta.persistence.Column;
@@ -86,6 +94,34 @@ public class Entity {
     @SpeedyIgnore
     @Column(name = "internal")
     private String internal;
+
+    @SpeedyIgnore
+    @Column(name = "secret_code")
+    private Integer secretCode;
+
+    // Non-ignored fields remain fully visible
+    @Column(name = "public_name")
+    private String publicName;
+}
+```
+
+**Association Propagation**
+
+When an entity is ignored at the class level, any `@ManyToOne` or `@OneToOne` association
+in other entities that references it is also automatically excluded from the metamodel.
+
+```java
+@SpeedyIgnore
+@Entity
+public class InternalEntity { /* ... */ }
+
+@Entity
+public class PublicEntity {
+
+    // This association will be excluded because InternalEntity has @SpeedyIgnore
+    @ManyToOne
+    @JoinColumn(name = "internal_id")
+    private InternalEntity internalRef;
 }
 ```
 
@@ -131,6 +167,55 @@ public class Entity {
 ```
 
 See [Field References](field-references.md#sensitivity-control-with-speedysensitive) for runtime behavior.
+
+### Speedy Type
+
+Override the `ColumnType` that Speedy infers from a field's Java type. This is useful when
+the database column type differs from what the Java type normally maps to, and you want
+Speedy's query builder to use the correct SQL type.
+
+```java
+import com.github.silent.samurai.speedy.annotations.SpeedyType;
+import com.github.silent.samurai.speedy.enums.ColumnType;
+
+@Table(name = "entity")
+@Entity
+public class Entity {
+
+    @SpeedyType(ColumnType.TEXT)
+    @Column(name = "description")
+    private String description;  // Inferred: VARCHAR → Overridden: TEXT
+
+    @SpeedyType(ColumnType.BIGINT)
+    @Column(name = "count")
+    private Integer count;  // Inferred: INTEGER → Overridden: BIGINT
+
+    @SpeedyType(ColumnType.FLOAT)
+    @Column(name = "amount")
+    private Double amount;  // Inferred: DOUBLE → Overridden: FLOAT
+}
+```
+
+| `ColumnType`          | Java equivalent typically inferred from   | ValueType family |
+|-----------------------|-------------------------------------------|-----------------|
+| `VARCHAR`             | `String`                                  | TEXT            |
+| `TEXT`                | — (must override)                         | TEXT            |
+| `CHAR`                | — (must override)                         | TEXT            |
+| `UUID`                | `java.util.UUID`                          | TEXT            |
+| `INTEGER`             | `int`, `Integer`, `long`, `Long`, `short` | INT             |
+| `SMALLINT`            | — (must override)                         | INT             |
+| `BIGINT`              | `BigInteger` or override                  | INT             |
+| `FLOAT`               | `float`, `Float` or override              | FLOAT           |
+| `DOUBLE`              | `double`, `Double`                        | FLOAT           |
+| `DECIMAL`             | `BigDecimal` or override                  | FLOAT           |
+| `NUMERIC`             | — (must override)                         | FLOAT           |
+| `REAL`                | — (must override)                         | FLOAT           |
+| `BOOLEAN`             | `boolean`, `Boolean`                      | BOOL            |
+| `DATE`                | `java.sql.Date`, `java.util.Date`, `LocalDate` | DATE       |
+| `TIME`                | `LocalTime`                               | TIME            |
+| `TIMESTAMP`           | `LocalDateTime`, `Timestamp`              | DATE_TIME       |
+| `TIMESTAMP_WITH_ZONE` | `ZonedDateTime`, `OffsetDateTime`, `Instant` | ZONED_DATE_TIME |
+| `BLOB` / `CLOB`       | — (must override)                         | OBJECT          |
 
 ### Jpa Entity
 

@@ -17,6 +17,8 @@ import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
 import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -180,6 +182,8 @@ import java.util.List;
 /// @since 1.0
 public class JsonQueryParser {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(JsonQueryParser.class);
+
     /// The meta model containing entity and field metadata for validation and query building.
     final MetaModel metaModel;
 
@@ -286,8 +290,10 @@ public class JsonQueryParser {
     /// @throws SpeedyHttpException if the condition cannot be parsed or is invalid
     BinaryCondition captureSingleBinaryQuery(String fieldName, JsonNode fieldNode) throws SpeedyHttpException {
         QueryField queryField = speedyQuery.getConditionFactory().createQueryField(fieldName);
+        LOGGER.debug("captureSingleBinaryQuery field={}, nodeType={}", fieldName, fieldNode.getNodeType());
         // if equals short-handed a: b
         if (fieldNode.isValueNode()) {
+            LOGGER.debug("captureSingleBinaryQuery field={}, shorthand value node", fieldName);
             if (fieldNode.isTextual()) {
                 String text = fieldNode.asText();
                 if ("$isnull".equals(text)) {
@@ -310,6 +316,9 @@ public class JsonQueryParser {
                 ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
                 // capture value node after operator
                 JsonNode valueNode = fieldNode.get(operatorSymbol);
+                LOGGER.debug("captureSingleBinaryQuery field={}, operator={}, valueType={}, isArray={}, isValue={}",
+                        fieldName, operatorSymbol, valueNode.getNodeType(),
+                        valueNode.isArray(), valueNode.isValueNode());
 
                 // if the operator is $in or $nin and the value is an array, a : { $in : [b, c] }
                 if (operator.doesAcceptMultipleValues() && valueNode.isArray()) {
@@ -341,6 +350,8 @@ public class JsonQueryParser {
                 }
             }
         }
+        LOGGER.debug("captureSingleBinaryQuery throwing Invalid query for field={}, nodeType={}",
+                fieldName, fieldNode.getNodeType());
         throw new BadRequestException("Invalid query");
     }
 

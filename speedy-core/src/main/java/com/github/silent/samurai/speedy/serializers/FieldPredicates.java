@@ -5,6 +5,15 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import java.util.Set;
 import java.util.function.Predicate;
 
+/// # FieldPredicates
+///
+/// Utility for building a field-level filter predicate from the {@code $select}
+/// clause. Translates a {@code Set<String>} of output property names into a
+/// {@code Predicate<FieldMetadata>} for use by {@link SelectiveSpeedy2Json}.
+///
+/// ## Purpose
+/// - Builds a predicate that returns {@code true} only for fields in the select set
+/// - Returns a pass-through predicate when select is null or empty
 public final class FieldPredicates {
 
     private FieldPredicates() {
