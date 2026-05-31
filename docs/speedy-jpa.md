@@ -168,6 +168,55 @@ public class Entity {
 
 See [Field References](field-references.md#sensitivity-control-with-speedysensitive) for runtime behavior.
 
+### Speedy Type
+
+Override the `ColumnType` that Speedy infers from a field's Java type. This is useful when
+the database column type differs from what the Java type normally maps to, and you want
+Speedy's query builder to use the correct SQL type.
+
+```java
+import com.github.silent.samurai.speedy.annotations.SpeedyType;
+import com.github.silent.samurai.speedy.enums.ColumnType;
+
+@Table(name = "entity")
+@Entity
+public class Entity {
+
+    @SpeedyType(ColumnType.TEXT)
+    @Column(name = "description")
+    private String description;  // Inferred: VARCHAR → Overridden: TEXT
+
+    @SpeedyType(ColumnType.BIGINT)
+    @Column(name = "count")
+    private Integer count;  // Inferred: INTEGER → Overridden: BIGINT
+
+    @SpeedyType(ColumnType.FLOAT)
+    @Column(name = "amount")
+    private Double amount;  // Inferred: DOUBLE → Overridden: FLOAT
+}
+```
+
+| `ColumnType`          | Java equivalent typically inferred from   | ValueType family |
+|-----------------------|-------------------------------------------|-----------------|
+| `VARCHAR`             | `String`                                  | TEXT            |
+| `TEXT`                | — (must override)                         | TEXT            |
+| `CHAR`                | — (must override)                         | TEXT            |
+| `UUID`                | `java.util.UUID`                          | TEXT            |
+| `INTEGER`             | `int`, `Integer`, `long`, `Long`, `short` | INT             |
+| `SMALLINT`            | — (must override)                         | INT             |
+| `BIGINT`              | `BigInteger` or override                  | INT             |
+| `FLOAT`               | `float`, `Float` or override              | FLOAT           |
+| `DOUBLE`              | `double`, `Double`                        | FLOAT           |
+| `DECIMAL`             | `BigDecimal` or override                  | FLOAT           |
+| `NUMERIC`             | — (must override)                         | FLOAT           |
+| `REAL`                | — (must override)                         | FLOAT           |
+| `BOOLEAN`             | `boolean`, `Boolean`                      | BOOL            |
+| `DATE`                | `java.sql.Date`, `java.util.Date`, `LocalDate` | DATE       |
+| `TIME`                | `LocalTime`                               | TIME            |
+| `TIMESTAMP`           | `LocalDateTime`, `Timestamp`              | DATE_TIME       |
+| `TIMESTAMP_WITH_ZONE` | `ZonedDateTime`, `OffsetDateTime`, `Instant` | ZONED_DATE_TIME |
+| `BLOB` / `CLOB`       | — (must override)                         | OBJECT          |
+
 ### Jpa Entity
 
 **User Entity**
