@@ -84,6 +84,48 @@ class ProductDefaultValidationIT {
         }
 
         @Test
+        @DisplayName("UPDATE with only key and no fields should succeed (partial update)")
+        void updateOnlyKey_shouldSucceed() {
+            SpeedyTestResult createResult = client.create("Product")
+                    .field("name", "it-prod-" + UUID.randomUUID())
+                    .field("category.id", categoryId)
+                    .execute()
+                    .expectOk()
+                    .expectJsonPathExists("$.payload[0].id");
+
+            String id = createResult.jsonPath("$.payload[0].id");
+
+            client.update("Product")
+                    .key("id", id)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("UPDATE vs CREATE: name required on CREATE but optional on UPDATE")
+        void updateVsCreate_requiredEnforcement() {
+            client.create("Product")
+                    .field("category.id", categoryId)
+                    .execute()
+                    .expectBadRequest();
+
+            SpeedyTestResult createResult = client.create("Product")
+                    .field("name", "it-prod-" + UUID.randomUUID())
+                    .field("category.id", categoryId)
+                    .execute()
+                    .expectOk()
+                    .expectJsonPathExists("$.payload[0].id");
+
+            String id = createResult.jsonPath("$.payload[0].id");
+
+            client.update("Product")
+                    .key("id", id)
+                    .field("description", "only description, no name")
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
         @DisplayName("DELETE without key fails (default validator)")
         void deleteWithoutKey_shouldFail() {
             client.delete("Product")

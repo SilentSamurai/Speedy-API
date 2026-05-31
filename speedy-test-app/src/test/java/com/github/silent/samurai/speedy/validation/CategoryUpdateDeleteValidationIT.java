@@ -12,6 +12,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class CategoryUpdateDeleteValidationIT {
@@ -53,6 +56,46 @@ class CategoryUpdateDeleteValidationIT {
                     .field("name", "")
                     .execute()
                     .expectBadRequest();
+        }
+
+        @Test
+        @DisplayName("UPDATE with only key and no name should succeed - custom validator permits null")
+        void updateKeyOnly_shouldSucceed() {
+            SpeedyTestResult createResult = client.create("Category")
+                    .field("name", "temp-for-keyonly-update")
+                    .execute()
+                    .expectOk();
+
+            String id = createResult.jsonPath("$.payload[0].id");
+
+            client.update("Category")
+                    .key("id", id)
+                    .execute()
+                    .expectOk();
+
+            client.delete("Category")
+                    .key("id", id)
+                    .execute()
+                    .expectOk();
+        }
+
+        @Test
+        @DisplayName("UPDATE with empty name should respond with custom validator message")
+        void updateWithEmptyName_shouldContainValidatorMessage() {
+            SpeedyTestResult createResult = client.create("Category")
+                    .field("name", "temp-for-val-msg")
+                    .execute()
+                    .expectOk();
+
+            String id = createResult.jsonPath("$.payload[0].id");
+
+            SpeedyTestResult updateResult = client.update("Category")
+                    .key("id", id)
+                    .field("name", "")
+                    .execute()
+                    .expectBadRequest();
+
+            assertThat(updateResult.responseBody(), containsString("validation failed for"));
 
             client.delete("Category")
                     .key("id", id)
@@ -75,10 +118,12 @@ class CategoryUpdateDeleteValidationIT {
         @Test
         @DisplayName("DELETE with empty ID should fail - custom validator")
         void deleteWithEmptyId_shouldFail() {
-            client.delete("Category")
+            SpeedyTestResult result = client.delete("Category")
                     .key("id", "")
                     .execute()
                     .expectBadRequest();
+
+            assertThat(result.responseBody(), containsString("entity not found"));
         }
 
         @Test
