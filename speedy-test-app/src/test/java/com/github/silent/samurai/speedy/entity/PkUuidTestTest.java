@@ -22,8 +22,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
@@ -31,17 +33,6 @@ import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 @AutoConfigureMockMvc(addFilters = false)
 class PkUuidTestTest {
 
-    /// JavaDoc Markdown documentation comment example
-    ///
-    /// This is an example of using Markdown in JavaDoc comments.
-    /// You can use **bold**, *italic*, and `code` formatting.
-    ///
-    /// ```java
-    /// // Example code block
-    /// public void example() {
-    ///     System.out.println("Hello World!");
-    /// }
-    /// ```
     @Autowired
     PkUuidTestRepository pkUuidTestRepository;
 
@@ -71,6 +62,8 @@ class PkUuidTestTest {
     void setUp() {
     }
 
+    /// Tests creating a PkUuidTest entity with an auto-generated UUID primary key
+    /// via the POST `/speedy/v1/PkUuidTest/$create` endpoint.
     @Test
     void save() throws Exception {
         ArrayNode arrayNode = CommonUtil.json()
@@ -86,6 +79,8 @@ class PkUuidTestTest {
                 .andExpect(status().isOk());
     }
 
+    /// Tests querying PkUuidTest entities via the POST `/speedy/v1/PkUuidTest/$query` endpoint.
+    /// Verifies that UUID primary keys are returned as valid UUID strings in the JSON response payload.
     @Test
     void query() throws Exception {
 
@@ -125,5 +120,56 @@ class PkUuidTestTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].description").isNotEmpty())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].description").value(Matchers.hasItem("desc")))
                 .andReturn();
+    }
+
+    /// Tests updating a PkUuidTest entity identified by its UUID primary key
+    /// via the PATCH `/speedy/v1/PkUuidTest/$update` endpoint.
+    /// Verifies the field value is persisted correctly after the update.
+    @Test
+    void update() throws Exception {
+        PkUuidTest test = new PkUuidTest();
+        test.setName("test-update");
+        test.setDescription("desc-update");
+        pkUuidTestRepository.save(test);
+        assertNotNull(test.getId());
+
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders
+                .patch(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.UPDATE.suffix())
+                .content(CommonUtil.json().createObjectNode()
+                        .put("id", test.getId().toString())
+                        .put("name", "updated-name")
+                        .toPrettyString())
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+        mvc.perform(updateRequest)
+                .andExpect(status().isOk());
+
+        Optional<PkUuidTest> updated = pkUuidTestRepository.findById(test.getId());
+        assertTrue(updated.isPresent());
+        assertEquals("updated-name", updated.get().getName());
+    }
+
+    /// Tests deleting a PkUuidTest entity identified by its UUID primary key
+    /// via the DELETE `/speedy/v1/PkUuidTest/$delete` endpoint.
+    /// Verifies the entity count decreases by one after the delete operation.
+    @Test
+    void delete() throws Exception {
+        PkUuidTest test = new PkUuidTest();
+        test.setName("test-delete");
+        test.setDescription("desc-delete");
+        pkUuidTestRepository.save(test);
+        assertNotNull(test.getId());
+
+        long count = pkUuidTestRepository.count();
+
+        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders
+                .delete(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.DELETE.suffix())
+                .content("[{\"id\":\"" + test.getId() + "\"}]")
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+        mvc.perform(deleteRequest)
+                .andExpect(status().isOk());
+
+        assertEquals(count - 1, pkUuidTestRepository.count());
     }
 }

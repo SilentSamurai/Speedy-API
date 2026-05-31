@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -42,7 +44,7 @@ class BodySizeLimitTest {
 
     @Test
     void bodyWithinLimit_succeeds() throws Exception {
-        String json = "[{\"name\":\"test-category\"}]";
+        String json = "[{\"name\":\"test-cat-" + UUID.randomUUID() + "\"}]";
 
         mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(json)

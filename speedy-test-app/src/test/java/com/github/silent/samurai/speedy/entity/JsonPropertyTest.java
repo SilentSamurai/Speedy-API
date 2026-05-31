@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 
+import java.util.UUID;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -196,7 +198,7 @@ class JsonPropertyTest {
     @Test
     void associationField_usesOverriddenName() {
         String catId = speedyClient.create("Category")
-                .field("name", "test-category")
+                .field("name", "test-cat-" + UUID.randomUUID())
                 .execute()
                 .expectOk()
                 .jsonPath("$.payload[0].id");
