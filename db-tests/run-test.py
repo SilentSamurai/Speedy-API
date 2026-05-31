@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 
@@ -10,7 +11,7 @@ def sh(command: str):
         raise Exception(f"{command} failed")
 
 
-def run_for_db(db_name: str):
+def run_for_db(db_name: str, test_pattern: str):
     db_conf = suits[db_name]
     sh(db_conf["START_CONTAINER_CMD"])
 
@@ -19,12 +20,12 @@ def run_for_db(db_name: str):
     os.environ['DATABASE_PASSWORD'] = db_conf["DATABASE_PASSWORD"]
     os.environ['SPRING_PROFILES_ACTIVE'] = db_conf["SPRING_PROFILES_ACTIVE"]
 
-    # sh("DATABASE_URL=")
     try:
         os.chdir("../speedy-test-app")
-        sh("mvn test -Dtest=PkUuidTestTest")
-        # sh("mvn test ")
-        # sh("mvn spring-boot:run")
+        if test_pattern:
+            sh(f"mvn test -Dtest={test_pattern}")
+        else:
+            sh("mvn test")
     except:
         print("test failed")
     finally:
@@ -36,13 +37,24 @@ def run_for_db(db_name: str):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Run speedy-test-app tests against PostgreSQL and MySQL Docker containers"
+    )
+    parser.add_argument(
+        "--tests", "-t",
+        default=None,
+        help="Surefire test pattern (e.g. 'PkUuidTestTest', 'SpeedyGetTest,SpeedyPostTest'). "
+             "Omit to run the full suite."
+    )
+    args = parser.parse_args()
+
     os.chdir("../")
-    sh("mvn clean install")
+    sh("mvn install -DskipTests")
     os.chdir("./db-tests")
 
     for db in ["MYSQL", "POSTGRES"]:
         print(f"==============================> [Starting {db}] <================================")
-        run_for_db(db)
+        run_for_db(db, args.tests)
         print(f"==============================> [Ending {db}] <====================================")
 
 
