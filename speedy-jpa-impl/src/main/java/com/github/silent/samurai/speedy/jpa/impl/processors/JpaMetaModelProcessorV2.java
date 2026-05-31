@@ -132,6 +132,11 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             return true;
         }
         if (attribute.isAssociation() && AnnotationUtils.getAnnotation(field, OneToMany.class) != null) {
+            LOGGER.warn("Skipping @OneToMany field '{}' on entity '{}' — one-to-many associations are not supported by Speedy-API", field.getName(), entityClass.getSimpleName());
+            return true;
+        }
+        if (attribute.isAssociation() && AnnotationUtils.getAnnotation(field, ManyToMany.class) != null) {
+            LOGGER.warn("Skipping @ManyToMany field '{}' on entity '{}' — many-to-many associations are not supported by Speedy-API", field.getName(), entityClass.getSimpleName());
             return true;
         }
         return false;
@@ -506,8 +511,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                     FieldBuilder associatedField = associatedEntity.ref(mappedBy);
                     fieldBuilder.associateWith(associatedField);
                 } else {
-                    // many to many
-                    throw new RuntimeException("many to many not supported");
+                    LOGGER.warn("Skipping @ManyToMany association for field '{}' on entity '{}' — many-to-many associations are not supported by Speedy-API", field.getName(), entity.getName());
                 }
             }
         }

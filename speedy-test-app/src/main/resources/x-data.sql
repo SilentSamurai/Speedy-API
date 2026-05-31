@@ -192,5 +192,27 @@ VALUES ('1a2b3c4d-5678-90ab-cdef-1234567890ab', '2024-02-28 12:00:00', NULL, 'jo
        ('5e6f7g8h-9012-34ab-cdef-5678901234ef', '2024-02-25 17:20:00', '2024-02-28 12:00:00',
         'william.davis@example.com', 'William Davis', '5432109876', 'USER', '2024-02-26 09:00:00', NULL);
 
+INSERT INTO tasks (id, title, priority, difficulty)
+VALUES ('task-0000-0000-0000-000000000001', 'Fix login bug', 'HIGH', 1),
+       ('task-0000-0000-0000-000000000002', 'Write docs', 'LOW', 0),
+       ('task-0000-0000-0000-000000000003', 'Refactor module', 'MEDIUM', 1),
+       ('task-0000-0000-0000-000000000004', 'Add tests', 'HIGH', 2),
+       ('task-0000-0000-0000-000000000005', 'Deploy release', 'HIGH', 2);
+
+INSERT INTO pk_uuid_test (id, name, description)
+VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'UUID Test 1', 'Description for UUID test 1'),
+       ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'UUID Test 2', 'Description for UUID test 2'),
+       ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'UUID Test 3', NULL);
+
+INSERT INTO fk_null_entity (id, name, category_id)
+VALUES ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a21', 'FK Null 1', NULL),
+       ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'FK Null 2', '1'),
+       ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a23', 'FK Null 3', NULL);
+
+INSERT INTO auto_gen_identity (name)
+VALUES ('identity-seed-1'),
+       ('identity-seed-2'),
+       ('identity-seed-3');
+
 
 
