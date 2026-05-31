@@ -59,22 +59,30 @@ public class Entity {
 
 ### Speedy Ignore
 
-**Ignore Entity**
+Exclude entities or individual fields from the Speedy metamodel. Ignored entities and fields
+are completely invisible to all Speedy operations — they do not appear in `$metadata`, cannot
+be queried, filtered, selected, created, updated, or deleted.
 
-tell speedy to ignore entity
+**Entity-Level Ignore**
+
+Annotate an entity class with `@SpeedyIgnore` to exclude the entire entity from the metamodel.
+The entity will be absent from `$metadata` and all CRUD requests targeting it will return
+**400 Bad Request**.
 
 ```java
 @SpeedyIgnore
-@Table(name = "entity")
+@Table(name = "internal_entity")
 @Entity
-public class Entity {
+public class InternalEntity {
     
 }
 ```
 
-**Ignore Fields**
+**Field-Level Ignore**
 
-tell speedy to ignore entity
+Annotate individual fields with `@SpeedyIgnore` to exclude them from the entity's metadata.
+Ignored fields do not appear in the `fields` array of `$metadata`, cannot be used as query
+filters (URL params or `$where`), and cannot be referenced in `$select` or `$expand`.
 
 ```java
 import jakarta.persistence.Column;
@@ -86,6 +94,34 @@ public class Entity {
     @SpeedyIgnore
     @Column(name = "internal")
     private String internal;
+
+    @SpeedyIgnore
+    @Column(name = "secret_code")
+    private Integer secretCode;
+
+    // Non-ignored fields remain fully visible
+    @Column(name = "public_name")
+    private String publicName;
+}
+```
+
+**Association Propagation**
+
+When an entity is ignored at the class level, any `@ManyToOne` or `@OneToOne` association
+in other entities that references it is also automatically excluded from the metamodel.
+
+```java
+@SpeedyIgnore
+@Entity
+public class InternalEntity { /* ... */ }
+
+@Entity
+public class PublicEntity {
+
+    // This association will be excluded because InternalEntity has @SpeedyIgnore
+    @ManyToOne
+    @JoinColumn(name = "internal_id")
+    private InternalEntity internalRef;
 }
 ```
 

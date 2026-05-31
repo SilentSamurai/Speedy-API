@@ -124,10 +124,13 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     }
 
     boolean isIgnorable(Attribute<?, ?> attribute, Class<?> entityClass) {
+        Field field = findReflectionField(attribute, entityClass);
+        if (AnnotationUtils.getAnnotation(field, SpeedyIgnore.class) != null) {
+            return true;
+        }
         if (attribute.getJavaType().getAnnotation(SpeedyIgnore.class) != null) {
             return true;
         }
-        Field field = findReflectionField(attribute, entityClass);
         if (attribute.isAssociation() && AnnotationUtils.getAnnotation(field, OneToMany.class) != null) {
             return true;
         }
