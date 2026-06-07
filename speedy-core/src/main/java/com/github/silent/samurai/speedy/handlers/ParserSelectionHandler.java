@@ -7,15 +7,6 @@ import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.serializers.JSONBodyParser;
 import lombok.extern.slf4j.Slf4j;
 
-/// Selects the appropriate IRequestBodyParser based on the Content-Type header.
-///
-/// Mirrors SerializerSelectionHandler on the response side. Reads the
-/// Content-Type header from the request and instantiates the matching parser.
-/// Currently defaults to JSONBodyParser for application/json, */*, or null.
-/// Future YAML/XML parsers are selected by their respective MIME types.
-///
-/// @see SerializerSelectionHandler
-/// @see IRequestBodyParser
 @Slf4j
 public class ParserSelectionHandler implements Handler {
 

@@ -13,7 +13,8 @@ import com.github.silent.samurai.speedy.request.SpeedyRequest;
 /// Dispatches by SpeedyRequestType: for GET_LIST, wraps the URI-parsed
 /// SpeedyQuery as the body; for QUERY, CREATE, UPDATE, and DELETE, delegates
 /// to the selected IRequestBodyParser to convert raw bytes into typed body objects.
-/// Runs after ParserSelectionHandler and before SwitchHandler.
+/// Runs in the body parsing phase, after the factory has selected and set
+/// the {@link com.github.silent.samurai.speedy.interfaces.IRequestBodyParser} on the context.
 ///
 /// @see IRequestBodyParser
 /// @see SpeedyRequestType

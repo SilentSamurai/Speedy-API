@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.enums;
 /// Classifies Speedy API requests by operation type.
 ///
 /// Used by OperationResolverHandler to determine the operation
-/// and by SwitchHandler to dispatch to the appropriate handler.
+/// and by SpeedyFactory to dispatch to the appropriate engine method.
 public enum SpeedyRequestType {
 
     /// GET /{Entity} — list entities with URL query params.

@@ -1,18 +1,16 @@
 package com.github.silent.samurai.speedy;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+import com.github.silent.samurai.speedy.engine.SpeedyEngine;
+import com.github.silent.samurai.speedy.engine.SpeedyEngineImpl;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.handlers.*;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyExceptionMapper;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
-import com.github.silent.samurai.speedy.query.JooqQueryProcessorImpl;
 import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
 import com.github.silent.samurai.speedy.utils.DefaultExceptionMapper;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
@@ -23,15 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.sql.DataSource;
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 
-/// Factory that initializes the Speedy API engine and assembles the handler chain.
-///
-/// Processes the MetaModel, registers event handlers and validators, builds the
-/// Chain of Responsibility handler chain, and provides the processReqV2() entry
-/// point for the SpeedyApiController.
 @Getter
 @Slf4j
 public class SpeedyFactory {
@@ -45,9 +36,7 @@ public class SpeedyFactory {
     private final SpeedyDialect dialect;
     private final ISpeedyConfiguration configuration;
     private final long maxRequestBodySize;
-    private final ConcurrentHashMap<DataSource, QueryProcessor> queryProcessorCache = new ConcurrentHashMap<>();
-    Handler chain;
-
+    private final SpeedyEngine engine;
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this(speedyConfiguration, speedyConfiguration.getMaxRequestBodySize());
@@ -77,11 +66,11 @@ public class SpeedyFactory {
         configuration = speedyConfiguration;
         dialect = speedyConfiguration.getDialect();
 
-        this.chain = createHandlerChain();
+        this.engine = new SpeedyEngineImpl(maxRequestBodySize);
     }
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        RequestContext requestContext = new RequestContext(
+        RequestContext ctx = new RequestContext(
                 configuration,
                 dialect,
                 metaModel,
@@ -91,12 +80,30 @@ public class SpeedyFactory {
                 validationProcessor
         );
         try {
-            DataSource dataSource = configuration.dataSourcePerReq();
-            QueryProcessor queryProcessor = queryProcessorCache.computeIfAbsent(
-                    dataSource, ds -> new JooqQueryProcessorImpl(ds, dialect));
-            requestContext.setQueryProcessor(queryProcessor);
+            // 1. Resolve QueryProcessor
+            QueryProcessor qp = engine.prepare(ctx);
+            ctx.setQueryProcessor(qp);
 
-            this.chain.process(requestContext);
+            // 2. Parse request (URI, Method, Headers)
+            SpeedyRequest req = engine.parseRequest(ctx);
+
+            // 3. Select parser & parse body via sub-chains
+            engine.selectBodyParser(ctx);
+            SpeedyBody body = engine.parseBody(ctx);
+
+            // 4. Dispatch to CRUD operation
+            SpeedyResponse resp = switch (ctx.getRequestType()) {
+                case GET_LIST -> engine.get(ctx);
+                case QUERY -> engine.query(ctx);
+                case CREATE -> engine.create(ctx);
+                case UPDATE -> engine.update(ctx);
+                case DELETE -> engine.delete(ctx);
+            };
+
+            // 5. Select a serializer and write a response via sub-chains
+            engine.selectSerializer(ctx);
+            engine.writeResponse(ctx);
+
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;
             int status = exceptionMapper.getStatus(e);
@@ -108,23 +115,4 @@ public class SpeedyFactory {
         }
     }
 
-    private Handler createHandlerChain() {
-        Handler tail = new TailHandler();
-        Handler rw = new SpeedyResponseWriterHandler(tail);
-        Handler ss = new SerializerSelectionHandler(rw);
-
-        Handler gh = new GetHandler(ss);
-        Handler qh = new QueryHandler(ss);
-        Handler ch = new CreateHandler(ss);
-        Handler uh = new UpdateHandler(ss);
-        Handler dh = new DeleteHandler(ss);
-
-        Handler sh = new SwitchHandler(gh, qh, ch, uh, dh);
-        Handler bph = new BodyParserHandler(sh);
-        Handler psh = new ParserSelectionHandler(bph);
-        Handler orh = new OperationResolverHandler(psh);
-        Handler ech = new UriParserHandler(orh);
-        Handler requestParserHandler = new RequestParserHandler(ech, maxRequestBodySize);
-        return new HeadHandler(requestParserHandler);
-    }
 }

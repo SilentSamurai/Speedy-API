@@ -12,9 +12,8 @@ import org.springframework.http.HttpMethod;
 ///
 /// Reads the action suffix (resolved by SpeedyUriContext) and HTTP method to
 /// classify the request as GET_LIST, QUERY, CREATE, UPDATE, or DELETE. Sets
-/// SpeedyRequestType on the context for consumption by SwitchHandler.
-///
-/// @see SwitchHandler
+/// SpeedyRequestType on the context for consumption by SpeedyFactory's
+/// dispatch switch.
 /// @see SpeedyRequestType
 public class OperationResolverHandler implements Handler {
 
