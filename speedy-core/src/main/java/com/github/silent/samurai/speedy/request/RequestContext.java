@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
@@ -33,6 +34,7 @@ public class RequestContext {
     QueryProcessor queryProcessor;
     SpeedyQuery speedyQuery;
     IResponseSerializerV2 responseSerializer;
+    SpeedyResponse speedyResponse;
 
     String requestUri;
     HttpMethod httpMethod;

@@ -110,15 +110,16 @@ public class SpeedyFactory {
         Handler tail = new TailHandler();
 
         Handler rw = new SpeedyResponseWriterHandler(tail);
+        Handler ss = new SerializerSelectionHandler(rw);
 
         // switch
 
-        Handler gh = new GetHandler(rw);
-        Handler qh = new QueryHandler(rw);
+        Handler gh = new GetHandler(ss);
+        Handler qh = new QueryHandler(ss);
 
-        Handler ch = new CreateHandler(rw);
-        Handler uh = new UpdateHandler(rw);
-        Handler dh = new DeleteHandler(rw);
+        Handler ch = new CreateHandler(ss);
+        Handler uh = new UpdateHandler(ss);
+        Handler dh = new DeleteHandler(ss);
 
         // switch
         Handler sh = new SwitchHandler(gh, qh, ch, uh, dh);

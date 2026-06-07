@@ -8,12 +8,12 @@ import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.parser.JsonQueryParser;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.FieldPredicates;
-import com.github.silent.samurai.speedy.serializers.JSONCountSerializerV2;
-import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -67,21 +67,27 @@ public class QueryHandler implements Handler {
 
         if (speedyQuery.isCountRequest()) {
             BigInteger count = queryProcessor.executeCount(speedyQuery);
-            context.setResponseSerializer(new JSONCountSerializerV2(
-                    count
-            ));
+            context.setSpeedyResponse(
+                    SpeedyCountResponse.builder()
+                            .count(count)
+                            .status(200)
+                            .build()
+            );
         } else {
             QueryResult result = queryProcessor.executeManyWithCount(speedyQuery);
             List<SpeedyEntity> speedyEntities = result.getEntities();
             Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
-            context.setResponseSerializer(new JSONSerializerV2(
-                    fieldPredicate,
-                    speedyEntities,
-                    speedyQuery.getPageInfo().getPageNo(),
-                    speedyQuery.getExpand(),
-                    result.getTotalCount(),
-                    speedyQuery.getPageInfo().getPageSize()
-            ));
+            context.setSpeedyResponse(
+                    SpeedyEntityResponse.builder()
+                            .payload(speedyEntities)
+                            .pageIndex(speedyQuery.getPageInfo().getPageNo())
+                            .expands(speedyQuery.getExpand())
+                            .totalCount(result.getTotalCount())
+                            .requestedPageSize(speedyQuery.getPageInfo().getPageSize())
+                            .fieldPredicate(fieldPredicate)
+                            .status(200)
+                            .build()
+            );
         }
         next.process(context);
     }

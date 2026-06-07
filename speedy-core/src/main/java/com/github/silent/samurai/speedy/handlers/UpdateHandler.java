@@ -16,12 +16,11 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
 import java.util.List;
 
 @Slf4j
@@ -69,11 +68,13 @@ public class UpdateHandler implements Handler {
         }
 
         List<SpeedyEntity> speedyEntities = List.of(savedEntity);
-        context.setResponseSerializer(new JSONSerializerV2(
-                speedyEntities,
-                0,
-                new HashSet<>()
-        ));
+        context.setSpeedyResponse(
+                SpeedyEntityResponse.builder()
+                        .payload(speedyEntities)
+                        .pageIndex(0)
+                        .status(200)
+                        .build()
+        );
 
         next.process(context);
     }
