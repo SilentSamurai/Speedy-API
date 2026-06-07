@@ -14,14 +14,8 @@ import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.SpeedyCreateBody;
-import com.github.silent.samurai.speedy.models.SpeedyDeleteBody;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
-import com.github.silent.samurai.speedy.models.SpeedyUpdateBody;
+import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.parser.JsonQueryParser;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -122,7 +116,7 @@ public class JSONBodyParser implements IRequestBodyParser {
     }
 
     private List<SpeedyEntity> parseCreateEntities(EntityMetadata resourceMetadata, QueryProcessor queryProcessor,
-                                                    JsonNode jsonElement) throws SpeedyHttpException {
+                                                   JsonNode jsonElement) throws SpeedyHttpException {
         if (jsonElement == null || !jsonElement.isArray()) {
             throw new BadRequestException("no content to process");
         }
@@ -148,7 +142,7 @@ public class JSONBodyParser implements IRequestBodyParser {
     }
 
     private List<SpeedyEntityKey> parseDeleteKeys(EntityMetadata resourceMetadata,
-                                                   JsonNode jsonElement) throws SpeedyHttpException {
+                                                  JsonNode jsonElement) throws SpeedyHttpException {
         List<SpeedyEntityKey> keysToBeRemoved = new LinkedList<>();
         if (jsonElement == null || !jsonElement.isArray()) {
             throw new BadRequestException("in-valid request");

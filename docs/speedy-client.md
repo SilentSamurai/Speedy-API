@@ -544,13 +544,13 @@ SpeedyQuery combined = from("Procurement")
 
 ### Error Handling
 
-| Operator | Error Condition | Message |
-|----------|----------------|---------|
-| `$between` | Non-array value | "$between only accepts an array" |
-| `$between` | Wrong array size (≠ 2) | "$between requires exactly 2 values" |
-| `$isnull` | Non-boolean value | "$isnull only accepts a boolean value" |
-| `$isnull` | `false` value | "$isnull requires true. Use $isnotnull for IS NOT NULL" |
-| `$isnotnull` | `false` value | "$isnotnull requires true. Use $isnull for IS NULL" |
+| Operator     | Error Condition        | Message                                                 |
+|--------------|------------------------|---------------------------------------------------------|
+| `$between`   | Non-array value        | "$between only accepts an array"                        |
+| `$between`   | Wrong array size (≠ 2) | "$between requires exactly 2 values"                    |
+| `$isnull`    | Non-boolean value      | "$isnull only accepts a boolean value"                  |
+| `$isnull`    | `false` value          | "$isnull requires true. Use $isnotnull for IS NOT NULL" |
+| `$isnotnull` | `false` value          | "$isnotnull requires true. Use $isnull for IS NULL"     |
 
 ## Factory Methods Reference
 

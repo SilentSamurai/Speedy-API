@@ -10,12 +10,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.models.SpeedyBatchResponse;
-import com.github.silent.samurai.speedy.models.SpeedyDeleteBody;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
-import com.github.silent.samurai.speedy.models.SpeedyPartialFailure;
+import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import lombok.extern.slf4j.Slf4j;
 

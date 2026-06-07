@@ -196,26 +196,26 @@ public class Entity {
 }
 ```
 
-| `ColumnType`          | Java equivalent typically inferred from   | ValueType family |
-|-----------------------|-------------------------------------------|-----------------|
-| `VARCHAR`             | `String`                                  | TEXT            |
-| `TEXT`                | — (must override)                         | TEXT            |
-| `CHAR`                | — (must override)                         | TEXT            |
-| `UUID`                | `java.util.UUID`                          | TEXT            |
-| `INTEGER`             | `int`, `Integer`, `long`, `Long`, `short` | INT             |
-| `SMALLINT`            | — (must override)                         | INT             |
-| `BIGINT`              | `BigInteger` or override                  | INT             |
-| `FLOAT`               | `float`, `Float` or override              | FLOAT           |
-| `DOUBLE`              | `double`, `Double`                        | FLOAT           |
-| `DECIMAL`             | `BigDecimal` or override                  | FLOAT           |
-| `NUMERIC`             | — (must override)                         | FLOAT           |
-| `REAL`                | — (must override)                         | FLOAT           |
-| `BOOLEAN`             | `boolean`, `Boolean`                      | BOOL            |
-| `DATE`                | `java.sql.Date`, `java.util.Date`, `LocalDate` | DATE       |
-| `TIME`                | `LocalTime`                               | TIME            |
-| `TIMESTAMP`           | `LocalDateTime`, `Timestamp`              | DATE_TIME       |
-| `TIMESTAMP_WITH_ZONE` | `ZonedDateTime`, `OffsetDateTime`, `Instant` | ZONED_DATE_TIME |
-| `BLOB` / `CLOB`       | — (must override)                         | OBJECT          |
+| `ColumnType`          | Java equivalent typically inferred from        | ValueType family |
+|-----------------------|------------------------------------------------|------------------|
+| `VARCHAR`             | `String`                                       | TEXT             |
+| `TEXT`                | — (must override)                              | TEXT             |
+| `CHAR`                | — (must override)                              | TEXT             |
+| `UUID`                | `java.util.UUID`                               | TEXT             |
+| `INTEGER`             | `int`, `Integer`, `long`, `Long`, `short`      | INT              |
+| `SMALLINT`            | — (must override)                              | INT              |
+| `BIGINT`              | `BigInteger` or override                       | INT              |
+| `FLOAT`               | `float`, `Float` or override                   | FLOAT            |
+| `DOUBLE`              | `double`, `Double`                             | FLOAT            |
+| `DECIMAL`             | `BigDecimal` or override                       | FLOAT            |
+| `NUMERIC`             | — (must override)                              | FLOAT            |
+| `REAL`                | — (must override)                              | FLOAT            |
+| `BOOLEAN`             | `boolean`, `Boolean`                           | BOOL             |
+| `DATE`                | `java.sql.Date`, `java.util.Date`, `LocalDate` | DATE             |
+| `TIME`                | `LocalTime`                                    | TIME             |
+| `TIMESTAMP`           | `LocalDateTime`, `Timestamp`                   | DATE_TIME        |
+| `TIMESTAMP_WITH_ZONE` | `ZonedDateTime`, `OffsetDateTime`, `Instant`   | ZONED_DATE_TIME  |
+| `BLOB` / `CLOB`       | — (must override)                              | OBJECT           |
 
 ### Jpa Entity
 

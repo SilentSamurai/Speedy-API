@@ -568,6 +568,7 @@ SpeedyQuery query = SpeedyQuery.from("Inventory")
 ```
 
 **Error conditions:**
+
 - Non-array value → `400 BadRequest` — "$between only accepts an array"
 - Array with ≠ 2 values → `400 BadRequest` — "$between requires exactly 2 values"
 
@@ -592,6 +593,7 @@ SpeedyQuery query = SpeedyQuery.from("Procurement")
 ```
 
 **Error conditions:**
+
 - Non-boolean value → `400 BadRequest` — "$isnull only accepts a boolean value"
 - `false` value → `400 BadRequest` — "$isnull requires true. Use $isnotnull for IS NOT NULL"
 
@@ -606,6 +608,7 @@ SpeedyQuery query = SpeedyQuery.from("Procurement")
 ```
 
 **Error conditions:**
+
 - `false` value → `400 BadRequest` — "$isnotnull requires true. Use $isnull for IS NULL"
 
 All three operators compose inside `$and`/`$or`:
@@ -722,20 +725,20 @@ SpeedyQuery adminQuery = UserQueries.usersByRole("admin");
 
 ### Comparison Operators
 
-| Operator   | Method            | Description           | Example                      |
-|------------|-------------------|-----------------------|------------------------------|
-| `$eq`      | `eq(Object)`      | Equal to              | `eq("active")`               |
-| `$ne`      | `ne(Object)`      | Not equal to          | `ne("inactive")`             |
-| `$gt`      | `gt(Object)`      | Greater than          | `gt(18)`                     |
-| `$lt`      | `lt(Object)`      | Less than             | `lt(100)`                    |
-| `$gte`     | `gte(Object)`     | Greater than or equal | `gte(80)`                    |
-| `$lte`     | `lte(Object)`     | Less than or equal    | `lte(10)`                    |
-| `$in`      | `in(Object...)`   | In array of values    | `in("A", "B", "C")`          |
-| `$nin`     | `nin(Object...)`  | Not in array          | `nin("deleted", "archived")` |
-| `$matches` | `matches(Object)` | Pattern matching      | `matches("*john*")`          |
-| `$between` | `between(low, high)` | Inclusive range     | `between(10, 50)`           |
-| `$isnull`  | `isnull()`          | IS NULL check       | `isnull()`                  |
-| `$isnotnull`| `isnotnull()`       | IS NOT NULL check   | `isnotnull()`               |
+| Operator     | Method               | Description           | Example                      |
+|--------------|----------------------|-----------------------|------------------------------|
+| `$eq`        | `eq(Object)`         | Equal to              | `eq("active")`               |
+| `$ne`        | `ne(Object)`         | Not equal to          | `ne("inactive")`             |
+| `$gt`        | `gt(Object)`         | Greater than          | `gt(18)`                     |
+| `$lt`        | `lt(Object)`         | Less than             | `lt(100)`                    |
+| `$gte`       | `gte(Object)`        | Greater than or equal | `gte(80)`                    |
+| `$lte`       | `lte(Object)`        | Less than or equal    | `lte(10)`                    |
+| `$in`        | `in(Object...)`      | In array of values    | `in("A", "B", "C")`          |
+| `$nin`       | `nin(Object...)`     | Not in array          | `nin("deleted", "archived")` |
+| `$matches`   | `matches(Object)`    | Pattern matching      | `matches("*john*")`          |
+| `$between`   | `between(low, high)` | Inclusive range       | `between(10, 50)`            |
+| `$isnull`    | `isnull()`           | IS NULL check         | `isnull()`                   |
+| `$isnotnull` | `isnotnull()`        | IS NOT NULL check     | `isnotnull()`                |
 
 ### Logical Operators
 

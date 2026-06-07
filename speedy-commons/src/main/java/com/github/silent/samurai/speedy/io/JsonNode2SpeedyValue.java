@@ -34,12 +34,14 @@ public class JsonNode2SpeedyValue {
             case TEXT:
                 yield fromText(jsonNode.asText());
             case ENUM:
-                if (!jsonNode.isTextual()) throw new BadRequestException("expected string for enum field " + fieldMetadata.getOutputPropertyName());
+                if (!jsonNode.isTextual())
+                    throw new BadRequestException("expected string for enum field " + fieldMetadata.getOutputPropertyName());
                 yield fromEnum(jsonNode.asText(), fieldMetadata);
             case INT:
                 yield fromInt(jsonNode.asLong());
             case ENUM_ORD:
-                if (!jsonNode.isNumber()) throw new BadRequestException("expected number for ordinal enum field " + fieldMetadata.getOutputPropertyName());
+                if (!jsonNode.isNumber())
+                    throw new BadRequestException("expected number for ordinal enum field " + fieldMetadata.getOutputPropertyName());
                 yield fromEnum(jsonNode.asLong(), fieldMetadata);
             case FLOAT:
                 yield fromDouble(jsonNode.asDouble());

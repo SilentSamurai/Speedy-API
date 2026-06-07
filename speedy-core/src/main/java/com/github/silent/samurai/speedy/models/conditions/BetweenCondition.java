@@ -23,7 +23,9 @@ public class BetweenCondition implements BinaryCondition {
     private final QueryField field;
     private final ConditionOperator operator = ConditionOperator.BETWEEN;
 
-    /** The array literal containing exactly [low, high] bounds. */
+    /**
+     * The array literal containing exactly [low, high] bounds.
+     */
     private final Literal expression;
 
     /**

@@ -23,7 +23,9 @@ public class IsNullCondition implements BinaryCondition {
     private final QueryField field;
     private final ConditionOperator operator = ConditionOperator.ISNULL;
 
-    /** Must be a boolean literal with value {@code true}. */
+    /**
+     * Must be a boolean literal with value {@code true}.
+     */
     private final Literal expression;
 
     /**

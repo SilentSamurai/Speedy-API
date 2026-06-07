@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.entity;
 
 import jakarta.persistence.*;
+
 import java.util.Set;
 
 /// Inverse side of the `@ManyToMany` association with `mappedBy = "entitiesB"`.
@@ -17,8 +18,19 @@ public class ManyToManyEntityB {
     @ManyToMany(mappedBy = "entitiesB")
     private Set<ManyToManyEntityA> entitiesA;
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public Set<ManyToManyEntityA> getEntitiesA() { return entitiesA; }
-    public void setEntitiesA(Set<ManyToManyEntityA> entitiesA) { this.entitiesA = entitiesA; }
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Set<ManyToManyEntityA> getEntitiesA() {
+        return entitiesA;
+    }
+
+    public void setEntitiesA(Set<ManyToManyEntityA> entitiesA) {
+        this.entitiesA = entitiesA;
+    }
 }

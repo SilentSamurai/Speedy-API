@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DynamicEnumTest {
 
-    enum Color { RED, GREEN, BLUE }
-
     private final DynamicEnum colorEnum = DynamicEnum.of(Color.class);
 
     @Test
@@ -64,4 +62,6 @@ class DynamicEnumTest {
             assertEquals(c.name(), colorEnum.fromCode(c.ordinal()).get().name());
         }
     }
+
+    enum Color {RED, GREEN, BLUE}
 }

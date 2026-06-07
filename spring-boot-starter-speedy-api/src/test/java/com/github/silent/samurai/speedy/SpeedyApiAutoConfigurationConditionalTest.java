@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
 ///
 /// ## How we test
 /// Two @Nested inner classes each boot their own minimal Spring Boot app via
+///
 /// @SpringBootTest. Both apps load the real SpeedyApiAutoConfiguration through
 /// @EnableAutoConfiguration (picked up from AutoConfiguration.imports).
 ///
@@ -51,12 +52,24 @@ class SpeedyApiAutoConfigurationConditionalTest {
 
     @Nested
     @SpringBootTest(
-        classes = Positive.Configured.class,
-        properties = "spring.autoconfigure.exclude="
-                + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
-                + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
+            classes = Positive.Configured.class,
+            properties = "spring.autoconfigure.exclude="
+                    + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
     )
     class Positive {
+
+        @Autowired
+        SpeedyFactory speedyFactory;
+        @Autowired
+        SpeedyOpenApiCustomizer speedyOpenApiCustomizer;
+
+        @Test
+        @DisplayName("SpeedyFactory and SpeedyOpenApiCustomizer are created when ISpeedyConfiguration is present")
+        void allConditionalBeansCreated() {
+            assertThat(speedyFactory).isNotNull();
+            assertThat(speedyOpenApiCustomizer).isNotNull();
+        }
 
         @SpringBootConfiguration
         @EnableAutoConfiguration
@@ -73,29 +86,28 @@ class SpeedyApiAutoConfigurationConditionalTest {
                 return config;
             }
         }
-
-        @Autowired
-        SpeedyFactory speedyFactory;
-
-        @Autowired
-        SpeedyOpenApiCustomizer speedyOpenApiCustomizer;
-
-        @Test
-        @DisplayName("SpeedyFactory and SpeedyOpenApiCustomizer are created when ISpeedyConfiguration is present")
-        void allConditionalBeansCreated() {
-            assertThat(speedyFactory).isNotNull();
-            assertThat(speedyOpenApiCustomizer).isNotNull();
-        }
     }
 
     @Nested
     @SpringBootTest(
-        classes = Negative.Unconfigured.class,
-        properties = "spring.autoconfigure.exclude="
-                + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
-                + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
+            classes = Negative.Unconfigured.class,
+            properties = "spring.autoconfigure.exclude="
+                    + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
+                    + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
     )
     class Negative {
+
+        @Autowired(required = false)
+        SpeedyFactory speedyFactory;
+        @Autowired(required = false)
+        SpeedyOpenApiCustomizer speedyOpenApiCustomizer;
+
+        @Test
+        @DisplayName("SpeedyFactory and SpeedyOpenApiCustomizer are NOT created when ISpeedyConfiguration is absent")
+        void noConditionalBeansCreated() {
+            assertThat(speedyFactory).isNull();
+            assertThat(speedyOpenApiCustomizer).isNull();
+        }
 
         @SpringBootConfiguration
         @EnableAutoConfiguration
@@ -115,19 +127,6 @@ class SpeedyApiAutoConfigurationConditionalTest {
                     }
                 };
             }
-        }
-
-        @Autowired(required = false)
-        SpeedyFactory speedyFactory;
-
-        @Autowired(required = false)
-        SpeedyOpenApiCustomizer speedyOpenApiCustomizer;
-
-        @Test
-        @DisplayName("SpeedyFactory and SpeedyOpenApiCustomizer are NOT created when ISpeedyConfiguration is absent")
-        void noConditionalBeansCreated() {
-            assertThat(speedyFactory).isNull();
-            assertThat(speedyOpenApiCustomizer).isNull();
         }
     }
 }

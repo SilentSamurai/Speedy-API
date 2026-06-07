@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SpeedyEnumTest {
 
-    enum Status { DRAFT, PENDING, READY }
-
     private final DynamicEnum statusEnum = DynamicEnum.of(Status.class);
 
     private FieldMetadata stringModeField() {
@@ -144,4 +142,6 @@ class SpeedyEnumTest {
             assertEquals((long) s.ordinal(), e.asEnumOrd());
         }
     }
+
+    enum Status {DRAFT, PENDING, READY}
 }

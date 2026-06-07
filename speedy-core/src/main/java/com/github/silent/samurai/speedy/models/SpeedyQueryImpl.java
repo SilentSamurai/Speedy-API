@@ -23,10 +23,9 @@ import java.util.Set;
 @Setter
 public class SpeedyQueryImpl implements SpeedyQuery {
 
-    private SpeedyRequestType type;
-
     protected final ConditionFactory conditionFactory;
     private final EntityMetadata from;
+    private SpeedyRequestType type;
     private List<Aggregation> aggregation;
     private BooleanCondition where = new BooleanConditionImpl(ConditionOperator.AND);
     private List<String> groupBy;

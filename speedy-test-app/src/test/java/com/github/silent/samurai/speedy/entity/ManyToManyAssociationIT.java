@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 /// registered in the metamodel; only the @ManyToMany field is excluded.
 ///
 /// ## How we test
+///
 /// @SpringBootTest boots the full application with TestApplication so the metamodel
 /// processor discovers the ManyToManyEntityA/B entities. We instantiate the processor
 /// manually and verify that processMetaModel succeeds, both entities appear in the

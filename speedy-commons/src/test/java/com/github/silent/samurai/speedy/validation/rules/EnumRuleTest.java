@@ -10,11 +10,10 @@ import org.mockito.Mockito;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EnumRuleTest {
-
-    enum Status { DRAFT, PENDING, READY }
 
     private final DynamicEnum statusEnum = DynamicEnum.of(Status.class);
     private final EnumRule rule = new EnumRule();
@@ -173,4 +172,6 @@ class EnumRuleTest {
         List<String> errors = validate(fm, new SpeedyInt(0L));
         assertTrue(errors.isEmpty(), "when DynamicEnum is null, membership check is skipped");
     }
+
+    enum Status {DRAFT, PENDING, READY}
 }

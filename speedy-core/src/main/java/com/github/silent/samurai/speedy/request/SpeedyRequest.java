@@ -23,24 +23,19 @@ import java.util.Map;
 @Getter
 public class SpeedyRequest {
 
+    /// The URI context produced by SpeedyUriContext.parse().
+    private final SpeedyUriContext uriContext;
+    /// Transaction mode for this request.
+    private final TransactionMode transactionMode;
+    /// HTTP method of the request.
+    private final HttpMethod httpMethod;
+    /// The normalized request URI.
+    private final String requestUri;
+    /// HTTP request headers as immutable name-value pairs.
+    private final Map<String, String> headers;
     /// Operation-specific payload, set by BodyParserHandler after parsing.
     @Setter
     private SpeedyBody body;
-
-    /// The URI context produced by SpeedyUriContext.parse().
-    private final SpeedyUriContext uriContext;
-
-    /// Transaction mode for this request.
-    private final TransactionMode transactionMode;
-
-    /// HTTP method of the request.
-    private final HttpMethod httpMethod;
-
-    /// The normalized request URI.
-    private final String requestUri;
-
-    /// HTTP request headers as immutable name-value pairs.
-    private final Map<String, String> headers;
 
     public SpeedyRequest(SpeedyUriContext uriContext, TransactionMode transactionMode,
                          HttpMethod httpMethod, String requestUri, Map<String, String> headers) {

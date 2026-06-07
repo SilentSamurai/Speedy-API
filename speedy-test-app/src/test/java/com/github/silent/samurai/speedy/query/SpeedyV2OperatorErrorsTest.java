@@ -16,8 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import static com.github.silent.samurai.speedy.enums.SpeedyEndpoint.QUERY;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /// Tests error messages for invalid query operator usage via the $query endpoint.
 ///
