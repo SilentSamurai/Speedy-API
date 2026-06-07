@@ -21,17 +21,20 @@ import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+/// Factory that initializes the Speedy API engine and assembles the handler chain.
+///
+/// Processes the MetaModel, registers event handlers and validators, builds the
+/// Chain of Responsibility handler chain, and provides the processReqV2() entry
+/// point for the SpeedyApiController.
 @Getter
+@Slf4j
 public class SpeedyFactory {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyFactory.class);
 
     private final ISpeedyConfiguration speedyConfiguration;
     private final MetaModel metaModel;
@@ -60,7 +63,6 @@ public class SpeedyFactory {
 
         new MetaModelVerifier(metaModel).verify();
 
-        // events
         this.eventRegistry = new RegistryImpl();
         speedyConfiguration.register(eventRegistry);
         this.eventProcessor = new EventProcessor(metaModel, eventRegistry);
@@ -100,7 +102,7 @@ public class SpeedyFactory {
             int status = exceptionMapper.getStatus(e);
             String message = exceptionMapper.getMessage(e);
             ExceptionUtils.writeException(response, status, message);
-            LOGGER.error("Exception {} ", request.getRequestURI(), e);
+            log.error("Exception {} ", request.getRequestURI(), e);
         } finally {
             response.getWriter().flush();
         }
@@ -108,26 +110,21 @@ public class SpeedyFactory {
 
     private Handler createHandlerChain() {
         Handler tail = new TailHandler();
-
         Handler rw = new SpeedyResponseWriterHandler(tail);
         Handler ss = new SerializerSelectionHandler(rw);
 
-        // switch
-
         Handler gh = new GetHandler(ss);
         Handler qh = new QueryHandler(ss);
-
         Handler ch = new CreateHandler(ss);
         Handler uh = new UpdateHandler(ss);
         Handler dh = new DeleteHandler(ss);
 
-        // switch
         Handler sh = new SwitchHandler(gh, qh, ch, uh, dh);
-
-        Handler ech = new EntityCaptureHandler(sh);
+        Handler bph = new BodyParserHandler(sh);
+        Handler psh = new ParserSelectionHandler(bph);
+        Handler orh = new OperationResolverHandler(psh);
+        Handler ech = new UriParserHandler(orh);
         Handler requestParserHandler = new RequestParserHandler(ech, maxRequestBodySize);
         return new HeadHandler(requestParserHandler);
     }
-
-
 }

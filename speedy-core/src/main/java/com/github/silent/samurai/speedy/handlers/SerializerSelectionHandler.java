@@ -4,12 +4,18 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
+/// Selects the response serializer based on the Accept request header.
+///
+/// Currently only supports JSON via JSONSerializerV2. Future XML/YAML
+/// serializer selection is handled by matching the Accept header to the
+/// serializer's content type.
+///
+/// @see ParserSelectionHandler
+/// @see IResponseSerializerV2
+@Slf4j
 public class SerializerSelectionHandler implements Handler {
-
-    private static final Logger log = LoggerFactory.getLogger(SerializerSelectionHandler.class);
 
     final Handler next;
 
@@ -24,12 +30,14 @@ public class SerializerSelectionHandler implements Handler {
 
         if (accept == null || accept.contains("*/*") || accept.contains("application/json")) {
             context.setResponseSerializer(
-                    new JSONSerializerV2(context.getMetaModel(), context.getEntityMetadata())
+                    new JSONSerializerV2(context.getMetaModel(),
+                            context.getEntityMetadata())
             );
         } else {
             log.warn("Unsupported Accept header '{}', defaulting to JSON", accept);
             context.setResponseSerializer(
-                    new JSONSerializerV2(context.getMetaModel(), context.getEntityMetadata())
+                    new JSONSerializerV2(context.getMetaModel(),
+                            context.getEntityMetadata())
             );
         }
 

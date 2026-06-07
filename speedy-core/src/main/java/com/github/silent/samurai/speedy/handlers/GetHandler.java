@@ -16,29 +16,14 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.function.Predicate;
 
-/// # GetHandler
+/// Handles GET /{Entity} requests using the URI-parsed SpeedyQuery body.
 ///
-/// Handles {@code GET /{Entity}} requests. Uses the {@link SpeedyQuery} built by
-/// {@link EntityCaptureHandler} from URI query parameters, executes the query
-/// with a count, and sets a {@link JSONSerializerV2} on the context.
+/// Reads the SpeedyQuery (set as body by BodyParserHandler for GET_LIST),
+/// executes the query with count, and produces the appropriate SpeedyEntityResponse
+/// or SpeedyCountResponse for the response serializer.
 ///
-/// ## Purpose
-/// - Executes entity list queries from URL query string parameters
-/// - Supports count-only requests ({@code $count=true})
-/// - Includes pagination metadata (pageIndex, pageSize, totalCount, totalPages)
-/// - Applies {@code $select} field filtering via {@link FieldPredicates}
-///
-/// ## Processing Flow
-/// 1. Reads the pre-built {@code SpeedyQuery} from the context
-/// 2. If count-only: executes {@code executeCount()} and sets {@link JSONCountSerializerV2}
-/// 3. Otherwise: executes {@code executeManyWithCount()} for data + total count
-/// 4. Builds a field predicate from {@code $select}
-/// 5. Constructs {@link JSONSerializerV2} with entities, page info, total count, and expands
-/// 6. Sets the serializer on the context for {@link SpeedyResponseWriterHandler}
-///
-/// ## Chain Position
-/// Dispatched by {@link SwitchHandler} for GET requests. Delegates to the next handler
-/// (typically {@link SpeedyResponseWriterHandler}) after setting the serializer.
+/// @see BodyParserHandler
+/// @see SpeedyQuery
 public class GetHandler implements Handler {
 
     final Handler next;
@@ -49,9 +34,9 @@ public class GetHandler implements Handler {
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        EntityMetadata resourceMetadata = context.getEntityMetadata();
+        SpeedyQuery speedyQuery = (SpeedyQuery) context.getRequest().getBody();
+        EntityMetadata resourceMetadata = speedyQuery.getFrom();
         QueryProcessor queryProcessor = context.getQueryProcessor();
-        SpeedyQuery speedyQuery = context.getSpeedyQuery();
 
         if (speedyQuery.isCountRequest()) {
             BigInteger count = queryProcessor.executeCount(speedyQuery);

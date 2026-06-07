@@ -1,7 +1,5 @@
 package com.github.silent.samurai.speedy.handlers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.PayloadTooLargeException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -12,28 +10,18 @@ import org.springframework.http.HttpMethod;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
-/// # RequestParserHandler
+/// Reads raw HTTP request data and populates transient fields on RequestContext.
 ///
-/// Extracts the HTTP method, request URI, and JSON body from the
-/// {@code HttpServletRequest} and populates them on the {@link RequestContext}.
-/// Enforces a configurable maximum request body size before parsing.
+/// Extracts the HTTP method, request URI, request headers, and raw body bytes
+/// from HttpServletRequest. The raw bytes are stored for later parsing by
+/// IRequestBodyParser implementations based on Content-Type.
 ///
-/// ## Purpose
-/// - Reads and normalizes the request URI
-/// - Parses the HTTP method into a Spring {@code HttpMethod} enum
-/// - Parses the request body into a Jackson {@code JsonNode}, enforcing size limits
-///
-/// ## Processing Flow
-/// 1. Extracts the URI and HTTP method from the servlet request
-/// 2. Checks Content-Length against the configured max body size
-/// 3. Parses the body stream into a {@code JsonNode}
-///    (with safe read limit for unknown content length)
-/// 4. Sets {@code requestUri}, {@code httpMethod}, and {@code body} on the context
-/// 5. Delegates to the next handler
-///
-/// ## Chain Position
-/// Second handler in the chain, immediately after {@link HeadHandler}.
+/// @see IRequestBodyParser
 public class RequestParserHandler implements Handler {
 
     private final Handler next;
@@ -49,9 +37,12 @@ public class RequestParserHandler implements Handler {
         HttpServletRequest request = context.getHttpServletRequest();
         String requestURI = CommonUtil.getRequestURI(request);
         String method = request.getMethod();
-        context.setRequestUri(requestURI);
         HttpMethod httpMethod = HttpMethod.valueOf(method);
+        Map<String, String> headers = extractHeaders(request);
+
+        context.setRequestUri(requestURI);
         context.setHttpMethod(httpMethod);
+        context.setHeaders(headers);
 
         try {
             long contentLength = request.getContentLengthLong();
@@ -60,10 +51,9 @@ public class RequestParserHandler implements Handler {
                         "Request body size " + contentLength + " exceeds maximum " + maxRequestBodySize + " bytes");
             }
 
-            ObjectMapper json = CommonUtil.json();
-            JsonNode jsonBody;
-
-            if (maxRequestBodySize > 0 && contentLength == -1) {
+            if (contentLength == 0) {
+                context.setRawBody(new byte[0]);
+            } else if (maxRequestBodySize > 0 && contentLength == -1) {
                 InputStream is = request.getInputStream();
                 int readLimit = maxRequestBodySize >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) (maxRequestBodySize + 1);
                 byte[] bodyBytes = is.readNBytes(readLimit);
@@ -71,12 +61,10 @@ public class RequestParserHandler implements Handler {
                     throw new PayloadTooLargeException(
                             "Request body exceeds maximum " + maxRequestBodySize + " bytes");
                 }
-                jsonBody = json.readTree(bodyBytes);
+                context.setRawBody(bodyBytes);
             } else {
-                jsonBody = json.readTree(request.getReader());
+                context.setRawBody(request.getInputStream().readAllBytes());
             }
-
-            context.setBody(jsonBody);
         } catch (IOException e) {
             throw new BadRequestException("Invalid Request", e);
         }
@@ -84,4 +72,15 @@ public class RequestParserHandler implements Handler {
         next.process(context);
     }
 
+    private Map<String, String> extractHeaders(HttpServletRequest request) {
+        Map<String, String> headers = new HashMap<>();
+        Enumeration<String> headerNames = request.getHeaderNames();
+        if (headerNames != null) {
+            while (headerNames.hasMoreElements()) {
+                String name = headerNames.nextElement();
+                headers.put(name, request.getHeader(name));
+            }
+        }
+        return Collections.unmodifiableMap(headers);
+    }
 }

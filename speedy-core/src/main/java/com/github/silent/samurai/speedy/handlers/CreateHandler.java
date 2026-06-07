@@ -1,9 +1,5 @@
 package com.github.silent.samurai.speedy.handlers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.events.EventProcessor;
@@ -16,45 +12,27 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyBatchResponse;
+import com.github.silent.samurai.speedy.models.SpeedyCreateBody;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.models.SpeedyPartialFailure;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
+/// Handles POST /{Entity}/$create requests with pre-parsed SpeedyCreateBody.
+///
+/// Reads the SpeedyCreateBody (parsed from JSON by JSONBodyParser and set as
+/// body by BodyParserHandler), fires PRE/POST_INSERT events, validates entities,
+/// and bulk-creates them in either BATCH or PER_ENTITY transaction mode.
+///
+/// @see BodyParserHandler
+/// @see SpeedyCreateBody
 @Slf4j
-/// # CreateHandler
-///
-/// Handles {@code POST /{Entity}/$create} requests. Parses a JSON array body,
-/// fires PRE/POST_INSERT events, validates each entity, and bulk-creates them.
-/// Supports both {@code BATCH} and {@code PER_ENTITY} transaction modes.
-///
-/// ## Purpose
-/// - Parses a JSON array of entity objects into {@link SpeedyEntity} instances
-/// - Detects duplicate entities by checking primary key existence before insert
-/// - Supports two transaction modes: BATCH (all-or-nothing) and PER_ENTITY (partial success)
-/// - Returns key-only projection for successful creates, or a {@link BatchResultSerializer}
-///   response with succeeded/failed arrays on partial failure
-///
-/// ## Processing Flow
-/// 1. Parses the JSON array body into a list of {@code SpeedyEntity} objects
-/// 2. For each entity, checks if the PK already exists (rejects if duplicate)
-/// 3. Branches by transaction mode:
-///    - **BATCH**: Runs all inserts in a single transaction; rolls back on any failure
-///    - **PER_ENTITY**: Runs each insert in its own transaction; collects partial failures
-/// 4. For each entity: triggers PRE_INSERT event → validates → inserts → triggers POST_INSERT
-/// 5. On success: sets {@link JSONSerializerV2} with key-only projection
-/// 6. On partial failure (PER_ENTITY with multiple entities): sets {@link BatchResultSerializer}
-///
-/// ## Chain Position
-/// Dispatched by {@link SwitchHandler} for POST requests with {@code $create} suffix.
 public class CreateHandler implements Handler {
 
     final Handler next;
@@ -65,17 +43,14 @@ public class CreateHandler implements Handler {
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        EntityMetadata resourceMetadata = context.getEntityMetadata();
-        ObjectMapper json = CommonUtil.json();
-        JsonNode jsonBody = context.getBody();
+        SpeedyCreateBody body = (SpeedyCreateBody) context.getRequest().getBody();
+        List<SpeedyEntity> entities = body.getEntities();
+        TransactionMode mode = body.getMode();
 
-        List<SpeedyEntity> speedyEntities = parserContent(context, resourceMetadata, jsonBody);
-
-        TransactionMode mode = context.getTransactionMode();
         if (mode == TransactionMode.BATCH) {
-            processBatchCreate(context, speedyEntities);
+            processBatchCreate(context, entities);
         } else {
-            processPerEntityCreate(context, speedyEntities);
+            processPerEntityCreate(context, entities);
         }
 
         next.process(context);
@@ -199,21 +174,21 @@ public class CreateHandler implements Handler {
                 SpeedyEntityKey inputPk = extractInputPk(entity);
                 if (cause instanceof SpeedyHttpException she) {
                     failed.add(SpeedyPartialFailure.builder()
-                            .index(i).status(she.getStatus()).message(she.getMessage())
-                            .timestamp(Instant.now().toString()).inputPk(inputPk).cause(she)
-                            .build());
+                            .index(i).status(she.getStatus())
+                            .message(she.getMessage()).timestamp(Instant.now().toString())
+                            .inputPk(inputPk).cause(she).build());
                     log.info("Entity #{} failed in per-entity transaction", i, she);
                 } else if (cause instanceof SpeedyHttpRuntimeException sre) {
                     failed.add(SpeedyPartialFailure.builder()
-                            .index(i).status(sre.getStatus()).message(sre.getMessage())
-                            .timestamp(Instant.now().toString()).inputPk(inputPk).cause(sre)
-                            .build());
+                            .index(i).status(sre.getStatus())
+                            .message(sre.getMessage()).timestamp(Instant.now().toString())
+                            .inputPk(inputPk).cause(sre).build());
                     log.info("Entity #{} failed in per-entity transaction", i, sre);
                 } else {
                     failed.add(SpeedyPartialFailure.builder()
-                            .index(i).status(500).message(e.getMessage())
-                            .timestamp(Instant.now().toString()).inputPk(inputPk).cause(e)
-                            .build());
+                            .index(i).status(500)
+                            .message(e.getMessage()).timestamp(Instant.now().toString())
+                            .inputPk(inputPk).cause(e).build());
                     log.info("Entity #{} failed in per-entity transaction", i, e);
                 }
             }
@@ -262,38 +237,5 @@ public class CreateHandler implements Handler {
             }
         }
         return hasAtLeastOne ? key : null;
-    }
-
-
-    public List<SpeedyEntity> parserContent(RequestContext context, EntityMetadata resourceMetadata, JsonNode jsonElement) throws SpeedyHttpException {
-        if (jsonElement == null || !jsonElement.isArray()) {
-            throw new BadRequestException("no content to process");
-        }
-        List<SpeedyEntity> parsedObjects = new LinkedList<>();
-        ArrayNode batchOfEntities = (ArrayNode) jsonElement;
-        QueryProcessor queryProcessor = context.getQueryProcessor();
-        for (JsonNode element : batchOfEntities) {
-            if (element.isObject()) {
-                ObjectNode objectNode = (ObjectNode) element;
-                if (MetadataUtil.isPrimaryKeyComplete(resourceMetadata, objectNode)) {
-                    SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(
-                            resourceMetadata,
-                            objectNode
-                    );
-                    if (queryProcessor.exists(pk)) {
-                        throw new BadRequestException("Entity already present.");
-                    }
-                }
-                SpeedyEntity speedyEntity = MetadataUtil.createEntityFromJSON(
-                        resourceMetadata,
-                        objectNode
-                );
-                log.info("parsed entity {}", speedyEntity);
-                parsedObjects.add(speedyEntity);
-            } else {
-                throw new BadRequestException("in-valid content");
-            }
-        }
-        return parsedObjects;
     }
 }
