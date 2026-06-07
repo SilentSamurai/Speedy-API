@@ -9,7 +9,6 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
-import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
 import com.github.silent.samurai.speedy.utils.DefaultExceptionMapper;
@@ -57,8 +56,7 @@ public class SpeedyFactory {
         this.eventProcessor = new EventProcessor(metaModel, eventRegistry);
         this.eventProcessor.processRegistry();
 
-        this.exceptionMapper = new DefaultExceptionMapper(
-                new AdviceExceptionMapper(eventRegistry.getControllerAdvices()));
+        this.exceptionMapper = new DefaultExceptionMapper(new AdviceExceptionMapper(eventRegistry.getControllerAdvices()));
 
         this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel);
         this.validationProcessor.process();
@@ -66,43 +64,28 @@ public class SpeedyFactory {
         configuration = speedyConfiguration;
         dialect = speedyConfiguration.getDialect();
 
-        this.engine = new SpeedyEngineImpl(maxRequestBodySize);
+        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor, maxRequestBodySize);
     }
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        RequestContext ctx = new RequestContext(
-                configuration,
-                dialect,
-                metaModel,
-                request,
-                response,
-                eventProcessor,
-                validationProcessor
-        );
         try {
-            // 1. Resolve QueryProcessor
-            QueryProcessor qp = engine.prepare(ctx);
-            ctx.setQueryProcessor(qp);
+            QueryProcessor qp = engine.prepare();
 
-            // 2. Parse request (URI, Method, Headers)
-            SpeedyRequest req = engine.parseRequest(ctx);
+            SpeedyRequest req = engine.parseRequest(request);
 
-            // 3. Select parser & parse body via sub-chains
-            engine.selectBodyParser(ctx);
-            SpeedyBody body = engine.parseBody(ctx);
+            IRequestBodyParser parser = engine.selectBodyParser(req);
+            SpeedyBody body = engine.parseBody(parser, req, qp);
 
-            // 4. Dispatch to CRUD operation
-            SpeedyResponse resp = switch (ctx.getRequestType()) {
-                case GET_LIST -> engine.get(ctx);
-                case QUERY -> engine.query(ctx);
-                case CREATE -> engine.create(ctx);
-                case UPDATE -> engine.update(ctx);
-                case DELETE -> engine.delete(ctx);
+            SpeedyResponse resp = switch (req.getRequestType()) {
+                case GET_LIST -> engine.get(req, body, qp);
+                case QUERY -> engine.query(req, body, qp);
+                case CREATE -> engine.create(req, body, qp);
+                case UPDATE -> engine.update(req, body, qp);
+                case DELETE -> engine.delete(req, body, qp);
             };
 
-            // 5. Select a serializer and write a response via sub-chains
-            engine.selectSerializer(ctx);
-            engine.writeResponse(ctx);
+            IResponseSerializerV2 serializer = engine.selectSerializer(request, req);
+            engine.writeResponse(serializer, resp, response);
 
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;

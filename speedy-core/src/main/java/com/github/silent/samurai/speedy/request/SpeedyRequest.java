@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.request;
 
+import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
@@ -33,6 +34,12 @@ public class SpeedyRequest {
     private final String requestUri;
     /// HTTP request headers as immutable name-value pairs.
     private final Map<String, String> headers;
+    /// Operation type resolved from HTTP method and URI suffix.
+    @Setter
+    private SpeedyRequestType requestType;
+    /// Raw request body bytes, set by RequestParserHandler.
+    @Setter
+    private byte[] rawBody;
     /// Operation-specific payload, set by BodyParserHandler after parsing.
     @Setter
     private SpeedyBody body;
