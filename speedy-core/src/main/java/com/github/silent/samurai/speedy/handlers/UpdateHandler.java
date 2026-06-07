@@ -29,12 +29,6 @@ import java.util.List;
 @Slf4j
 public class UpdateHandler implements Handler {
 
-    final Handler next;
-
-    public UpdateHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyUpdateBody body = (SpeedyUpdateBody) context.getRequest().getBody();
@@ -52,8 +46,6 @@ public class UpdateHandler implements Handler {
                         .status(200)
                         .build()
         );
-
-        next.process(context);
     }
 
     private SpeedyEntity updateInTransaction(RequestContext context, SpeedyEntity entity, SpeedyEntityKey pk)

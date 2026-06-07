@@ -20,12 +20,6 @@ import com.github.silent.samurai.speedy.request.SpeedyRequest;
 /// @see SpeedyRequestType
 public class BodyParserHandler implements Handler {
 
-    final Handler next;
-
-    public BodyParserHandler(Handler next) {
-        this.next = next;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyRequest request = context.getRequest();
@@ -58,6 +52,5 @@ public class BodyParserHandler implements Handler {
         };
 
         request.setBody(body);
-        next.process(context);
     }
 }

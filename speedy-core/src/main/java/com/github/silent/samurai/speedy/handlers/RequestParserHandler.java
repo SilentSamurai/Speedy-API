@@ -24,11 +24,9 @@ import java.util.Map;
 /// @see IRequestBodyParser
 public class RequestParserHandler implements Handler {
 
-    private final Handler next;
     private final long maxRequestBodySize;
 
-    public RequestParserHandler(final Handler next, long maxRequestBodySize) {
-        this.next = next;
+    public RequestParserHandler(long maxRequestBodySize) {
         this.maxRequestBodySize = maxRequestBodySize;
     }
 
@@ -69,7 +67,6 @@ public class RequestParserHandler implements Handler {
             throw new BadRequestException("Invalid Request", e);
         }
 
-        next.process(context);
     }
 
     private Map<String, String> extractHeaders(HttpServletRequest request) {

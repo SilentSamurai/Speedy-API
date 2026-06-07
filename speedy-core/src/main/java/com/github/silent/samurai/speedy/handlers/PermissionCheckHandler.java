@@ -8,11 +8,9 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 
 public class PermissionCheckHandler implements Handler {
 
-    private final Handler next;
     private final PermissionType permission;
 
-    public PermissionCheckHandler(Handler next, PermissionType permission) {
-        this.next = next;
+    public PermissionCheckHandler(PermissionType permission) {
         this.permission = permission;
     }
 
@@ -30,6 +28,5 @@ public class PermissionCheckHandler implements Handler {
             throw new BadRequestException(
                     String.format("%s not allowed for %s", op, entityMetadata.getName()));
         }
-        next.process(context);
     }
 }

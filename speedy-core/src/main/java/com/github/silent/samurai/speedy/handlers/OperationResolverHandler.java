@@ -17,12 +17,6 @@ import org.springframework.http.HttpMethod;
 /// @see SpeedyRequestType
 public class OperationResolverHandler implements Handler {
 
-    final Handler next;
-
-    public OperationResolverHandler(Handler next) {
-        this.next = next;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyRequest request = context.getRequest();
@@ -51,6 +45,5 @@ public class OperationResolverHandler implements Handler {
         }
 
         context.setRequestType(requestType);
-        next.process(context);
     }
 }

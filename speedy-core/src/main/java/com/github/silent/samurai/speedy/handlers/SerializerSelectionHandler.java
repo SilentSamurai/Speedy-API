@@ -9,12 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SerializerSelectionHandler implements Handler {
 
-    final Handler next;
-
-    public SerializerSelectionHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         HttpServletRequest request = context.getHttpServletRequest();
@@ -32,7 +26,5 @@ public class SerializerSelectionHandler implements Handler {
                             context.getEntityMetadata())
             );
         }
-
-        next.process(context);
     }
 }

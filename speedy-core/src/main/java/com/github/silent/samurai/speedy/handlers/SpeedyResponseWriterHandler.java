@@ -6,12 +6,6 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 
 public class SpeedyResponseWriterHandler implements Handler {
 
-    final Handler next;
-
-    public SpeedyResponseWriterHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         if (context.getResponseSerializer() != null && context.getSpeedyResponse() != null) {
@@ -22,6 +16,5 @@ public class SpeedyResponseWriterHandler implements Handler {
         } else {
             throw new InternalServerError("Failed to generate Response");
         }
-        next.process(context);
     }
 }

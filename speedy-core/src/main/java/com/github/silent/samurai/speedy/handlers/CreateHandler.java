@@ -30,12 +30,6 @@ import java.util.List;
 @Slf4j
 public class CreateHandler implements Handler {
 
-    final Handler next;
-
-    public CreateHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyCreateBody body = (SpeedyCreateBody) context.getRequest().getBody();
@@ -47,8 +41,6 @@ public class CreateHandler implements Handler {
         } else {
             processPerEntityCreate(context, entities);
         }
-
-        next.process(context);
     }
 
     private void processBatchCreate(RequestContext context, List<SpeedyEntity> entities)

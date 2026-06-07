@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SpeedyEngineImpl implements SpeedyEngine {
@@ -25,16 +26,16 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final EventProcessor eventProcessor;
     private final ValidationProcessor validationProcessor;
 
-    private final Handler requestChain;
-    private final Handler bodyChain;
-    private final Handler parserSelectionChain;
-    private final Handler serializerSelectionChain;
-    private final Handler getChain;
-    private final Handler queryChain;
-    private final Handler createChain;
-    private final Handler updateChain;
-    private final Handler deleteChain;
-    private final Handler responseChain;
+    private final List<Handler> requestChain;
+    private final List<Handler> bodyChain;
+    private final List<Handler> parserSelectionChain;
+    private final List<Handler> serializerSelectionChain;
+    private final List<Handler> getChain;
+    private final List<Handler> queryChain;
+    private final List<Handler> createChain;
+    private final List<Handler> updateChain;
+    private final List<Handler> deleteChain;
+    private final List<Handler> responseChain;
     private final ConcurrentHashMap<DataSource, QueryProcessor> queryProcessorCache = new ConcurrentHashMap<>();
 
     public SpeedyEngineImpl(ISpeedyConfiguration config,
@@ -49,36 +50,78 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         this.eventProcessor = eventProcessor;
         this.validationProcessor = validationProcessor;
 
-        TailHandler tail = new TailHandler();
+        requestChain = List.of(
+                new HeadHandler(),
+                new RequestParserHandler(maxRequestBodySize),
+                new UriParserHandler(),
+                new OperationResolverHandler(),
+                new TailHandler()
+        );
 
-        requestChain = new HeadHandler(
-                new RequestParserHandler(
-                        new UriParserHandler(
-                                new OperationResolverHandler(tail)),
-                        maxRequestBodySize));
+        bodyChain = List.of(
+                new HeadHandler(),
+                new BodyParserHandler(),
+                new TailHandler()
+        );
 
-        bodyChain = new HeadHandler(new BodyParserHandler(tail));
+        parserSelectionChain = List.of(
+                new HeadHandler(),
+                new ParserSelectionHandler(),
+                new TailHandler()
+        );
 
-        parserSelectionChain = new HeadHandler(new ParserSelectionHandler(tail));
+        serializerSelectionChain = List.of(
+                new HeadHandler(),
+                new SerializerSelectionHandler(),
+                new TailHandler()
+        );
 
-        serializerSelectionChain = new HeadHandler(new SerializerSelectionHandler(tail));
+        getChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.READ),
+                new GetHandler(),
+                new TailHandler()
+        );
+        queryChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.READ),
+                new QueryHandler(),
+                new TailHandler()
+        );
+        createChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.CREATE),
+                new CreateHandler(),
+                new TailHandler()
+        );
+        updateChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.UPDATE),
+                new UpdateHandler(),
+                new TailHandler()
+        );
+        deleteChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.DELETE),
+                new DeleteHandler(),
+                new TailHandler()
+        );
 
-        getChain = new HeadHandler(new PermissionCheckHandler(
-                new GetHandler(tail), PermissionType.READ));
-        queryChain = new HeadHandler(new PermissionCheckHandler(
-                new QueryHandler(tail), PermissionType.READ));
-        createChain = new HeadHandler(new PermissionCheckHandler(
-                new CreateHandler(tail), PermissionType.CREATE));
-        updateChain = new HeadHandler(new PermissionCheckHandler(
-                new UpdateHandler(tail), PermissionType.UPDATE));
-        deleteChain = new HeadHandler(new PermissionCheckHandler(
-                new DeleteHandler(tail), PermissionType.DELETE));
-
-        responseChain = new HeadHandler(new SpeedyResponseWriterHandler(tail));
+        responseChain = List.of(
+                new HeadHandler(),
+                new SpeedyResponseWriterHandler(),
+                new TailHandler()
+        );
     }
 
     private RequestContext newContext(HttpServletRequest request, HttpServletResponse response) {
         return new RequestContext(config, dialect, metaModel, request, response, eventProcessor, validationProcessor);
+    }
+
+    private void run(List<Handler> chain, RequestContext ctx) throws SpeedyHttpException {
+        for (Handler handler : chain) {
+            handler.process(ctx);
+        }
     }
 
     @Override
@@ -91,7 +134,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     @Override
     public SpeedyRequest parseRequest(HttpServletRequest request) throws SpeedyHttpException {
         RequestContext ctx = newContext(request, null);
-        requestChain.process(ctx);
+        run(requestChain, ctx);
         SpeedyRequest req = ctx.getRequest();
         req.setRequestType(ctx.getRequestType());
         req.setRawBody(ctx.getRawBody());
@@ -102,7 +145,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     public IRequestBodyParser selectBodyParser(SpeedyRequest request) throws SpeedyHttpException {
         RequestContext ctx = newContext(null, null);
         ctx.setRequest(request);
-        parserSelectionChain.process(ctx);
+        run(parserSelectionChain, ctx);
         return ctx.getRequestBodyParser();
     }
 
@@ -114,7 +157,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         ctx.setRequestBodyParser(parser);
         ctx.setRequestType(request.getRequestType());
         ctx.setQueryProcessor(qp);
-        bodyChain.process(ctx);
+        run(bodyChain, ctx);
         return ctx.getRequest().getBody();
     }
 
@@ -124,7 +167,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         RequestContext ctx = newContext(null, null);
         ctx.setRequest(request);
         ctx.setQueryProcessor(qp);
-        getChain.process(ctx);
+        run(getChain, ctx);
         return ctx.getSpeedyResponse();
     }
 
@@ -134,7 +177,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         RequestContext ctx = newContext(null, null);
         ctx.setRequest(request);
         ctx.setQueryProcessor(qp);
-        queryChain.process(ctx);
+        run(queryChain, ctx);
         return ctx.getSpeedyResponse();
     }
 
@@ -144,7 +187,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         RequestContext ctx = newContext(null, null);
         ctx.setRequest(request);
         ctx.setQueryProcessor(qp);
-        createChain.process(ctx);
+        run(createChain, ctx);
         return ctx.getSpeedyResponse();
     }
 
@@ -154,7 +197,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         RequestContext ctx = newContext(null, null);
         ctx.setRequest(request);
         ctx.setQueryProcessor(qp);
-        updateChain.process(ctx);
+        run(updateChain, ctx);
         return ctx.getSpeedyResponse();
     }
 
@@ -164,7 +207,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         RequestContext ctx = newContext(null, null);
         ctx.setRequest(request);
         ctx.setQueryProcessor(qp);
-        deleteChain.process(ctx);
+        run(deleteChain, ctx);
         return ctx.getSpeedyResponse();
     }
 
@@ -172,7 +215,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     public IResponseSerializerV2 selectSerializer(HttpServletRequest servletRequest, SpeedyRequest speedyRequest) throws SpeedyHttpException {
         RequestContext ctx = newContext(servletRequest, null);
         ctx.setRequest(speedyRequest);
-        serializerSelectionChain.process(ctx);
+        run(serializerSelectionChain, ctx);
         return ctx.getResponseSerializer();
     }
 
@@ -181,6 +224,6 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         RequestContext ctx = newContext(null, servletResponse);
         ctx.setResponseSerializer(serializer);
         ctx.setSpeedyResponse(response);
-        responseChain.process(ctx);
+        run(responseChain, ctx);
     }
 }

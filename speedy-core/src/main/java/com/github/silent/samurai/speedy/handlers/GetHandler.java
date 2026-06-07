@@ -26,12 +26,6 @@ import java.util.function.Predicate;
 /// @see SpeedyQuery
 public class GetHandler implements Handler {
 
-    final Handler next;
-
-    public GetHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyQuery speedyQuery = (SpeedyQuery) context.getRequest().getBody();
@@ -46,7 +40,6 @@ public class GetHandler implements Handler {
                             .status(200)
                             .build()
             );
-            next.process(context);
             return;
         }
 
@@ -65,7 +58,5 @@ public class GetHandler implements Handler {
                         .status(200)
                         .build()
         );
-
-        next.process(context);
     }
 }

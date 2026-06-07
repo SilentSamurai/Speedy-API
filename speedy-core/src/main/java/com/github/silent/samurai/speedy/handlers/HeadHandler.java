@@ -16,14 +16,7 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 /// First handler in the chain. Always passes control to {@link RequestParserHandler}.
 public class HeadHandler implements Handler {
 
-    final Handler next;
-
-    public HeadHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        next.process(context);
     }
 }

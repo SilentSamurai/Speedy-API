@@ -10,12 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ParserSelectionHandler implements Handler {
 
-    final Handler next;
-
-    public ParserSelectionHandler(Handler next) {
-        this.next = next;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyRequest request = context.getRequest();
@@ -31,6 +25,5 @@ public class ParserSelectionHandler implements Handler {
         }
 
         context.setRequestBodyParser(parser);
-        next.process(context);
     }
 }

@@ -26,12 +26,6 @@ import java.util.function.Predicate;
 /// @see JSONBodyParser
 public class QueryHandler implements Handler {
 
-    final Handler next;
-
-    public QueryHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyQuery speedyQuery = (SpeedyQuery) context.getRequest().getBody();
@@ -62,6 +56,5 @@ public class QueryHandler implements Handler {
                             .build()
             );
         }
-        next.process(context);
     }
 }

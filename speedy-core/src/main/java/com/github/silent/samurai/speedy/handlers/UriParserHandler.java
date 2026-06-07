@@ -24,12 +24,6 @@ import java.util.Map;
 /// @see SpeedyRequest
 public class UriParserHandler implements Handler {
 
-    final Handler next;
-
-    public UriParserHandler(Handler next) {
-        this.next = next;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         MetaModel metaModel = context.getMetaModel();
@@ -57,8 +51,6 @@ public class UriParserHandler implements Handler {
 
         SpeedyRequest request = new SpeedyRequest(parser, effectiveMode, httpMethod, requestURI, headers);
         context.setRequest(request);
-
-        next.process(context);
     }
 
     private TransactionMode resolveTransactionMode(

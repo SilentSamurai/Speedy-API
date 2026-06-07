@@ -29,12 +29,6 @@ import java.util.List;
 @Slf4j
 public class DeleteHandler implements Handler {
 
-    final Handler next;
-
-    public DeleteHandler(Handler handler) {
-        this.next = handler;
-    }
-
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         SpeedyDeleteBody body = (SpeedyDeleteBody) context.getRequest().getBody();
@@ -46,8 +40,6 @@ public class DeleteHandler implements Handler {
         } else {
             processPerEntityDelete(context, keys);
         }
-
-        next.process(context);
     }
 
     private void processBatchDelete(RequestContext context, List<SpeedyEntityKey> keys)
