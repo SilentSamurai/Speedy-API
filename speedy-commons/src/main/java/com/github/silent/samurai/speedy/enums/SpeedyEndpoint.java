@@ -13,14 +13,6 @@ public enum SpeedyEndpoint {
         this.suffix = suffix;
     }
 
-    public String suffix() {
-        return suffix;
-    }
-
-    public String path() {
-        return "/" + suffix;
-    }
-
     public static SpeedyEndpoint fromSuffix(String suffix) {
         for (SpeedyEndpoint ep : values()) {
             if (ep.suffix.equals(suffix)) {
@@ -28,5 +20,13 @@ public enum SpeedyEndpoint {
             }
         }
         return null;
+    }
+
+    public String suffix() {
+        return suffix;
+    }
+
+    public String path() {
+        return "/" + suffix;
     }
 }

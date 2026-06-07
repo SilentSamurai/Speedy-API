@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
+import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -24,6 +25,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
 
     protected final ConditionFactory conditionFactory;
     private final EntityMetadata from;
+    private SpeedyRequestType type;
     private List<Aggregation> aggregation;
     private BooleanCondition where = new BooleanConditionImpl(ConditionOperator.AND);
     private List<String> groupBy;

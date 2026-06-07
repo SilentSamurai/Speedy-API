@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.entity;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.util.SpeedyTestUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)

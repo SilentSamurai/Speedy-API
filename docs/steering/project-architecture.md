@@ -94,7 +94,9 @@ HeadHandler
 
 - Handler chain is immutable after construction — no runtime modification
 - `RequestContext` is the mutable state bag that flows through the chain
-- `QueryProcessor` is cached per unique `DataSource` returned by `dataSourcePerReq()`. For single-tenant apps this means one `QueryProcessor` (and one JOOQ `DSLContext`) for the application lifetime. Multi-tenant deployments automatically get a cached instance per tenant's DataSource.
+- `QueryProcessor` is cached per unique `DataSource` returned by `dataSourcePerReq()`. For single-tenant apps this means
+  one `QueryProcessor` (and one JOOQ `DSLContext`) for the application lifetime. Multi-tenant deployments automatically
+  get a cached instance per tenant's DataSource.
 - jOOQ is used for SQL generation and execution (not JPA/Hibernate at runtime)
 - JPA/Hibernate is only used at startup for metadata introspection via `EntityManagerFactory`
 

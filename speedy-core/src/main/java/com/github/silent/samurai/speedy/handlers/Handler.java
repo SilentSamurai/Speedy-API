@@ -11,9 +11,9 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 /// downstream after completing its own work.
 ///
 /// ## Chain Assembly
-/// The chain is wired in {@code SpeedyFactory.createHandlerChain()} with a
-/// specific order: HeadHandler → RequestParserHandler → EntityCaptureHandler →
-/// SwitchHandler → [CRUD handlers] → SpeedyResponseWriterHandler → TailHandler.
+/// Pre-built sub-chains are wired in {@code SpeedyEngineImpl} for each
+/// lifecycle phase: request parsing, body parsing, CRUD operations, and
+/// response writing.
 ///
 /// @see com.github.silent.samurai.speedy.handlers package summary
 public interface Handler {

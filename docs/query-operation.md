@@ -365,7 +365,9 @@ Content-Type: application/json;charset=UTF-8
 
 Only the fields listed in `$select` are included in the response payload. All other entity fields are omitted.
 
-**Performance note:** When `$select` is specified, the database query fetches only the requested columns (plus primary keys and required foreign keys) rather than `SELECT *`. This reduces database I/O, network transfer, and memory usage, especially for entities with many columns or large text/blob fields.
+**Performance note:** When `$select` is specified, the database query fetches only the requested columns (plus primary
+keys and required foreign keys) rather than `SELECT *`. This reduces database I/O, network transfer, and memory usage,
+especially for entities with many columns or large text/blob fields.
 
 **Count queries with `$select`:**
 

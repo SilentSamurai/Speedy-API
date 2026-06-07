@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
 import com.github.silent.samurai.speedy.entity.FkNullEntity;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.persistence.EntityManager;
@@ -24,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)

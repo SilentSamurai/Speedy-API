@@ -2,96 +2,27 @@ package com.github.silent.samurai.speedy.serializers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.IResponseContext;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
+import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 
 import java.io.IOException;
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
 
-/// JSON serializer for Speedy API responses with support for dot notation expansions.
-///
-/// This serializer handles both entity-based expansions (e.g., `["Category"]`) and
-/// dot notation expansions (e.g., `["Inventory.Product", "Inventory.Product.Category"]`).
-///
-/// ## Features
-///
-/// - **Dot Notation Support**: Handles nested expansions like `Inventory.Product.Category`
-/// - **Backward Compatibility**: Supports traditional entity-based expansions
-/// - **Field Filtering**: Uses predicate to filter which fields to serialize
-/// - **Pagination**: Includes page information in response
 public class JSONSerializerV2 implements IResponseSerializerV2 {
 
-    private final Predicate<FieldMetadata> fieldPredicate;
-    private final List<? extends SpeedyValue> payload;
-    private final Integer pageIndex;
-    private final Set<String> expands;
-    private final BigInteger totalCount;
-    private final int requestedPageSize;
+    private final MetaModel metaModel;
+    private final EntityMetadata entityMetadata;
 
-    /// Creates a JSON serializer with the default field predicate (includes all fields).
-    ///
-    /// @param payload   the list of entities to serialize
-    /// @param pageIndex the current page index
-    /// @param expands   the set of expansions (supports dot notation like `["Inventory.Product"]`)
-    public JSONSerializerV2(List<? extends SpeedyValue> payload, Integer pageIndex, Set<String> expands) {
-        this(payload, pageIndex, expands, null, 0);
-    }
-
-    /// Creates a JSON serializer with custom field predicate for filtering fields.
-    ///
-    /// @param fieldPredicate predicate to filter which fields to include in serialization
-    /// @param payload        the list of entities to serialize
-    /// @param pageIndex      the current page index
-    /// @param expands        the set of expansions (supports dot notation like `["Inventory.Product"]`)
-    public JSONSerializerV2(Predicate<FieldMetadata> fieldPredicate,
-                            List<? extends SpeedyValue> payload,
-                            Integer pageIndex, Set<String> expands) {
-        this(fieldPredicate, payload, pageIndex, expands, null, 0);
-    }
-
-    /// Creates a JSON serializer with custom field predicate and total count metadata.
-    ///
-    /// @param fieldPredicate     predicate to filter which fields to include in serialization
-    /// @param payload            the list of entities to serialize
-    /// @param pageIndex          the current page index
-    /// @param expands            the set of expansions
-    /// @param totalCount         the total number of records matching the query (without pagination)
-    /// @param requestedPageSize  the requested page size used to calculate totalPages
-    public JSONSerializerV2(Predicate<FieldMetadata> fieldPredicate,
-                            List<? extends SpeedyValue> payload,
-                            Integer pageIndex, Set<String> expands,
-                            BigInteger totalCount, int requestedPageSize) {
-        this.fieldPredicate = fieldPredicate;
-        this.payload = payload;
-        this.pageIndex = pageIndex;
-        this.expands = expands;
-        this.totalCount = totalCount;
-        this.requestedPageSize = requestedPageSize;
-    }
-
-    /// Creates a JSON serializer with default field predicate and total count metadata.
-    ///
-    /// @param payload            the list of entities to serialize
-    /// @param pageIndex          the current page index
-    /// @param expands            the set of expansions
-    /// @param totalCount         the total number of records matching the query (without pagination)
-    /// @param requestedPageSize  the requested page size used to calculate totalPages
-    public JSONSerializerV2(List<? extends SpeedyValue> payload,
-                            Integer pageIndex, Set<String> expands,
-                            BigInteger totalCount, int requestedPageSize) {
-        this(fieldMetadata -> true, payload, pageIndex, expands, totalCount, requestedPageSize);
+    public JSONSerializerV2(MetaModel metaModel, EntityMetadata entityMetadata) {
+        this.metaModel = metaModel;
+        this.entityMetadata = entityMetadata;
     }
 
     @Override
@@ -100,46 +31,119 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     }
 
     @Override
-    public void write(IResponseContext context) throws SpeedyHttpException {
+    public void writeEntityList(SpeedyEntityResponse entityResponse, HttpServletResponse httpResponse)
+            throws SpeedyHttpException {
 
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
-                context.getMetaModel(),
-                fieldPredicate
+                metaModel,
+                entityResponse.getFieldPredicate()
         );
 
         JsonNode jsonElement = selectiveSpeedy2Json.formCollection(
-                payload,
-                context.getEntityMetadata(),
-                expands
+                entityResponse.getPayload(),
+                entityMetadata,
+                entityResponse.getExpands()
         );
 
         ObjectMapper json = CommonUtil.json();
         ObjectNode basePayload = json.createObjectNode();
         basePayload.set("payload", jsonElement);
-        basePayload.put("pageIndex", pageIndex);
-        basePayload.put("pageSize", payload.size());
-        if (totalCount != null) {
-            basePayload.put("totalCount", totalCount);
-            basePayload.put("totalPages", calculateTotalPages());
+        basePayload.put("pageIndex", entityResponse.getPageIndex());
+        basePayload.put("pageSize", entityResponse.getPayload().size());
+        if (entityResponse.getTotalCount() != null) {
+            basePayload.put("totalCount", entityResponse.getTotalCount());
+            basePayload.put("totalPages", calculateTotalPages(entityResponse));
         }
 
-        HttpServletResponse response = context.getResponse();
-        response.setContentType(this.getContentType());
-        response.setStatus(HttpServletResponse.SC_OK);
+        httpResponse.setContentType(this.getContentType());
+        httpResponse.setStatus(entityResponse.getStatus());
+        entityResponse.getHeaders().forEach(httpResponse::setHeader);
 
         try {
-            json.writeValue(response.getWriter(), basePayload);
+            json.writeValue(httpResponse.getWriter(), basePayload);
         } catch (IOException e) {
             throw new InternalServerError("Internal Server Error", e);
         }
     }
 
-    private int calculateTotalPages() {
+    @Override
+    public void writeCount(SpeedyCountResponse countResponse, HttpServletResponse httpResponse)
+            throws SpeedyHttpException {
+        try {
+            httpResponse.setContentType(this.getContentType());
+            httpResponse.setStatus(countResponse.getStatus());
+            countResponse.getHeaders().forEach(httpResponse::setHeader);
+
+            ObjectMapper json = CommonUtil.json();
+            ObjectNode basePayload = json.createObjectNode();
+            basePayload.set("count", json.valueToTree(countResponse.getCount()));
+            json.writeValue(httpResponse.getWriter(), basePayload);
+        } catch (IOException e) {
+            throw new InternalServerError("Internal Server Error", e);
+        }
+    }
+
+    @Override
+    public void writeBatch(SpeedyBatchResponse batchResponse, HttpServletResponse httpResponse)
+            throws SpeedyHttpException {
+        ObjectMapper mapper = CommonUtil.json();
+
+        httpResponse.setStatus(batchResponse.getStatus());
+        httpResponse.setContentType(this.getContentType());
+        batchResponse.getHeaders().forEach(httpResponse::setHeader);
+
+        try {
+            ObjectNode root = mapper.createObjectNode();
+
+            ArrayNode succeededArray = root.putArray("succeeded");
+            for (SpeedyEntity entity : batchResponse.getSucceeded()) {
+                succeededArray.add(serializeEntityKeys(mapper, entity));
+            }
+
+            ArrayNode failedArray = root.putArray("failed");
+            for (SpeedyPartialFailure f : batchResponse.getFailed()) {
+                ObjectNode failureNode = failedArray.addObject();
+                failureNode.put("index", f.getIndex());
+                failureNode.put("status", f.getStatus());
+                failureNode.put("message", f.getMessage());
+                failureNode.put("timestamp", f.getTimestamp());
+                if (f.getInputPk() != null) {
+                    failureNode.putPOJO("inputPk", serializeEntityKeys(mapper, f.getInputPk()));
+                } else {
+                    failureNode.putNull("inputPk");
+                }
+            }
+
+            root.put("pageIndex", batchResponse.getPageIndex());
+            mapper.writeValue(httpResponse.getWriter(), root);
+        } catch (IOException e) {
+            throw new InternalServerError("Internal Server Error", e);
+        }
+    }
+
+    private ObjectNode serializeEntityKeys(ObjectMapper mapper, SpeedyEntity entity) {
+        ObjectNode node = mapper.createObjectNode();
+        for (KeyFieldMetadata keyField : entity.getMetadata().getKeyFields()) {
+            node.putPOJO(keyField.getOutputPropertyName(),
+                    serializeSpeedyValue(entity.get(keyField)));
+        }
+        return node;
+    }
+
+    private Object serializeSpeedyValue(SpeedyValue value) {
+        if (value == null || value.isNull()) return null;
+        if (value instanceof SpeedyInt si) return si.asInt();
+        if (value instanceof SpeedyDouble sd) return sd.asDouble();
+        if (value instanceof SpeedyBoolean sb) return sb.asBoolean();
+        return value.asText();
+    }
+
+    private int calculateTotalPages(SpeedyEntityResponse entityResponse) {
+        int requestedPageSize = entityResponse.getRequestedPageSize();
         if (requestedPageSize <= 0) {
             return 1;
         }
-        long tc = totalCount.longValue();
+        long tc = entityResponse.getTotalCount().longValue();
         return (int) Math.ceil((double) tc / requestedPageSize);
     }
-
 }

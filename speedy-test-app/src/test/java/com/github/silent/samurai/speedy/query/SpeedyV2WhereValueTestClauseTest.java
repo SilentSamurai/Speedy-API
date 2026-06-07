@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Matchers;
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.eq;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)

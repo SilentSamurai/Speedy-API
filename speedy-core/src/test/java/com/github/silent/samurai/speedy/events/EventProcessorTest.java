@@ -248,11 +248,15 @@ class EventProcessorTest {
 
         ISpeedyEventHandler handler1 = new ISpeedyEventHandler() {
             @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
-            public void onEvent(SpeedyEntity e) { callCount.incrementAndGet(); }
+            public void onEvent(SpeedyEntity e) {
+                callCount.incrementAndGet();
+            }
         };
         ISpeedyEventHandler handler2 = new ISpeedyEventHandler() {
             @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
-            public void onEvent(SpeedyEntity e) { callCount.incrementAndGet(); }
+            public void onEvent(SpeedyEntity e) {
+                callCount.incrementAndGet();
+            }
         };
 
         registry.registerEventHandler(handler1);
@@ -298,22 +302,26 @@ class EventProcessorTest {
 
     static class ZeroParamHandler implements ISpeedyEventHandler {
         @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
-        public void noParam() {}
+        public void noParam() {
+        }
     }
 
     static class TwoParamHandler implements ISpeedyEventHandler {
         @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
-        public void twoParams(SpeedyEntity e, String extra) {}
+        public void twoParams(SpeedyEntity e, String extra) {
+        }
     }
 
     static class NonExistentEntityHandler implements ISpeedyEventHandler {
         @SpeedyEvent(value = "NonExistent", eventType = {SpeedyEventType.POST_INSERT})
-        public void handle(SpeedyEntity e) {}
+        public void handle(SpeedyEntity e) {
+        }
     }
 
     static class EmptyEntityNameHandler implements ISpeedyEventHandler {
         @SpeedyEvent(value = "", eventType = {SpeedyEventType.POST_INSERT})
-        public void handle(SpeedyEntity e) {}
+        public void handle(SpeedyEntity e) {
+        }
     }
 
     static class PostInsertHandler implements ISpeedyEventHandler {
@@ -327,27 +335,29 @@ class EventProcessorTest {
 
     static class AnotherPostInsertHandler implements ISpeedyEventHandler {
         @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
-        public void onPostInsert(SpeedyEntity entity) {}
+        public void onPostInsert(SpeedyEntity entity) {
+        }
     }
 
     static class MultiEventTypeHandler implements ISpeedyEventHandler {
         @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.PRE_INSERT, SpeedyEventType.POST_INSERT})
-        public void onEvent(SpeedyEntity entity) {}
+        public void onEvent(SpeedyEntity entity) {
+        }
     }
 
     static class SpeedyEntityHandler implements ISpeedyEventHandler {
         static final AtomicBoolean WAS_CALLED = new AtomicBoolean(false);
         static final AtomicReference<SpeedyEntity> RECEIVED_ENTITY = new AtomicReference<>();
 
+        static void reset() {
+            WAS_CALLED.set(false);
+            RECEIVED_ENTITY.set(null);
+        }
+
         @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
         public void onPostInsert(SpeedyEntity entity) {
             WAS_CALLED.set(true);
             RECEIVED_ENTITY.set(entity);
-        }
-
-        static void reset() {
-            WAS_CALLED.set(false);
-            RECEIVED_ENTITY.set(null);
         }
     }
 
@@ -356,18 +366,18 @@ class EventProcessorTest {
         static final AtomicReference<Product> RECEIVED_PRODUCT = new AtomicReference<>();
         static final AtomicReference<String> RECEIVED_NAME = new AtomicReference<>();
 
+        static void reset() {
+            WAS_CALLED.set(false);
+            RECEIVED_PRODUCT.set(null);
+            RECEIVED_NAME.set(null);
+        }
+
         @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
         public void onPostInsert(Product product) {
             WAS_CALLED.set(true);
             RECEIVED_PRODUCT.set(product);
             RECEIVED_NAME.set(product.getName());
             product.setName("modified-name");
-        }
-
-        static void reset() {
-            WAS_CALLED.set(false);
-            RECEIVED_PRODUCT.set(null);
-            RECEIVED_NAME.set(null);
         }
     }
 

@@ -518,14 +518,16 @@ function Resolve-Template
                 {
                     $sortedPresets = $presets.PSObject.Properties |
                             Where-Object { $null -eq $_.Value.enabled -or $_.Value.enabled -ne $false } |
-                            Sort-Object { if ($null -ne $_.Value.priority)
-                            {
-                                $_.Value.priority
-                            }
-                            else
-                            {
-                                10
-                            } } |
+                            Sort-Object {
+                                if ($null -ne $_.Value.priority)
+                                {
+                                    $_.Value.priority
+                                }
+                                else
+                                {
+                                    10
+                                }
+                            } |
                             ForEach-Object { $_.Name }
                 }
             }
@@ -625,14 +627,16 @@ function Resolve-TemplateContent
                 {
                     $sortedPresets = $presets.PSObject.Properties |
                             Where-Object { $null -eq $_.Value.enabled -or $_.Value.enabled -ne $false } |
-                            Sort-Object { if ($null -ne $_.Value.priority)
-                            {
-                                $_.Value.priority
-                            }
-                            else
-                            {
-                                10
-                            } } |
+                            Sort-Object {
+                                if ($null -ne $_.Value.priority)
+                                {
+                                    $_.Value.priority
+                                }
+                                else
+                                {
+                                    10
+                                }
+                            } |
                             ForEach-Object { $_.Name }
                 }
             }

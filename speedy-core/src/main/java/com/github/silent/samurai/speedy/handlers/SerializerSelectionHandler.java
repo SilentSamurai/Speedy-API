@@ -1,0 +1,30 @@
+package com.github.silent.samurai.speedy.handlers;
+
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public class SerializerSelectionHandler implements Handler {
+
+    @Override
+    public void process(RequestContext context) throws SpeedyHttpException {
+        HttpServletRequest request = context.getHttpServletRequest();
+        String accept = request.getHeader("Accept");
+
+        if (accept == null || accept.contains("*/*") || accept.contains("application/json")) {
+            context.setResponseSerializer(
+                    new JSONSerializerV2(context.getMetaModel(),
+                            context.getEntityMetadata())
+            );
+        } else {
+            log.warn("Unsupported Accept header '{}', defaulting to JSON", accept);
+            context.setResponseSerializer(
+                    new JSONSerializerV2(context.getMetaModel(),
+                            context.getEntityMetadata())
+            );
+        }
+    }
+}

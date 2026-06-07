@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.entity;
 
 import jakarta.persistence.*;
+
 import java.util.Set;
 
 /// Test entity with a `@ManyToMany` association using `@JoinTable`.
@@ -19,12 +20,23 @@ public class ManyToManyEntityA {
 
     @ManyToMany
     @JoinTable(name = "entity_a_b",
-               joinColumns = @JoinColumn(name = "a_id"),
-               inverseJoinColumns = @JoinColumn(name = "b_id"))
+            joinColumns = @JoinColumn(name = "a_id"),
+            inverseJoinColumns = @JoinColumn(name = "b_id"))
     private Set<ManyToManyEntityB> entitiesB;
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public Set<ManyToManyEntityB> getEntitiesB() { return entitiesB; }
-    public void setEntitiesB(Set<ManyToManyEntityB> entitiesB) { this.entitiesB = entitiesB; }
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Set<ManyToManyEntityB> getEntitiesB() {
+        return entitiesB;
+    }
+
+    public void setEntitiesB(Set<ManyToManyEntityB> entitiesB) {
+        this.entitiesB = entitiesB;
+    }
 }

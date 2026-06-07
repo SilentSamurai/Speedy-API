@@ -6,57 +6,40 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
+import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.serializers.FieldPredicates;
-import com.github.silent.samurai.speedy.serializers.JSONCountSerializerV2;
-import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 
 import java.math.BigInteger;
 import java.util.List;
 import java.util.function.Predicate;
 
-/// # GetHandler
+/// Handles GET /{Entity} requests using the URI-parsed SpeedyQuery body.
 ///
-/// Handles {@code GET /{Entity}} requests. Uses the {@link SpeedyQuery} built by
-/// {@link EntityCaptureHandler} from URI query parameters, executes the query
-/// with a count, and sets a {@link JSONSerializerV2} on the context.
+/// Reads the SpeedyQuery (set as body by BodyParserHandler for GET_LIST),
+/// executes the query with count, and produces the appropriate SpeedyEntityResponse
+/// or SpeedyCountResponse for the response serializer.
 ///
-/// ## Purpose
-/// - Executes entity list queries from URL query string parameters
-/// - Supports count-only requests ({@code $count=true})
-/// - Includes pagination metadata (pageIndex, pageSize, totalCount, totalPages)
-/// - Applies {@code $select} field filtering via {@link FieldPredicates}
-///
-/// ## Processing Flow
-/// 1. Reads the pre-built {@code SpeedyQuery} from the context
-/// 2. If count-only: executes {@code executeCount()} and sets {@link JSONCountSerializerV2}
-/// 3. Otherwise: executes {@code executeManyWithCount()} for data + total count
-/// 4. Builds a field predicate from {@code $select}
-/// 5. Constructs {@link JSONSerializerV2} with entities, page info, total count, and expands
-/// 6. Sets the serializer on the context for {@link SpeedyResponseWriterHandler}
-///
-/// ## Chain Position
-/// Dispatched by {@link SwitchHandler} for GET requests. Delegates to the next handler
-/// (typically {@link SpeedyResponseWriterHandler}) after setting the serializer.
+/// @see BodyParserHandler
+/// @see SpeedyQuery
 public class GetHandler implements Handler {
-
-    final Handler next;
-
-    public GetHandler(Handler handler) {
-        this.next = handler;
-    }
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        EntityMetadata resourceMetadata = context.getEntityMetadata();
+        SpeedyQuery speedyQuery = (SpeedyQuery) context.getRequest().getBody();
+        EntityMetadata resourceMetadata = speedyQuery.getFrom();
         QueryProcessor queryProcessor = context.getQueryProcessor();
-        SpeedyQuery speedyQuery = context.getSpeedyQuery();
 
         if (speedyQuery.isCountRequest()) {
             BigInteger count = queryProcessor.executeCount(speedyQuery);
-            context.setResponseSerializer(new JSONCountSerializerV2(count));
-            next.process(context);
+            context.setSpeedyResponse(
+                    SpeedyCountResponse.builder()
+                            .count(count)
+                            .status(200)
+                            .build()
+            );
             return;
         }
 
@@ -64,15 +47,16 @@ public class GetHandler implements Handler {
         List<SpeedyEntity> entities = result.getEntities();
 
         Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
-        context.setResponseSerializer(new JSONSerializerV2(
-                fieldPredicate,
-                entities,
-                speedyQuery.getPageInfo().getPageNo(),
-                speedyQuery.getExpand(),
-                result.getTotalCount(),
-                speedyQuery.getPageInfo().getPageSize()
-        ));
-
-        next.process(context);
+        context.setSpeedyResponse(
+                SpeedyEntityResponse.builder()
+                        .payload(entities)
+                        .pageIndex(speedyQuery.getPageInfo().getPageNo())
+                        .expands(speedyQuery.getExpand())
+                        .totalCount(result.getTotalCount())
+                        .requestedPageSize(speedyQuery.getPageInfo().getPageSize())
+                        .fieldPredicate(fieldPredicate)
+                        .status(200)
+                        .build()
+        );
     }
 }

@@ -191,6 +191,10 @@ public class SpeedyUriContext {
         return actionSuffix;
     }
 
+    public SpeedyQueryImpl getParsedQuery() {
+        return speedyQuery;
+    }
+
     private void captureUrlParams(UriComponents uriComponents) throws SpeedyHttpException {
         if (!uriComponents.getQueryParams().isEmpty()) {
             MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
