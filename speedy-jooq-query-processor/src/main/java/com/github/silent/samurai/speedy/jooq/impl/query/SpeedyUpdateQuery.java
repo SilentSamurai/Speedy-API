@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+/// jOOQ-based single-entity update executor.
+/// Builds an UPDATE query from field values and applies PK-based WHERE conditions.
 public class SpeedyUpdateQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyUpdateQuery.class);

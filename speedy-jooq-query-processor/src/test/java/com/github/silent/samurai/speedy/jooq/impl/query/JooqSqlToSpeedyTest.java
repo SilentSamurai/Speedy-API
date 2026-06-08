@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.data.ComposedProduct;
 import com.github.silent.samurai.speedy.data.Product;
@@ -45,6 +45,11 @@ class JooqSqlToSpeedyTest {
     @BeforeEach
     void setUp() {
         Mockito.when(dslContext.dialect()).thenReturn(SQLDialect.H2);
+//        Mockito.when(record.getValue("NAME")).thenReturn("Product 1");
+//        Mockito.when(record.getValue("ID")).thenReturn("1");
+//        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
+//        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
+
         jooqSqlToSpeedy = new JooqSqlToSpeedy(dslContext, new JooqConversionImpl());
     }
 
@@ -94,11 +99,6 @@ class JooqSqlToSpeedyTest {
         mockRecord(entityMetadata, "category").thenReturn("cat-2");
 
         mockRecord(entityMetadata, "productItem").thenReturn("1");
-
-//        Mockito.when(record.getValue("NAME")).thenReturn("Product 1");
-//        Mockito.when(record.getValue("ID")).thenReturn("1");
-//        Mockito.when(record.getValue("CATEGORY")).thenReturn("cat-2");
-//        Mockito.when(record.getValue("PRODUCTITEM")).thenReturn("1");
 
         SpeedyEntity speedyEntity = jooqSqlToSpeedy.fromRecord(record, entityMetadata, Set.of());
         LOGGER.info("speedyEntity: {}", speedyEntity);

@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+/// Executes FK-based association expansion queries.
+/// Used by JooqSqlToSpeedy during $expand resolution.
 public class JooqToJooqSql {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqToJooqSql.class);

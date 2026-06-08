@@ -7,7 +7,6 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.query.JooqQueryProcessorImpl;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
@@ -128,7 +127,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     public QueryProcessor prepare() throws SpeedyHttpException {
         DataSource dataSource = config.dataSourcePerReq();
         return queryProcessorCache.computeIfAbsent(
-                dataSource, ds -> new JooqQueryProcessorImpl(ds, dialect));
+                dataSource, ds -> config.queryProcessor(ds, dialect));
     }
 
     @Override

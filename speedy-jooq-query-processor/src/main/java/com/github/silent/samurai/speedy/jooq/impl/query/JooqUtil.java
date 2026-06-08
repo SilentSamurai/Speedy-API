@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.enums.ColumnType;
@@ -13,6 +13,8 @@ import org.springframework.data.util.ParsingUtils;
 import java.util.Objects;
 import java.util.Optional;
 
+/// Static utilities for jOOQ table/column references, SQL data-type mapping,
+/// SpeedyDialect conversion, and identifier name transformation.
 public class JooqUtil {
 
     static String transformSqlNames = "TO_UPPERCASE";

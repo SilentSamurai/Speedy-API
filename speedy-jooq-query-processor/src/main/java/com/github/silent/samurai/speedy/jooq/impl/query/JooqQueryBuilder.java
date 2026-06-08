@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
@@ -23,6 +23,8 @@ import java.math.BigInteger;
 import java.util.*;
 
 
+/// Translates SpeedyQuery condition tree into jOOQ Condition predicates.
+/// Handles JOINs for associations, ordering, pagination, and field selection.
 public class JooqQueryBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryBuilder.class);

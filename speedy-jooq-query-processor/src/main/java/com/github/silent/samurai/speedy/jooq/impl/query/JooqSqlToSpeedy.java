@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+/// Maps jOOQ Record results back to SpeedyEntity objects.
+/// Supports $expand for nested association resolution.
 public class JooqSqlToSpeedy {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqSqlToSpeedy.class);

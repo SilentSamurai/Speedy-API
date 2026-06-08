@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
+/// Builds and executes jOOQ queries for primary-key lookups.
+/// Supports single-key IN optimised and composite-key OR fallback.
 public class JooqPkQueryBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqPkQueryBuilder.class);

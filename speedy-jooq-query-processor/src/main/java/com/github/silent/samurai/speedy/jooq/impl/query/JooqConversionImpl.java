@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.mappings.ConversionFactory;
 import com.github.silent.samurai.speedy.models.*;
@@ -12,6 +12,8 @@ import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/// jOOQ-specific implementation of ConversionFactory.
+/// Converts between SpeedyValue types and jOOQ / JDBC column types.
 public class JooqConversionImpl extends ConversionFactory<OffsetDateTime, Time,
         Timestamp, Date, BigDecimal, BigDecimal, Double, BigInteger, String, String, String, String, UUID> {
 

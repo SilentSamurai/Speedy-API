@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+/// jOOQ-based batch delete executor.
+/// Iterates primary keys and builds individual DELETE queries with PK-based WHERE conditions.
 public class SpeedyDeleteQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyDeleteQuery.class);

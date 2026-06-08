@@ -1,8 +1,11 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorProvider;
 
 import javax.sql.DataSource;
+import java.util.ServiceLoader;
 
 public interface ISpeedyConfiguration {
 
@@ -36,6 +39,15 @@ public interface ISpeedyConfiguration {
 
     default long getMaxRequestBodySize() {
         return 1_048_576;
+    }
+
+    default QueryProcessor queryProcessor(DataSource dataSource, SpeedyDialect dialect) {
+        return ServiceLoader.load(QueryProcessorProvider.class)
+                .findFirst()
+                .orElseThrow(() -> new UnsupportedOperationException(
+                        "No QueryProcessor implementation on classpath. " +
+                                "Add 'speedy-jooq-query-processor' dependency or override queryProcessor() in ISpeedyConfiguration."))
+                .create(dataSource, dialect);
     }
 
 }

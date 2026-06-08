@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.data.StaticFieldMetadata;
 import com.github.silent.samurai.speedy.enums.ColumnType;

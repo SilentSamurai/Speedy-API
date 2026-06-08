@@ -4,11 +4,9 @@ import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
-import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.Expression;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
-import com.github.silent.samurai.speedy.query.jooq.JooqConversionImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +18,6 @@ public class SpeedyQueryHelper {
 
     public final Map<String, BinaryCondition> conditionMap = new HashMap<>();
     private final SpeedyQuery speedyQuery;
-    private final Converter converter = new JooqConversionImpl();
 
     public SpeedyQueryHelper(SpeedyQuery speedyQuery) {
         this.speedyQuery = speedyQuery;

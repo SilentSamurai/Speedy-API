@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.jooq;
+package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/// jOOQ-based batch insert executor.
+/// Handles generated UUID keys and FK association values.
 public class SpeedyInsertQuery {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyInsertQuery.class);

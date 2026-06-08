@@ -1,18 +1,15 @@
-package com.github.silent.samurai.speedy.query;
+package com.github.silent.samurai.speedy.jooq.impl;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.exceptions.InternalServerError;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
+import com.github.silent.samurai.speedy.exceptions.*;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.jooq.impl.query.*;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.query.jooq.*;
 import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -29,6 +26,8 @@ import javax.sql.DataSource;
 import java.math.BigInteger;
 import java.util.*;
 
+/// jOOQ-based implementation of QueryProcessor.
+/// Translates SpeedyQuery into SQL via jOOQ and executes CRUD operations.
 public class JooqQueryProcessorImpl implements QueryProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqQueryProcessorImpl.class);
@@ -168,6 +167,10 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             speedyUpdateQuery.updateEntity(pk, entity);
 
             Result<Record> result = new JooqPkQueryBuilder(dsl, dialect, converter).findByPrimaryKey(pk);
+
+            if (result.isEmpty()) {
+                throw new NotFoundException("Entity not found for PK: " + pk);
+            }
 
             return new JooqSqlToSpeedy(dsl, converter)
                     .fromRecord(result.get(0), entity.getMetadata(), Set.of());
