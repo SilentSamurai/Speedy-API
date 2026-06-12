@@ -22,10 +22,21 @@ public class ConversionRegistry<K> {
         return this;
     }
 
-    public Codec lookup(K key) {
+    protected Codec lookup(K key) {
         Codec c = codecs.get(key);
         if (c != null) return c;
         return parent != null ? parent.lookup(key) : null;
+    }
+
+    /// Public accessor for looking up a codec by key.
+    /// Delegates to the internal {@link #lookup} method so external
+    /// callers (e.g. serializers in other packages) can retrieve
+    /// registered codecs without gaining access to the protected lookup.
+    ///
+    /// @param key the registration key
+    /// @return the matching Codec, or null if not found
+    public Codec getCodec(K key) {
+        return lookup(key);
     }
 
     protected ConversionRegistry<K> getParent() {

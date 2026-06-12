@@ -153,7 +153,7 @@ public class SelectiveSpeedy2Json {
     }
 
     public void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
-        Codec codec = jsonRegistry.lookup(fieldMetadata.getValueType());
+        Codec codec = jsonRegistry.getCodec(fieldMetadata.getValueType());
         if (codec == null) {
             jsonObject.putNull(fieldMetadata.getOutputPropertyName());
             return;

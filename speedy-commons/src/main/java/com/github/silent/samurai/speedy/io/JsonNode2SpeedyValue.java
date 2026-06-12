@@ -119,7 +119,7 @@ public class JsonNode2SpeedyValue {
     /// @return the decoded SpeedyValue
     /// @throws BadRequestException if no codec exists for the value type
     private SpeedyValue decode(ValueType vt, Object rawValue) throws BadRequestException {
-        Codec codec = jsonRegistry.lookup(vt);
+        Codec codec = jsonRegistry.getCodec(vt);
         if (codec != null) {
             return codec.decode().apply(rawValue);
         }

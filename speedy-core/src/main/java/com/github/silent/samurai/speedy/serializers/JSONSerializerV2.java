@@ -144,7 +144,7 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
 
     private Object serializeSpeedyValue(SpeedyValue value) {
         if (value == null || value.isNull()) return null;
-        Codec codec = jsonRegistry.lookup(value.getValueType());
+        Codec codec = jsonRegistry.getCodec(value.getValueType());
         if (codec != null) {
             return codec.encode().apply(value);
         }
