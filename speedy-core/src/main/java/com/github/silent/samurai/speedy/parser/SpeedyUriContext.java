@@ -6,11 +6,11 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.*;
+import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
 import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.Speedy;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.LinkedMultiValueMap;
@@ -49,7 +49,8 @@ public class SpeedyUriContext {
             this.speedyQuery.getConditionFactory().validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
-            return new Literal(SpeedyValueFactory.basicFromString(metadata, symbol));
+            Object parsed = TypeConverterRegistry.fromString(symbol.replaceAll("['\" ]", ""), metadata.getValueType().javaTypeClass());
+            return new Literal(SpeedyDeserializer.fromJavaObject(metadata, parsed));
         }
     }
 
@@ -251,10 +252,10 @@ public class SpeedyUriContext {
 
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
                     for (String value : valueList) {
-                        SpeedyValue speedyValue = SpeedyValueFactory.basicFromString(queryField.getMetadataForParsing(), value);
-                        speedyValueList.add(speedyValue);
+                        Object parsed = TypeConverterRegistry.fromString(value.replaceAll("['\" ]", ""), queryField.getMetadataForParsing().getValueType().javaTypeClass());
+                        speedyValueList.add(SpeedyDeserializer.fromJavaObject(queryField.getMetadataForParsing(), parsed));
                     }
-                    SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
+                    SpeedyCollection fieldValue = new SpeedyCollection(speedyValueList);
                     BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, new Literal(fieldValue));
                     speedyQuery.getWhere().addSubCondition(binaryCondition);
 

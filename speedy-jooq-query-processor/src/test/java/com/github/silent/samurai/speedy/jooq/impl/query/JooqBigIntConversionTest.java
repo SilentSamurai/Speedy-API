@@ -6,6 +6,8 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
+import com.github.silent.samurai.speedy.mappings.DbConversionRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,17 +18,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
- * Verifies that {@link JooqConversionImpl} correctly converts BIGINT JDBC values
+ * Verifies that {@link DbConversionRegistry} correctly converts BIGINT JDBC values
  * whether provided as {@link Long} or {@link BigInteger} into {@link SpeedyInt}.
  */
 class JooqBigIntConversionTest {
 
-    private JooqConversionImpl conversion;
+    private DbConversionRegistry conversion;
     private FieldMetadata bigintIntMetadata;
 
     @BeforeEach
     void setUp() {
-        conversion = new JooqConversionImpl();
+        conversion = JooqConverters.defaults();
         bigintIntMetadata = new BigintFieldMetadata();
     }
 

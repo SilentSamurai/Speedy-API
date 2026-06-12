@@ -3,8 +3,11 @@ package com.github.silent.samurai.speedy.interfaces;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorProvider;
+import com.github.silent.samurai.speedy.mappings.ConversionContext;
+import com.github.silent.samurai.speedy.mappings.SpeedyTypeModule;
 
 import javax.sql.DataSource;
+import java.util.List;
 import java.util.ServiceLoader;
 
 public interface ISpeedyConfiguration {
@@ -41,13 +44,17 @@ public interface ISpeedyConfiguration {
         return 1_048_576;
     }
 
-    default QueryProcessor queryProcessor(DataSource dataSource, SpeedyDialect dialect) {
+    default QueryProcessor queryProcessor(DataSource dataSource, SpeedyDialect dialect, ConversionContext context) {
         return ServiceLoader.load(QueryProcessorProvider.class)
                 .findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException(
                         "No QueryProcessor implementation on classpath. " +
                                 "Add 'speedy-jooq-query-processor' dependency or override queryProcessor() in ISpeedyConfiguration."))
-                .create(dataSource, dialect);
+                .create(dataSource, dialect, context);
+    }
+
+    default List<SpeedyTypeModule> typeModules() {
+        return List.of();
     }
 
 }

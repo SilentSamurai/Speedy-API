@@ -4,7 +4,6 @@ import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.models.*;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
@@ -254,11 +253,11 @@ class RoundTripConversionTest {
         boolean initialActive = true;
         Double initialSalary = 60000.0;
 
-        initialEntity.put("id", SpeedyValueFactory.fromText(initialId.toString()));
-        initialEntity.put("name", SpeedyValueFactory.fromText(initialName));
-        initialEntity.put("age", SpeedyValueFactory.fromInt(initialAge.longValue()));
-        initialEntity.put("active", SpeedyValueFactory.fromBool(initialActive));
-        initialEntity.put("salary", SpeedyValueFactory.fromDouble(initialSalary));
+        initialEntity.put("id", new SpeedyText(initialId.toString()));
+        initialEntity.put("name", new SpeedyText(initialName));
+        initialEntity.put("age", new SpeedyInt(initialAge.longValue()));
+        initialEntity.put("active", new SpeedyBoolean(initialActive));
+        initialEntity.put("salary", new SpeedyDouble(initialSalary));
 
         // Convert SpeedyEntity to Java object
         TestEntity javaObject = SpeedySerializer.toJavaEntity(initialEntity, TestEntity.class);

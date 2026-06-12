@@ -8,7 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -39,11 +39,11 @@ public class MetadataUtil {
     }
 
     public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject) throws SpeedyHttpException {
-        return SpeedyValueFactory.fromJsonObject(entityMetadata, jsonObject);
+        return JsonNode2SpeedyValue.fromEntityMetadata(entityMetadata, jsonObject);
     }
 
     public static SpeedyEntityKey createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson) throws SpeedyHttpException {
-        return SpeedyValueFactory.fromPkJson(entityMetadata, keyJson);
+        return JsonNode2SpeedyValue.fromPkJson(entityMetadata, keyJson);
     }
 
     public static boolean isKeyCompleteInEntity(EntityMetadata entityMetadata, SpeedyEntity entity) {

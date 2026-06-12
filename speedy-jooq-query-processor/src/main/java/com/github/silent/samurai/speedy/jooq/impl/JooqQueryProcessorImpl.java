@@ -3,11 +3,11 @@ package com.github.silent.samurai.speedy.jooq.impl;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.exceptions.*;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.jooq.impl.query.*;
+import com.github.silent.samurai.speedy.mappings.DbConversionRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
@@ -37,14 +37,15 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
             .withRenderNameStyle(RenderNameStyle.AS_IS);
 
-    private final Converter converter = new JooqConversionImpl();
+    private final DbConversionRegistry converter;
 
     private final DSLContext dslContext;
     private final ThreadLocal<DSLContext> transactionalDslContext = new ThreadLocal<>();
 
-    public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect) {
+    public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect, DbConversionRegistry converter) {
         this.dialect = JooqUtil.toJooqDialect(speedyDialect);
         this.dslContext = DSL.using(dataSource, dialect, settings);
+        this.converter = converter;
     }
 
     private DSLContext getDsl() {
@@ -218,11 +219,6 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
         } catch (Exception e) {
             throw wrapSqlException("Invalid Request", e);
         }
-    }
-
-    @Override
-    public JooqConversionImpl getConversionProcessor() {
-        return new JooqConversionImpl();
     }
 
     @Override

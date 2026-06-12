@@ -7,11 +7,12 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class SpeedyValueFactoryTest {
+class JsonNode2SpeedyValueTest {
 
     @Test
     void jsonValueQuotedString() throws JsonProcessingException, SpeedyHttpException {
@@ -19,7 +20,7 @@ class SpeedyValueFactoryTest {
         Mockito.when(fieldMetadata.getValueType()).thenReturn(ValueType.TEXT);
 
         JsonNode jsonNode = CommonUtil.json().readTree("\"test\"");
-        SpeedyValue speedyValue = SpeedyValueFactory.fromJsonNode(fieldMetadata, jsonNode);
+        SpeedyValue speedyValue = JsonNode2SpeedyValue.fromFieldMetadata(fieldMetadata, jsonNode);
 
         Assertions.assertTrue(speedyValue.isText());
         Assertions.assertEquals("test", speedyValue.asText());
@@ -32,7 +33,7 @@ class SpeedyValueFactoryTest {
 
         JsonNode jsonNode = CommonUtil.json().readTree("true");
         Assertions.assertTrue(jsonNode.isValueNode());
-        SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(fieldMetadata, (ValueNode) jsonNode);
+        SpeedyValue speedyValue = JsonNode2SpeedyValue.fromValueNode(fieldMetadata, (ValueNode) jsonNode);
 
         Assertions.assertTrue(speedyValue.isBoolean());
         Assertions.assertEquals(true, speedyValue.asBoolean());
@@ -45,7 +46,7 @@ class SpeedyValueFactoryTest {
 
         JsonNode jsonNode = CommonUtil.json().readTree("12");
         Assertions.assertTrue(jsonNode.isValueNode());
-        SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(fieldMetadata, (ValueNode) jsonNode);
+        SpeedyValue speedyValue = JsonNode2SpeedyValue.fromValueNode(fieldMetadata, (ValueNode) jsonNode);
 
         Assertions.assertTrue(speedyValue.isInt());
         Assertions.assertEquals(12, speedyValue.asInt());

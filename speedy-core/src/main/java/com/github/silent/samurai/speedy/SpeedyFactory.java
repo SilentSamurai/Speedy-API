@@ -8,6 +8,8 @@ import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.mappings.ConversionContext;
+import com.github.silent.samurai.speedy.mappings.SpeedyTypeModule;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
@@ -36,6 +38,7 @@ public class SpeedyFactory {
     private final ISpeedyConfiguration configuration;
     private final long maxRequestBodySize;
     private final SpeedyEngine engine;
+    private final ConversionContext conversionContext;
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this(speedyConfiguration, speedyConfiguration.getMaxRequestBodySize());
@@ -64,7 +67,12 @@ public class SpeedyFactory {
         configuration = speedyConfiguration;
         dialect = speedyConfiguration.getDialect();
 
-        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor, maxRequestBodySize);
+        this.conversionContext = ConversionContext.withDefaults();
+        for (SpeedyTypeModule module : speedyConfiguration.typeModules()) {
+            module.contribute(conversionContext);
+        }
+
+        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor, maxRequestBodySize, conversionContext);
     }
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {

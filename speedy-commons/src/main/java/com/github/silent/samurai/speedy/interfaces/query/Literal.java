@@ -26,39 +26,27 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 ///
 /// ### String Literal
 /// ```java
-/// SpeedyValue nameValue = SpeedyValueFactory.fromString("John Doe");
-/// Literal nameLiteral = new Literal(nameValue);
-///
+/// Literal nameLiteral = new Literal(new SpeedyText("John Doe"));
 /// // Used in condition: WHERE name = 'John Doe'
-/// BinaryCondition condition = new EqCondition(userNameField, nameLiteral);
 /// ```
 ///
 /// ### Numeric Literal
 /// ```java
-/// SpeedyValue ageValue = SpeedyValueFactory.fromInteger(25);
-/// Literal ageLiteral = new Literal(ageValue);
-///
+/// Literal ageLiteral = new Literal(new SpeedyInt(25L));
 /// // Used in condition: WHERE age >= 25
-/// BinaryCondition condition = new GreaterThanEqualCondition(ageField, ageLiteral);
 /// ```
 ///
 /// ### Collection Literal (for IN operations)
 /// ```java
-/// List<String> statusList = Arrays.asList("ACTIVE", "PENDING", "APPROVED");
-/// SpeedyValue statusCollection = SpeedyValueFactory.fromCollection(statusList);
-/// Literal statusLiteral = new Literal(statusCollection);
-///
-/// // Used in condition: WHERE status IN ('ACTIVE', 'PENDING', 'APPROVED')
-/// BinaryCondition condition = new InCondition(statusField, statusLiteral);
+/// List<SpeedyValue> values = List.of(new SpeedyText("ACTIVE"), new SpeedyText("PENDING"));
+/// Literal statusLiteral = new Literal(new SpeedyCollection(values));
+/// // Used in condition: WHERE status IN ('ACTIVE', 'PENDING')
 /// ```
 ///
 /// ### Null Literal
 /// ```java
-/// SpeedyValue nullValue = SpeedyValueFactory.fromNull();
-/// Literal nullLiteral = new Literal(nullValue);
-///
+/// Literal nullLiteral = new Literal(SpeedyNull.SPEEDY_NULL);
 /// // Used in condition: WHERE deleted_at IS NULL
-/// BinaryCondition condition = new EqCondition(deletedAtField, nullLiteral);
 /// ```
 ///
 /// ## Integration with Query Building

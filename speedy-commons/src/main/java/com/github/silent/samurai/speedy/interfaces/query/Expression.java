@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
 
 /// # Expression Interface
 ///
@@ -25,7 +25,7 @@ import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 /// ### Literal Expression
 /// ```java
 /// // Creating a literal expression for a string value
-/// SpeedyValue stringValue = SpeedyValueFactory.fromString("John");
+/// SpeedyValue stringValue = new SpeedyText("John");
 /// Expression literalExpr = new Literal(stringValue);
 /// ```
 ///
@@ -66,7 +66,7 @@ public sealed interface Expression permits Literal, Identifier {
     /// @return a new Expression instance (either Literal or Identifier)
     /// @throws SpeedyHttpException if the conversion fails or the value is invalid
     static Expression fromSymbol(FieldMetadata fieldMetadata, ValueNode valueNode) throws SpeedyHttpException {
-        return new Literal(SpeedyValueFactory.fromJsonValue(fieldMetadata, valueNode));
+        return new Literal(JsonNode2SpeedyValue.fromValueNode(fieldMetadata, valueNode));
     }
 }
 

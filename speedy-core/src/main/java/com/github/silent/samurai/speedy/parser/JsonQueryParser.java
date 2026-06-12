@@ -16,7 +16,7 @@ import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -325,11 +325,11 @@ public class JsonQueryParser {
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
                     for (JsonNode node : valueNode) {
                         if (node.isValueNode()) {
-                            SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) node);
+                            SpeedyValue speedyValue = JsonNode2SpeedyValue.fromValueNode(queryField.getMetadataForParsing(), (ValueNode) node);
                             speedyValueList.add(speedyValue);
                         }
                     }
-                    SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
+                    SpeedyCollection fieldValue = new SpeedyCollection(speedyValueList);
                     // standard SQL does not support the syntax: COLA IN [COLB, COLC]
                     return conditionFactory.createBiCondition(queryField, operator, new Literal(fieldValue));
                 }
@@ -441,7 +441,7 @@ public class JsonQueryParser {
     /// - **Literal Value**: All other values are treated as literal constants
     ///
     /// Field references are converted to [Identifier] expressions, while literal
-    /// values are converted to [Literal] expressions using [SpeedyValueFactory].
+    /// values are converted to [Literal] expressions using [JsonNode2SpeedyValue].
     ///
     /// @param metadata the field metadata for type conversion
     /// @param symbol   the JSON value node to convert
@@ -455,7 +455,7 @@ public class JsonQueryParser {
             this.conditionFactory.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
-            return new Literal(SpeedyValueFactory.fromJsonValue(metadata, symbol));
+            return new Literal(JsonNode2SpeedyValue.fromValueNode(metadata, symbol));
         }
     }
 

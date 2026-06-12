@@ -12,7 +12,6 @@ import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.Speedy;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
@@ -46,7 +45,7 @@ public class JooqSqlToSpeedy {
     }
 
     private SpeedyEntity fromRecordInner(Record record, EntityMetadata entityMetadata, ExpansionPathTracker pathTracker) throws SpeedyHttpException {
-        SpeedyEntity speedyEntity = SpeedyValueFactory.fromEntityMetadata(entityMetadata);
+        SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
 
         // Push the current entity onto the path tracker
         pathTracker.pushEntity(entityMetadata);
@@ -104,7 +103,7 @@ public class JooqSqlToSpeedy {
                         SpeedyValue speedyValue = converter.toSpeedyValue(item, fieldMetadata);
                         listOfSpeedyValue.add(speedyValue);
                     }
-                    SpeedyCollection speedyCollection = SpeedyValueFactory.fromCollection(listOfSpeedyValue);
+                    SpeedyCollection speedyCollection = new SpeedyCollection(listOfSpeedyValue);
                     speedyEntity.put(fieldMetadata, speedyCollection);
                 } else {
                     // fieldValue some time is of not correct type, int promoted to decimal. and visa-versa
@@ -127,7 +126,7 @@ public class JooqSqlToSpeedy {
         if (optional.isEmpty()) {
             return Optional.empty();
         }
-        SpeedyEntityKey speedyEntityKey = SpeedyValueFactory.createEntityKey(associationMetadata);
+        SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(associationMetadata);
         SpeedyValue speedyValue = converter.toSpeedyValue(optional.get(), keyFieldMetadata);
         speedyEntityKey.put(keyFieldMetadata, speedyValue);
 

@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
+import com.github.silent.samurai.speedy.models.SpeedyText;
 import org.jooq.*;
 import org.jooq.Record;
 import org.slf4j.Logger;
@@ -82,7 +82,7 @@ public class SpeedyInsertQuery {
             UUID value = UUID.randomUUID();
             Field<String> field = JooqUtil.getColumn(fieldMetadata, dslContext.dialect());
             returnQuery = insertQuery.set(field, value.toString());
-            entity.put(fieldMetadata, SpeedyValueFactory.fromText(value.toString()));
+            entity.put(fieldMetadata, new SpeedyText(value.toString()));
         } else {
             if (!entity.has(fieldMetadata) || entity.get(fieldMetadata).isEmpty() || entity.get(fieldMetadata).isNull()) {
                 // you can throw by checking nullable or db can throw

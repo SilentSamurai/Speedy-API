@@ -5,8 +5,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyNull;
+import com.github.silent.samurai.speedy.models.*;
 import jakarta.persistence.EntityManager;
 
 import java.time.LocalDate;
@@ -14,25 +13,17 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Map;
 
-import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
-
 public record MapEntityDeserializer(Map<String, String> entityMap, EntityMetadata entityMetadata,
                                     EntityManager entityManager) {
 
     private static SpeedyValue fromBasicString(ValueType valueType, String valueAsString) throws Exception {
         return switch (valueType) {
-            case TEXT -> fromText(valueAsString);
-            case INT -> {
-                Long intValue = TypeConverterRegistry.fromString(valueAsString, Long.class);
-                yield fromInt(intValue);
-            }
-            case FLOAT -> {
-                Double aDouble = TypeConverterRegistry.fromString(valueAsString, Double.class);
-                yield fromDouble(aDouble);
-            }
-            case DATE -> fromDate(LocalDate.parse(valueAsString));
-            case TIME -> fromTime(LocalTime.parse(valueAsString));
-            case DATE_TIME -> fromDateTime(LocalDateTime.parse(valueAsString));
+            case TEXT -> new SpeedyText(valueAsString);
+            case INT -> new SpeedyInt(TypeConverterRegistry.fromString(valueAsString, Long.class));
+            case FLOAT -> new SpeedyDouble(TypeConverterRegistry.fromString(valueAsString, Double.class));
+            case DATE -> new SpeedyDate(LocalDate.parse(valueAsString));
+            case TIME -> new SpeedyTime(LocalTime.parse(valueAsString));
+            case DATE_TIME -> new SpeedyDateTime(LocalDateTime.parse(valueAsString));
             case BOOL, ZONED_DATE_TIME, OBJECT, COLLECTION, ENUM, ENUM_ORD, NULL -> SpeedyNull.SPEEDY_NULL;
         };
     }
@@ -56,7 +47,7 @@ public record MapEntityDeserializer(Map<String, String> entityMap, EntityMetadat
     private SpeedyValue createField(
             FieldMetadata fieldMetadata,
             Map<String, String> fieldsMap) throws Exception {
-        SpeedyValue value = fromNull();
+        SpeedyValue value = SpeedyNull.SPEEDY_NULL;
         String propertyName = fieldMetadata.getOutputPropertyName();
         if (fieldsMap.containsKey(propertyName)) {
             if (fieldMetadata.isAssociation()) {

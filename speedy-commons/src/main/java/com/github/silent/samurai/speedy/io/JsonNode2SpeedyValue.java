@@ -9,8 +9,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,31 +19,30 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import static com.github.silent.samurai.speedy.utils.SpeedyValueFactory.*;
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 
 public class JsonNode2SpeedyValue {
     public static SpeedyValue fromValueNode(FieldMetadata fieldMetadata, ValueNode jsonNode) throws BadRequestException {
         if (jsonNode.isNull()) {
-            return fromNull();
+            return SpeedyNull.SPEEDY_NULL;
         }
         return switch (fieldMetadata.getValueType()) {
             case BOOL:
-                yield fromBool(jsonNode.asBoolean());
+                yield new SpeedyBoolean(jsonNode.asBoolean());
             case TEXT:
-                yield fromText(jsonNode.asText());
+                yield new SpeedyText(jsonNode.asText());
             case ENUM:
                 if (!jsonNode.isTextual())
                     throw new BadRequestException("expected string for enum field " + fieldMetadata.getOutputPropertyName());
-                yield fromEnum(jsonNode.asText(), fieldMetadata);
+                yield new SpeedyEnum(jsonNode.asText(), fieldMetadata);
             case INT:
-                yield fromInt(jsonNode.asLong());
+                yield new SpeedyInt(jsonNode.asLong());
             case ENUM_ORD:
                 if (!jsonNode.isNumber())
                     throw new BadRequestException("expected number for ordinal enum field " + fieldMetadata.getOutputPropertyName());
-                yield fromEnum(jsonNode.asLong(), fieldMetadata);
+                yield new SpeedyEnum(jsonNode.asLong(), fieldMetadata);
             case FLOAT:
-                yield fromDouble(jsonNode.asDouble());
+                yield new SpeedyDouble(jsonNode.asDouble());
             case DATE:
                 if (!jsonNode.isTextual() || !isDateFormatValid(jsonNode.asText())) {
                     String formatString = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
@@ -52,7 +50,7 @@ public class JsonNode2SpeedyValue {
                     throw new BadRequestException(msg);
                 }
                 LocalDate localDate = LocalDate.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE);
-                yield fromDate(localDate);
+                yield new SpeedyDate(localDate);
             case TIME:
                 if (!jsonNode.isTextual() || !isTimeFormatValid(jsonNode.asText())) {
                     String formatString = LocalTime.now().format(DateTimeFormatter.ISO_TIME);
@@ -60,7 +58,7 @@ public class JsonNode2SpeedyValue {
                     throw new BadRequestException(msg);
                 }
                 LocalTime localTime = LocalTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_TIME);
-                yield fromTime(localTime);
+                yield new SpeedyTime(localTime);
             case DATE_TIME:
                 if (!jsonNode.isTextual() || !isDateTimeFormatValid(jsonNode.asText())) {
                     String formatString = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
@@ -68,7 +66,7 @@ public class JsonNode2SpeedyValue {
                     throw new BadRequestException(msg);
                 }
                 LocalDateTime datetime = LocalDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE_TIME);
-                yield fromDateTime(datetime);
+                yield new SpeedyDateTime(datetime);
             case ZONED_DATE_TIME:
                 if (!jsonNode.isTextual() || !isZonedDateTimeValid(jsonNode.asText())) {
                     String formatString = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
@@ -76,9 +74,9 @@ public class JsonNode2SpeedyValue {
                     throw new BadRequestException(msg);
                 }
                 ZonedDateTime zonedDateTime = ZonedDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-                yield fromZonedDateTime(zonedDateTime);
+                yield new SpeedyZonedDateTime(zonedDateTime);
             case NULL:
-                yield fromNull();
+                yield SpeedyNull.SPEEDY_NULL;
             case OBJECT:
             case COLLECTION:
                 String msg = String
@@ -119,7 +117,7 @@ public class JsonNode2SpeedyValue {
                     SpeedyValue speedyValue = fromEntityMetadata(fieldMetadata.getAssociationMetadata(), (ObjectNode) item);
                     collection.add(speedyValue);
                 }
-                return fromCollection(collection);
+                return new SpeedyCollection(collection);
             } else {
                 if (!jsonNode.isObject()) {
                     throw new BadRequestException("Field " + fieldMetadata.getOutputPropertyName() + " must be an object");
@@ -140,7 +138,7 @@ public class JsonNode2SpeedyValue {
                     SpeedyValue speedyValue = fromValueNode(fieldMetadata, (ValueNode) item);
                     collection.add(speedyValue);
                 }
-                return fromCollection(collection);
+                return new SpeedyCollection(collection);
             } else {
                 if (!jsonNode.isValueNode()) {
                     throw new BadRequestException("Field " + fieldMetadata.getOutputPropertyName() + " must be a value");
