@@ -18,31 +18,34 @@ import java.util.stream.Collectors;
 
 public class SpeedySerializer {
 
-    // All converter logic is delegated to TypeConverterRegistry; get/has removed.
+    /// The Java-type registry used for all {@code SpeedyValue <-> Java} conversions.
+    /// Set at construction time and never changed.
+    private final JavaTypeRegistry javaTypeRegistry;
 
-    private static Object toJavaField(SpeedyValue value, FieldMetadata fieldMetadata, Class<?> clazz) throws SpeedyHttpException {
+    /// Creates a serializer that delegates all conversions to the supplied registry.
+    ///
+    /// @param javaTypeRegistry the registry to use for every conversion
+    public SpeedySerializer(JavaTypeRegistry javaTypeRegistry) {
+        this.javaTypeRegistry = javaTypeRegistry;
+    }
+
+    private Object toJavaField(SpeedyValue value, FieldMetadata fieldMetadata, Class<?> clazz) throws SpeedyHttpException {
         ValueType valueType = value.getValueType();
-        // handle null
         if (value instanceof SpeedyNull) {
             return null;
         }
 
-        // First, try the registry – that covers primitives, wrappers, temporal types, etc.
-        if (TypeConverterRegistry.canToJava(valueType, clazz)) {
-            // TypeConverterRegistry already wraps primitives to their corresponding wrapper types,
-            // and BeanWrapper will handle boxing/unboxing on assignment later.
-            return TypeConverterRegistry.toJava(value, clazz);
+        if (javaTypeRegistry.canToJava(valueType, clazz)) {
+            return javaTypeRegistry.toJava(value, clazz);
         } else if (clazz.isEnum()) {
-            // Safe because convertToEnum returns the right enum subtype
             return CommonUtil.convertToEnum((Class<? extends Enum>) clazz, value);
         }
 
-        // No suitable converter found
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T asJavaObject(SpeedyValue value) {
+    public <T> T asJavaObject(SpeedyValue value) {
         if (value == null || value instanceof SpeedyNull) {
             return null;
         }
@@ -74,7 +77,7 @@ public class SpeedySerializer {
      * @return The converted composite object or null if conversion is not possible
      * @throws SpeedyHttpException If conversion fails
      */
-    public static <T> T toJavaEntity(SpeedyEntity value, Class<T> clazz) throws SpeedyHttpException {
+    public <T> T toJavaEntity(SpeedyEntity value, Class<T> clazz) throws SpeedyHttpException {
         if (value == null) {
             return null;
         }

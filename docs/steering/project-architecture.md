@@ -23,7 +23,8 @@ speedy-commons          (shared interfaces, models, enums, annotations, exceptio
     ├── speedy-jpa-impl         (JPA → MetaModel bridge)
     ├── speedy-java-client      (Java client SDK, MockMvc test support)
     ├── speedy-static-impl      (file-based MetaModel for non-JPA use)
-    └── speedy-core             (core engine: handlers, query, serialization, OpenAPI)
+    ├── speedy-jooq-query-processor        (jOOQ query execution)
+    └── speedy-core             (core engine: handlers, serialization, OpenAPI)
             └── spring-boot-starter-speedy-api  (auto-configuration starter)
                     └── speedy-test-app         (integration test application)
 
@@ -97,7 +98,8 @@ HeadHandler
 - `QueryProcessor` is cached per unique `DataSource` returned by `dataSourcePerReq()`. For single-tenant apps this means
   one `QueryProcessor` (and one JOOQ `DSLContext`) for the application lifetime. Multi-tenant deployments automatically
   get a cached instance per tenant's DataSource.
-- jOOQ is used for SQL generation and execution (not JPA/Hibernate at runtime)
+- jOOQ is used for SQL generation and execution (not JPA/Hibernate at runtime), implemented in
+  `speedy-jooq-query-processor`
 - JPA/Hibernate is only used at startup for metadata introspection via `EntityManagerFactory`
 
 ---
@@ -262,5 +264,6 @@ mvn test -pl antlr-parser
 - Handler pattern: implement `Handler` interface, accept `RequestContext`, call `next.process(context)`
 - New entity types/fields: add to JPA entities, MetaModel picks them up automatically
 - New CRUD behavior: add/modify handlers in the chain (see `SpeedyFactory.createHandlerChain()`)
-- New query operators: extend `ConditionOperator` enum + `ConditionFactory` + jOOQ query builder
+- New query operators: extend `ConditionOperator` enum + `ConditionFactory` + `speedy-jooq-query-processor` query
+  builder
 - Serialization: `JSONSerializerV2` for response output, `JsonNode2SpeedyValue` for input parsing

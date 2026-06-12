@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.mappings.ConversionContext;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,13 +15,6 @@ import org.springframework.http.HttpMethod;
 
 import java.util.Map;
 
-/// Mutable state object that flows through the entire handler chain.
-///
-/// Carries immutable infrastructure (configuration, dialect, meta model, servlet
-/// objects, event/validation processors) set at construction, and mutable fields
-/// progressively populated by handlers: HTTP metadata, SpeedyRequest, raw body
-/// bytes, operation type, body parser, query processor, response serializer,
-/// and the final SpeedyResponse.
 @Setter
 @Getter
 public class RequestContext {
@@ -32,6 +26,11 @@ public class RequestContext {
     final HttpServletResponse httpServletResponse;
     final EventProcessor eventProcessor;
     final ValidationProcessor validationProcessor;
+    /// The conversion context carrying all registries (JavaTypeRegistry, JsonRegistry, etc.)
+    /// for the request pipeline. Set at context creation and immutable thereafter.
+    ///
+    /// @see ConversionContext
+    final ConversionContext conversionContext;
 
     HttpMethod httpMethod;
     String requestUri;
@@ -44,7 +43,7 @@ public class RequestContext {
     IResponseSerializerV2 responseSerializer;
     SpeedyResponse speedyResponse;
 
-    public RequestContext(ISpeedyConfiguration configuration, SpeedyDialect dialect, MetaModel metaModel, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, EventProcessor eventProcessor, ValidationProcessor validationProcessor) {
+    public RequestContext(ISpeedyConfiguration configuration, SpeedyDialect dialect, MetaModel metaModel, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, EventProcessor eventProcessor, ValidationProcessor validationProcessor, ConversionContext conversionContext) {
         this.configuration = configuration;
         this.dialect = dialect;
         this.metaModel = metaModel;
@@ -52,6 +51,7 @@ public class RequestContext {
         this.httpServletResponse = httpServletResponse;
         this.eventProcessor = eventProcessor;
         this.validationProcessor = validationProcessor;
+        this.conversionContext = conversionContext;
     }
 
     /// Shorthand for {@code getRequest().getUriContext().getParsedQuery().getFrom()}

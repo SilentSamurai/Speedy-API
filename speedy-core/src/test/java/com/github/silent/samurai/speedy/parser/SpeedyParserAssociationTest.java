@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class SpeedyParserAssociationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyParserAssociationTest.class);
+    private static final JavaTypeRegistry javaTypeRegistry = JavaTypeRegistry.defaults();
 
     @Mock
     MetaModel metaModel;
@@ -40,7 +42,7 @@ public class SpeedyParserAssociationTest {
     void processRequest1_1() throws Exception {
         Mockito.when(metaModel.findEntityMetadata("ComposedProduct")).thenReturn(entityMetadata);
 
-        SpeedyUriContext parser = SpeedyUriContext.builder().metaModel(metaModel).requestURI(UriRoot + "/ComposedProduct?productItem.id=1").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(UriRoot + "/ComposedProduct?productItem.id=1").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 

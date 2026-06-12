@@ -294,7 +294,7 @@ public class MutationWalker {
 
 ---
 
-## JooqSelectVisitor (speedy-jooq-impl)
+## JooqSelectVisitor (speedy-jooq-query-processor)
 
 Port of the existing `JooqQueryBuilder` emit logic, without the walking:
 
@@ -608,7 +608,7 @@ speedy-commons
     ├── query/QueryWalker.java                   (new)
     └── query/MutationWalker.java                (new)
 
-speedy-jooq-impl (new module, extracted from speedy-core)
+speedy-jooq-query-processor (new module, extracted from speedy-core)
     ├── JooqSelectVisitor.java
     ├── JooqInsertVisitor.java
     ├── JooqUpdateVisitor.java
@@ -627,15 +627,15 @@ speedy-core
 ## Migration Steps
 
 1. Add `QueryVisitor`, `MutationVisitor`, `QueryWalker`, `MutationWalker` to `speedy-commons`
-2. Create `speedy-jooq-impl` module with dependency on `speedy-commons` and jOOQ
+2. Create `speedy-jooq-query-processor` module with dependency on `speedy-commons` and jOOQ
 3. Implement `JooqSelectVisitor` by extracting emit logic from `JooqQueryBuilder`
 4. Implement `JooqInsertVisitor`, `JooqUpdateVisitor`, `JooqDeleteVisitor` from existing `SpeedyInsertQuery`,
    `SpeedyUpdateQuery`, `SpeedyDeleteQuery`
 5. Refactor `JooqQueryProcessorImpl` to use `QueryWalker.walk()` + visitors
-6. Move all jOOQ classes from `speedy-core` to `speedy-jooq-impl`
+6. Move all jOOQ classes from `speedy-core` to `speedy-jooq-query-processor`
 7. Remove jOOQ dependency from `speedy-core`
 8. `QueryProcessor` instantiation moved to `SpeedyFactory.processReqV2()` with per-`DataSource` caching (removed
    `CreateQueryProcessorHandler`)
-9. Update parent POM to include `speedy-jooq-impl` module
+9. Update parent POM to include `speedy-jooq-query-processor` module
 
 Each step is independently testable. The existing test suite in `speedy-test-app` validates correctness throughout.

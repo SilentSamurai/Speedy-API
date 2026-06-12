@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.mappings.*;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
@@ -36,6 +37,7 @@ public class SpeedyFactory {
     private final ISpeedyConfiguration configuration;
     private final long maxRequestBodySize;
     private final SpeedyEngine engine;
+    private final ConversionContext conversionContext;
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this(speedyConfiguration, speedyConfiguration.getMaxRequestBodySize());
@@ -53,18 +55,33 @@ public class SpeedyFactory {
 
         this.eventRegistry = new RegistryImpl();
         speedyConfiguration.register(eventRegistry);
-        this.eventProcessor = new EventProcessor(metaModel, eventRegistry);
-        this.eventProcessor.processRegistry();
 
         this.exceptionMapper = new DefaultExceptionMapper(new AdviceExceptionMapper(eventRegistry.getControllerAdvices()));
-
-        this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel);
-        this.validationProcessor.process();
 
         configuration = speedyConfiguration;
         dialect = speedyConfiguration.getDialect();
 
-        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor, maxRequestBodySize);
+        /// Build the conversion context with built-in defaults, then apply any
+        /// user-supplied type modules so that custom encodings/decodings take effect.
+        this.conversionContext = ConversionContext.withDefaults();
+        for (SpeedyTypeModule module : speedyConfiguration.typeModules()) {
+            module.contribute(conversionContext);
+        }
+
+        /// Extract the Java-type registry from the context and create the
+        /// serializer / deserializer pair that the event and validation processors
+        /// will use for all Java ↔ SpeedyValue conversions.
+        JavaTypeRegistry jtr = conversionContext.get(JavaTypeRegistry.class);
+        SpeedySerializer serializer = new SpeedySerializer(jtr);
+        SpeedyDeserializer deserializer = new SpeedyDeserializer(jtr);
+
+        this.eventProcessor = new EventProcessor(metaModel, eventRegistry, serializer, deserializer);
+        this.eventProcessor.processRegistry();
+
+        this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel, serializer, deserializer);
+        this.validationProcessor.process();
+
+        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor, maxRequestBodySize, conversionContext);
     }
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {

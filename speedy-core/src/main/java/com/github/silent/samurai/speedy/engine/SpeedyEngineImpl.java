@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.query.JooqQueryProcessorImpl;
+import com.github.silent.samurai.speedy.mappings.ConversionContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
@@ -25,6 +25,11 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final MetaModel metaModel;
     private final EventProcessor eventProcessor;
     private final ValidationProcessor validationProcessor;
+    /// The conversion context carrying registries for type conversion throughout
+    /// the request pipeline. Passed to every {@link RequestContext} instance.
+    ///
+    /// @see ConversionContext
+    private final ConversionContext conversionContext;
 
     private final List<Handler> requestChain;
     private final List<Handler> bodyChain;
@@ -43,12 +48,14 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                             MetaModel metaModel,
                             EventProcessor eventProcessor,
                             ValidationProcessor validationProcessor,
-                            long maxRequestBodySize) {
+                            long maxRequestBodySize,
+                            ConversionContext conversionContext) {
         this.config = config;
         this.dialect = dialect;
         this.metaModel = metaModel;
         this.eventProcessor = eventProcessor;
         this.validationProcessor = validationProcessor;
+        this.conversionContext = conversionContext;
 
         requestChain = List.of(
                 new HeadHandler(),
@@ -115,7 +122,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     }
 
     private RequestContext newContext(HttpServletRequest request, HttpServletResponse response) {
-        return new RequestContext(config, dialect, metaModel, request, response, eventProcessor, validationProcessor);
+        return new RequestContext(config, dialect, metaModel, request, response, eventProcessor, validationProcessor, conversionContext);
     }
 
     private void run(List<Handler> chain, RequestContext ctx) throws SpeedyHttpException {
@@ -128,7 +135,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     public QueryProcessor prepare() throws SpeedyHttpException {
         DataSource dataSource = config.dataSourcePerReq();
         return queryProcessorCache.computeIfAbsent(
-                dataSource, ds -> new JooqQueryProcessorImpl(ds, dialect));
+                dataSource, ds -> config.queryProcessor(ds, dialect, conversionContext));
     }
 
     @Override

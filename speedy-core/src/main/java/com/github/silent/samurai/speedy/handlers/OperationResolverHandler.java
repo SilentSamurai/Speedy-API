@@ -14,6 +14,7 @@ import org.springframework.http.HttpMethod;
 /// classify the request as GET_LIST, QUERY, CREATE, UPDATE, or DELETE. Sets
 /// SpeedyRequestType on the context for consumption by SpeedyFactory's
 /// dispatch switch.
+///
 /// @see SpeedyRequestType
 public class OperationResolverHandler implements Handler {
 

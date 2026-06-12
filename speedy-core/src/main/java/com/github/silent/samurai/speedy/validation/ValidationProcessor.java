@@ -31,14 +31,32 @@ public class ValidationProcessor {
 
     private final List<ISpeedyCustomValidation> validationList;
     private final MetaModel metaModel;
+    /// Shared serializer for converting SpeedyEntity to user POJOs before
+    /// invoking custom validation methods.
+    ///
+    /// @see SpeedySerializer#toJavaEntity
+    private final SpeedySerializer serializer;
+    /// Shared deserializer for synchronizing changes from user POJOs back to
+    /// SpeedyEntity after validation methods return.
+    ///
+    /// @see SpeedyDeserializer#updateEntity
+    private final SpeedyDeserializer deserializer;
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> createValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> updateValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> deleteValidationMethods = new HashMap<>();
     private final DefaultFieldValidator defaultFieldValidator;
 
-    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel) {
+    /// Creates the validation processor with the necessary serialization infrastructure.
+    ///
+    /// @param validationList list of user-registered custom validation beans
+    /// @param metaModel      the global metamodel
+    /// @param serializer     serializer for {@code SpeedyEntity -> POJO}
+    /// @param deserializer   deserializer for {@code POJO -> SpeedyEntity}
+    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel, SpeedySerializer serializer, SpeedyDeserializer deserializer) {
         this.validationList = validationList;
         this.metaModel = metaModel;
+        this.serializer = serializer;
+        this.deserializer = deserializer;
         this.defaultFieldValidator = new DefaultFieldValidator();
     }
 
@@ -94,7 +112,7 @@ public class ValidationProcessor {
         if (SpeedyEntity.class.isAssignableFrom(ioClass)) {
             param = entity;
         } else {
-            param = SpeedySerializer.toJavaEntity(entity, ioClass);
+            param = serializer.toJavaEntity(entity, ioClass);
         }
 
         Object valid;
@@ -109,7 +127,7 @@ public class ValidationProcessor {
 
         // If the validator modified the Java object, synchronise the changes back to the SpeedyEntity
         if (!SpeedyEntity.class.isAssignableFrom(ioClass)) {
-            SpeedyDeserializer.updateEntity(param, entity);
+            deserializer.updateEntity(param, entity);
         }
 
         if (valid instanceof Boolean) {

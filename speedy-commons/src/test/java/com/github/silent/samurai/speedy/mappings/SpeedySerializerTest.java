@@ -23,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SpeedySerializerTest {
 
+    private final SpeedySerializer serializer = new SpeedySerializer(JavaTypeRegistry.defaults());
+
     @Test
     void convertToTargetClassToCompositeClass_withValidEntity_shouldMapFieldsCorrectly() throws SpeedyHttpException {
         // Arrange
@@ -66,7 +68,7 @@ class SpeedySerializerTest {
         entity.put("sqlDate", new SpeedyDate(testDate)); // Using Date for SQL Date
 
         // Act
-        TestEntity result = SpeedySerializer.toJavaEntity(entity, TestEntity.class);
+        TestEntity result = serializer.toJavaEntity(entity, TestEntity.class);
 
         // Assert
         assertNotNull(result);
@@ -108,7 +110,7 @@ class SpeedySerializerTest {
         parent.put("child", child);
 
         // Act
-        ParentEntity result = SpeedySerializer.toJavaEntity(parent, ParentEntity.class);
+        ParentEntity result = serializer.toJavaEntity(parent, ParentEntity.class);
 
         // Assert
         assertNotNull(result);
@@ -121,7 +123,7 @@ class SpeedySerializerTest {
     @Test
     void convertToTargetClassToCompositeClass_withNullValue_shouldReturnNull() throws SpeedyHttpException {
         // Act
-        TestEntity result = SpeedySerializer.toJavaEntity(null, TestEntity.class);
+        TestEntity result = serializer.toJavaEntity(null, TestEntity.class);
 
         // Assert
         assertNull(result);
@@ -134,15 +136,15 @@ class SpeedySerializerTest {
         SpeedyEntity entity = new SpeedyEntity(entityMetadata);
 
         // Act & Assert
-        SpeedySerializer.toJavaEntity(entity, TestEntity.class);
+        serializer.toJavaEntity(entity, TestEntity.class);
     }
 
     @Test
     void convertToClass_withBasicTypes_shouldToJavaFieldCorrectly() throws SpeedyHttpException {
         // Act & Assert
-        assertEquals("test", SpeedySerializer.asJavaObject(new SpeedyText("test")));
-        assertEquals(Long.valueOf(42L), SpeedySerializer.asJavaObject(new SpeedyInt(42L)));
-        assertEquals(true, SpeedySerializer.asJavaObject(new SpeedyBoolean(true)));
+        assertEquals("test", serializer.asJavaObject(new SpeedyText("test")));
+        assertEquals(Long.valueOf(42L), serializer.asJavaObject(new SpeedyInt(42L)));
+        assertEquals(true, serializer.asJavaObject(new SpeedyBoolean(true)));
     }
 
     @Getter

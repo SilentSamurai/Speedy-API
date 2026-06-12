@@ -10,9 +10,10 @@
 | Module                           | Layer              | Purpose                                                                                                                                                                              |
 |----------------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `speedy-commons`                 | Shared Library     | Interfaces, enums, `SpeedyValue` types, `SpeedyQuery`/`Condition` model, annotations, metadata builders, serializers, validation rules. Zero dependencies beyond Spring Boot parent. |
-| `speedy-core`                    | Core Engine        | Handler chain, JOOQ-based query execution, URI/JSON parsing, response serialization, event/validation processing, `SpeedyApiController`.                                             |
+| `speedy-core`                    | Core Engine        | Handler chain, URI/JSON parsing, response serialization, event/validation processing, `SpeedyApiController`.                                                                         |
 | `antlr-parser`                   | Parser (Legacy)    | ANTLR4 grammar for a URL DSL. Compiled but runtime URI parsing uses `SpeedyUriContext` instead.                                                                                      |
 | `speedy-jpa-impl`                | JPA Bridge         | `JpaMetaModelProcessorV2` scans `EntityManagerFactory` to build the `MetaModel` from `@Entity` classes.                                                                              |
+| `speedy-jooq-query-processor`    | jOOQ Bridge        | `JooqQueryProcessorImpl` — jOOQ-based query execution, `JooqQueryBuilder`, `SpeedyInsertQuery`, `SpeedyUpdateQuery`, `SpeedyDeleteQuery`, `JooqSqlToSpeedy`.                         |
 | `speedy-static-impl`             | Static Bridge      | `FileMetaModelProcessor` builds `MetaModel` from a JSON file.                                                                                                                        |
 | `spring-boot-starter-speedy-api` | Auto-Configuration | `SpeedyApiAutoConfiguration` — conditionally creates `SpeedyFactory` and `SpeedyOpenApiCustomizer` beans. Entry point: `META-INF/spring/...AutoConfiguration.imports`.               |
 | `speedy-java-client`             | Client SDK         | Fluent Java client (`SpeedyApi`) with typed request builders for GET, query, create, update, delete.                                                                                 |
@@ -67,7 +68,7 @@ Users integrate by implementing **`ISpeedyConfiguration`**:
 - `dataSourcePerReq()` — DataSource per request (supports multi-tenancy)
 - `getDialect()` — `SpeedyDialect` enum (H2, PostgreSQL, MySQL, etc.)
 
-### SQL Generation
+### SQL Generation (speedy-jooq-query-processor)
 
 - **`JooqQueryBuilder`** translates the `SpeedyQuery` condition tree into JOOQ `Condition` objects with automatic JOINs
   for associations.
@@ -146,7 +147,8 @@ their position in the chain.
 
 ### Strategy Pattern
 
-- **`QueryProcessor`** interface — single implementation `JooqQueryProcessorImpl`, swappable for other DB backends.
+- **`QueryProcessor`** interface — implemented by `JooqQueryProcessorImpl` (in `speedy-jooq-query-processor`), swappable
+  for other DB backends.
 - **`MetaModelProcessor`** interface — `JpaMetaModelProcessorV2` (JPA scan) or `FileMetaModelProcessor` (JSON file).
 - **`IResponseSerializerV2`** interface — `JSONSerializerV2` (entity list), `JSONCountSerializerV2` (count only),
   field-level predicate for key-only serialization.
@@ -192,15 +194,16 @@ decoupled from the database.
 
 ### Module-Level Test Organization
 
-| Module               | Location                                                                          | Test Type                                                                          |
-|----------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
-| `speedy-commons`     | `src/test/java/.../validation/`, `metadata/`, `mappings/`, `io/`                  | Unit tests for value types, metadata builders, serializer/deserializer round-trips |
-| `speedy-core`        | `src/test/java/.../query/jooq/`, `parser/`, `helpers/`, `deserializer/`, `utils/` | Unit tests for query builders, URI parsing, data conversion                        |
-| `speedy-jpa-impl`    | `src/test/java/.../processors/`, `util/`                                          | Unit tests for JPA metamodel processor                                             |
-| `speedy-static-impl` | `src/test/java/.../file/impl/`                                                    | Unit tests for file-based metamodel                                                |
-| `speedy-java-client` | `src/test/java/.../QueryTest.java`                                                | Unit tests for client builders                                                     |
-| `antlr-parser`       | `src/test/java/.../AntlrRequestListenerTest.java`                                 | Unit tests for ANTLR grammar                                                       |
-| `speedy-test-app`    | `src/test/java/.../url/`, `query/`, `entity/`, `client/`, `validation/`           | **Integration tests** (`@SpringBootTest` + H2)                                     |
+| Module                        | Location                                                                          | Test Type                                                                          |
+|-------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| `speedy-commons`              | `src/test/java/.../validation/`, `metadata/`, `mappings/`, `io/`                  | Unit tests for value types, metadata builders, serializer/deserializer round-trips |
+| `speedy-core`                 | `src/test/java/.../query/jooq/`, `parser/`, `helpers/`, `deserializer/`, `utils/` | Unit tests for query builders, URI parsing, data conversion                        |
+| `speedy-jpa-impl`             | `src/test/java/.../processors/`, `util/`                                          | Unit tests for JPA metamodel processor                                             |
+| `speedy-jooq-query-processor` | `src/test/java/.../jooq/impl/query/`                                              | Unit tests for jOOQ query builder, SQL generation, type conversion                 |
+| `speedy-static-impl`          | `src/test/java/.../file/impl/`                                                    | Unit tests for file-based metamodel                                                |
+| `speedy-java-client`          | `src/test/java/.../QueryTest.java`                                                | Unit tests for client builders                                                     |
+| `antlr-parser`                | `src/test/java/.../AntlrRequestListenerTest.java`                                 | Unit tests for ANTLR grammar                                                       |
+| `speedy-test-app`             | `src/test/java/.../url/`, `query/`, `entity/`, `client/`, `validation/`           | **Integration tests** (`@SpringBootTest` + H2)                                     |
 
 ### Integration Test Structure (`speedy-test-app`)
 

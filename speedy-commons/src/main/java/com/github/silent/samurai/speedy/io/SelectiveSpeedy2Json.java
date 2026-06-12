@@ -6,12 +6,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.mappings.Codec;
+import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.ExpansionPathTracker;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -20,9 +21,20 @@ public class SelectiveSpeedy2Json {
 
     private static final ObjectMapper json = CommonUtil.json();
     private final Predicate<FieldMetadata> fieldPredicate;
+    /// The JSON registry used for encoding SpeedyValue instances into JSON-compatible objects.
+    /// Consulted by {@link #fromBasic} to find the appropriate codec per value type.
+    ///
+    /// @see JsonRegistry
+    private final JsonRegistry jsonRegistry;
 
-    public SelectiveSpeedy2Json(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate) {
+    /// Creates a serializer with the given field-level predicate and JSON registry.
+    ///
+    /// @param metaModel      the metamodel (unused directly but retained for compatibility)
+    /// @param fieldPredicate predicate that determines which fields to include in output
+    /// @param jsonRegistry   the registry used for JSON encoding
+    public SelectiveSpeedy2Json(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate, JsonRegistry jsonRegistry) {
         this.fieldPredicate = fieldPredicate;
+        this.jsonRegistry = jsonRegistry;
     }
 
     public ObjectNode fromSpeedyEntity(SpeedyEntity speedyEntity,
@@ -142,33 +154,23 @@ public class SelectiveSpeedy2Json {
     }
 
     public void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
-        switch (fieldMetadata.getValueType()) {
-            case BOOL -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asBoolean());
-            case TEXT -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asText());
-            case INT -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asLong());
-            case FLOAT -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asDouble());
-            case DATE -> {
-                String stringValue = speedyValue.asDate().format(DateTimeFormatter.ISO_DATE);
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-            }
-            case TIME -> {
-                String stringValue = speedyValue.asTime().format(DateTimeFormatter.ISO_TIME);
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-            }
-            case DATE_TIME -> {
-                String stringValue = speedyValue.asDateTime().format(DateTimeFormatter.ISO_DATE_TIME);
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-            }
-            case ZONED_DATE_TIME -> {
-                String stringValue = speedyValue.asZonedDateTime().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), stringValue);
-            }
-            case ENUM -> jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asEnum());
-            case ENUM_ORD -> {
-                jsonObject.put(fieldMetadata.getOutputPropertyName(), speedyValue.asEnumOrd());
-            }
-            case NULL -> jsonObject.putNull(fieldMetadata.getOutputPropertyName());
-            case OBJECT, COLLECTION -> throw new RuntimeException("OBJECT & Collection Not implemented yet in basic");
+        Codec codec = jsonRegistry.getCodec(fieldMetadata.getValueType());
+        if (codec == null) {
+            jsonObject.putNull(fieldMetadata.getOutputPropertyName());
+            return;
+        }
+        Object encoded = codec.encode().apply(speedyValue);
+        String name = fieldMetadata.getOutputPropertyName();
+        if (encoded == null) {
+            jsonObject.putNull(name);
+        } else if (encoded instanceof Boolean b) {
+            jsonObject.put(name, b);
+        } else if (encoded instanceof Long l) {
+            jsonObject.put(name, l);
+        } else if (encoded instanceof Double d) {
+            jsonObject.put(name, d);
+        } else {
+            jsonObject.put(name, String.valueOf(encoded));
         }
     }
 

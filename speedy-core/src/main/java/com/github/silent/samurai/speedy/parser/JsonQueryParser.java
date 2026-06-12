@@ -12,11 +12,11 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,6 +197,11 @@ public class JsonQueryParser {
     final ConditionFactory conditionFactory;
 
     private int defaultPageSize = 20;
+    /// Optional JSON-to-SpeedyValue converter used when building conditions
+    /// from a JSON-based $query body. Set before {@link #build()} is called.
+    ///
+    /// @see JsonNode2SpeedyValue
+    private JsonNode2SpeedyValue jsonNode2SpeedyValue;
 
     /// Creates a new JsonQueryBuilder with the specified entity name.
     ///
@@ -246,6 +251,13 @@ public class JsonQueryParser {
         this.rootNode = rootNode;
         this.speedyQuery = new SpeedyQueryImpl(metaModel.findEntityMetadata(getFrom()));
         this.conditionFactory = speedyQuery.getConditionFactory();
+    }
+
+    /// Injects the JSON-to-SpeedyValue converter to use during condition building.
+    ///
+    /// @param jsonNode2SpeedyValue the converter instance (must not be null)
+    public void setJsonNode2SpeedyValue(JsonNode2SpeedyValue jsonNode2SpeedyValue) {
+        this.jsonNode2SpeedyValue = jsonNode2SpeedyValue;
     }
 
     public void setMaxPageSize(int maxPageSize) {
@@ -325,11 +337,11 @@ public class JsonQueryParser {
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
                     for (JsonNode node : valueNode) {
                         if (node.isValueNode()) {
-                            SpeedyValue speedyValue = SpeedyValueFactory.fromJsonValue(queryField.getMetadataForParsing(), (ValueNode) node);
+                            SpeedyValue speedyValue = jsonNode2SpeedyValue.fromValueNode(queryField.getMetadataForParsing(), (ValueNode) node);
                             speedyValueList.add(speedyValue);
                         }
                     }
-                    SpeedyCollection fieldValue = SpeedyValueFactory.fromCollection(speedyValueList);
+                    SpeedyCollection fieldValue = new SpeedyCollection(speedyValueList);
                     // standard SQL does not support the syntax: COLA IN [COLB, COLC]
                     return conditionFactory.createBiCondition(queryField, operator, new Literal(fieldValue));
                 }
@@ -441,7 +453,7 @@ public class JsonQueryParser {
     /// - **Literal Value**: All other values are treated as literal constants
     ///
     /// Field references are converted to [Identifier] expressions, while literal
-    /// values are converted to [Literal] expressions using [SpeedyValueFactory].
+    /// values are converted to [Literal] expressions using [JsonNode2SpeedyValue].
     ///
     /// @param metadata the field metadata for type conversion
     /// @param symbol   the JSON value node to convert
@@ -455,7 +467,7 @@ public class JsonQueryParser {
             this.conditionFactory.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
-            return new Literal(SpeedyValueFactory.fromJsonValue(metadata, symbol));
+            return new Literal(jsonNode2SpeedyValue.fromValueNode(metadata, symbol));
         }
     }
 

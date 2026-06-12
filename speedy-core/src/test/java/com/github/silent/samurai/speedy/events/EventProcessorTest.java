@@ -8,6 +8,9 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
+import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
+import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
 import com.github.silent.samurai.speedy.models.SpeedyText;
@@ -35,6 +38,8 @@ class EventProcessorTest {
 
     RegistryImpl registry;
     EntityMetadata productMetadata;
+    SpeedySerializer serializer = new SpeedySerializer(JavaTypeRegistry.defaults());
+    SpeedyDeserializer deserializer = new SpeedyDeserializer(JavaTypeRegistry.defaults());
 
     @BeforeEach
     void setUp() throws NotFoundException {
@@ -56,7 +61,7 @@ class EventProcessorTest {
     void shouldThrowWhenMethodHasZeroParams() {
         registry.registerEventHandler(new ZeroParamHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         assertThrows(IllegalArgumentException.class, () -> ep.processRegistry());
     }
 
@@ -67,7 +72,7 @@ class EventProcessorTest {
     void shouldThrowWhenMethodHasTwoParams() {
         registry.registerEventHandler(new TwoParamHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         assertThrows(IllegalArgumentException.class, () -> ep.processRegistry());
     }
 
@@ -79,7 +84,7 @@ class EventProcessorTest {
     void shouldThrowWhenEntityNotFoundInMetamodel() {
         registry.registerEventHandler(new NonExistentEntityHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         RuntimeException ex = assertThrows(RuntimeException.class, () -> ep.processRegistry());
         assertEquals("Misconfigured @SpeedyEvent: entity 'NonExistent' not found in metamodel",
                 ex.getMessage());
@@ -93,7 +98,7 @@ class EventProcessorTest {
     void shouldThrowWhenEntityNameIsEmpty() {
         registry.registerEventHandler(new EmptyEntityNameHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         RuntimeException ex = assertThrows(RuntimeException.class, () -> ep.processRegistry());
         assertTrue(ex.getMessage().contains("Misconfigured @SpeedyEvent"));
     }
@@ -106,7 +111,7 @@ class EventProcessorTest {
     void shouldRegisterHandlerForSingleEventType() throws Exception {
         registry.registerEventHandler(new PostInsertHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         assertTrue(ep.isEventPresent(SpeedyEventType.POST_INSERT, productMetadata));
@@ -122,7 +127,7 @@ class EventProcessorTest {
     void shouldRegisterHandlerForMultipleEventTypes() {
         registry.registerEventHandler(new MultiEventTypeHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         assertTrue(ep.isEventPresent(SpeedyEventType.PRE_INSERT, productMetadata));
@@ -138,7 +143,7 @@ class EventProcessorTest {
         registry.registerEventHandler(new PostInsertHandler());
         registry.registerEventHandler(new AnotherPostInsertHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         assertTrue(ep.isEventPresent(SpeedyEventType.POST_INSERT, productMetadata));
@@ -152,7 +157,7 @@ class EventProcessorTest {
     void shouldNotMatchDifferentEntityForHandler() {
         registry.registerEventHandler(new PostInsertHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         EntityMetadata otherMetadata = org.mockito.Mockito.mock(EntityMetadata.class);
@@ -169,7 +174,7 @@ class EventProcessorTest {
     void shouldInvokeHandlerWithSpeedyEntityParam() throws Exception {
         registry.registerEventHandler(new SpeedyEntityHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         SpeedyEntity entity = new SpeedyEntity(productMetadata);
@@ -193,7 +198,7 @@ class EventProcessorTest {
     void shouldInvokeHandlerWithJavaPojoParam() throws Exception {
         registry.registerEventHandler(new PojoHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         SpeedyEntity entity = new SpeedyEntity(productMetadata);
@@ -217,7 +222,7 @@ class EventProcessorTest {
     void shouldPropagateExceptionFromHandler() {
         registry.registerEventHandler(new ThrowingHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         SpeedyEntity entity = new SpeedyEntity(productMetadata);
@@ -231,7 +236,7 @@ class EventProcessorTest {
     /// Verifies that calling triggerEvent with an empty event map does not throw.
     @Test
     void shouldNotThrowWhenNoHandlersRegistered() throws Exception {
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         SpeedyEntity entity = new SpeedyEntity(productMetadata);
@@ -262,7 +267,7 @@ class EventProcessorTest {
         registry.registerEventHandler(handler1);
         registry.registerEventHandler(handler2);
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         SpeedyEntity entity = new SpeedyEntity(productMetadata);
@@ -277,7 +282,7 @@ class EventProcessorTest {
     /// EventProcessor backed by an empty registry.
     @Test
     void shouldReturnFalseWhenEventTypeNotRegistered() {
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         assertFalse(ep.isEventPresent(SpeedyEventType.PRE_INSERT, productMetadata));
@@ -292,7 +297,7 @@ class EventProcessorTest {
     void shouldReturnFalseWhenEntityNotRegisteredForEventType() {
         registry.registerEventHandler(new PostInsertHandler());
 
-        EventProcessor ep = new EventProcessor(metaModel, registry);
+        EventProcessor ep = new EventProcessor(metaModel, registry, serializer, deserializer);
         ep.processRegistry();
 
         assertFalse(ep.isEventPresent(SpeedyEventType.PRE_INSERT, productMetadata));

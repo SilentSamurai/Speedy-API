@@ -5,10 +5,11 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
+import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
-import com.github.silent.samurai.speedy.utils.SpeedyValueFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,12 +39,28 @@ public class MetadataUtil {
         return false;
     }
 
-    public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject) throws SpeedyHttpException {
-        return SpeedyValueFactory.fromJsonObject(entityMetadata, jsonObject);
+    /// Parses a JSON object node into a populated SpeedyEntity using
+    /// the provided JSON registry for scalar value decoding.
+    ///
+    /// @param entityMetadata metadata of the target entity
+    /// @param jsonObject     the JSON object containing field values
+    /// @param jsonRegistry   registry used by {@link JsonNode2SpeedyValue} for decoding
+    /// @return a populated SpeedyEntity
+    /// @throws SpeedyHttpException if JSON parsing fails
+    public static SpeedyEntity createEntityFromJSON(EntityMetadata entityMetadata, ObjectNode jsonObject, JsonRegistry jsonRegistry) throws SpeedyHttpException {
+        return new JsonNode2SpeedyValue(jsonRegistry).fromEntityMetadata(entityMetadata, jsonObject);
     }
 
-    public static SpeedyEntityKey createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson) throws SpeedyHttpException {
-        return SpeedyValueFactory.fromPkJson(entityMetadata, keyJson);
+    /// Parses a JSON object node into a SpeedyEntityKey (PK only) using
+    /// the provided JSON registry for scalar value decoding.
+    ///
+    /// @param entityMetadata metadata of the target entity
+    /// @param keyJson        the JSON object containing key field values
+    /// @param jsonRegistry   registry used by {@link JsonNode2SpeedyValue} for decoding
+    /// @return a populated SpeedyEntityKey
+    /// @throws SpeedyHttpException if JSON parsing fails
+    public static SpeedyEntityKey createIdentifierFromJSON(EntityMetadata entityMetadata, ObjectNode keyJson, JsonRegistry jsonRegistry) throws SpeedyHttpException {
+        return new JsonNode2SpeedyValue(jsonRegistry).fromPkJson(entityMetadata, keyJson);
     }
 
     public static boolean isKeyCompleteInEntity(EntityMetadata entityMetadata, SpeedyEntity entity) {
