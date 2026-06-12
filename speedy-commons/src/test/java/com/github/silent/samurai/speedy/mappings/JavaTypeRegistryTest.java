@@ -7,9 +7,6 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.*;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Timestamp;
 import java.time.*;
 import java.util.UUID;
 
@@ -309,5 +306,5 @@ class JavaTypeRegistryTest {
 
     // -- helper types --
 
-    enum TestEnum { A, B, C }
+    enum TestEnum {A, B, C}
 }

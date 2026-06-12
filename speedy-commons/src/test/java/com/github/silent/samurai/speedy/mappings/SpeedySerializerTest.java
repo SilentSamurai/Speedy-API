@@ -4,7 +4,6 @@ import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.models.*;
-import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
 import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;

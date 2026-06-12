@@ -23,6 +23,7 @@ public class SelectiveSpeedy2Json {
     private final Predicate<FieldMetadata> fieldPredicate;
     /// The JSON registry used for encoding SpeedyValue instances into JSON-compatible objects.
     /// Consulted by {@link #fromBasic} to find the appropriate codec per value type.
+    ///
     /// @see JsonRegistry
     private final JsonRegistry jsonRegistry;
 

@@ -10,7 +10,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
@@ -30,126 +32,13 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
     private final Map<Class<?>, Map<ValueType, Codec>> vtCodecs = new HashMap<>();
     /// Per-type converters that parse a string literal into a Java object.
     /// Populated by {@link #registerFromString} and consulted by {@link #parseString}.
+    ///
     /// @see #registerFromString(Class, Function)
     /// @see #parseString(String, Class)
     private final Map<Class<?>, Function<String, ?>> fromStringConverters = new HashMap<>();
 
     public JavaTypeRegistry(JavaTypeRegistry parent) {
         super(parent);
-    }
-
-    public JavaTypeRegistry register(Class<?> clazz, ValueType vt,
-                                      Function<SpeedyValue, Object> encode,
-                                      Function<Object, SpeedyValue> decode) {
-        vtCodecs.computeIfAbsent(clazz, k -> new HashMap<>()).put(vt, new Codec(encode, decode));
-        return this;
-    }
-
-    /// Registers a from-string converter for the given class.
-    /// When {@link #parseString} is called with a string literal and the target class,
-    /// this converter is invoked to produce a typed Java object.
-    ///
-    /// @param clazz     the target Java type
-    /// @param converter a function that parses a string into an instance of {@code T}
-    /// @param <T>       the type parameter
-    /// @return this registry for chaining
-    public <T> JavaTypeRegistry registerFromString(Class<T> clazz, Function<String, T> converter) {
-        fromStringConverters.put(clazz, converter);
-        return this;
-    }
-
-    /// Parses a string literal into the requested Java type using a registered
-    /// from-string converter. Falls back to the parent registry if no local
-    /// converter is found.
-    ///
-    /// @param literal the string value to parse (may be null)
-    /// @param target  the desired Java type
-    /// @param <T>     the type parameter
-    /// @return the parsed object, or null if {@code literal} is null
-    /// @throws ConversionException if no converter is registered for the type
-    @SuppressWarnings("unchecked")
-    public <T> T parseString(String literal, Class<T> target) throws SpeedyHttpException {
-        if (literal == null) return null;
-        Class<?> wrapped = wrap(target);
-        Function<String, ?> fn = fromStringConverters.get(wrapped);
-        if (fn == null && getParent() instanceof JavaTypeRegistry p) {
-            fn = p.fromStringConverters.get(wrapped);
-        }
-        if (fn != null) {
-            return (T) fn.apply(literal);
-        }
-        throw new ConversionException("No from-string converter for " + target.getSimpleName());
-    }
-
-    private Codec lookupVt(Class<?> clazz, ValueType vt) {
-        Map<ValueType, Codec> perVt = vtCodecs.get(clazz);
-        if (perVt != null) {
-            Codec c = perVt.get(vt);
-            if (c != null) return c;
-        }
-        if (getParent() instanceof JavaTypeRegistry p) {
-            return p.lookupVt(clazz, vt);
-        }
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T toJava(SpeedyValue sv, Class<T> targetClass) throws SpeedyHttpException {
-        if (sv == null || sv instanceof SpeedyNull) {
-            return null;
-        }
-        Class<?> wrapped = wrap(targetClass);
-
-        ValueType vt = sv.getValueType();
-        Codec vtCodec = lookupVt(wrapped, vt);
-        if (vtCodec != null) {
-            return (T) vtCodec.encode().apply(sv);
-        }
-
-        Codec codec = lookup(wrapped);
-        if (codec != null) {
-            return (T) codec.encode().apply(sv);
-        }
-
-        if (wrapped.isEnum()) {
-            return (T) convertEnumFromSpeedy(sv, (Class<? extends Enum>) wrapped);
-        }
-
-        throw new ConversionException("No converter found for " + vt + " -> " + wrapped.getName());
-    }
-
-    @SuppressWarnings("unchecked")
-    public SpeedyValue toSpeedy(Object instance, ValueType vt) throws SpeedyHttpException {
-        if (instance == null) {
-            return SpeedyNull.SPEEDY_NULL;
-        }
-        Class<?> clazz = wrap(instance.getClass());
-
-        Codec vtCodec = lookupVt(clazz, vt);
-        if (vtCodec != null) {
-            return vtCodec.decode().apply(instance);
-        }
-
-        Codec codec = lookup(clazz);
-        if (codec != null) {
-            return codec.decode().apply(instance);
-        }
-
-        if (clazz.isEnum()) {
-            return convertEnumToSpeedy((Enum<?>) instance, vt);
-        }
-
-        throw new ConversionException("No converter found for " + clazz.getName() + " -> " + vt);
-    }
-
-    public boolean canToJava(ValueType vt, Class<?> javaType) {
-        Class<?> wrapped = wrap(javaType);
-        return lookupVt(wrapped, vt) != null || lookup(wrapped) != null || wrapped.isEnum();
-    }
-
-    public boolean canToSpeedy(ValueType vt, Class<?> javaType) {
-        Class<?> wrapped = wrap(javaType);
-        return lookupVt(wrapped, vt) != null || lookup(wrapped) != null || wrapped.isEnum();
     }
 
     private static Class<?> wrap(Class<?> clazz) {
@@ -290,5 +179,119 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
         r.registerFromString(Instant.class, Instant::parse);
 
         return r;
+    }
+
+    public JavaTypeRegistry register(Class<?> clazz, ValueType vt,
+                                     Function<SpeedyValue, Object> encode,
+                                     Function<Object, SpeedyValue> decode) {
+        vtCodecs.computeIfAbsent(clazz, k -> new HashMap<>()).put(vt, new Codec(encode, decode));
+        return this;
+    }
+
+    /// Registers a from-string converter for the given class.
+    /// When {@link #parseString} is called with a string literal and the target class,
+    /// this converter is invoked to produce a typed Java object.
+    ///
+    /// @param clazz     the target Java type
+    /// @param converter a function that parses a string into an instance of {@code T}
+    /// @param <T>       the type parameter
+    /// @return this registry for chaining
+    public <T> JavaTypeRegistry registerFromString(Class<T> clazz, Function<String, T> converter) {
+        fromStringConverters.put(clazz, converter);
+        return this;
+    }
+
+    /// Parses a string literal into the requested Java type using a registered
+    /// from-string converter. Falls back to the parent registry if no local
+    /// converter is found.
+    ///
+    /// @param literal the string value to parse (may be null)
+    /// @param target  the desired Java type
+    /// @param <T>     the type parameter
+    /// @return the parsed object, or null if {@code literal} is null
+    /// @throws ConversionException if no converter is registered for the type
+    @SuppressWarnings("unchecked")
+    public <T> T parseString(String literal, Class<T> target) throws SpeedyHttpException {
+        if (literal == null) return null;
+        Class<?> wrapped = wrap(target);
+        Function<String, ?> fn = fromStringConverters.get(wrapped);
+        if (fn == null && getParent() instanceof JavaTypeRegistry p) {
+            fn = p.fromStringConverters.get(wrapped);
+        }
+        if (fn != null) {
+            return (T) fn.apply(literal);
+        }
+        throw new ConversionException("No from-string converter for " + target.getSimpleName());
+    }
+
+    private Codec lookupVt(Class<?> clazz, ValueType vt) {
+        Map<ValueType, Codec> perVt = vtCodecs.get(clazz);
+        if (perVt != null) {
+            Codec c = perVt.get(vt);
+            if (c != null) return c;
+        }
+        if (getParent() instanceof JavaTypeRegistry p) {
+            return p.lookupVt(clazz, vt);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T toJava(SpeedyValue sv, Class<T> targetClass) throws SpeedyHttpException {
+        if (sv == null || sv instanceof SpeedyNull) {
+            return null;
+        }
+        Class<?> wrapped = wrap(targetClass);
+
+        ValueType vt = sv.getValueType();
+        Codec vtCodec = lookupVt(wrapped, vt);
+        if (vtCodec != null) {
+            return (T) vtCodec.encode().apply(sv);
+        }
+
+        Codec codec = lookup(wrapped);
+        if (codec != null) {
+            return (T) codec.encode().apply(sv);
+        }
+
+        if (wrapped.isEnum()) {
+            return (T) convertEnumFromSpeedy(sv, (Class<? extends Enum>) wrapped);
+        }
+
+        throw new ConversionException("No converter found for " + vt + " -> " + wrapped.getName());
+    }
+
+    @SuppressWarnings("unchecked")
+    public SpeedyValue toSpeedy(Object instance, ValueType vt) throws SpeedyHttpException {
+        if (instance == null) {
+            return SpeedyNull.SPEEDY_NULL;
+        }
+        Class<?> clazz = wrap(instance.getClass());
+
+        Codec vtCodec = lookupVt(clazz, vt);
+        if (vtCodec != null) {
+            return vtCodec.decode().apply(instance);
+        }
+
+        Codec codec = lookup(clazz);
+        if (codec != null) {
+            return codec.decode().apply(instance);
+        }
+
+        if (clazz.isEnum()) {
+            return convertEnumToSpeedy((Enum<?>) instance, vt);
+        }
+
+        throw new ConversionException("No converter found for " + clazz.getName() + " -> " + vt);
+    }
+
+    public boolean canToJava(ValueType vt, Class<?> javaType) {
+        Class<?> wrapped = wrap(javaType);
+        return lookupVt(wrapped, vt) != null || lookup(wrapped) != null || wrapped.isEnum();
+    }
+
+    public boolean canToSpeedy(ValueType vt, Class<?> javaType) {
+        Class<?> wrapped = wrap(javaType);
+        return lookupVt(wrapped, vt) != null || lookup(wrapped) != null || wrapped.isEnum();
     }
 }

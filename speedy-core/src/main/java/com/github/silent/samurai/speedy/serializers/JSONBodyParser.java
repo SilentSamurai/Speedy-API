@@ -10,7 +10,6 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
@@ -31,6 +30,7 @@ public class JSONBodyParser implements IRequestBodyParser {
 
     /// The JSON registry used for decoding request-body JSON into SpeedyValue instances.
     /// Passed through to {@link JsonNode2SpeedyValue} and {@link MetadataUtil}.
+    ///
     /// @see JsonRegistry
     private final JsonRegistry jsonRegistry;
 

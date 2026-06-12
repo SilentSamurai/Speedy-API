@@ -28,11 +28,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class JsonNode2SpeedyValueTest {
 
+    private final JsonNode2SpeedyValue converter = new JsonNode2SpeedyValue(JsonRegistry.defaults());
     private KeyFieldMetadata mockKeyFieldMetadata;
     private FieldMetadata mockFieldMetadata;
     private EntityMetadata mockEntityMetadata;
     private ObjectNode jsonNode;
-    private final JsonNode2SpeedyValue converter = new JsonNode2SpeedyValue(JsonRegistry.defaults());
 
     @BeforeEach
     void setUp() {

@@ -31,12 +31,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class BuildQueryFromJsonTests {
 
+    private final JsonNode2SpeedyValue jn2sv = new JsonNode2SpeedyValue(JsonRegistry.defaults());
     private MetaModel metaModel;
     private ObjectMapper objectMapper;
     private JsonNode rootNode;
     private JsonQueryParser builder;
-    private final JsonNode2SpeedyValue jn2sv = new JsonNode2SpeedyValue(JsonRegistry.defaults());
-
 
     @BeforeEach
     void setUp() throws Exception {

@@ -28,6 +28,7 @@ public class RequestContext {
     final ValidationProcessor validationProcessor;
     /// The conversion context carrying all registries (JavaTypeRegistry, JsonRegistry, etc.)
     /// for the request pipeline. Set at context creation and immutable thereafter.
+    ///
     /// @see ConversionContext
     final ConversionContext conversionContext;
 

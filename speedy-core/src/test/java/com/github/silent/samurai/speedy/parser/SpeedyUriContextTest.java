@@ -35,16 +35,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SpeedyUriContextTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(SpeedyUriContextTest.class);
-
+    private final JavaTypeRegistry javaTypeRegistry = JavaTypeRegistry.defaults();
     @Mock
     MetaModel metaModel;
-
     EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
     EntityMetadata vtentity = StaticEntityMetadata.createEntityMetadata(ValueTest.class);
     EntityMetadata composedEntity = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
-
-    private final JavaTypeRegistry javaTypeRegistry = JavaTypeRegistry.defaults();
-
     String UriRoot = SpeedyConstant.URI;
 
     @BeforeEach

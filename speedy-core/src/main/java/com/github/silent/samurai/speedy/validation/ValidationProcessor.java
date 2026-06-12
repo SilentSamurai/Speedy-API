@@ -33,10 +33,12 @@ public class ValidationProcessor {
     private final MetaModel metaModel;
     /// Shared serializer for converting SpeedyEntity to user POJOs before
     /// invoking custom validation methods.
+    ///
     /// @see SpeedySerializer#toJavaEntity
     private final SpeedySerializer serializer;
     /// Shared deserializer for synchronizing changes from user POJOs back to
     /// SpeedyEntity after validation methods return.
+    ///
     /// @see SpeedyDeserializer#updateEntity
     private final SpeedyDeserializer deserializer;
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> createValidationMethods = new HashMap<>();

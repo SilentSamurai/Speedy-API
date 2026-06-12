@@ -35,8 +35,8 @@ public class TypeBuilder<T> {
     }
 
     public TypeBuilder<T> onDb(ColumnType col,
-                                Function<SpeedyValue, Object> enc,
-                                Function<Object, SpeedyValue> dec) {
+                               Function<SpeedyValue, Object> enc,
+                               Function<Object, SpeedyValue> dec) {
         if (ctx.has(DbConversionRegistry.class)) {
             ctx.get(DbConversionRegistry.class).register(col, enc, dec);
         }
@@ -44,8 +44,8 @@ public class TypeBuilder<T> {
     }
 
     public TypeBuilder<T> onJson(ValueType vt,
-                                  Function<SpeedyValue, Object> enc,
-                                  Function<Object, SpeedyValue> dec) {
+                                 Function<SpeedyValue, Object> enc,
+                                 Function<Object, SpeedyValue> dec) {
         if (ctx.has(JsonRegistry.class)) {
             ctx.get(JsonRegistry.class).register(vt, enc, dec);
         }
@@ -53,8 +53,8 @@ public class TypeBuilder<T> {
     }
 
     public TypeBuilder<T> onJava(ValueType vt,
-                                  Function<SpeedyValue, Object> enc,
-                                  Function<Object, SpeedyValue> dec) {
+                                 Function<SpeedyValue, Object> enc,
+                                 Function<Object, SpeedyValue> dec) {
         if (ctx.has(JavaTypeRegistry.class)) {
             ctx.get(JavaTypeRegistry.class).register(type, vt, enc, dec);
         }

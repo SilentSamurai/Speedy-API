@@ -1,22 +1,13 @@
 package com.github.silent.samurai.speedy.mappings;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.models.SpeedyBoolean;
-import com.github.silent.samurai.speedy.models.SpeedyDate;
-import com.github.silent.samurai.speedy.models.SpeedyDateTime;
-import com.github.silent.samurai.speedy.models.SpeedyDouble;
-import com.github.silent.samurai.speedy.models.SpeedyInt;
-import com.github.silent.samurai.speedy.models.SpeedyText;
-import com.github.silent.samurai.speedy.models.SpeedyTime;
-import com.github.silent.samurai.speedy.models.SpeedyZonedDateTime;
+import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.function.Function;
 
 public class JsonRegistry extends ConversionRegistry<ValueType> {
 

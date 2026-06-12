@@ -30,6 +30,7 @@ public class SpeedyUriContext {
     private final String requestURI;
     /// The Java-type registry used to parse string literals from URL query parameters
     /// into typed SpeedyValue instances via {@link #buildExpression}.
+    ///
     /// @see JavaTypeRegistry#parseString(String, Class)
     private final JavaTypeRegistry javaTypeRegistry;
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();

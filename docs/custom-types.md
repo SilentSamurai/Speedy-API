@@ -26,10 +26,14 @@ public final class Email {
         this.value = value;
     }
 
-    public String getValue() { return value; }
+    public String getValue() {
+        return value;
+    }
 
     @Override
-    public String toString() { return value; }
+    public String toString() {
+        return value;
+    }
 }
 ```
 
@@ -46,6 +50,7 @@ public class EmailConverter implements AttributeConverter<Email, String> {
     public String convertToDatabaseColumn(Email email) {
         return email == null ? null : email.toString();
     }
+
     public Email convertToEntityAttribute(String s) {
         return s == null ? null : new Email(s);
     }
@@ -115,11 +120,11 @@ public class User {
 When you call `ctx.forType(Email.class).asText(...)`, Speedy registers converters
 on three internal registries:
 
-| Edge | Registry Key | Effect |
-|---|---|---|
-| JSON in/out | `JsonRegistry` (keyed by `ValueType.TEXT`) | Email serializes as `"user@example.com"` in JSON |
-| Java POJO | `JavaTypeRegistry` (keyed by `Email.class`) | Event handlers receive `Email` objects, not raw strings |
-| DB column | `JooqConverters` default `VARCHAR` → `SpeedyText` | Already handled — no extra config needed |
+| Edge        | Registry Key                                      | Effect                                                  |
+|-------------|---------------------------------------------------|---------------------------------------------------------|
+| JSON in/out | `JsonRegistry` (keyed by `ValueType.TEXT`)        | Email serializes as `"user@example.com"` in JSON        |
+| Java POJO   | `JavaTypeRegistry` (keyed by `Email.class`)       | Event handlers receive `Email` objects, not raw strings |
+| DB column   | `JooqConverters` default `VARCHAR` → `SpeedyText` | Already handled — no extra config needed                |
 
 ### Custom DB or JSON behaviour
 
@@ -127,18 +132,27 @@ If your type needs different representations on different edges, use the per-edg
 overrides:
 
 ```java
-ctx.forType(Money.class)
-    .asText(Money::toString, Money::parse)       // JSON + POJO + query-string
-    .onDb(ColumnType.NUMERIC,                      // DB stores as BigDecimal
-        sv  -> BigDecimal.valueOf(...),
-        raw -> Money.of((BigDecimal) raw));
+ctx.forType(Money .class)
+    .
+
+asText(Money::toString, Money::parse)       // JSON + POJO + query-string
+    .
+
+onDb(ColumnType.NUMERIC,                      // DB stores as BigDecimal
+     sv  ->BigDecimal.
+
+valueOf(...),
+
+raw ->Money.
+
+of((BigDecimal) raw));
 ```
 
 The `TypeBuilder` fluent API provides:
 
-| Method | Purpose |
-|---|---|
-| `asText(enc, dec)` | Register for all text-based edges (JSON, POJO, query-string) |
-| `onDb(colType, enc, dec)` | Override DB conversion only |
-| `onJson(vt, enc, dec)` | Override JSON conversion only |
-| `onJava(vt, enc, dec)` | Override Java POJO conversion only |
+| Method                    | Purpose                                                      |
+|---------------------------|--------------------------------------------------------------|
+| `asText(enc, dec)`        | Register for all text-based edges (JSON, POJO, query-string) |
+| `onDb(colType, enc, dec)` | Override DB conversion only                                  |
+| `onJson(vt, enc, dec)`    | Override JSON conversion only                                |
+| `onJava(vt, enc, dec)`    | Override Java POJO conversion only                           |

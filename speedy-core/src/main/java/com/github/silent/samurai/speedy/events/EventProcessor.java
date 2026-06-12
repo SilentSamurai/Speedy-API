@@ -29,10 +29,12 @@ public class EventProcessor {
     private final RegistryImpl eventRegistry;
     /// Shared serializer for converting SpeedyEntity to user POJOs before
     /// invoking event handler methods.
+    ///
     /// @see SpeedySerializer#toJavaEntity
     private final SpeedySerializer serializer;
     /// Shared deserializer for synchronizing changes from user POJOs back to
     /// SpeedyEntity after event handler methods return.
+    ///
     /// @see SpeedyDeserializer#updateEntity
     private final SpeedyDeserializer deserializer;
 
@@ -40,10 +42,10 @@ public class EventProcessor {
 
     /// Creates the event processor with the necessary serialization infrastructure.
     ///
-    /// @param metaModel    the global metamodel
+    /// @param metaModel     the global metamodel
     /// @param eventRegistry the registry holding user-registered event handlers
-    /// @param serializer   serializer for {@code SpeedyEntity -> POJO}
-    /// @param deserializer deserializer for {@code POJO -> SpeedyEntity}
+    /// @param serializer    serializer for {@code SpeedyEntity -> POJO}
+    /// @param deserializer  deserializer for {@code POJO -> SpeedyEntity}
     public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry, SpeedySerializer serializer, SpeedyDeserializer deserializer) {
         this.metaModel = metaModel;
         this.eventRegistry = eventRegistry;

@@ -5,7 +5,6 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +35,10 @@ class CustomTypeTest {
         String emailValue = "user@example.com";
 
         MvcResult createResult = mvc.perform(
-                MockMvcRequestBuilders.post(SpeedyConstant.URI + "/CustomTypeEntity/" + SpeedyEndpoint.CREATE.suffix())
-                        .content(CommonUtil.toJson(List.of(CommonUtil.json().createObjectNode()
-                                .put("email", emailValue))))
-                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                        MockMvcRequestBuilders.post(SpeedyConstant.URI + "/CustomTypeEntity/" + SpeedyEndpoint.CREATE.suffix())
+                                .content(CommonUtil.toJson(List.of(CommonUtil.json().createObjectNode()
+                                        .put("email", emailValue))))
+                                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
@@ -64,10 +63,10 @@ class CustomTypeTest {
         String emailValue = "query-test@example.com";
 
         MvcResult createResult = mvc.perform(
-                MockMvcRequestBuilders.post(SpeedyConstant.URI + "/CustomTypeEntity/" + SpeedyEndpoint.CREATE.suffix())
-                        .content(CommonUtil.toJson(List.of(CommonUtil.json().createObjectNode()
-                                .put("email", emailValue))))
-                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                        MockMvcRequestBuilders.post(SpeedyConstant.URI + "/CustomTypeEntity/" + SpeedyEndpoint.CREATE.suffix())
+                                .content(CommonUtil.toJson(List.of(CommonUtil.json().createObjectNode()
+                                        .put("email", emailValue))))
+                                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isOk())
                 .andReturn();
 

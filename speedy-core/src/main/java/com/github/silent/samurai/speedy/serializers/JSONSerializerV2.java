@@ -22,6 +22,7 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     private final MetaModel metaModel;
     private final EntityMetadata entityMetadata;
     /// The JSON registry used for encoding SpeedyValue instances in batch/single-key serialization.
+    ///
     /// @see JsonRegistry
     private final JsonRegistry jsonRegistry;
 

@@ -159,7 +159,8 @@ public class DbConversionRegistry extends ConversionRegistry<ColumnType> impleme
             case TIME -> encodeOrThrow(columnType, (SpeedyTime) speedyValue);
             case DATE_TIME -> encodeOrThrow(columnType, (SpeedyDateTime) speedyValue);
             case ZONED_DATE_TIME -> encodeOrThrow(columnType, (SpeedyZonedDateTime) speedyValue);
-            case OBJECT, COLLECTION -> throw new RuntimeException("Cannot convert from " + speedyValue + " to " + columnType);
+            case OBJECT, COLLECTION ->
+                    throw new RuntimeException("Cannot convert from " + speedyValue + " to " + columnType);
             case NULL -> null;
         };
     }

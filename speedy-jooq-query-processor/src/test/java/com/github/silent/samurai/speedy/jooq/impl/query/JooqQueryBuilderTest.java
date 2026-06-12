@@ -33,17 +33,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 class JooqQueryBuilderTest {
 
+    private final JsonNode2SpeedyValue jn2sv = new JsonNode2SpeedyValue(JsonRegistry.defaults());
     @Mock
     DataSource dataSource;
-
     @Mock
     MetaModel metaModel;
-
     EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
     EntityMetadata fkMetadata = StaticEntityMetadata.createEntityMetadata(MultipleFk.class);
-
     DSLContext dslContext;
-    private final JsonNode2SpeedyValue jn2sv = new JsonNode2SpeedyValue(JsonRegistry.defaults());
 
     @BeforeEach
     void setUp() throws NotFoundException {
