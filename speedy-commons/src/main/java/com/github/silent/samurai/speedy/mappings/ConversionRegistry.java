@@ -22,7 +22,7 @@ public class ConversionRegistry<K> {
         return this;
     }
 
-    protected Codec lookup(K key) {
+    public Codec lookup(K key) {
         Codec c = codecs.get(key);
         if (c != null) return c;
         return parent != null ? parent.lookup(key) : null;

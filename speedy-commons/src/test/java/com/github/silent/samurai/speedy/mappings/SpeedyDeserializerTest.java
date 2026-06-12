@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SpeedyDeserializerTest {
 
+    SpeedyDeserializer deserializer = new SpeedyDeserializer(JavaTypeRegistry.defaults());
+
     @Test
     void updateEntity_withAssociation_shouldMapNestedEntity() throws Exception {
         // Arrange: define metadata for parent with child association
@@ -38,7 +40,7 @@ class SpeedyDeserializerTest {
         parent.setChild(child);
 
         // Act
-        SpeedyEntity result = SpeedyDeserializer.updateEntity(parent, target);
+        SpeedyEntity result = deserializer.updateEntity(parent, target);
 
         // Assert
         assertNotNull(result);
@@ -58,7 +60,7 @@ class SpeedyDeserializerTest {
         SpeedyEntity entity = new SpeedyEntity(entityMetadata);
 
         // Act
-        SpeedyEntity result = SpeedyDeserializer.updateEntity(testEntity, entity);
+        SpeedyEntity result = deserializer.updateEntity(testEntity, entity);
 
         // Assert
         assertNotNull(result);
@@ -69,7 +71,7 @@ class SpeedyDeserializerTest {
     @Test
     void updateEntity_withNullValue_shouldReturnNull() throws Exception {
         // Act
-        SpeedyEntity result = SpeedyDeserializer.updateEntity(null, new SpeedyEntity(StaticEntityMetadata.createEntityMetadata(TestEntity.class)));
+        SpeedyEntity result = deserializer.updateEntity(null, new SpeedyEntity(StaticEntityMetadata.createEntityMetadata(TestEntity.class)));
 
         // Assert
         assertNull(result);
@@ -121,7 +123,7 @@ class SpeedyDeserializerTest {
         testEntity.setTime(testTime);
 
         // Act
-        SpeedyEntity result = SpeedyDeserializer.updateEntity(testEntity, entity);
+        SpeedyEntity result = deserializer.updateEntity(testEntity, entity);
 
         // Assert
         assertNotNull(result);

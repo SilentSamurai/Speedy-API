@@ -19,10 +19,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SpeedyDeserializer {
-    // All conversion logic is delegated to TypeConverterRegistry; legacy converters removed.
-    // Obsolete façade methods (get/has/put) removed – callers should use TypeConverterRegistry directly.
 
-    public static SpeedyValue fromJavaObject(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
+    /// The Java-type registry used for all {@code Java -> SpeedyValue} conversions.
+    /// Set at construction time and never changed.
+    private final JavaTypeRegistry javaTypeRegistry;
+
+    /// Creates a deserializer that delegates all conversions to the supplied registry.
+    ///
+    /// @param javaTypeRegistry the registry to use for every conversion
+    public SpeedyDeserializer(JavaTypeRegistry javaTypeRegistry) {
+        this.javaTypeRegistry = javaTypeRegistry;
+    }
+
+    public SpeedyValue fromJavaObject(FieldMetadata fieldMetadata, Object instance) throws SpeedyHttpException {
         ValueType valueType = fieldMetadata.getValueType();
         if (instance == null) {
             return SpeedyNull.SPEEDY_NULL;
@@ -45,11 +54,11 @@ public class SpeedyDeserializer {
                 }
             }
         }
-        if (!TypeConverterRegistry.canToSpeedy(valueType, clazz)) {
+        if (!javaTypeRegistry.canToSpeedy(valueType, clazz)) {
             return SpeedyNull.SPEEDY_NULL;
         }
 
-        return TypeConverterRegistry.toSpeedy(instance, valueType);
+        return javaTypeRegistry.toSpeedy(instance, valueType);
     }
 
     /**
@@ -61,7 +70,7 @@ public class SpeedyDeserializer {
      * @return The converted SpeedyEntity or null if conversion is not possible
      * @throws SpeedyHttpException If conversion fails
      */
-    public static SpeedyEntity updateEntity(Object instance, SpeedyEntity entity) throws SpeedyHttpException {
+    public SpeedyEntity updateEntity(Object instance, SpeedyEntity entity) throws SpeedyHttpException {
         if (instance == null) {
             return null;
         }

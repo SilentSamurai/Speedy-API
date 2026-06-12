@@ -8,6 +8,8 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
+import com.github.silent.samurai.speedy.mappings.Codec;
+import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,10 +21,19 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
 
     private final MetaModel metaModel;
     private final EntityMetadata entityMetadata;
+    /// The JSON registry used for encoding SpeedyValue instances in batch/single-key serialization.
+    /// @see JsonRegistry
+    private final JsonRegistry jsonRegistry;
 
-    public JSONSerializerV2(MetaModel metaModel, EntityMetadata entityMetadata) {
+    /// Creates a JSON serializer for the given entity, backed by the supplied registry.
+    ///
+    /// @param metaModel      the global metamodel
+    /// @param entityMetadata metadata of the target entity
+    /// @param jsonRegistry   registry used for JSON encoding
+    public JSONSerializerV2(MetaModel metaModel, EntityMetadata entityMetadata, JsonRegistry jsonRegistry) {
         this.metaModel = metaModel;
         this.entityMetadata = entityMetadata;
+        this.jsonRegistry = jsonRegistry;
     }
 
     @Override
@@ -36,7 +47,8 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
 
         SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
                 metaModel,
-                entityResponse.getFieldPredicate()
+                entityResponse.getFieldPredicate(),
+                jsonRegistry
         );
 
         JsonNode jsonElement = selectiveSpeedy2Json.formCollection(
@@ -132,9 +144,10 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
 
     private Object serializeSpeedyValue(SpeedyValue value) {
         if (value == null || value.isNull()) return null;
-        if (value instanceof SpeedyInt si) return si.asInt();
-        if (value instanceof SpeedyDouble sd) return sd.asDouble();
-        if (value instanceof SpeedyBoolean sb) return sb.asBoolean();
+        Codec codec = jsonRegistry.lookup(value.getValueType());
+        if (codec != null) {
+            return codec.encode().apply(value);
+        }
         return value.asText();
     }
 

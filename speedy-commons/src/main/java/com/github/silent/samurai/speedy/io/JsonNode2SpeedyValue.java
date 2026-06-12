@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.mappings.Codec;
+import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
@@ -21,74 +24,109 @@ import java.util.LinkedList;
 
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 
+/// # JsonNode2SpeedyValue
+///
+/// Converts Jackson {@link com.fasterxml.jackson.databind.JsonNode} trees into
+/// {@link com.github.silent.samurai.speedy.interfaces.SpeedyValue} instances.
+/// Uses the injected {@link JsonRegistry} for type-safe JSON decoding of all
+/// non-enum, non-collection scalar values.
+///
+/// ENUM and ENUM_ORD types are validated directly against the field metadata
+/// and remain handled inline rather than through the registry.
+///
+/// @see JsonRegistry
+/// @see SelectiveSpeedy2Json
 public class JsonNode2SpeedyValue {
-    public static SpeedyValue fromValueNode(FieldMetadata fieldMetadata, ValueNode jsonNode) throws BadRequestException {
+
+    /// The JSON registry used for decoding scalar JSON nodes into SpeedyValue instances.
+    private final JsonRegistry jsonRegistry;
+
+    /// Creates a converter backed by the given JSON registry.
+    ///
+    /// @param jsonRegistry the registry to use for JSON decoding
+    public JsonNode2SpeedyValue(JsonRegistry jsonRegistry) {
+        this.jsonRegistry = jsonRegistry;
+    }
+
+    public SpeedyValue fromValueNode(FieldMetadata fieldMetadata, ValueNode jsonNode) throws BadRequestException {
         if (jsonNode.isNull()) {
             return SpeedyNull.SPEEDY_NULL;
         }
         return switch (fieldMetadata.getValueType()) {
-            case BOOL:
-                yield new SpeedyBoolean(jsonNode.asBoolean());
-            case TEXT:
-                yield new SpeedyText(jsonNode.asText());
-            case ENUM:
+            case ENUM -> {
                 if (!jsonNode.isTextual())
                     throw new BadRequestException("expected string for enum field " + fieldMetadata.getOutputPropertyName());
                 yield new SpeedyEnum(jsonNode.asText(), fieldMetadata);
-            case INT:
-                yield new SpeedyInt(jsonNode.asLong());
-            case ENUM_ORD:
+            }
+            case ENUM_ORD -> {
                 if (!jsonNode.isNumber())
                     throw new BadRequestException("expected number for ordinal enum field " + fieldMetadata.getOutputPropertyName());
                 yield new SpeedyEnum(jsonNode.asLong(), fieldMetadata);
-            case FLOAT:
-                yield new SpeedyDouble(jsonNode.asDouble());
-            case DATE:
+            }
+            case DATE -> {
                 if (!jsonNode.isTextual() || !isDateFormatValid(jsonNode.asText())) {
                     String formatString = LocalDate.now().format(DateTimeFormatter.ISO_DATE);
                     String msg = String.format("Date value must be a string with ISO_DATE(%s) format", formatString);
                     throw new BadRequestException(msg);
                 }
-                LocalDate localDate = LocalDate.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE);
-                yield new SpeedyDate(localDate);
-            case TIME:
+                yield decode(ValueType.DATE, jsonNode.asText());
+            }
+            case TIME -> {
                 if (!jsonNode.isTextual() || !isTimeFormatValid(jsonNode.asText())) {
                     String formatString = LocalTime.now().format(DateTimeFormatter.ISO_TIME);
                     String msg = String.format("Time value must be a string with ISO_TIME(%s) format", formatString);
                     throw new BadRequestException(msg);
                 }
-                LocalTime localTime = LocalTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_TIME);
-                yield new SpeedyTime(localTime);
-            case DATE_TIME:
+                yield decode(ValueType.TIME, jsonNode.asText());
+            }
+            case DATE_TIME -> {
                 if (!jsonNode.isTextual() || !isDateTimeFormatValid(jsonNode.asText())) {
                     String formatString = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
                     String msg = String.format("DateTime value must be a string with ISO_DATE_TIME(%s) format", formatString);
                     throw new BadRequestException(msg);
                 }
-                LocalDateTime datetime = LocalDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_DATE_TIME);
-                yield new SpeedyDateTime(datetime);
-            case ZONED_DATE_TIME:
+                yield decode(ValueType.DATE_TIME, jsonNode.asText());
+            }
+            case ZONED_DATE_TIME -> {
                 if (!jsonNode.isTextual() || !isZonedDateTimeValid(jsonNode.asText())) {
                     String formatString = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                     String msg = String.format("ZonedDateTime value must be a string with ISO_ZONED_DATE_TIME(%s) format", formatString);
                     throw new BadRequestException(msg);
                 }
-                ZonedDateTime zonedDateTime = ZonedDateTime.parse(jsonNode.asText(), DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-                yield new SpeedyZonedDateTime(zonedDateTime);
-            case NULL:
-                yield SpeedyNull.SPEEDY_NULL;
-            case OBJECT:
-            case COLLECTION:
+                yield decode(ValueType.ZONED_DATE_TIME, jsonNode.asText());
+            }
+            case BOOL -> decode(ValueType.BOOL, jsonNode.asBoolean());
+            case TEXT -> decode(ValueType.TEXT, jsonNode.asText());
+            case INT -> decode(ValueType.INT, jsonNode.asLong());
+            case FLOAT -> decode(ValueType.FLOAT, jsonNode.asDouble());
+            case NULL -> SpeedyNull.SPEEDY_NULL;
+            case OBJECT, COLLECTION -> {
                 String msg = String
                         .format("Not able to parse : %s\nfor Field: %s, Value Type: %s ",
                                 jsonNode.toPrettyString(),
                                 fieldMetadata.getOutputPropertyName(),
                                 fieldMetadata.getColumnType());
                 throw new BadRequestException(msg);
+            }
         };
     }
 
-    public static SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
+    /// Looks up the codec for the given value type in the JSON registry and
+    /// decodes the raw value into a SpeedyValue. Throws if no codec is registered.
+    ///
+    /// @param vt       the Speedy value type to decode into
+    /// @param rawValue the raw value from the JSON node
+    /// @return the decoded SpeedyValue
+    /// @throws BadRequestException if no codec exists for the value type
+    private SpeedyValue decode(ValueType vt, Object rawValue) throws BadRequestException {
+        Codec codec = jsonRegistry.lookup(vt);
+        if (codec != null) {
+            return codec.decode().apply(rawValue);
+        }
+        throw new BadRequestException("No codec found for " + vt);
+    }
+
+    public SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
         SpeedyEntity speedyEntity = new SpeedyEntity(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (fieldMetadata.isDeserializable()
@@ -102,7 +140,7 @@ public class JsonNode2SpeedyValue {
         return speedyEntity;
     }
 
-    public static SpeedyValue fromFieldMetadata(FieldMetadata fieldMetadata, JsonNode jsonNode) throws SpeedyHttpException {
+    public SpeedyValue fromFieldMetadata(FieldMetadata fieldMetadata, JsonNode jsonNode) throws SpeedyHttpException {
         if (fieldMetadata.isAssociation()) {
             if (fieldMetadata.isCollection()) {
                 if (!jsonNode.isArray()) {
@@ -149,7 +187,7 @@ public class JsonNode2SpeedyValue {
     }
 
 
-    public static SpeedyEntityKey fromPkJson(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
+    public SpeedyEntityKey fromPkJson(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
         SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
             String propertyName = fieldMetadata.getOutputPropertyName();

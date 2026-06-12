@@ -6,6 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.request.SpeedyRequest;
@@ -14,20 +15,15 @@ import org.springframework.http.HttpMethod;
 
 import java.util.Map;
 
-/// Parses the request URI via SpeedyUriContext and builds the SpeedyRequest.
-///
-/// Uses SpeedyUriContext to parse the URI into entity metadata, action suffix,
-/// and a URI-based SpeedyQuery. Resolves the transaction mode and constructs
-/// the SpeedyRequest envelope that flows through the remainder of the chain.
-///
-/// @see SpeedyUriContext
-/// @see SpeedyRequest
 public class UriParserHandler implements Handler {
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
         MetaModel metaModel = context.getMetaModel();
         String requestURI = context.getRequestUri();
+        /// Extract the Java-type registry from the conversion context so that
+        /// {@link SpeedyUriContext} can parse URL query-parameter values.
+        JavaTypeRegistry jtr = context.getConversionContext().get(JavaTypeRegistry.class);
 
         SpeedyUriContext parser = SpeedyUriContext.builder()
                 .metaModel(metaModel)
@@ -36,6 +32,7 @@ public class UriParserHandler implements Handler {
                 .defaultPageSize(context.getConfiguration().getDefaultPageSize())
                 .maxQueryStringLength(context.getConfiguration().getMaxQueryStringLength())
                 .maxFilterCount(context.getConfiguration().getMaxFilterCount())
+                .javaTypeRegistry(jtr)
                 .build();
         SpeedyQuery uriSpeedyQuery = parser.parse();
 

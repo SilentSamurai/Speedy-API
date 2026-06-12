@@ -11,6 +11,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ class JsonNode2SpeedyValueTest {
     private FieldMetadata mockFieldMetadata;
     private EntityMetadata mockEntityMetadata;
     private ObjectNode jsonNode;
+    private final JsonNode2SpeedyValue converter = new JsonNode2SpeedyValue(JsonRegistry.defaults());
 
     @BeforeEach
     void setUp() {
@@ -44,7 +46,7 @@ class JsonNode2SpeedyValueTest {
     void testFromValueNode_Text() throws BadRequestException {
         when(mockFieldMetadata.getValueType()).thenReturn(ValueType.TEXT);
         ValueNode textNode = JsonNodeFactory.instance.textNode("Sample Text");
-        SpeedyValue result = JsonNode2SpeedyValue.fromValueNode(mockFieldMetadata, textNode);
+        SpeedyValue result = converter.fromValueNode(mockFieldMetadata, textNode);
         assertEquals("Sample Text", result.asText());
     }
 
@@ -52,7 +54,7 @@ class JsonNode2SpeedyValueTest {
     void testFromValueNode_Int() throws BadRequestException {
         when(mockFieldMetadata.getValueType()).thenReturn(ValueType.INT);
         ValueNode intNode = JsonNodeFactory.instance.numberNode(123L);
-        SpeedyValue result = JsonNode2SpeedyValue.fromValueNode(mockFieldMetadata, intNode);
+        SpeedyValue result = converter.fromValueNode(mockFieldMetadata, intNode);
         assertEquals(123, result.asInt());
     }
 
@@ -60,7 +62,7 @@ class JsonNode2SpeedyValueTest {
     void testFromValueNode_Bool() throws BadRequestException {
         when(mockFieldMetadata.getValueType()).thenReturn(ValueType.BOOL);
         ValueNode boolNode = JsonNodeFactory.instance.booleanNode(true);
-        SpeedyValue result = JsonNode2SpeedyValue.fromValueNode(mockFieldMetadata, boolNode);
+        SpeedyValue result = converter.fromValueNode(mockFieldMetadata, boolNode);
         assertEquals(true, result.asBoolean());
     }
 
@@ -68,7 +70,7 @@ class JsonNode2SpeedyValueTest {
     void testFromValueNode_Date() throws BadRequestException {
         when(mockFieldMetadata.getValueType()).thenReturn(ValueType.DATE);
         ValueNode dateNode = JsonNodeFactory.instance.textNode("2024-09-10");
-        SpeedyValue result = JsonNode2SpeedyValue.fromValueNode(mockFieldMetadata, dateNode);
+        SpeedyValue result = converter.fromValueNode(mockFieldMetadata, dateNode);
         assertEquals(LocalDate.of(2024, 9, 10), result.asDate());
     }
 
@@ -77,7 +79,7 @@ class JsonNode2SpeedyValueTest {
         when(mockFieldMetadata.getValueType()).thenReturn(ValueType.DATE);
         ValueNode invalidDateNode = JsonNodeFactory.instance.textNode("invalid-date");
         BadRequestException exception = assertThrows(BadRequestException.class, () -> {
-            JsonNode2SpeedyValue.fromValueNode(mockFieldMetadata, invalidDateNode);
+            converter.fromValueNode(mockFieldMetadata, invalidDateNode);
         });
         assertTrue(exception.getMessage().contains("Date value must be a string with ISO_DATE"));
     }
@@ -90,7 +92,7 @@ class JsonNode2SpeedyValueTest {
         ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
         arrayNode.add(123);
 
-        SpeedyValue result = JsonNode2SpeedyValue.fromFieldMetadata(mockFieldMetadata, arrayNode);
+        SpeedyValue result = converter.fromFieldMetadata(mockFieldMetadata, arrayNode);
         assertNotNull(result);
         assertTrue(result.isCollection());
         assertEquals(123, result.asCollection().stream().findAny().get().asInt());
@@ -104,7 +106,7 @@ class JsonNode2SpeedyValueTest {
         when(mockFieldMetadata.getValueType()).thenReturn(ValueType.TEXT);
         jsonNode.put("name", "Test Entity");
 
-        SpeedyEntity result = JsonNode2SpeedyValue.fromEntityMetadata(mockEntityMetadata, jsonNode);
+        SpeedyEntity result = converter.fromEntityMetadata(mockEntityMetadata, jsonNode);
         assertNotNull(result);
     }
 
@@ -118,7 +120,7 @@ class JsonNode2SpeedyValueTest {
         when(mockEntityMetadata.getAllFields()).thenReturn(Set.of(mockKeyFieldMetadata));
         jsonNode.put("id", "test-uuid");
 
-        SpeedyEntity result = JsonNode2SpeedyValue.fromEntityMetadata(mockEntityMetadata, jsonNode);
+        SpeedyEntity result = converter.fromEntityMetadata(mockEntityMetadata, jsonNode);
         assertNotNull(result);
         assertTrue(result.has(mockKeyFieldMetadata));
     }
@@ -130,7 +132,7 @@ class JsonNode2SpeedyValueTest {
         when(mockEntityMetadata.getAllFields()).thenReturn(Set.of(mockKeyFieldMetadata));
         jsonNode.put("id", "test-uuid");
 
-        SpeedyEntity result = JsonNode2SpeedyValue.fromEntityMetadata(mockEntityMetadata, jsonNode);
+        SpeedyEntity result = converter.fromEntityMetadata(mockEntityMetadata, jsonNode);
         assertNotNull(result);
         assertFalse(result.has(mockKeyFieldMetadata));
     }
@@ -141,7 +143,7 @@ class JsonNode2SpeedyValueTest {
         when(mockKeyFieldMetadata.getOutputPropertyName()).thenReturn("id");
 
         BadRequestException exception = assertThrows(BadRequestException.class, () -> {
-            JsonNode2SpeedyValue.fromPkJson(mockEntityMetadata, jsonNode);
+            converter.fromPkJson(mockEntityMetadata, jsonNode);
         });
         assertTrue(exception.getMessage().contains("Missing key field"));
     }

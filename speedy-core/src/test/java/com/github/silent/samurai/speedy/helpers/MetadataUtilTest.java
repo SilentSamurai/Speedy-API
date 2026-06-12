@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.data.*;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -160,7 +161,7 @@ class MetadataUtilTest {
     void createEntityKeyFromJSON() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'1234', 'name':'na'}");
-        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
         assertEquals("1234", primaryKey.get(entityMetadata.field("id")).asText());
     }
 
@@ -168,7 +169,7 @@ class MetadataUtilTest {
     void createEntityKeyFromJSON1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'1234', 'name':'na'}");
-        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        SpeedyEntityKey primaryKey = MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
         assertEquals("1234", primaryKey.get(entityMetadata.field("id")).asText());
         assertEquals("na", primaryKey.get(entityMetadata.field("name")).asText());
     }
@@ -179,7 +180,7 @@ class MetadataUtilTest {
                 () -> {
                     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
                     JsonNode jsonElement = CommonUtil.json().readTree("{'name':'na'}");
-                    MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
+                    MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
                 }
         );
     }
@@ -190,7 +191,7 @@ class MetadataUtilTest {
                 () -> {
                     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
                     JsonNode jsonElement = CommonUtil.json().readTree("{'name':'na'}");
-                    MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement);
+                    MetadataUtil.createIdentifierFromJSON(entityMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
                 }
         );
     }
@@ -219,7 +220,7 @@ class MetadataUtilTest {
     void createEntityObjectFromJSON() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1'}");
-        SpeedyEntity entity = MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        SpeedyEntity entity = MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
         assertEquals("abcd", entity.get(entityMetadata.field("id")).asText());
         assertEquals("na", entity.get(entityMetadata.field("name")).asText());
         assertEquals("cat-1", entity.get(entityMetadata.field("category")).asText());
@@ -229,7 +230,7 @@ class MetadataUtilTest {
     void createEntityObjectFromJSON1() throws Exception {
         EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(UniqueProduct.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1'}");
-        SpeedyEntity entity = MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement);
+        SpeedyEntity entity = MetadataUtil.createEntityFromJSON(entityMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
         assertEquals("abcd", entity.get(entityMetadata.field("id")).asText());
         assertEquals("na", entity.get(entityMetadata.field("name")).asText());
         assertEquals("cat-1", entity.get(entityMetadata.field("category")).asText());
@@ -257,7 +258,7 @@ class MetadataUtilTest {
         productItem.setName("Part - 1");
         EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1', 'productItem':{'id':'abcd'} }");
-        SpeedyEntity productEntity = MetadataUtil.createEntityFromJSON(productMetadata, (ObjectNode) jsonElement);
+        SpeedyEntity productEntity = MetadataUtil.createEntityFromJSON(productMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
         assertEquals("abcd", productEntity.get(productMetadata.field("id")).asText());
         assertEquals("na", productEntity.get(productMetadata.field("name")).asText());
         assertEquals("cat-1", productEntity.get(productMetadata.field("category")).asText());
@@ -271,7 +272,7 @@ class MetadataUtilTest {
     void createEntityFromJsonNegativeTest() throws Exception {
         EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
         JsonNode jsonElement = CommonUtil.json().readTree("{'id':'abcd', 'name':'na', 'category':'cat-1', 'productItem': null }");
-        SpeedyEntity productEntity = MetadataUtil.createEntityFromJSON(productMetadata, (ObjectNode) jsonElement);
+        SpeedyEntity productEntity = MetadataUtil.createEntityFromJSON(productMetadata, (ObjectNode) jsonElement, JsonRegistry.defaults());
         // assert productEntity is not null
         assertNotNull(productEntity);
         // assert id is not null

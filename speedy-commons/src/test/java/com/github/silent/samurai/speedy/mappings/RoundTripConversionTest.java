@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RoundTripConversionTest {
 
+    SpeedySerializer serializer = new SpeedySerializer(JavaTypeRegistry.defaults());
+    SpeedyDeserializer deserializer = new SpeedyDeserializer(JavaTypeRegistry.defaults());
+
     @Test
     void convertSpeedyEntityToJavaObjectAndBack_shouldMaintainDataIntegrity() throws SpeedyHttpException {
         // Arrange
@@ -55,10 +58,10 @@ class RoundTripConversionTest {
         originalEntity.put("zonedDateTime", new SpeedyZonedDateTime(testZonedDateTime));
 
         // Act - Convert SpeedyEntity to a Java object
-        TestEntity javaObject = SpeedySerializer.toJavaEntity(originalEntity, TestEntity.class);
+        TestEntity javaObject = serializer.toJavaEntity(originalEntity, TestEntity.class);
 
         // Then convert a Java object back to SpeedyEntity
-        SpeedyEntity convertedBackEntity = SpeedyDeserializer.updateEntity(javaObject, new SpeedyEntity(entityMetadata));
+        SpeedyEntity convertedBackEntity = deserializer.updateEntity(javaObject, new SpeedyEntity(entityMetadata));
 
         // Assert
         assertNotNull(javaObject);
@@ -115,10 +118,10 @@ class RoundTripConversionTest {
         testEntity.setZonedDateTime(testZonedDateTime);
 
         // Act - Convert a Java object to SpeedyEntity
-        SpeedyEntity speedyEntity = SpeedyDeserializer.updateEntity(testEntity, entity);
+        SpeedyEntity speedyEntity = deserializer.updateEntity(testEntity, entity);
 
         // Then convert SpeedyEntity back to a Java object
-        TestEntity convertedBackObject = SpeedySerializer.toJavaEntity(speedyEntity, TestEntity.class);
+        TestEntity convertedBackObject = serializer.toJavaEntity(speedyEntity, TestEntity.class);
 
         // Assert
         assertNotNull(speedyEntity);
@@ -161,10 +164,10 @@ class RoundTripConversionTest {
         testEntity.setZonedDateTime(null);
 
         // Act - Convert Java object to SpeedyEntity
-        SpeedyEntity speedyEntity = SpeedyDeserializer.updateEntity(testEntity, entity);
+        SpeedyEntity speedyEntity = deserializer.updateEntity(testEntity, entity);
 
         // Then convert SpeedyEntity back to Java object
-        TestEntity convertedBackObject = SpeedySerializer.toJavaEntity(speedyEntity, TestEntity.class);
+        TestEntity convertedBackObject = serializer.toJavaEntity(speedyEntity, TestEntity.class);
 
         // Assert
         assertNotNull(speedyEntity);
@@ -219,10 +222,10 @@ class RoundTripConversionTest {
         originalEntity.setZonedDateTime(zonedDateTime);
 
         // Act - Convert to Speedy entity
-        SpeedyEntity speedyEntity = SpeedyDeserializer.updateEntity(originalEntity, entity);
+        SpeedyEntity speedyEntity = deserializer.updateEntity(originalEntity, entity);
 
         // Convert back to class
-        TestEntity convertedEntity = SpeedySerializer.toJavaEntity(speedyEntity, TestEntity.class);
+        TestEntity convertedEntity = serializer.toJavaEntity(speedyEntity, TestEntity.class);
 
         // Assert - Check all values
         assertNotNull(convertedEntity);
@@ -260,7 +263,7 @@ class RoundTripConversionTest {
         initialEntity.put("salary", new SpeedyDouble(initialSalary));
 
         // Convert SpeedyEntity to Java object
-        TestEntity javaObject = SpeedySerializer.toJavaEntity(initialEntity, TestEntity.class);
+        TestEntity javaObject = serializer.toJavaEntity(initialEntity, TestEntity.class);
 
         // Set some fields to null in the Java object
         javaObject.setName(null);
@@ -268,7 +271,7 @@ class RoundTripConversionTest {
         javaObject.setSalary(null);
 
         // Act - Convert the Java object (with null values) back to SpeedyEntity
-        SpeedyEntity finalEntity = SpeedyDeserializer.updateEntity(javaObject, initialEntity);
+        SpeedyEntity finalEntity = deserializer.updateEntity(javaObject, initialEntity);
 
         // Assert - Verify that the original values are preserved for fields that were null in the Java object
         assertNotNull(finalEntity);

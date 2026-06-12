@@ -27,24 +27,28 @@ public class EventProcessor {
 
     private final MetaModel metaModel;
     private final RegistryImpl eventRegistry;
+    /// Shared serializer for converting SpeedyEntity to user POJOs before
+    /// invoking event handler methods.
+    /// @see SpeedySerializer#toJavaEntity
+    private final SpeedySerializer serializer;
+    /// Shared deserializer for synchronizing changes from user POJOs back to
+    /// SpeedyEntity after event handler methods return.
+    /// @see SpeedyDeserializer#updateEntity
+    private final SpeedyDeserializer deserializer;
 
-    /*
-    {
-        "POST_INSERT": {
-            Category: handler,
-            Customer: handler
-        },
-        "POST_UPDATE": {
-            Category: handler,
-            Customer: handler
-        }
-    }
-     */
     private final Map<SpeedyEventType, MultiValueMap<String, EventHandlerMetadata>> eventMap = new HashMap<>();
 
-    public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry) {
+    /// Creates the event processor with the necessary serialization infrastructure.
+    ///
+    /// @param metaModel    the global metamodel
+    /// @param eventRegistry the registry holding user-registered event handlers
+    /// @param serializer   serializer for {@code SpeedyEntity -> POJO}
+    /// @param deserializer deserializer for {@code POJO -> SpeedyEntity}
+    public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry, SpeedySerializer serializer, SpeedyDeserializer deserializer) {
         this.metaModel = metaModel;
         this.eventRegistry = eventRegistry;
+        this.serializer = serializer;
+        this.deserializer = deserializer;
     }
 
     public void processRegistry() {
@@ -90,7 +94,7 @@ public class EventProcessor {
         if (isEventPresent(eventType, entityMetadata)) {
             MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
             for (EventHandlerMetadata metadata : eventEntityMap.get(entityMetadata.getName())) {
-                metadata.invokeEventHandler(entity);
+                metadata.invokeEventHandler(entity, serializer, deserializer);
             }
         }
     }
@@ -112,14 +116,14 @@ public class EventProcessor {
             this.ioClass = ioClass;
         }
 
-        private Object invokeEventHandler(SpeedyEntity entity) throws Exception {
+        private Object invokeEventHandler(SpeedyEntity entity, SpeedySerializer ser, SpeedyDeserializer deser) throws Exception {
             try {
                 if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
                     methodHandle.invoke(instance, entity);
                 } else {
-                    Object value = SpeedySerializer.toJavaEntity(entity, ioClass);
+                    Object value = ser.toJavaEntity(entity, ioClass);
                     methodHandle.invoke(instance, value);
-                    SpeedyDeserializer.updateEntity(value, entity);
+                    deser.updateEntity(value, entity);
                 }
             } catch (Throwable t) {
                 if (t instanceof Exception e) {

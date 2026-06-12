@@ -13,6 +13,8 @@ import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Identifier;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
+import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.parser.JsonQueryParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,12 +35,25 @@ class BuildQueryFromJsonTests {
     private ObjectMapper objectMapper;
     private JsonNode rootNode;
     private JsonQueryParser builder;
+    private final JsonNode2SpeedyValue jn2sv = new JsonNode2SpeedyValue(JsonRegistry.defaults());
 
 
     @BeforeEach
     void setUp() throws Exception {
         metaModel = mock(MetaModel.class);
         objectMapper = new ObjectMapper();
+    }
+
+    private JsonQueryParser newQueryParser(MetaModel metaModel, String from, JsonNode rootNode) throws NotFoundException {
+        JsonQueryParser parser = new JsonQueryParser(metaModel, from, rootNode);
+        parser.setJsonNode2SpeedyValue(jn2sv);
+        return parser;
+    }
+
+    private JsonQueryParser newQueryParser(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
+        JsonQueryParser parser = new JsonQueryParser(metaModel, rootNode);
+        parser.setJsonNode2SpeedyValue(jn2sv);
+        return parser;
     }
 
     /*
@@ -74,7 +89,7 @@ class BuildQueryFromJsonTests {
                 .thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         // Initialize the builder
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         // Build the query
         SpeedyQuery query = builder.build();
@@ -120,7 +135,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to an invalid where clause
         assertThrows(BadRequestException.class, builder::build);
@@ -152,7 +167,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -189,7 +204,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         // Expecting BadRequestException due to invalid order clause
         assertThrows(BadRequestException.class, builder::build);
@@ -221,7 +236,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -254,7 +269,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -283,7 +298,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
 
@@ -306,7 +321,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        assertThrows(BadRequestException.class, () -> new JsonQueryParser(metaModel, rootNode));
+        assertThrows(BadRequestException.class, () -> newQueryParser(metaModel, rootNode));
     }
 
     /*
@@ -334,7 +349,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
         SpeedyQuery query = builder.build();
 
         BinaryCondition idCondition = (BinaryCondition) query.getWhere().getConditions().get(0);
@@ -370,7 +385,7 @@ class BuildQueryFromJsonTests {
 
         rootNode = objectMapper.readTree(json);
 
-        assertThrows(NotFoundException.class, () -> new JsonQueryParser(metaModel, rootNode).build());
+        assertThrows(NotFoundException.class, () -> newQueryParser(metaModel, rootNode).build());
     }
 
     @Test
@@ -385,7 +400,7 @@ class BuildQueryFromJsonTests {
         when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
         assertNotNull(query);
@@ -406,7 +421,7 @@ class BuildQueryFromJsonTests {
         when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
 
         SpeedyQuery query = builder.build();
         assertNotNull(query);
@@ -427,7 +442,7 @@ class BuildQueryFromJsonTests {
         when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
         builder.setMaxPageSize(10);
 
         assertThrows(BadRequestException.class, builder::build);
@@ -444,7 +459,7 @@ class BuildQueryFromJsonTests {
         when(metaModel.findEntityMetadata("Product")).thenReturn(StaticEntityMetadata.createEntityMetadata(Product.class));
 
         rootNode = objectMapper.readTree(json);
-        builder = new JsonQueryParser(metaModel, "Product", rootNode);
+        builder = newQueryParser(metaModel, "Product", rootNode);
         builder.setMaxPageSize(5);
         builder.setDefaultPageSize(20);
 

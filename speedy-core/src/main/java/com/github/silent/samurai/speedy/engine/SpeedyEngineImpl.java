@@ -25,6 +25,9 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final MetaModel metaModel;
     private final EventProcessor eventProcessor;
     private final ValidationProcessor validationProcessor;
+    /// The conversion context carrying registries for type conversion throughout
+    /// the request pipeline. Passed to every {@link RequestContext} instance.
+    /// @see ConversionContext
     private final ConversionContext conversionContext;
 
     private final List<Handler> requestChain;
@@ -118,7 +121,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     }
 
     private RequestContext newContext(HttpServletRequest request, HttpServletResponse response) {
-        return new RequestContext(config, dialect, metaModel, request, response, eventProcessor, validationProcessor);
+        return new RequestContext(config, dialect, metaModel, request, response, eventProcessor, validationProcessor, conversionContext);
     }
 
     private void run(List<Handler> chain, RequestContext ctx) throws SpeedyHttpException {

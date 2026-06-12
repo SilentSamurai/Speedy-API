@@ -6,8 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.*;
-import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
+import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.Speedy;
@@ -29,6 +28,10 @@ import java.util.stream.Collectors;
 public class SpeedyUriContext {
     private final MetaModel metaModel;
     private final String requestURI;
+    /// The Java-type registry used to parse string literals from URL query parameters
+    /// into typed SpeedyValue instances via {@link #buildExpression}.
+    /// @see JavaTypeRegistry#parseString(String, Class)
+    private final JavaTypeRegistry javaTypeRegistry;
     private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
     @Builder.Default
     private final int maxPageSize = Integer.MAX_VALUE;
@@ -45,12 +48,12 @@ public class SpeedyUriContext {
         if (symbol.startsWith("$")) {
             String field = symbol.substring(1);
             QueryField queryField = this.speedyQuery.getConditionFactory().createQueryField(field);
-            // Reject $ references to fields marked @SpeedySensitive
             this.speedyQuery.getConditionFactory().validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
-            Object parsed = TypeConverterRegistry.fromString(symbol.replaceAll("['\" ]", ""), metadata.getValueType().javaTypeClass());
-            return new Literal(SpeedyDeserializer.fromJavaObject(metadata, parsed));
+            String literal = symbol.replaceAll("['\" ]", "");
+            Object parsed = javaTypeRegistry.parseString(literal, metadata.getValueType().javaTypeClass());
+            return new Literal(javaTypeRegistry.toSpeedy(parsed, metadata.getValueType()));
         }
     }
 
@@ -105,7 +108,7 @@ public class SpeedyUriContext {
         if (uriComponents.getQueryParams().containsKey("$pageSize")) {
             String $pageSize = uriComponents.getQueryParams().getFirst("$pageSize");
             try {
-                Integer pageSize = TypeConverterRegistry.fromString($pageSize.replaceAll("['\" ]", ""), Integer.class);
+                Integer pageSize = javaTypeRegistry.parseString($pageSize.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageSize);
                 if (pageSize > maxPageSize) {
                     throw new BadRequestException(
@@ -123,7 +126,7 @@ public class SpeedyUriContext {
         if (uriComponents.getQueryParams().containsKey("$pageNo")) {
             String $pageNo = uriComponents.getQueryParams().getFirst("$pageNo");
             try {
-                Integer pageNo = TypeConverterRegistry.fromString($pageNo.replaceAll("['\" ]", ""), Integer.class);
+                Integer pageNo = javaTypeRegistry.parseString($pageNo.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageNo);
                 speedyQuery.addPageNo(pageNo);
             } catch (NumberFormatException e) {
@@ -134,7 +137,7 @@ public class SpeedyUriContext {
         if (uriComponents.getQueryParams().containsKey("$format")) {
             String $format = uriComponents.getQueryParams().getFirst("$format");
             if ($format != null) {
-                speedyQuery.addFormat(TypeConverterRegistry.fromString($format.replaceAll("['\" ]", ""), String.class));
+                speedyQuery.addFormat(javaTypeRegistry.parseString($format.replaceAll("['\" ]", ""), String.class));
             }
         }
 
@@ -252,8 +255,8 @@ public class SpeedyUriContext {
 
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
                     for (String value : valueList) {
-                        Object parsed = TypeConverterRegistry.fromString(value.replaceAll("['\" ]", ""), queryField.getMetadataForParsing().getValueType().javaTypeClass());
-                        speedyValueList.add(SpeedyDeserializer.fromJavaObject(queryField.getMetadataForParsing(), parsed));
+                        Object parsed = javaTypeRegistry.parseString(value.replaceAll("['\" ]", ""), queryField.getMetadataForParsing().getValueType().javaTypeClass());
+                        speedyValueList.add(javaTypeRegistry.toSpeedy(parsed, queryField.getMetadataForParsing().getValueType()));
                     }
                     SpeedyCollection fieldValue = new SpeedyCollection(speedyValueList);
                     BinaryCondition binaryCondition = conditionFactory.createBiCondition(queryField, ConditionOperator.EQ, new Literal(fieldValue));
@@ -271,7 +274,7 @@ public class SpeedyUriContext {
             List<String> fields = values.stream()
                     .map(item -> {
                         try {
-                            return TypeConverterRegistry.fromString(item.replaceAll("['\" ]", ""), String.class);
+                            return javaTypeRegistry.parseString(item.replaceAll("['\" ]", ""), String.class);
                         } catch (SpeedyHttpException e) {
                             return null;
                         }

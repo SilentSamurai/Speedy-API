@@ -197,6 +197,17 @@ public class JsonQueryParser {
     final ConditionFactory conditionFactory;
 
     private int defaultPageSize = 20;
+    /// Optional JSON-to-SpeedyValue converter used when building conditions
+    /// from a JSON-based $query body. Set before {@link #build()} is called.
+    /// @see JsonNode2SpeedyValue
+    private JsonNode2SpeedyValue jsonNode2SpeedyValue;
+
+    /// Injects the JSON-to-SpeedyValue converter to use during condition building.
+    ///
+    /// @param jsonNode2SpeedyValue the converter instance (must not be null)
+    public void setJsonNode2SpeedyValue(JsonNode2SpeedyValue jsonNode2SpeedyValue) {
+        this.jsonNode2SpeedyValue = jsonNode2SpeedyValue;
+    }
 
     /// Creates a new JsonQueryBuilder with the specified entity name.
     ///
@@ -324,8 +335,8 @@ public class JsonQueryParser {
                 if (operator.doesAcceptMultipleValues() && valueNode.isArray()) {
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
                     for (JsonNode node : valueNode) {
-                        if (node.isValueNode()) {
-                            SpeedyValue speedyValue = JsonNode2SpeedyValue.fromValueNode(queryField.getMetadataForParsing(), (ValueNode) node);
+                    if (node.isValueNode()) {
+                        SpeedyValue speedyValue = jsonNode2SpeedyValue.fromValueNode(queryField.getMetadataForParsing(), (ValueNode) node);
                             speedyValueList.add(speedyValue);
                         }
                     }
@@ -455,7 +466,7 @@ public class JsonQueryParser {
             this.conditionFactory.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
-            return new Literal(JsonNode2SpeedyValue.fromValueNode(metadata, symbol));
+            return new Literal(jsonNode2SpeedyValue.fromValueNode(metadata, symbol));
         }
     }
 
