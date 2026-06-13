@@ -8,6 +8,9 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
+import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -31,7 +34,7 @@ public class UpdateHandler implements Handler {
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        SpeedyUpdateBody body = (SpeedyUpdateBody) context.getRequest().getBody();
+        SpeedyUpdateBody body = (SpeedyUpdateBody) context.get(SpeedyBody.class);
         SpeedyEntity savedEntity = updateInTransaction(context, body.getEntity(), body.getPk());
 
         if (savedEntity == null) {
@@ -39,7 +42,7 @@ public class UpdateHandler implements Handler {
         }
 
         List<SpeedyEntity> speedyEntities = List.of(savedEntity);
-        context.setSpeedyResponse(
+        context.put(SpeedyResponse.class,
                 SpeedyEntityResponse.builder()
                         .payload(speedyEntities)
                         .pageIndex(0)
@@ -51,9 +54,9 @@ public class UpdateHandler implements Handler {
     private SpeedyEntity updateInTransaction(RequestContext context, SpeedyEntity entity, SpeedyEntityKey pk)
             throws SpeedyHttpException {
         EntityMetadata entityMetadata = context.getEntityMetadata();
-        EventProcessor eventProcessor = context.getEventProcessor();
-        QueryProcessor queryProcessor = context.getQueryProcessor();
-        TransactionMode mode = context.getRequest().getTransactionMode();
+        EventProcessor eventProcessor = context.get(EventProcessor.class);
+        QueryProcessor queryProcessor = context.get(QueryProcessor.class);
+        TransactionMode mode = context.get(TransactionMode.class);
         String entityLabel = entityMetadata.getName();
 
         try {
@@ -61,7 +64,7 @@ public class UpdateHandler implements Handler {
             queryProcessor.runInTransaction(() -> {
                 try {
                     eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
-                    context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entity);
+                    context.get(ValidationProcessor.class).validateUpdateRequestEntity(entityMetadata, entity);
                     result[0] = queryProcessor.update(pk, entity);
                     eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
                 } catch (Exception ex) {

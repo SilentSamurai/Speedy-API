@@ -4,8 +4,8 @@ import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import org.springframework.http.HttpMethod;
 
 /// Determines the request operation type from HTTP method and URI action suffix.
@@ -20,9 +20,9 @@ public class OperationResolverHandler implements Handler {
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        SpeedyRequest request = context.getRequest();
-        HttpMethod method = request.getHttpMethod();
-        String actionSuffix = request.getActionSuffix();
+        SpeedyUriContext uriContext = context.get(SpeedyUriContext.class);
+        HttpMethod method = context.get(HttpMethod.class);
+        String actionSuffix = uriContext.getActionSuffix();
         SpeedyEndpoint endpoint = SpeedyEndpoint.fromSuffix(actionSuffix);
 
         SpeedyRequestType requestType;
@@ -45,6 +45,6 @@ public class OperationResolverHandler implements Handler {
             throw new BadRequestException("not a valid request");
         }
 
-        context.setRequestType(requestType);
+        context.put(requestType);
     }
 }

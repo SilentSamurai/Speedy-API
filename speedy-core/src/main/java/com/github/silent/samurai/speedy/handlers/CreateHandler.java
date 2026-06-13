@@ -10,6 +10,10 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
+import com.github.silent.samurai.speedy.validation.ValidationProcessor;
+import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.request.RequestContext;
@@ -32,7 +36,7 @@ public class CreateHandler implements Handler {
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        SpeedyCreateBody body = (SpeedyCreateBody) context.getRequest().getBody();
+        SpeedyCreateBody body = (SpeedyCreateBody) context.get(SpeedyBody.class);
         List<SpeedyEntity> entities = body.getEntities();
         TransactionMode mode = body.getMode();
 
@@ -46,13 +50,13 @@ public class CreateHandler implements Handler {
     private void processBatchCreate(RequestContext context, List<SpeedyEntity> entities)
             throws SpeedyHttpException {
         EntityMetadata entityMetadata = context.getEntityMetadata();
-        EventProcessor eventProcessor = context.getEventProcessor();
-        QueryProcessor queryProcessor = context.getQueryProcessor();
+        EventProcessor eventProcessor = context.get(EventProcessor.class);
+        QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         String entityLabel = entityMetadata.getName();
         int totalCount = entities.size();
 
         if (entities.isEmpty()) {
-            context.setSpeedyResponse(
+            context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
                             .payload(List.of())
                             .pageIndex(0)
@@ -68,7 +72,7 @@ public class CreateHandler implements Handler {
                 try {
                     for (SpeedyEntity entity : entities) {
                         eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT, entityMetadata, entity);
-                        context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, entity);
+                        context.get(ValidationProcessor.class).validateCreateRequestEntity(entityMetadata, entity);
                     }
 
                     List<SpeedyEntity> saved = queryProcessor.create(entities);
@@ -85,7 +89,7 @@ public class CreateHandler implements Handler {
                         eventProcessor.triggerEvent(SpeedyEventType.POST_INSERT, entityMetadata, entity);
                     }
 
-                    context.setSpeedyResponse(
+                    context.put(SpeedyResponse.class,
                             SpeedyEntityResponse.builder()
                                     .payload(saved)
                                     .pageIndex(0)
@@ -118,8 +122,8 @@ public class CreateHandler implements Handler {
     private void processPerEntityCreate(RequestContext context, List<SpeedyEntity> entities)
             throws SpeedyHttpException {
         EntityMetadata entityMetadata = context.getEntityMetadata();
-        EventProcessor eventProcessor = context.getEventProcessor();
-        QueryProcessor queryProcessor = context.getQueryProcessor();
+        EventProcessor eventProcessor = context.get(EventProcessor.class);
+        QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         String entityLabel = entityMetadata.getName();
 
         List<SpeedyEntity> succeeded = new ArrayList<>();
@@ -131,7 +135,7 @@ public class CreateHandler implements Handler {
                 queryProcessor.runInTransaction(() -> {
                     try {
                         eventProcessor.triggerEvent(SpeedyEventType.PRE_INSERT, entityMetadata, entity);
-                        context.getValidationProcessor().validateCreateRequestEntity(entityMetadata, entity);
+                        context.get(ValidationProcessor.class).validateCreateRequestEntity(entityMetadata, entity);
 
                         List<SpeedyEntity> singleBatch = List.of(entity);
                         List<SpeedyEntity> saved = queryProcessor.create(singleBatch);
@@ -185,7 +189,7 @@ public class CreateHandler implements Handler {
                 entityLabel, entities.size(), succeeded.size(), failed.size());
 
         if (failed.isEmpty()) {
-            context.setSpeedyResponse(
+            context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
                             .payload(succeeded)
                             .pageIndex(0)
@@ -201,7 +205,7 @@ public class CreateHandler implements Handler {
             throw new InternalServerError(failure.getMessage(), failure.getCause());
         } else {
             int status = succeeded.isEmpty() ? 400 : 207;
-            context.setSpeedyResponse(
+            context.put(SpeedyResponse.class,
                     SpeedyBatchResponse.builder()
                             .succeeded(succeeded)
                             .failed(failed)

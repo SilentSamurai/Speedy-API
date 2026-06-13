@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.engine;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.enums.PermissionType;
+import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
@@ -9,7 +10,6 @@ import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,10 +25,6 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final MetaModel metaModel;
     private final EventProcessor eventProcessor;
     private final ValidationProcessor validationProcessor;
-    /// The conversion context carrying registries for type conversion throughout
-    /// the request pipeline. Passed to every {@link RequestContext} instance.
-    ///
-    /// @see ConversionContext
     private final ConversionContext conversionContext;
 
     private final List<Handler> requestChain;
@@ -121,8 +117,18 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         );
     }
 
-    private RequestContext newContext(HttpServletRequest request, HttpServletResponse response) {
-        return new RequestContext(config, dialect, metaModel, request, response, eventProcessor, validationProcessor, conversionContext);
+    @Override
+    public RequestContext newContext(HttpServletRequest request, HttpServletResponse response) {
+        RequestContext ctx = new RequestContext();
+        ctx.put(ISpeedyConfiguration.class, config);
+        ctx.put(dialect);
+        ctx.put(MetaModel.class, metaModel);
+        ctx.put(eventProcessor);
+        ctx.put(validationProcessor);
+        ctx.put(conversionContext);
+        if (request != null) ctx.put(HttpServletRequest.class, request);
+        if (response != null) ctx.put(HttpServletResponse.class, response);
+        return ctx;
     }
 
     private void run(List<Handler> chain, RequestContext ctx) throws SpeedyHttpException {
@@ -139,98 +145,39 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     }
 
     @Override
-    public SpeedyRequest parseRequest(HttpServletRequest request) throws SpeedyHttpException {
-        RequestContext ctx = newContext(request, null);
+    public void parseRequest(RequestContext ctx) throws SpeedyHttpException {
         run(requestChain, ctx);
-        SpeedyRequest req = ctx.getRequest();
-        req.setRequestType(ctx.getRequestType());
-        req.setRawBody(ctx.getRawBody());
-        return req;
     }
 
     @Override
-    public IRequestBodyParser selectBodyParser(SpeedyRequest request) throws SpeedyHttpException {
-        RequestContext ctx = newContext(null, null);
-        ctx.setRequest(request);
+    public void selectBodyParser(RequestContext ctx) throws SpeedyHttpException {
         run(parserSelectionChain, ctx);
-        return ctx.getRequestBodyParser();
     }
 
     @Override
-    public SpeedyBody parseBody(IRequestBodyParser parser, SpeedyRequest request, QueryProcessor qp) throws SpeedyHttpException {
-        RequestContext ctx = newContext(null, null);
-        ctx.setRequest(request);
-        ctx.setRawBody(request.getRawBody());
-        ctx.setRequestBodyParser(parser);
-        ctx.setRequestType(request.getRequestType());
-        ctx.setQueryProcessor(qp);
+    public void parseBody(RequestContext ctx) throws SpeedyHttpException {
         run(bodyChain, ctx);
-        return ctx.getRequest().getBody();
     }
 
     @Override
-    public SpeedyResponse get(SpeedyRequest request, SpeedyBody body, QueryProcessor qp) throws SpeedyHttpException {
-        request.setBody(body);
-        RequestContext ctx = newContext(null, null);
-        ctx.setRequest(request);
-        ctx.setQueryProcessor(qp);
-        run(getChain, ctx);
-        return ctx.getSpeedyResponse();
+    public void execute(RequestContext ctx) throws SpeedyHttpException {
+        SpeedyRequestType type = ctx.get(SpeedyRequestType.class);
+        switch (type) {
+            case GET_LIST -> run(getChain, ctx);
+            case QUERY -> run(queryChain, ctx);
+            case CREATE -> run(createChain, ctx);
+            case UPDATE -> run(updateChain, ctx);
+            case DELETE -> run(deleteChain, ctx);
+        }
     }
 
     @Override
-    public SpeedyResponse query(SpeedyRequest request, SpeedyBody body, QueryProcessor qp) throws SpeedyHttpException {
-        request.setBody(body);
-        RequestContext ctx = newContext(null, null);
-        ctx.setRequest(request);
-        ctx.setQueryProcessor(qp);
-        run(queryChain, ctx);
-        return ctx.getSpeedyResponse();
-    }
-
-    @Override
-    public SpeedyResponse create(SpeedyRequest request, SpeedyBody body, QueryProcessor qp) throws SpeedyHttpException {
-        request.setBody(body);
-        RequestContext ctx = newContext(null, null);
-        ctx.setRequest(request);
-        ctx.setQueryProcessor(qp);
-        run(createChain, ctx);
-        return ctx.getSpeedyResponse();
-    }
-
-    @Override
-    public SpeedyResponse update(SpeedyRequest request, SpeedyBody body, QueryProcessor qp) throws SpeedyHttpException {
-        request.setBody(body);
-        RequestContext ctx = newContext(null, null);
-        ctx.setRequest(request);
-        ctx.setQueryProcessor(qp);
-        run(updateChain, ctx);
-        return ctx.getSpeedyResponse();
-    }
-
-    @Override
-    public SpeedyResponse delete(SpeedyRequest request, SpeedyBody body, QueryProcessor qp) throws SpeedyHttpException {
-        request.setBody(body);
-        RequestContext ctx = newContext(null, null);
-        ctx.setRequest(request);
-        ctx.setQueryProcessor(qp);
-        run(deleteChain, ctx);
-        return ctx.getSpeedyResponse();
-    }
-
-    @Override
-    public IResponseSerializerV2 selectSerializer(HttpServletRequest servletRequest, SpeedyRequest speedyRequest) throws SpeedyHttpException {
-        RequestContext ctx = newContext(servletRequest, null);
-        ctx.setRequest(speedyRequest);
+    public void selectSerializer(RequestContext ctx) throws SpeedyHttpException {
         run(serializerSelectionChain, ctx);
-        return ctx.getResponseSerializer();
     }
 
     @Override
-    public void writeResponse(IResponseSerializerV2 serializer, SpeedyResponse response, HttpServletResponse servletResponse) throws SpeedyHttpException {
-        RequestContext ctx = newContext(null, servletResponse);
-        ctx.setResponseSerializer(serializer);
-        ctx.setSpeedyResponse(response);
+    public void writeResponse(RequestContext ctx) throws SpeedyHttpException {
         run(responseChain, ctx);
     }
 }

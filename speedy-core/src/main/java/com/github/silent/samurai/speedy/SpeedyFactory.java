@@ -14,7 +14,7 @@ import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
-import com.github.silent.samurai.speedy.request.SpeedyRequest;
+import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
 import com.github.silent.samurai.speedy.utils.DefaultExceptionMapper;
 import com.github.silent.samurai.speedy.utils.ExceptionUtils;
@@ -90,24 +90,14 @@ public class SpeedyFactory {
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            QueryProcessor qp = engine.prepare();
-
-            SpeedyRequest req = engine.parseRequest(request);
-
-            IRequestBodyParser parser = engine.selectBodyParser(req);
-            SpeedyBody body = engine.parseBody(parser, req, qp);
-
-            SpeedyResponse resp = switch (req.getRequestType()) {
-                case GET_LIST -> engine.get(req, body, qp);
-                case QUERY -> engine.query(req, body, qp);
-                case CREATE -> engine.create(req, body, qp);
-                case UPDATE -> engine.update(req, body, qp);
-                case DELETE -> engine.delete(req, body, qp);
-            };
-
-            IResponseSerializerV2 serializer = engine.selectSerializer(request, req);
-            engine.writeResponse(serializer, resp, response);
-
+            RequestContext ctx = engine.newContext(request, response);
+            ctx.put(QueryProcessor.class, engine.prepare());
+            engine.parseRequest(ctx);
+            engine.selectBodyParser(ctx);
+            engine.parseBody(ctx);
+            engine.execute(ctx);
+            engine.selectSerializer(ctx);
+            engine.writeResponse(ctx);
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;
             int status = exceptionMapper.getStatus(e);

@@ -1,12 +1,17 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.request.SpeedyRequest;
 
 /// Parses the raw request body into the appropriate SpeedyBody subtype.
 ///
@@ -22,35 +27,35 @@ public class BodyParserHandler implements Handler {
 
     @Override
     public void process(RequestContext context) throws SpeedyHttpException {
-        SpeedyRequest request = context.getRequest();
-        byte[] rawBody = context.getRawBody();
-        IRequestBodyParser parser = context.getRequestBodyParser();
-        SpeedyRequestType requestType = context.getRequestType();
+        SpeedyUriContext uriContext = context.get(SpeedyUriContext.class);
+        byte[] rawBody = context.get(byte[].class);
+        IRequestBodyParser parser = context.get(IRequestBodyParser.class);
+        SpeedyRequestType requestType = context.get(SpeedyRequestType.class);
 
         SpeedyBody body = switch (requestType) {
             case GET_LIST -> {
-                SpeedyQueryImpl query = request.getUriContext().getParsedQuery();
+                SpeedyQueryImpl query = uriContext.getParsedQuery();
                 query.setType(SpeedyRequestType.GET_LIST);
                 yield query;
             }
             case QUERY -> parser.parseQuery(rawBody,
-                    context.getMetaModel(),
-                    request.getUriContext().getParsedQuery(),
-                    context.getConfiguration().getMaxPageSize(),
-                    context.getConfiguration().getDefaultPageSize());
+                    context.get(MetaModel.class),
+                    uriContext.getParsedQuery(),
+                    context.get(ISpeedyConfiguration.class).getMaxPageSize(),
+                    context.get(ISpeedyConfiguration.class).getDefaultPageSize());
             case CREATE -> parser.parseCreate(rawBody,
                     context.getEntityMetadata(),
-                    request.getTransactionMode(),
-                    context.getQueryProcessor());
+                    context.get(TransactionMode.class),
+                    context.get(QueryProcessor.class));
             case UPDATE -> parser.parseUpdate(rawBody,
                     context.getEntityMetadata(),
-                    context.getQueryProcessor());
+                    context.get(QueryProcessor.class));
             case DELETE -> parser.parseDelete(rawBody,
                     context.getEntityMetadata(),
-                    request.getTransactionMode(),
-                    context.getQueryProcessor());
+                    context.get(TransactionMode.class),
+                    context.get(QueryProcessor.class));
         };
 
-        request.setBody(body);
+        context.put(SpeedyBody.class, body);
     }
 }
