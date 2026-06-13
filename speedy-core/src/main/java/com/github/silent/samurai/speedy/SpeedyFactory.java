@@ -72,8 +72,8 @@ public class SpeedyFactory {
         /// serializer / deserializer pair that the event and validation processors
         /// will use for all Java ↔ SpeedyValue conversions.
         JavaTypeRegistry jtr = conversionContext.get(JavaTypeRegistry.class);
-        SpeedySerializer serializer = new SpeedySerializer(jtr);
-        SpeedyDeserializer deserializer = new SpeedyDeserializer(jtr);
+        SpeedyToJava serializer = new SpeedyToJava(jtr);
+        JavaToSpeedy deserializer = new JavaToSpeedy(jtr);
 
         this.eventProcessor = new EventProcessor(metaModel, eventRegistry, serializer, deserializer);
         this.eventProcessor.processRegistry();

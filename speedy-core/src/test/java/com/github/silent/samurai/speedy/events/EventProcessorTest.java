@@ -9,8 +9,8 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
-import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
+import com.github.silent.samurai.speedy.mappings.JavaToSpeedy;
+import com.github.silent.samurai.speedy.mappings.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
 import com.github.silent.samurai.speedy.models.SpeedyText;
@@ -38,8 +38,8 @@ class EventProcessorTest {
 
     RegistryImpl registry;
     EntityMetadata productMetadata;
-    SpeedySerializer serializer = new SpeedySerializer(JavaTypeRegistry.defaults());
-    SpeedyDeserializer deserializer = new SpeedyDeserializer(JavaTypeRegistry.defaults());
+    SpeedyToJava serializer = new SpeedyToJava(JavaTypeRegistry.defaults());
+    JavaToSpeedy deserializer = new JavaToSpeedy(JavaTypeRegistry.defaults());
 
     @BeforeEach
     void setUp() throws NotFoundException {

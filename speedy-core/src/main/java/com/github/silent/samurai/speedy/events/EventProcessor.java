@@ -6,8 +6,8 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
+import com.github.silent.samurai.speedy.mappings.JavaToSpeedy;
+import com.github.silent.samurai.speedy.mappings.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,13 +30,13 @@ public class EventProcessor {
     /// Shared serializer for converting SpeedyEntity to user POJOs before
     /// invoking event handler methods.
     ///
-    /// @see SpeedySerializer#toJavaEntity
-    private final SpeedySerializer serializer;
+    /// @see SpeedyToJava#toJavaEntity
+    private final SpeedyToJava serializer;
     /// Shared deserializer for synchronizing changes from user POJOs back to
     /// SpeedyEntity after event handler methods return.
     ///
-    /// @see SpeedyDeserializer#updateEntity
-    private final SpeedyDeserializer deserializer;
+    /// @see JavaToSpeedy#updateEntity
+    private final JavaToSpeedy deserializer;
 
     private final Map<SpeedyEventType, MultiValueMap<String, EventHandlerMetadata>> eventMap = new HashMap<>();
 
@@ -46,7 +46,7 @@ public class EventProcessor {
     /// @param eventRegistry the registry holding user-registered event handlers
     /// @param serializer    serializer for {@code SpeedyEntity -> POJO}
     /// @param deserializer  deserializer for {@code POJO -> SpeedyEntity}
-    public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry, SpeedySerializer serializer, SpeedyDeserializer deserializer) {
+    public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry, SpeedyToJava serializer, JavaToSpeedy deserializer) {
         this.metaModel = metaModel;
         this.eventRegistry = eventRegistry;
         this.serializer = serializer;
@@ -118,7 +118,7 @@ public class EventProcessor {
             this.ioClass = ioClass;
         }
 
-        private Object invokeEventHandler(SpeedyEntity entity, SpeedySerializer ser, SpeedyDeserializer deser) throws Exception {
+        private Object invokeEventHandler(SpeedyEntity entity, SpeedyToJava ser, JavaToSpeedy deser) throws Exception {
             try {
                 if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
                     methodHandle.invoke(instance, entity);

@@ -13,7 +13,7 @@ import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
+import com.github.silent.samurai.speedy.io.JsonToSpeedy;
 import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.parser.JsonQueryParser;
@@ -29,7 +29,7 @@ import static com.github.silent.samurai.speedy.utils.CommonUtil.json;
 public class JSONBodyParser implements IRequestBodyParser {
 
     /// The JSON registry used for decoding request-body JSON into SpeedyValue instances.
-    /// Passed through to {@link JsonNode2SpeedyValue} and {@link MetadataUtil}.
+    /// Passed through to {@link JsonToSpeedy} and {@link MetadataUtil}.
     ///
     /// @see JsonRegistry
     private final JsonRegistry jsonRegistry;
@@ -54,7 +54,7 @@ public class JSONBodyParser implements IRequestBodyParser {
             JsonQueryParser jsonQueryParser = new JsonQueryParser(metaModel, baseQuery.getFrom(), jsonBody);
             jsonQueryParser.setMaxPageSize(maxPageSize);
             jsonQueryParser.setDefaultPageSize(defaultPageSize);
-            jsonQueryParser.setJsonNode2SpeedyValue(new JsonNode2SpeedyValue(jsonRegistry));
+            jsonQueryParser.setJsonNode2SpeedyValue(new JsonToSpeedy(jsonRegistry));
             SpeedyQuery query = jsonQueryParser.build();
             if (query instanceof SpeedyQueryImpl impl) {
                 impl.setType(SpeedyRequestType.QUERY);

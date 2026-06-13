@@ -21,9 +21,9 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SpeedySerializerTest {
+class SpeedyToJavaTest {
 
-    private final SpeedySerializer serializer = new SpeedySerializer(JavaTypeRegistry.defaults());
+    private final SpeedyToJava serializer = new SpeedyToJava(JavaTypeRegistry.defaults());
 
     @Test
     void convertToTargetClassToCompositeClass_withValidEntity_shouldMapFieldsCorrectly() throws SpeedyHttpException {

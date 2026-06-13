@@ -7,8 +7,8 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
+import com.github.silent.samurai.speedy.mappings.JavaToSpeedy;
+import com.github.silent.samurai.speedy.mappings.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.slf4j.Logger;
@@ -34,13 +34,13 @@ public class ValidationProcessor {
     /// Shared serializer for converting SpeedyEntity to user POJOs before
     /// invoking custom validation methods.
     ///
-    /// @see SpeedySerializer#toJavaEntity
-    private final SpeedySerializer serializer;
+    /// @see SpeedyToJava#toJavaEntity
+    private final SpeedyToJava serializer;
     /// Shared deserializer for synchronizing changes from user POJOs back to
     /// SpeedyEntity after validation methods return.
     ///
-    /// @see SpeedyDeserializer#updateEntity
-    private final SpeedyDeserializer deserializer;
+    /// @see JavaToSpeedy#updateEntity
+    private final JavaToSpeedy deserializer;
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> createValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> updateValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> deleteValidationMethods = new HashMap<>();
@@ -52,7 +52,7 @@ public class ValidationProcessor {
     /// @param metaModel      the global metamodel
     /// @param serializer     serializer for {@code SpeedyEntity -> POJO}
     /// @param deserializer   deserializer for {@code POJO -> SpeedyEntity}
-    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel, SpeedySerializer serializer, SpeedyDeserializer deserializer) {
+    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel, SpeedyToJava serializer, JavaToSpeedy deserializer) {
         this.validationList = validationList;
         this.metaModel = metaModel;
         this.serializer = serializer;

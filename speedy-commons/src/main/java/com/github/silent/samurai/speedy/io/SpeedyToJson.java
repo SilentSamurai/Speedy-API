@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class SelectiveSpeedy2Json {
+public class SpeedyToJson {
 
     private static final ObjectMapper json = CommonUtil.json();
     private final Predicate<FieldMetadata> fieldPredicate;
@@ -31,7 +31,7 @@ public class SelectiveSpeedy2Json {
     /// @param metaModel      the metamodel (unused directly but retained for compatibility)
     /// @param fieldPredicate predicate that determines which fields to include in output
     /// @param jsonRegistry   the registry used for JSON encoding
-    public SelectiveSpeedy2Json(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate, JsonRegistry jsonRegistry) {
+    public SpeedyToJson(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate, JsonRegistry jsonRegistry) {
         this.fieldPredicate = fieldPredicate;
         this.jsonRegistry = jsonRegistry;
     }

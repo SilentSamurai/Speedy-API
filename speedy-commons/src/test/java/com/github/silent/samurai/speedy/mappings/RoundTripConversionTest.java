@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class RoundTripConversionTest {
 
-    SpeedySerializer serializer = new SpeedySerializer(JavaTypeRegistry.defaults());
-    SpeedyDeserializer deserializer = new SpeedyDeserializer(JavaTypeRegistry.defaults());
+    SpeedyToJava serializer = new SpeedyToJava(JavaTypeRegistry.defaults());
+    JavaToSpeedy deserializer = new JavaToSpeedy(JavaTypeRegistry.defaults());
 
     @Test
     void convertSpeedyEntityToJavaObjectAndBack_shouldMaintainDataIntegrity() throws SpeedyHttpException {

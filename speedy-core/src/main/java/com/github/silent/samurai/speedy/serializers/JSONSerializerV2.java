@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
+import com.github.silent.samurai.speedy.io.SpeedyToJson;
 import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -45,13 +45,13 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
     public void writeEntityList(SpeedyEntityResponse entityResponse, HttpServletResponse httpResponse)
             throws SpeedyHttpException {
 
-        SelectiveSpeedy2Json selectiveSpeedy2Json = new SelectiveSpeedy2Json(
+        SpeedyToJson speedyToJson = new SpeedyToJson(
                 metaModel,
                 entityResponse.getFieldPredicate(),
                 jsonRegistry
         );
 
-        JsonNode jsonElement = selectiveSpeedy2Json.formCollection(
+        JsonNode jsonElement = speedyToJson.formCollection(
                 entityResponse.getPayload(),
                 entityMetadata,
                 entityResponse.getExpands()

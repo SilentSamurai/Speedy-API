@@ -26,9 +26,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JsonNode2SpeedyValueTest {
+class JsonToSpeedyTest {
 
-    private final JsonNode2SpeedyValue converter = new JsonNode2SpeedyValue(JsonRegistry.defaults());
+    private final JsonToSpeedy converter = new JsonToSpeedy(JsonRegistry.defaults());
     private KeyFieldMetadata mockKeyFieldMetadata;
     private FieldMetadata mockFieldMetadata;
     private EntityMetadata mockEntityMetadata;

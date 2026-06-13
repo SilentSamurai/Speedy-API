@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /// Entity values are mapped to composite Java classes through
 /// {@link #toJavaEntity(SpeedyEntity, Class)}, which uses Spring's {@code BeanWrapper}
 /// to populate fields by name, including nested association traversal.
-public class SpeedySerializer {
+public class SpeedyToJava {
 
     /// The Java-type registry used for all {@code SpeedyValue <-> Java} conversions.
     /// Set at construction time and never changed.
@@ -31,7 +31,7 @@ public class SpeedySerializer {
     /// Creates a serializer that delegates all conversions to the supplied registry.
     ///
     /// @param javaTypeRegistry the registry to use for every conversion
-    public SpeedySerializer(JavaTypeRegistry javaTypeRegistry) {
+    public SpeedyToJava(JavaTypeRegistry javaTypeRegistry) {
         this.javaTypeRegistry = javaTypeRegistry;
     }
 

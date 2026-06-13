@@ -13,7 +13,7 @@ import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Identifier;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
+import com.github.silent.samurai.speedy.io.JsonToSpeedy;
 import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.parser.JsonQueryParser;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class BuildQueryFromJsonTests {
 
-    private final JsonNode2SpeedyValue jn2sv = new JsonNode2SpeedyValue(JsonRegistry.defaults());
+    private final JsonToSpeedy jn2sv = new JsonToSpeedy(JsonRegistry.defaults());
     private MetaModel metaModel;
     private ObjectMapper objectMapper;
     private JsonNode rootNode;

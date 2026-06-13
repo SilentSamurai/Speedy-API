@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.mappings;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
-import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
+import com.github.silent.samurai.speedy.io.JsonToSpeedy;
+import com.github.silent.samurai.speedy.io.SpeedyToJson;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;
@@ -33,8 +33,8 @@ import java.util.function.Function;
 /// the appropriate codec.
 ///
 /// @see Codec
-/// @see JsonNode2SpeedyValue
-/// @see SelectiveSpeedy2Json
+/// @see JsonToSpeedy
+/// @see SpeedyToJson
 public class JsonRegistry {
 
     /// Compound storage: ValueType → { Java class → Codec }

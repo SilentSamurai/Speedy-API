@@ -17,24 +17,24 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class SpeedyDeserializerTest {
+class JavaToSpeedyTest {
 
-    SpeedyDeserializer deserializer = new SpeedyDeserializer(JavaTypeRegistry.defaults());
+    JavaToSpeedy deserializer = new JavaToSpeedy(JavaTypeRegistry.defaults());
 
     @Test
     void updateEntity_withAssociation_shouldMapNestedEntity() throws Exception {
         // Arrange: define metadata for parent with child association
-        EntityMetadata parentMd = StaticEntityMetadata.createEntityMetadata(SpeedySerializerTest.ParentEntity.class);
+        EntityMetadata parentMd = StaticEntityMetadata.createEntityMetadata(SpeedyToJavaTest.ParentEntity.class);
         SpeedyEntity target = new SpeedyEntity(parentMd);
 
         UUID parentId = UUID.randomUUID();
         UUID childId = UUID.randomUUID();
 
-        SpeedySerializerTest.ChildEntity child = new SpeedySerializerTest.ChildEntity();
+        SpeedyToJavaTest.ChildEntity child = new SpeedyToJavaTest.ChildEntity();
         child.setId(childId);
         child.setLabel("child-label");
 
-        SpeedySerializerTest.ParentEntity parent = new SpeedySerializerTest.ParentEntity();
+        SpeedyToJavaTest.ParentEntity parent = new SpeedyToJavaTest.ParentEntity();
         parent.setId(parentId);
         parent.setName("parent-name");
         parent.setChild(child);

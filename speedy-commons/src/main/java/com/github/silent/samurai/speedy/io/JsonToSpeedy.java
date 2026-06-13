@@ -23,7 +23,7 @@ import java.util.LinkedList;
 
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 
-/// # JsonNode2SpeedyValue
+/// # JsonToSpeedy
 ///
 /// Converts Jackson {@link com.fasterxml.jackson.databind.JsonNode} trees into
 /// {@link com.github.silent.samurai.speedy.interfaces.SpeedyValue} instances.
@@ -34,8 +34,8 @@ import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 /// and remain handled inline rather than through the registry.
 ///
 /// @see JsonRegistry
-/// @see SelectiveSpeedy2Json
-public class JsonNode2SpeedyValue {
+/// @see SpeedyToJson
+public class JsonToSpeedy {
 
     /// The JSON registry used for decoding scalar JSON nodes into SpeedyValue instances.
     private final JsonRegistry jsonRegistry;
@@ -43,7 +43,7 @@ public class JsonNode2SpeedyValue {
     /// Creates a converter backed by the given JSON registry.
     ///
     /// @param jsonRegistry the registry to use for JSON decoding
-    public JsonNode2SpeedyValue(JsonRegistry jsonRegistry) {
+    public JsonToSpeedy(JsonRegistry jsonRegistry) {
         this.jsonRegistry = jsonRegistry;
     }
 

@@ -12,7 +12,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
-import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
+import com.github.silent.samurai.speedy.io.JsonToSpeedy;
 import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
@@ -200,8 +200,8 @@ public class JsonQueryParser {
     /// Optional JSON-to-SpeedyValue converter used when building conditions
     /// from a JSON-based $query body. Set before {@link #build()} is called.
     ///
-    /// @see JsonNode2SpeedyValue
-    private JsonNode2SpeedyValue jsonNode2SpeedyValue;
+    /// @see JsonToSpeedy
+    private JsonToSpeedy jsonToSpeedy;
 
     /// Creates a new JsonQueryBuilder with the specified entity name.
     ///
@@ -255,9 +255,9 @@ public class JsonQueryParser {
 
     /// Injects the JSON-to-SpeedyValue converter to use during condition building.
     ///
-    /// @param jsonNode2SpeedyValue the converter instance (must not be null)
-    public void setJsonNode2SpeedyValue(JsonNode2SpeedyValue jsonNode2SpeedyValue) {
-        this.jsonNode2SpeedyValue = jsonNode2SpeedyValue;
+    /// @param jsonToSpeedy the converter instance (must not be null)
+    public void setJsonNode2SpeedyValue(JsonToSpeedy jsonToSpeedy) {
+        this.jsonToSpeedy = jsonToSpeedy;
     }
 
     public void setMaxPageSize(int maxPageSize) {
@@ -337,7 +337,7 @@ public class JsonQueryParser {
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
                     for (JsonNode node : valueNode) {
                         if (node.isValueNode()) {
-                            SpeedyValue speedyValue = jsonNode2SpeedyValue.fromValueNode(queryField.getMetadataForParsing(), (ValueNode) node);
+                            SpeedyValue speedyValue = jsonToSpeedy.fromValueNode(queryField.getMetadataForParsing(), (ValueNode) node);
                             speedyValueList.add(speedyValue);
                         }
                     }
@@ -453,7 +453,7 @@ public class JsonQueryParser {
     /// - **Literal Value**: All other values are treated as literal constants
     ///
     /// Field references are converted to [Identifier] expressions, while literal
-    /// values are converted to [Literal] expressions using [JsonNode2SpeedyValue].
+    /// values are converted to [Literal] expressions using [JsonToSpeedy].
     ///
     /// @param metadata the field metadata for type conversion
     /// @param symbol   the JSON value node to convert
@@ -467,7 +467,7 @@ public class JsonQueryParser {
             this.conditionFactory.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
-            return new Literal(jsonNode2SpeedyValue.fromValueNode(metadata, symbol));
+            return new Literal(jsonToSpeedy.fromValueNode(metadata, symbol));
         }
     }
 

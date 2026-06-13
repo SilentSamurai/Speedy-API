@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.io.JsonNode2SpeedyValue;
+import com.github.silent.samurai.speedy.io.JsonToSpeedy;
 import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 
 /// # Expression Interface
@@ -67,7 +67,7 @@ public sealed interface Expression permits Literal, Identifier {
     /// @return a new Expression instance (either Literal or Identifier)
     /// @throws SpeedyHttpException if the conversion fails or the value is invalid
     static Expression fromSymbol(FieldMetadata fieldMetadata, ValueNode valueNode) throws SpeedyHttpException {
-        JsonNode2SpeedyValue converter = new JsonNode2SpeedyValue(JsonRegistry.defaults());
+        JsonToSpeedy converter = new JsonToSpeedy(JsonRegistry.defaults());
         return new Literal(converter.fromValueNode(fieldMetadata, valueNode));
     }
 }
