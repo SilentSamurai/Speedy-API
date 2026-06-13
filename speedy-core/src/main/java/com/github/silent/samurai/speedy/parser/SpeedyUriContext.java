@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.*;
-import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.Speedy;

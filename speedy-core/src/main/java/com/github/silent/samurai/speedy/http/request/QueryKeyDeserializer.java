@@ -1,4 +1,4 @@
-//package com.github.silent.samurai.speedy.deserializer;
+//package com.github.silent.samurai.speedy.http.request;
 //
 //import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 //import com.github.silent.samurai.speedy.interfaces.EntityMetadata;

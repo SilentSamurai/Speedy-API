@@ -12,7 +12,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
-import com.github.silent.samurai.speedy.io.JsonToSpeedy;
+import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
 import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;

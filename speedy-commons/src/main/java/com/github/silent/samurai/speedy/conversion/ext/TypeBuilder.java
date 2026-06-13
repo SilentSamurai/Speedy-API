@@ -1,5 +1,9 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.conversion.ext;
 
+import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
+import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -23,7 +27,7 @@ public class TypeBuilder<T> {
     private final ConversionContext ctx;
     private final Class<T> type;
 
-    TypeBuilder(ConversionContext ctx, Class<T> type) {
+    public TypeBuilder(ConversionContext ctx, Class<T> type) {
         this.ctx = ctx;
         this.type = type;
     }

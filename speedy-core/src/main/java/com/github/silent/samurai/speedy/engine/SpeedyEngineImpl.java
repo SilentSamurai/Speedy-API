@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.mappings.ConversionContext;
+import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.request.SpeedyRequest;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;

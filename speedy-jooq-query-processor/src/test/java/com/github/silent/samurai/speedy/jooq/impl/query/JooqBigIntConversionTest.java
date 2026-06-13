@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
-import com.github.silent.samurai.speedy.mappings.DbConversionRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

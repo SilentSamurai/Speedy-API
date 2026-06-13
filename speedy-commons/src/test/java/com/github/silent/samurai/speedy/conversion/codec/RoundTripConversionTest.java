@@ -1,4 +1,8 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.conversion.codec;
+
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
+import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
+import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;

@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.serializers.FieldPredicates;
+import com.github.silent.samurai.speedy.http.response.FieldPredicates;
 
 import java.math.BigInteger;
 import java.util.List;

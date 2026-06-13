@@ -8,7 +8,7 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
 import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessorV2;
-import com.github.silent.samurai.speedy.mappings.SpeedyTypeModule;
+import com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import jakarta.persistence.EntityManagerFactory;
 import org.springdoc.core.customizers.OpenApiCustomizer;

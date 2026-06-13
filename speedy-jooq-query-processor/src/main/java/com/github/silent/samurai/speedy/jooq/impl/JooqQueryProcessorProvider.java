@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.jooq.impl;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorProvider;
-import com.github.silent.samurai.speedy.mappings.ConversionContext;
-import com.github.silent.samurai.speedy.mappings.DbConversionRegistry;
+import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
+import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 
 import javax.sql.DataSource;
 

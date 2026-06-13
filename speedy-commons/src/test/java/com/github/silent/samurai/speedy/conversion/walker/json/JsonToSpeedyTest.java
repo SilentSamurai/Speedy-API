@@ -1,4 +1,6 @@
-package com.github.silent.samurai.speedy.io;
+package com.github.silent.samurai.speedy.conversion.walker.json;
+
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -11,7 +13,7 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.mappings.JsonRegistry;
+
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

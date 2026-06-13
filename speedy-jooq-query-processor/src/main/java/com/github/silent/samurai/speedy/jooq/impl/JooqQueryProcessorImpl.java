@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.jooq.impl.query.*;
-import com.github.silent.samurai.speedy.mappings.DbConversionRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;

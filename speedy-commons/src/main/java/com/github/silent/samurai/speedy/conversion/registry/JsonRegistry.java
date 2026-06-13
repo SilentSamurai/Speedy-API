@@ -1,10 +1,11 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.conversion.registry;
 
+import com.github.silent.samurai.speedy.conversion.codec.Codec;
+import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
+import com.github.silent.samurai.speedy.conversion.walker.json.SpeedyToJson;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.io.JsonToSpeedy;
-import com.github.silent.samurai.speedy.io.SpeedyToJson;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.time.LocalDate;

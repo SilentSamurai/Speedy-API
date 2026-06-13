@@ -1,4 +1,6 @@
-package com.github.silent.samurai.speedy.io;
+package com.github.silent.samurai.speedy.conversion.walker.json;
+
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +8,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.mappings.JsonRegistry;
+
 import com.github.silent.samurai.speedy.models.ExpansionPathTracker;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;

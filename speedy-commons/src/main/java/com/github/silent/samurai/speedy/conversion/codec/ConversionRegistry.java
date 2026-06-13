@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.conversion.codec;
 
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 

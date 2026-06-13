@@ -1,4 +1,9 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.conversion.codec;
+
+import com.github.silent.samurai.speedy.conversion.ext.TypeBuilder;
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 
 import java.util.HashMap;
 import java.util.Map;

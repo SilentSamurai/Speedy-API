@@ -1,9 +1,9 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.mappings.JsonRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.http.response.JSONSerializerV2;
 import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 

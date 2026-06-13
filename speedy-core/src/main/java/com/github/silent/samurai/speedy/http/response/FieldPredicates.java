@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.serializers;
+package com.github.silent.samurai.speedy.http.response;
 
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 
@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 ///
 /// Utility for building a field-level filter predicate from the {@code $select}
 /// clause. Translates a {@code Set<String>} of output property names into a
-/// {@code Predicate<FieldMetadata>} for use by {@link SelectiveSpeedy2Json}.
+/// {@code Predicate<FieldMetadata>} for use by {@link SpeedyToJson}.
 ///
 /// ## Purpose
 /// - Builds a predicate that returns {@code true} only for fields in the select set

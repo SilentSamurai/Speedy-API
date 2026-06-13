@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.jooq.impl;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.mappings.DbConversionRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.Speedy;
 

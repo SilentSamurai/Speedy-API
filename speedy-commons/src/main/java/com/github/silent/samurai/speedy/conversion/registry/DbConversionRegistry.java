@@ -1,4 +1,6 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.conversion.registry;
+
+import com.github.silent.samurai.speedy.conversion.codec.Codec;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;

@@ -9,7 +9,7 @@ import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.mappings.JavaTypeRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.models.conditions.EqCondition;
 import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
 import org.junit.jupiter.api.Test;

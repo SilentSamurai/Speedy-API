@@ -1,4 +1,7 @@
-package com.github.silent.samurai.speedy.serializers;
+package com.github.silent.samurai.speedy.http.request;
+
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -13,8 +16,7 @@ import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.io.JsonToSpeedy;
-import com.github.silent.samurai.speedy.mappings.JsonRegistry;
+
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.parser.JsonQueryParser;
 import lombok.extern.slf4j.Slf4j;

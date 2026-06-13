@@ -1,4 +1,7 @@
-package com.github.silent.samurai.speedy.serializers;
+package com.github.silent.samurai.speedy.http.response;
+
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.conversion.walker.json.SpeedyToJson;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,8 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.io.SpeedyToJson;
-import com.github.silent.samurai.speedy.mappings.JsonRegistry;
+
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;

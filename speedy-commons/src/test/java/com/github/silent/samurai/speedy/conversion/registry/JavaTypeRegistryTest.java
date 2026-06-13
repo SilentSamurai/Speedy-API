@@ -1,4 +1,7 @@
-package com.github.silent.samurai.speedy.mappings;
+package com.github.silent.samurai.speedy.conversion.registry;
+
+import com.github.silent.samurai.speedy.conversion.codec.ConversionRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.ConversionException;

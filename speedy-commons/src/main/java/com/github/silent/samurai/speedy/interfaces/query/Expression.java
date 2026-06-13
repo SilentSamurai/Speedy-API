@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.interfaces.query;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.io.JsonToSpeedy;
-import com.github.silent.samurai.speedy.mappings.JsonRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
 
 /// # Expression Interface
 ///
