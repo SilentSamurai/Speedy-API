@@ -1,6 +1,6 @@
-package com.github.silent.samurai.speedy.conversion.walker.json;
+package com.github.silent.samurai.speedy.json.walker;
 
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;

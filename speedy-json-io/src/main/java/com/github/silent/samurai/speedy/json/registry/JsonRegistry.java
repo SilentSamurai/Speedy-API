@@ -1,8 +1,6 @@
-package com.github.silent.samurai.speedy.conversion.registry;
+package com.github.silent.samurai.speedy.json.registry;
 
 import com.github.silent.samurai.speedy.conversion.codec.Codec;
-import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
-import com.github.silent.samurai.speedy.conversion.walker.json.SpeedyToJson;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -21,10 +19,9 @@ import java.util.function.Function;
 /// compound key of {@code (ValueType, Class<?>)}.
 ///
 /// ## Design Philosophy
-/// Unlike a generic {@link ConversionRegistry}, this registry stores codecs under
-/// a compound key: the SpeedyValue type ({@link ValueType}) **and** the Java class
-/// of the raw JSON value. Each codec handles exactly one Java class — no
-/// {@code instanceof} branching inside decode lambdas.
+/// Stores codecs under a compound key: the SpeedyValue type ({@link ValueType})
+/// **and** the Java class of the raw JSON value. Each codec handles exactly one
+/// Java class — no {@code instanceof} branching inside decode lambdas.
 ///
 /// **Decode** (JSON → SpeedyValue): looks up by {@code (ValueType, raw.getClass())}
 /// and walks the class hierarchy if no exact match is found.
@@ -34,8 +31,6 @@ import java.util.function.Function;
 /// the appropriate codec.
 ///
 /// @see Codec
-/// @see JsonToSpeedy
-/// @see SpeedyToJson
 public class JsonRegistry {
 
     /// Compound storage: ValueType → { Java class → Codec }
@@ -98,15 +93,12 @@ public class JsonRegistry {
     }
 
     /// Finds a codec for the given ValueType and a Java class, walking supertypes
-    /// if no exact match is found. The codec carries its own Class<T> token for
-    /// runtime verification during {@link Codec#safeDecode(Object)}.
+    /// if no exact match is found.
     private Codec<?> findCodec(ValueType vt, Class<?> clazz) {
         Map<Class<?>, Codec<?>> byClass = codecs.get(vt);
         if (byClass == null) return null;
-        // Exact match
         Codec<?> c = byClass.get(clazz);
         if (c != null) return c;
-        // Walk supertypes
         for (Map.Entry<Class<?>, Codec<?>> e : byClass.entrySet()) {
             if (e.getKey().isAssignableFrom(clazz)) return e.getValue();
         }

@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SpeedyEngineImpl implements SpeedyEngine {
@@ -45,7 +46,9 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                             EventProcessor eventProcessor,
                             ValidationProcessor validationProcessor,
                             long maxRequestBodySize,
-                            ConversionContext conversionContext) {
+                            ConversionContext conversionContext,
+                            Map<String, IRequestBodyParserProvider> parserProviders,
+                            Map<String, IResponseSerializerProvider> serializerProviders) {
         this.config = config;
         this.dialect = dialect;
         this.metaModel = metaModel;
@@ -67,15 +70,17 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                 new TailHandler()
         );
 
+        ContentNegotiationManager negotiationManager = new ContentNegotiationManager(parserProviders, serializerProviders);
+
         parserSelectionChain = List.of(
                 new HeadHandler(),
-                new ParserSelectionHandler(),
+                new ParserSelectionHandler(negotiationManager),
                 new TailHandler()
         );
 
         serializerSelectionChain = List.of(
                 new HeadHandler(),
-                new SerializerSelectionHandler(),
+                new SerializerSelectionHandler(negotiationManager),
                 new TailHandler()
         );
 

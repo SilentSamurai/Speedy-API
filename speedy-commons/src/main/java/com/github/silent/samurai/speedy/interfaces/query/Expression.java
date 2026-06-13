@@ -1,10 +1,6 @@
 package com.github.silent.samurai.speedy.interfaces.query;
 
-import com.fasterxml.jackson.databind.node.ValueNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
 
 /// # Expression Interface
 ///
@@ -57,18 +53,5 @@ import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
 /// @since 1.0
 public sealed interface Expression permits Literal, Identifier {
 
-    /// Factory method to create an Expression from a JSON ValueNode.
-    ///
-    /// This method converts JSON values into appropriate Expression instances
-    /// based on the field metadata and value type.
-    ///
-    /// @param fieldMetadata the metadata of the field being queried
-    /// @param valueNode     the JSON value node to convert
-    /// @return a new Expression instance (either Literal or Identifier)
-    /// @throws SpeedyHttpException if the conversion fails or the value is invalid
-    static Expression fromSymbol(FieldMetadata fieldMetadata, ValueNode valueNode) throws SpeedyHttpException {
-        JsonToSpeedy converter = new JsonToSpeedy(JsonRegistry.defaults());
-        return new Literal(converter.fromValueNode(fieldMetadata, valueNode));
-    }
 }
 

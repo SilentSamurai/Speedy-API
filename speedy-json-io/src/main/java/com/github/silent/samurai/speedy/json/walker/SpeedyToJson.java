@@ -1,6 +1,6 @@
-package com.github.silent.samurai.speedy.conversion.walker.json;
+package com.github.silent.samurai.speedy.json.walker;
 
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,17 +22,8 @@ public class SpeedyToJson {
 
     private static final ObjectMapper json = CommonUtil.json();
     private final Predicate<FieldMetadata> fieldPredicate;
-    /// The JSON registry used for encoding SpeedyValue instances into JSON-compatible objects.
-    /// Consulted by {@link #fromBasic} to find the appropriate codec per value type.
-    ///
-    /// @see JsonRegistry
     private final JsonRegistry jsonRegistry;
 
-    /// Creates a serializer with the given field-level predicate and JSON registry.
-    ///
-    /// @param metaModel      the metamodel (unused directly but retained for compatibility)
-    /// @param fieldPredicate predicate that determines which fields to include in output
-    /// @param jsonRegistry   the registry used for JSON encoding
     public SpeedyToJson(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate, JsonRegistry jsonRegistry) {
         this.fieldPredicate = fieldPredicate;
         this.jsonRegistry = jsonRegistry;
@@ -49,7 +40,6 @@ public class SpeedyToJson {
                                         ExpansionPathTracker pathTracker) throws SpeedyHttpException {
         ObjectNode jsonObject = json.createObjectNode();
 
-        // Push the current entity onto the path tracker
         pathTracker.pushEntity(entityMetadata);
 
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
@@ -59,9 +49,6 @@ public class SpeedyToJson {
                 continue;
             }
             if (fieldMetadata.isAssociation()) {
-                String associationName = fieldMetadata.getAssociationMetadata().getName();
-
-                // Check if this specific path should be expanded using dot notation
                 if (pathTracker.shouldExpand(fieldMetadata.getAssociationMetadata())) {
                     if (fieldMetadata.isCollection()) {
                         Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
@@ -73,7 +60,6 @@ public class SpeedyToJson {
                         }
                     } else {
                         if (speedyEntity.has(fieldMetadata) && speedyEntity.get(fieldMetadata) != null) {
-                            // if association is not present
                             if (speedyEntity.get(fieldMetadata).isObject()) {
                                 SpeedyEntity speedyObject = speedyEntity.get(fieldMetadata).asObject();
                                 ObjectNode childObject = fromSpeedyEntity(speedyObject,
@@ -120,7 +106,6 @@ public class SpeedyToJson {
             }
         }
 
-        // Pop current entity from the path tracker when done processing
         pathTracker.popEntity();
         return jsonObject;
     }

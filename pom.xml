@@ -41,6 +41,7 @@
         <module>speedy-java-client</module>
         <module>speedy-static-impl</module>
         <module>speedy-jooq-query-processor</module>
+        <module>speedy-json-io</module>
         <module>jacoco-aggregate</module>
     </modules>
 

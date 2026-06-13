@@ -19,7 +19,7 @@ import java.util.function.Function;
 /// compound key of {@code (ColumnType, Class<?>)}.
 ///
 /// ## Design Philosophy
-/// Like {@link JsonRegistry}, this registry stores codecs under a compound key:
+/// Like JsonRegistry, this registry stores codecs under a compound key:
 /// the column type ({@link ColumnType}) **and** the Java class of the JDBC value.
 /// Each codec handles exactly one Java class — no {@code instanceof} branching
 /// inside decode lambdas.

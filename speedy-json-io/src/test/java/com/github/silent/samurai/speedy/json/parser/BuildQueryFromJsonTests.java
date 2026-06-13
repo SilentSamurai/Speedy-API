@@ -1,5 +1,4 @@
-package com.github.silent.samurai.speedy.query;
-
+package com.github.silent.samurai.speedy.json.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,9 +12,8 @@ import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Identifier;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
-import com.github.silent.samurai.speedy.parser.JsonQueryParser;
+import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.json.walker.JsonToSpeedy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,6 +1,6 @@
-package com.github.silent.samurai.speedy.conversion.walker.json;
+package com.github.silent.samurai.speedy.json.walker;
 
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -25,8 +25,6 @@ import java.util.LinkedList;
 
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 
-/// # JsonToSpeedy
-///
 /// Converts Jackson {@link com.fasterxml.jackson.databind.JsonNode} trees into
 /// {@link com.github.silent.samurai.speedy.interfaces.SpeedyValue} instances.
 /// Uses the injected {@link JsonRegistry} for type-safe JSON decoding of all
@@ -39,12 +37,8 @@ import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 /// @see SpeedyToJson
 public class JsonToSpeedy {
 
-    /// The JSON registry used for decoding scalar JSON nodes into SpeedyValue instances.
     private final JsonRegistry jsonRegistry;
 
-    /// Creates a converter backed by the given JSON registry.
-    ///
-    /// @param jsonRegistry the registry to use for JSON decoding
     public JsonToSpeedy(JsonRegistry jsonRegistry) {
         this.jsonRegistry = jsonRegistry;
     }
@@ -112,9 +106,6 @@ public class JsonToSpeedy {
         };
     }
 
-    /// Decodes a raw JSON value into a SpeedyValue using the {@link JsonRegistry}.
-    /// The registry looks up the codec by {@code (ValueType, raw.getClass())} and
-    /// verifies the type at runtime via {@link Codec#safeDecode(Object)}.
     private SpeedyValue decode(ValueType vt, Object rawValue) throws BadRequestException {
         return jsonRegistry.decode(vt, rawValue);
     }
@@ -179,7 +170,6 @@ public class JsonToSpeedy {
         }
     }
 
-
     public SpeedyEntityKey fromPkJson(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {
         SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(entityMetadata);
         for (FieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
@@ -198,5 +188,4 @@ public class JsonToSpeedy {
         }
         return speedyEntityKey;
     }
-
 }

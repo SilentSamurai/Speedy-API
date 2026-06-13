@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.utils;
+package com.github.silent.samurai.speedy.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,8 +7,9 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
+import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.json.walker.JsonToSpeedy;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

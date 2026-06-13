@@ -1,7 +1,8 @@
-package com.github.silent.samurai.speedy.http.request;
+package com.github.silent.samurai.speedy.json.request;
 
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.conversion.walker.json.JsonToSpeedy;
+import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.json.walker.JsonToSpeedy;
+import com.github.silent.samurai.speedy.json.parser.JsonQueryParser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,7 +19,6 @@ import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 
 import com.github.silent.samurai.speedy.models.*;
-import com.github.silent.samurai.speedy.parser.JsonQueryParser;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -30,15 +30,8 @@ import static com.github.silent.samurai.speedy.utils.CommonUtil.json;
 @Slf4j
 public class JSONBodyParser implements IRequestBodyParser {
 
-    /// The JSON registry used for decoding request-body JSON into SpeedyValue instances.
-    /// Passed through to {@link JsonToSpeedy} and {@link MetadataUtil}.
-    ///
-    /// @see JsonRegistry
     private final JsonRegistry jsonRegistry;
 
-    /// Creates a body parser backed by the given JSON registry.
-    ///
-    /// @param jsonRegistry the registry to use for JSON decoding
     public JSONBodyParser(JsonRegistry jsonRegistry) {
         this.jsonRegistry = jsonRegistry;
     }
@@ -92,11 +85,11 @@ public class JSONBodyParser implements IRequestBodyParser {
             }
             ObjectNode objectNode = (ObjectNode) jsonBody;
 
-            SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(entity, objectNode, jsonRegistry);
+            SpeedyEntityKey pk = new JsonToSpeedy(jsonRegistry).fromPkJson(entity, objectNode);
             if (!queryProcessor.exists(pk)) {
                 throw new BadRequestException("Entity not present.");
             }
-            SpeedyEntity speedyEntity = MetadataUtil.createEntityFromJSON(entity, objectNode, jsonRegistry);
+            SpeedyEntity speedyEntity = new JsonToSpeedy(jsonRegistry).fromEntityMetadata(entity, objectNode);
             log.info(" pk {} -> entity {}", pk, speedyEntity);
 
             return SpeedyUpdateBody.builder()
@@ -134,12 +127,12 @@ public class JSONBodyParser implements IRequestBodyParser {
             if (element.isObject()) {
                 ObjectNode objectNode = (ObjectNode) element;
                 if (MetadataUtil.isPrimaryKeyComplete(resourceMetadata, objectNode)) {
-                    SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(resourceMetadata, objectNode, jsonRegistry);
+                    SpeedyEntityKey pk = new JsonToSpeedy(jsonRegistry).fromPkJson(resourceMetadata, objectNode);
                     if (queryProcessor.exists(pk)) {
                         throw new BadRequestException("Entity already present.");
                     }
                 }
-                SpeedyEntity speedyEntity = MetadataUtil.createEntityFromJSON(resourceMetadata, objectNode, jsonRegistry);
+                SpeedyEntity speedyEntity = new JsonToSpeedy(jsonRegistry).fromEntityMetadata(resourceMetadata, objectNode);
                 log.info("parsed entity {}", speedyEntity);
                 parsedObjects.add(speedyEntity);
             } else {
@@ -162,7 +155,7 @@ public class JSONBodyParser implements IRequestBodyParser {
                 if (!MetadataUtil.isPrimaryKeyComplete(resourceMetadata, objectNode)) {
                     throw new BadRequestException("Primary Key Incomplete ");
                 }
-                SpeedyEntityKey pk = MetadataUtil.createIdentifierFromJSON(resourceMetadata, objectNode, jsonRegistry);
+                SpeedyEntityKey pk = new JsonToSpeedy(jsonRegistry).fromPkJson(resourceMetadata, objectNode);
                 keysToBeRemoved.add(pk);
                 log.info("parsed primary key {}", pk);
             } else {

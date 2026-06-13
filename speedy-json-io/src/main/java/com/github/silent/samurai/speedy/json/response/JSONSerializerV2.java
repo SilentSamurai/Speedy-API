@@ -1,7 +1,7 @@
-package com.github.silent.samurai.speedy.http.response;
+package com.github.silent.samurai.speedy.json.response;
 
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.conversion.walker.json.SpeedyToJson;
+import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
+import com.github.silent.samurai.speedy.json.walker.SpeedyToJson;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,16 +22,8 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
 
     private final MetaModel metaModel;
     private final EntityMetadata entityMetadata;
-    /// The JSON registry used for encoding SpeedyValue instances in batch/single-key serialization.
-    ///
-    /// @see JsonRegistry
     private final JsonRegistry jsonRegistry;
 
-    /// Creates a JSON serializer for the given entity, backed by the supplied registry.
-    ///
-    /// @param metaModel      the global metamodel
-    /// @param entityMetadata metadata of the target entity
-    /// @param jsonRegistry   registry used for JSON encoding
     public JSONSerializerV2(MetaModel metaModel, EntityMetadata entityMetadata, JsonRegistry jsonRegistry) {
         this.metaModel = metaModel;
         this.entityMetadata = entityMetadata;
