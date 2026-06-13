@@ -1,8 +1,8 @@
 # Custom Types
 
-Speedy lets you register custom Java types that are automatically converted across all
-edges — JSON in/out, database columns, query-string parameters, and Java POJO conversion
-(event handlers, validators).
+Speedy lets you register custom Java types that are automatically handled across all
+edges — JSON request/response, database persistence, URL query parameters, and the
+event system (POJO conversion in event handlers).
 
 ## Overview
 
@@ -19,21 +19,16 @@ public final class Email {
     private final String value;
 
     public Email(String value) {
-        // your validation logic
         if (value == null || !value.contains("@")) {
             throw new IllegalArgumentException("Invalid email: " + value);
         }
         this.value = value;
     }
 
-    public String getValue() {
-        return value;
-    }
+    public String getValue() { return value; }
 
     @Override
-    public String toString() {
-        return value;
-    }
+    public String toString() { return value; }
 }
 ```
 
@@ -42,9 +37,6 @@ public final class Email {
 This teaches Hibernate how to store the custom type in the database.
 
 ```java
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
-
 @Converter(autoApply = true)
 public class EmailConverter implements AttributeConverter<Email, String> {
     public String convertToDatabaseColumn(Email email) {
@@ -61,13 +53,7 @@ public class EmailConverter implements AttributeConverter<Email, String> {
 
 ### 3. Create a `SpeedyTypeModule`
 
-This tells Speedy how to convert the type across all edges. For a type that is
-represented as text everywhere (JSON, database, query-string), you only need one line:
-
 ```java
-import com.github.silent.samurai.speedy.mappings.ConversionContext;
-import com.github.silent.samurai.speedy.mappings.SpeedyTypeModule;
-
 public class EmailTypeModule implements SpeedyTypeModule {
     @Override
     public void contribute(ConversionContext ctx) {
@@ -80,11 +66,8 @@ public class EmailTypeModule implements SpeedyTypeModule {
 ### 4. Register the module in your config
 
 ```java
-import com.github.silent.samurai.speedy.mappings.SpeedyTypeModule;
-
 @Configuration
 public class SpeedyConfig implements ISpeedyConfiguration {
-    // ... other methods ...
 
     @Override
     public List<SpeedyTypeModule> typeModules() {
@@ -96,9 +79,6 @@ public class SpeedyConfig implements ISpeedyConfiguration {
 ### 5. Use the type in an entity
 
 ```java
-import com.github.silent.samurai.speedy.annotations.SpeedyType;
-import com.github.silent.samurai.speedy.enums.ColumnType;
-
 @Entity
 public class User {
     @Id
@@ -112,47 +92,46 @@ public class User {
 }
 ```
 
-> **`@SpeedyType(ColumnType.VARCHAR)`** is needed because Speedy's metamodel
-> processor does not know the column type for `Email.class` automatically.
+> **`@SpeedyType(ColumnType.VARCHAR)`** is required so Speedy's metamodel processor
+> knows the database column type for `Email`.
+
+---
 
 ## How It Works
 
-When you call `ctx.forType(Email.class).asText(...)`, Speedy registers converters
-on three internal registries:
+Registering via `asText` adds a `Codec<Email>` to `JavaTypeRegistry` — the single
+registry that drives every conversion path involving a custom type:
 
-| Edge        | Registry Key                                      | Effect                                                  |
-|-------------|---------------------------------------------------|---------------------------------------------------------|
-| JSON in/out | `JsonRegistry` (keyed by `ValueType.TEXT`)        | Email serializes as `"user@example.com"` in JSON        |
-| Java POJO   | `JavaTypeRegistry` (keyed by `Email.class`)       | Event handlers receive `Email` objects, not raw strings |
-| DB column   | `JooqConverters` default `VARCHAR` → `SpeedyText` | Already handled — no extra config needed                |
+| Path | What happens |
+|------|-------------|
+| JSON request | `SpeedyText("user@example.com")` → `JavaTypeRegistry` → `Email` |
+| JSON response | `Email` → `JavaTypeRegistry` → `SpeedyText` → `"user@example.com"` |
+| Event handler | `SpeedyEntity` ↔ `POJO` via `SpeedyToJava` / `JavaToSpeedy` (both use `JavaTypeRegistry`) |
+| URL query param | Parsed as `String` → `SpeedyText` → DB filter (no custom registration needed) |
+| Database | JPA `@Convert` handles `Email ↔ String`; query processor handles `String ↔ SpeedyText` |
 
-### Custom DB or JSON behaviour
+---
 
-If your type needs different representations on different edges, use the per-edge
-overrides:
+## TypeBuilder API
+
+| Method | Use when |
+|--------|----------|
+| `asText(T::toString, T::new)` | Type is always represented as a `String` — text, email, phone, IBAN, etc. |
+| `codec(SpeedyValue → T, T → SpeedyValue)` | Type maps to a non-text `SpeedyValue` — e.g. a numeric or date wrapper |
+
+### Non-text example
 
 ```java
-ctx.forType(Money .class)
-    .
+// A type whose internal representation is SpeedyDouble
+public class Percentage {
+    private final double value;
+    public Percentage(double value) { this.value = value; }
+    public double getValue() { return value; }
+}
 
-asText(Money::toString, Money::parse)       // JSON + POJO + query-string
-    .
-
-onDb(ColumnType.NUMERIC,                      // DB stores as BigDecimal
-     sv  ->BigDecimal.
-
-valueOf(...),
-
-raw ->Money.
-
-of((BigDecimal) raw));
+ctx.forType(Percentage.class)
+   .codec(
+       sv -> new Percentage(sv.asDouble()),
+       p  -> new SpeedyDouble(p.getValue())
+   );
 ```
-
-The `TypeBuilder` fluent API provides:
-
-| Method                    | Purpose                                                      |
-|---------------------------|--------------------------------------------------------------|
-| `asText(enc, dec)`        | Register for all text-based edges (JSON, POJO, query-string) |
-| `onDb(colType, enc, dec)` | Override DB conversion only                                  |
-| `onJson(vt, enc, dec)`    | Override JSON conversion only                                |
-| `onJava(vt, enc, dec)`    | Override Java POJO conversion only                           |

@@ -1,25 +1,26 @@
 package com.github.silent.samurai.speedy.conversion.ext;
 
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
-import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
-import com.github.silent.samurai.speedy.conversion.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyText;
 
 import java.util.function.Function;
 
-/// Fluent builder for registering a custom Java type across all three registries.
+/// Fluent builder for registering a custom Java type into {@link JavaTypeRegistry}.
 ///
 /// ## Design Philosophy
-/// Each registration call explicitly specifies the Java class via the builder's
-/// type parameter `T`. The compiler checks that `encode` and `decode` agree on
-/// `T` at the registration site. Internally, the registries store the
-/// {@link Codec} with a {@link Class#cast} runtime guard, so that even if a
-/// <strong>lookup</strong> path were to return the wrong codec, the
-/// {@code safeDecode}/{@code safeEncode} methods would catch it at the boundary.
+/// {@link JavaTypeRegistry} is the only registry a library user ever needs to touch.
+/// It drives every path that involves a custom type: request parsing, response
+/// serialization, URL query-parameter conversion, and the event system
+/// ({@link com.github.silent.samurai.speedy.events.EventProcessor} uses
+/// {@link com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava} and
+/// {@link com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy} to
+/// convert {@code SpeedyEntity ↔ POJO}).
+///
+/// The other registries ({@code ApiIoRegistry}, {@code DbConversionRegistry}) are
+/// owned by format implementors and query processors respectively — users never
+/// register into them.
 ///
 /// @param <T> the Java type being registered
 public class TypeBuilder<T> {
@@ -32,52 +33,31 @@ public class TypeBuilder<T> {
         this.type = type;
     }
 
-    /// Registers a TEXT-based codec in both the JavaTypeRegistry and JsonRegistry.
-    /// The encode/decode lambdas convert between `T` and `String`.
+    /// Registers a text-backed codec for types whose natural representation is a
+    /// {@code String} (e.g. {@code Email}, {@code PhoneNumber}, {@code IBAN}).
+    ///
+    /// Internally creates a {@link com.github.silent.samurai.speedy.conversion.codec.Codec}
+    /// that bridges through {@link SpeedyText}:
+    /// - encode: {@code SpeedyValue → T} via {@code fromStr.apply(sv.asText())}
+    /// - decode: {@code T → SpeedyValue} via {@code new SpeedyText(toStr.apply(raw))}
+    ///
+    /// Sufficient for JSON request/response, DB persistence (via JPA {@code @Convert}),
+    /// and the event system without any further configuration.
     public TypeBuilder<T> asText(Function<T, String> toStr, Function<String, T> fromStr) {
-        if (ctx.has(JavaTypeRegistry.class)) {
-            JavaTypeRegistry jtr = ctx.get(JavaTypeRegistry.class);
-            jtr.register(type,
-                    sv -> fromStr.apply(sv.asText()),
-                    raw -> new SpeedyText(toStr.apply(raw)));
-        }
-        if (ctx.has(JsonRegistry.class)) {
-            JsonRegistry jr = ctx.get(JsonRegistry.class);
-            jr.register(ValueType.TEXT, String.class,
-                    sv -> sv.asText(),
-                    raw -> new SpeedyText(raw));
-        }
+        ctx.get(JavaTypeRegistry.class).register(type,
+                sv -> fromStr.apply(sv.asText()),
+                raw -> new SpeedyText(toStr.apply(raw)));
         return this;
     }
 
-    /// Registers a codec for a DB column type.
-    public TypeBuilder<T> onDb(ColumnType col,
-                               Function<SpeedyValue, T> enc,
-                               Function<T, SpeedyValue> dec) {
-        if (ctx.has(DbConversionRegistry.class)) {
-            ctx.get(DbConversionRegistry.class).register(col, type, enc, dec);
-        }
+    /// Registers a raw {@link com.github.silent.samurai.speedy.conversion.codec.Codec}
+    /// for types that are not text-backed (e.g. a type whose internal SpeedyValue
+    /// representation is {@code SpeedyInt} or {@code SpeedyDouble}).
+    ///
+    /// Use this when {@link #asText} is not appropriate — i.e. when the type does not
+    /// have a meaningful {@code toString} / {@code fromString} contract.
+    public TypeBuilder<T> codec(Function<SpeedyValue, T> enc, Function<T, SpeedyValue> dec) {
+        ctx.get(JavaTypeRegistry.class).register(type, enc, dec);
         return this;
     }
-
-    /// Registers a codec for a JSON value type.
-    public TypeBuilder<T> onJson(ValueType vt,
-                                 Function<SpeedyValue, T> enc,
-                                 Function<T, SpeedyValue> dec) {
-        if (ctx.has(JsonRegistry.class)) {
-            ctx.get(JsonRegistry.class).register(vt, type, enc, dec);
-        }
-        return this;
-    }
-
-    /// Registers a variant codec in the JavaTypeRegistry (keyed by ValueType).
-    public TypeBuilder<T> onJava(ValueType vt,
-                                 Function<SpeedyValue, T> enc,
-                                 Function<T, SpeedyValue> dec) {
-        if (ctx.has(JavaTypeRegistry.class)) {
-            ctx.get(JavaTypeRegistry.class).register(type, vt, enc, dec);
-        }
-        return this;
-    }
-
 }
