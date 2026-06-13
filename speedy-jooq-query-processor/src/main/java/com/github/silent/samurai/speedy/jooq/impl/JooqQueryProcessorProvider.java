@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.jooq.impl;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorProvider;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
@@ -16,7 +17,7 @@ public class JooqQueryProcessorProvider implements QueryProcessorProvider {
         DbConversionRegistry userDb = context.has(DbConversionRegistry.class)
                 ? context.get(DbConversionRegistry.class)
                 : null;
-        DbConversionRegistry registry = JooqConverters.defaults(userDb);
+        Converter registry = JooqConverters.defaults(userDb);
         return new JooqQueryProcessorImpl(dataSource, dialect, registry);
     }
 }

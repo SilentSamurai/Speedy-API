@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.jooq.impl;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
+import com.github.silent.samurai.speedy.conversion.walker.db.DbConverter;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.Speedy;
 
@@ -24,11 +25,11 @@ public final class JooqConverters {
     private JooqConverters() {
     }
 
-    public static DbConversionRegistry defaults() {
+    public static DbConverter defaults() {
         return defaults(null);
     }
 
-    public static DbConversionRegistry defaults(DbConversionRegistry parent) {
+    public static DbConverter defaults(DbConversionRegistry parent) {
         DbConversionRegistry r = new DbConversionRegistry(parent);
 
         r.register(ColumnType.DATE, Date.class,
@@ -87,6 +88,6 @@ public final class JooqConverters {
                 sv -> UUID.fromString(((SpeedyText) sv).asText()),
                 raw -> Speedy.from(raw.toString()));
 
-        return r;
+        return new DbConverter(r);
     }
 }

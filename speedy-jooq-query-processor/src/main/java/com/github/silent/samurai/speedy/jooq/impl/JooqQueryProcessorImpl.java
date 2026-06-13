@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.jooq.impl.query.*;
-import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
@@ -37,12 +37,12 @@ public class JooqQueryProcessorImpl implements QueryProcessor {
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
             .withRenderNameStyle(RenderNameStyle.AS_IS);
 
-    private final DbConversionRegistry converter;
+    private final Converter converter;
 
     private final DSLContext dslContext;
     private final ThreadLocal<DSLContext> transactionalDslContext = new ThreadLocal<>();
 
-    public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect, DbConversionRegistry converter) {
+    public JooqQueryProcessorImpl(DataSource dataSource, SpeedyDialect speedyDialect, Converter converter) {
         this.dialect = JooqUtil.toJooqDialect(speedyDialect);
         this.dslContext = DSL.using(dataSource, dialect, settings);
         this.converter = converter;

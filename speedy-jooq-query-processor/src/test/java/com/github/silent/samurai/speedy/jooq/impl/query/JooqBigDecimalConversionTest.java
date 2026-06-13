@@ -6,8 +6,8 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
-import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyDouble;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
- * Verifies that {@link DbConversionRegistry} correctly converts DECIMAL/NUMERIC JDBC values
- * supplied as {@link BigDecimal} into {@link SpeedyDouble}.
+ * Verifies that {@link com.github.silent.samurai.speedy.conversion.walker.db.DbConverter} correctly
+ * converts DECIMAL/NUMERIC JDBC values supplied as {@link BigDecimal} into {@link SpeedyDouble}.
  */
 class JooqBigDecimalConversionTest {
 
-    private DbConversionRegistry conversion;
+    private Converter conversion;
     private FieldMetadata decimalFloatMetadata;
 
     @BeforeEach
