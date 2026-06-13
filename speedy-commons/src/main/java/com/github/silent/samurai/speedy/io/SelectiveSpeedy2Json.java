@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.mappings.Codec;
 import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.ExpansionPathTracker;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
@@ -154,12 +153,7 @@ public class SelectiveSpeedy2Json {
     }
 
     public void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
-        Codec codec = jsonRegistry.getCodec(fieldMetadata.getValueType());
-        if (codec == null) {
-            jsonObject.putNull(fieldMetadata.getOutputPropertyName());
-            return;
-        }
-        Object encoded = codec.encode().apply(speedyValue);
+        Object encoded = jsonRegistry.encode(fieldMetadata.getValueType(), speedyValue);
         String name = fieldMetadata.getOutputPropertyName();
         if (encoded == null) {
             jsonObject.putNull(name);

@@ -9,6 +9,7 @@ import jakarta.persistence.metamodel.Type;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.Serializable;
@@ -16,11 +17,16 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
 class JpaUtilTest {
+
+    @Mock
+    private EntityType<?> entityType;
+
+    @Mock
+    private Type<?> idType;
 
     // ----------------------------------------
     // Tests for getIdClassType
@@ -28,28 +34,21 @@ class JpaUtilTest {
     @Test
     @DisplayName("getIdClassType returns IdClass value when @IdClass is present on entity")
     void testGetIdClassType_WithIdClassAnnotation() {
-        @SuppressWarnings("unchecked")
-        EntityType<EntityWithIdClass> entityTypeWithId = mock(EntityType.class);
-        when(entityTypeWithId.getBindableJavaType()).thenReturn(EntityWithIdClass.class);
+        doReturn(EntityWithIdClass.class).when(entityType).getBindableJavaType();
 
-        Class<?> idType = JpaUtil.getIdClassType(entityTypeWithId);
-        assertEquals(CompositeId.class, idType);
+        Class<?> resultIdType = JpaUtil.getIdClassType(entityType);
+        assertEquals(CompositeId.class, resultIdType);
     }
 
     @Test
     @DisplayName("getIdClassType falls back to entityType.getIdType().getJavaType() when @IdClass is absent")
     void testGetIdClassType_WithoutIdClassAnnotation() {
-        @SuppressWarnings("unchecked")
-        EntityType entityTypeSimple = mock(EntityType.class);
-        @SuppressWarnings("unchecked")
-        Type idTypeMock = mock(Type.class);
+        doReturn(SimpleEntity.class).when(entityType).getBindableJavaType();
+        doReturn(idType).when(entityType).getIdType();
+        doReturn(Long.class).when(idType).getJavaType();
 
-        when(entityTypeSimple.getBindableJavaType()).thenReturn((Class) SimpleEntity.class);
-        when(entityTypeSimple.getIdType()).thenReturn(idTypeMock);
-        when(idTypeMock.getJavaType()).thenReturn((Class) Long.class);
-
-        Class<?> idType = JpaUtil.getIdClassType(entityTypeSimple);
-        assertEquals(Long.class, idType);
+        Class<?> resultIdType = JpaUtil.getIdClassType(entityType);
+        assertEquals(Long.class, resultIdType);
     }
 
     // ----------------------------------------

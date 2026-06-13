@@ -8,7 +8,6 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.io.SelectiveSpeedy2Json;
-import com.github.silent.samurai.speedy.mappings.Codec;
 import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
@@ -145,10 +144,8 @@ public class JSONSerializerV2 implements IResponseSerializerV2 {
 
     private Object serializeSpeedyValue(SpeedyValue value) {
         if (value == null || value.isNull()) return null;
-        Codec codec = jsonRegistry.getCodec(value.getValueType());
-        if (codec != null) {
-            return codec.encode().apply(value);
-        }
+        Object encoded = jsonRegistry.encode(value.getValueType(), value);
+        if (encoded != null) return encoded;
         return value.asText();
     }
 

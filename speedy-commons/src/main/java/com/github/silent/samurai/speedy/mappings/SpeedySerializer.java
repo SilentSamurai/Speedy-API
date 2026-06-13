@@ -16,6 +16,12 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/// Converts between {@link SpeedyValue} representations and plain Java objects.
+/// Primitive values (text, number, boolean, enum, date, etc.) are handled via
+/// {@link #asJavaObject(SpeedyValue)} using a {@link JavaTypeRegistry}.
+/// Entity values are mapped to composite Java classes through
+/// {@link #toJavaEntity(SpeedyEntity, Class)}, which uses Spring's {@code BeanWrapper}
+/// to populate fields by name, including nested association traversal.
 public class SpeedySerializer {
 
     /// The Java-type registry used for all {@code SpeedyValue <-> Java} conversions.
@@ -44,24 +50,25 @@ public class SpeedySerializer {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T asJavaObject(SpeedyValue value) {
+    /// Converts a SpeedyValue to its natural Java type (Boolean, String, Long, etc.).
+    /// The caller must cast the result to the expected java type.
+    public Object asJavaObject(SpeedyValue value) {
         if (value == null || value instanceof SpeedyNull) {
             return null;
         }
 
         return switch (value.getValueType()) {
             case NULL -> null;
-            case BOOL -> (T) value.asBoolean();
-            case TEXT -> (T) value.asText();
-            case ENUM -> (T) value.asEnum();
-            case ENUM_ORD -> (T) value.asEnumOrd();
-            case INT -> (T) value.asInt();
-            case FLOAT -> (T) value.asDouble();
-            case DATE -> (T) value.asDate();
-            case TIME -> (T) value.asTime();
-            case DATE_TIME -> (T) value.asDateTime();
-            case ZONED_DATE_TIME -> (T) value.asZonedDateTime();
+            case BOOL -> value.asBoolean();
+            case TEXT -> value.asText();
+            case ENUM -> value.asEnum();
+            case ENUM_ORD -> value.asEnumOrd();
+            case INT -> value.asInt();
+            case FLOAT -> value.asDouble();
+            case DATE -> value.asDate();
+            case TIME -> value.asTime();
+            case DATE_TIME -> value.asDateTime();
+            case ZONED_DATE_TIME -> value.asZonedDateTime();
             case OBJECT, COLLECTION -> throw new ConversionException(
                     String.format("Cannot convert %s to %s", value, value.getValueType().name())
             );

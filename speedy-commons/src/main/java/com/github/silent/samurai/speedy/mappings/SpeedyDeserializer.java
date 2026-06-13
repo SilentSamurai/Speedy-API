@@ -18,6 +18,13 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/// Converts plain Java objects back into {@link SpeedyValue} representations,
+/// the inverse of {@link SpeedySerializer}.
+/// Primitive Java values are converted via {@link #fromJavaObject(FieldMetadata, Object)}
+/// using a {@link JavaTypeRegistry}, with special handling for enums.
+/// Composite Java objects are mapped to {@link SpeedyEntity} through
+/// {@link #updateEntity(Object, SpeedyEntity)}, which uses Spring's {@code BeanWrapper}
+/// to read fields by name and populate the entity graph, including nested associations.
 public class SpeedyDeserializer {
 
     /// The Java-type registry used for all {@code Java -> SpeedyValue} conversions.

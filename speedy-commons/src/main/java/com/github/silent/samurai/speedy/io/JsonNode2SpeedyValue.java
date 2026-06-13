@@ -10,7 +10,6 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.mappings.Codec;
 import com.github.silent.samurai.speedy.mappings.JsonRegistry;
 import com.github.silent.samurai.speedy.models.*;
 
@@ -111,19 +110,11 @@ public class JsonNode2SpeedyValue {
         };
     }
 
-    /// Looks up the codec for the given value type in the JSON registry and
-    /// decodes the raw value into a SpeedyValue. Throws if no codec is registered.
-    ///
-    /// @param vt       the Speedy value type to decode into
-    /// @param rawValue the raw value from the JSON node
-    /// @return the decoded SpeedyValue
-    /// @throws BadRequestException if no codec exists for the value type
+    /// Decodes a raw JSON value into a SpeedyValue using the {@link JsonRegistry}.
+    /// The registry looks up the codec by {@code (ValueType, raw.getClass())} and
+    /// verifies the type at runtime via {@link Codec#safeDecode(Object)}.
     private SpeedyValue decode(ValueType vt, Object rawValue) throws BadRequestException {
-        Codec codec = jsonRegistry.getCodec(vt);
-        if (codec != null) {
-            return codec.decode().apply(rawValue);
-        }
-        throw new BadRequestException("No codec found for " + vt);
+        return jsonRegistry.decode(vt, rawValue);
     }
 
     public SpeedyEntity fromEntityMetadata(EntityMetadata entityMetadata, ObjectNode jsonNode) throws SpeedyHttpException {

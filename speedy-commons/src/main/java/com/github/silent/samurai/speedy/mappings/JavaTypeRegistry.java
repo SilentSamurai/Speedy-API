@@ -15,6 +15,22 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+/// Converts between `SpeedyValue` and plain Java POJO types using a two-tier
+/// codec lookup strategy.
+///
+/// ## Design Philosophy
+/// The primary key for every codec is a **single Java class** (`Class<T>`). Each
+/// codec handles exactly one Java type — no `instanceof` branching. When a Java
+/// type needs multiple SpeedyValue representations (e.g. `BigDecimal` as both
+/// `FLOAT` and `INT`), separate variant codecs are registered under the same
+/// class key with distinct {@link ValueType} discriminators.
+///
+/// Lookups are type-safe by construction: the `Class<T>` key acts as a runtime
+/// type token, and every codec additionally verifies inputs via
+/// {@link Codec#safeDecode(Object)} / {@link Codec#safeEncode(SpeedyValue)}.
+///
+/// @see Codec
+/// @see ConversionRegistry
 public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
 
     private static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER = Map.of(
@@ -29,12 +45,11 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
             void.class, Void.class
     );
 
-    private final Map<Class<?>, Map<ValueType, Codec>> vtCodecs = new HashMap<>();
+    /// Variant codecs: one Java class may have multiple codecs keyed by ValueType.
+    /// E.g. `BigDecimal.class → { FLOAT → Codec<BigDecimal>, INT → Codec<BigDecimal> }`.
+    private final Map<Class<?>, Map<ValueType, Codec<?>>> vtCodecs = new HashMap<>();
+
     /// Per-type converters that parse a string literal into a Java object.
-    /// Populated by {@link #registerFromString} and consulted by {@link #parseString}.
-    ///
-    /// @see #registerFromString(Class, Function)
-    /// @see #parseString(String, Class)
     private final Map<Class<?>, Function<String, ?>> fromStringConverters = new HashMap<>();
 
     public JavaTypeRegistry(JavaTypeRegistry parent) {
@@ -45,22 +60,47 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
         return clazz.isPrimitive() ? PRIMITIVE_TO_WRAPPER.getOrDefault(clazz, clazz) : clazz;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <E extends Enum<E>> E convertEnumFromSpeedy(SpeedyValue sv, Class<? extends Enum> enumClass) {
+    private static Enum convertEnumFromSpeedy(SpeedyValue sv, Class<?> enumClass) {
         if (sv.isText()) {
-            return (E) Enum.valueOf((Class) enumClass, sv.asText());
+            return findEnumConstant(enumClass, sv.asText());
         }
         if (sv.isEnum()) {
-            return (E) Enum.valueOf((Class) enumClass, sv.asEnum());
+            return findEnumConstant(enumClass, sv.asEnum());
         }
         if (sv.isEnumOrd()) {
             int ord = sv.asEnumOrd().intValue();
             Enum[] constants = (Enum[]) enumClass.getEnumConstants();
             if (constants != null && ord >= 0 && ord < constants.length) {
-                return (E) constants[ord];
+                return constants[ord];
             }
         }
         throw new ConversionException("Cannot convert " + sv + " to enum " + enumClass.getSimpleName());
+    }
+
+    private static Enum findEnumConstant(Class<?> enumClass, String name) {
+        Enum[] constants = (Enum[]) enumClass.getEnumConstants();
+        if (constants != null) {
+            for (Enum constant : constants) {
+                if (constant.name().equals(name)) {
+                    return constant;
+                }
+            }
+        }
+        throw new ConversionException("Invalid enum constant '" + name + "' for " + enumClass.getSimpleName());
+    }
+
+    /// Casts a value to the target type with runtime verification.
+    /// Uses {@code wrap(targetClass)} for the runtime check so primitives are handled
+    /// via their wrapper class (since {@link Class#cast} doesn't support primitives).
+    /// The {@code safeEncode} / {@code safeDecode} inside each codec already verify
+    /// the type, so this is an additional boundary assertion.
+    private static <T> T checkedCast(Object value, Class<T> targetClass) {
+        Class<?> wrapped = wrap(targetClass);
+        wrapped.cast(value);
+        if (targetClass.isPrimitive()) {
+            return (T) value;
+        }
+        return targetClass.cast(value);
     }
 
     private static SpeedyValue convertEnumToSpeedy(Enum<?> en, ValueType vt) {
@@ -72,96 +112,95 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
         };
     }
 
-    @SuppressWarnings("unchecked")
     public static JavaTypeRegistry defaults() {
         JavaTypeRegistry r = new JavaTypeRegistry(null);
 
         r.register(String.class,
                 sv -> ((SpeedyText) sv).getValue(),
-                raw -> new SpeedyText((String) raw));
+                raw -> new SpeedyText(raw));
 
         r.register(UUID.class,
                 sv -> UUID.fromString(sv.asText()),
-                uuid -> new SpeedyText(((UUID) uuid).toString()));
+                uuid -> new SpeedyText(uuid.toString()));
 
         r.register(Boolean.class,
                 sv -> ((SpeedyBoolean) sv).getValue(),
-                raw -> new SpeedyBoolean((Boolean) raw));
+                SpeedyBoolean::new);
 
         r.register(Long.class,
                 sv -> ((SpeedyInt) sv).getValue(),
-                raw -> new SpeedyInt((Long) raw));
+                raw -> new SpeedyInt(raw));
 
         r.register(Integer.class,
                 sv -> ((SpeedyInt) sv).getValue().intValue(),
-                val -> new SpeedyInt(((Integer) val).longValue()));
+                val -> new SpeedyInt(val.longValue()));
 
         r.register(BigInteger.class,
                 sv -> BigInteger.valueOf(((SpeedyInt) sv).getValue()),
-                bi -> new SpeedyInt(((BigInteger) bi).longValue()));
+                bi -> new SpeedyInt(bi.longValue()));
 
         r.register(Double.class,
                 sv -> ((SpeedyDouble) sv).getValue(),
-                raw -> new SpeedyDouble((Double) raw));
+                SpeedyDouble::new);
 
         r.register(Float.class,
                 sv -> ((SpeedyDouble) sv).getValue().floatValue(),
-                f -> new SpeedyDouble(((Float) f).doubleValue()));
+                f -> new SpeedyDouble(f.doubleValue()));
 
         r.register(BigDecimal.class,
                 sv -> BigDecimal.valueOf(((SpeedyDouble) sv).getValue()),
-                bd -> new SpeedyDouble(((BigDecimal) bd).doubleValue()));
+                bd -> new SpeedyDouble(bd.doubleValue()));
 
         r.register(BigDecimal.class, ValueType.FLOAT,
                 sv -> BigDecimal.valueOf(((SpeedyDouble) sv).getValue()),
-                bd -> new SpeedyDouble(((BigDecimal) bd).doubleValue()));
+                bd -> new SpeedyDouble(bd.doubleValue()));
 
         r.register(BigDecimal.class, ValueType.INT,
                 sv -> BigDecimal.valueOf(((SpeedyInt) sv).getValue().longValue()),
-                bd -> new SpeedyInt(((BigDecimal) bd).longValue()));
+                bd -> new SpeedyInt(bd.longValue()));
 
         r.register(BigInteger.class, ValueType.FLOAT,
                 sv -> BigInteger.valueOf(((SpeedyDouble) sv).getValue().longValue()),
-                bi -> new SpeedyDouble(((BigInteger) bi).doubleValue()));
+                bi -> new SpeedyDouble(bi.doubleValue()));
 
         r.register(LocalDate.class,
                 sv -> ((SpeedyDate) sv).asDate(),
-                raw -> new SpeedyDate((LocalDate) raw));
+                SpeedyDate::new);
 
         r.register(java.util.Date.class,
                 sv -> {
                     Instant instant = ((SpeedyDate) sv).getValue().atStartOfDay(ZoneId.of("UTC")).toInstant();
                     return java.util.Date.from(instant);
                 },
-                d -> new SpeedyDate(LocalDate.ofInstant(((java.util.Date) d).toInstant(), ZoneId.of("UTC"))));
+                d -> new SpeedyDate(LocalDate.ofInstant(d.toInstant(), ZoneId.of("UTC"))));
 
         r.register(java.sql.Date.class,
                 sv -> java.sql.Date.valueOf(((SpeedyDate) sv).getValue()),
-                sql -> new SpeedyDate(((java.sql.Date) sql).toLocalDate()));
+                sql -> new SpeedyDate(sql.toLocalDate()));
 
         r.register(LocalTime.class,
                 sv -> ((SpeedyTime) sv).asTime(),
-                raw -> new SpeedyTime((LocalTime) raw));
+                raw -> new SpeedyTime(raw));
 
         r.register(LocalDateTime.class,
                 sv -> ((SpeedyDateTime) sv).getValue(),
-                raw -> new SpeedyDateTime((LocalDateTime) raw));
+                raw -> new SpeedyDateTime(raw));
 
         r.register(Instant.class, ValueType.DATE_TIME,
                 sv -> ((SpeedyDateTime) sv).getValue().atZone(ZoneId.of("UTC")).toInstant(),
-                instant -> new SpeedyDateTime(LocalDateTime.ofInstant((Instant) instant, ZoneId.of("UTC"))));
+                instant -> new SpeedyDateTime(LocalDateTime.ofInstant(instant, ZoneId.of("UTC"))));
 
         r.register(Instant.class, ValueType.ZONED_DATE_TIME,
                 sv -> ((SpeedyZonedDateTime) sv).asZonedDateTime().toInstant(),
-                instant -> new SpeedyZonedDateTime(((Instant) instant).atZone(ZoneId.of("UTC"))));
+                instant -> new SpeedyZonedDateTime(instant.atZone(ZoneId.of("UTC"))));
 
         r.register(Timestamp.class,
                 sv -> Timestamp.valueOf(((SpeedyDateTime) sv).getValue()),
-                ts -> new SpeedyDateTime(((Timestamp) ts).toLocalDateTime()));
+                ts -> new SpeedyDateTime(ts.toLocalDateTime()));
 
         r.register(ZonedDateTime.class,
                 sv -> ((SpeedyZonedDateTime) sv).asZonedDateTime(),
-                raw -> new SpeedyZonedDateTime((ZonedDateTime) raw));
+                raw -> new SpeedyZonedDateTime(raw));
 
         r.registerFromString(Integer.class, Integer::parseInt);
         r.registerFromString(Long.class, Long::parseLong);
@@ -181,36 +220,32 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
         return r;
     }
 
-    public JavaTypeRegistry register(Class<?> clazz, ValueType vt,
-                                     Function<SpeedyValue, Object> encode,
-                                     Function<Object, SpeedyValue> decode) {
-        vtCodecs.computeIfAbsent(clazz, k -> new HashMap<>()).put(vt, new Codec(encode, decode));
+    /// Registers a primary codec for a Java class. The key (and type token) is the
+    /// class itself.
+    public <T> JavaTypeRegistry register(Class<T> clazz,
+                                         Function<SpeedyValue, T> encode,
+                                         Function<T, SpeedyValue> decode) {
+        super.register(clazz, clazz, encode, decode);
         return this;
     }
 
-    /// Registers a from-string converter for the given class.
-    /// When {@link #parseString} is called with a string literal and the target class,
-    /// this converter is invoked to produce a typed Java object.
-    ///
-    /// @param clazz     the target Java type
-    /// @param converter a function that parses a string into an instance of {@code T}
-    /// @param <T>       the type parameter
-    /// @return this registry for chaining
+    /// Registers a variant codec for a Java class qualified by a specific ValueType.
+    /// Used when a single Java type can map to different SpeedyValue representations
+    /// (e.g. `BigDecimal` as both `FLOAT` and `INT`).
+    public <T> JavaTypeRegistry register(Class<T> clazz, ValueType vt,
+                                         Function<SpeedyValue, T> encode,
+                                         Function<T, SpeedyValue> decode) {
+        vtCodecs.computeIfAbsent(clazz, k -> new HashMap<>()).put(vt, new Codec<>(clazz, encode, decode));
+        return this;
+    }
+
+    /// Registers a from-string converter.
     public <T> JavaTypeRegistry registerFromString(Class<T> clazz, Function<String, T> converter) {
         fromStringConverters.put(clazz, converter);
         return this;
     }
 
-    /// Parses a string literal into the requested Java type using a registered
-    /// from-string converter. Falls back to the parent registry if no local
-    /// converter is found.
-    ///
-    /// @param literal the string value to parse (may be null)
-    /// @param target  the desired Java type
-    /// @param <T>     the type parameter
-    /// @return the parsed object, or null if {@code literal} is null
-    /// @throws ConversionException if no converter is registered for the type
-    @SuppressWarnings("unchecked")
+    /// Parses a string literal into the requested Java type.
     public <T> T parseString(String literal, Class<T> target) throws SpeedyHttpException {
         if (literal == null) return null;
         Class<?> wrapped = wrap(target);
@@ -219,15 +254,15 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
             fn = p.fromStringConverters.get(wrapped);
         }
         if (fn != null) {
-            return (T) fn.apply(literal);
+            return checkedCast(fn.apply(literal), target);
         }
         throw new ConversionException("No from-string converter for " + target.getSimpleName());
     }
 
-    private Codec lookupVt(Class<?> clazz, ValueType vt) {
-        Map<ValueType, Codec> perVt = vtCodecs.get(clazz);
+    private Codec<?> lookupVt(Class<?> clazz, ValueType vt) {
+        Map<ValueType, Codec<?>> perVt = vtCodecs.get(clazz);
         if (perVt != null) {
-            Codec c = perVt.get(vt);
+            Codec<?> c = perVt.get(vt);
             if (c != null) return c;
         }
         if (getParent() instanceof JavaTypeRegistry p) {
@@ -236,7 +271,8 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    /// Converts a SpeedyValue to a Java object of the target class.
+    /// Uses the codec's {@link Codec#safeEncode(SpeedyValue)} for verified conversion.
     public <T> T toJava(SpeedyValue sv, Class<T> targetClass) throws SpeedyHttpException {
         if (sv == null || sv instanceof SpeedyNull) {
             return null;
@@ -244,38 +280,39 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
         Class<?> wrapped = wrap(targetClass);
 
         ValueType vt = sv.getValueType();
-        Codec vtCodec = lookupVt(wrapped, vt);
+        Codec<?> vtCodec = lookupVt(wrapped, vt);
         if (vtCodec != null) {
-            return (T) vtCodec.encode().apply(sv);
+            return checkedCast(vtCodec.safeEncode(sv), targetClass);
         }
 
-        Codec codec = lookup(wrapped);
+        Codec<?> codec = lookup(wrapped);
         if (codec != null) {
-            return (T) codec.encode().apply(sv);
+            return checkedCast(codec.safeEncode(sv), targetClass);
         }
 
         if (wrapped.isEnum()) {
-            return (T) convertEnumFromSpeedy(sv, (Class<? extends Enum>) wrapped);
+            return checkedCast(convertEnumFromSpeedy(sv, wrapped), targetClass);
         }
 
         throw new ConversionException("No converter found for " + vt + " -> " + wrapped.getName());
     }
 
-    @SuppressWarnings("unchecked")
+    /// Converts a Java object to a SpeedyValue.
+    /// Uses the codec's {@link Codec#safeDecode(Object)} for verified conversion.
     public SpeedyValue toSpeedy(Object instance, ValueType vt) throws SpeedyHttpException {
         if (instance == null) {
             return SpeedyNull.SPEEDY_NULL;
         }
         Class<?> clazz = wrap(instance.getClass());
 
-        Codec vtCodec = lookupVt(clazz, vt);
+        Codec<?> vtCodec = lookupVt(clazz, vt);
         if (vtCodec != null) {
-            return vtCodec.decode().apply(instance);
+            return vtCodec.safeDecode(instance);
         }
 
-        Codec codec = lookup(clazz);
+        Codec<?> codec = lookup(clazz);
         if (codec != null) {
-            return codec.decode().apply(instance);
+            return codec.safeDecode(instance);
         }
 
         if (clazz.isEnum()) {
