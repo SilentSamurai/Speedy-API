@@ -5,15 +5,13 @@ import com.github.silent.samurai.speedy.context.SpeedyContext;
 
 /// # HeadHandler
 ///
-/// Chain entry point. A passthrough decorator that immediately delegates to
-/// the next handler without performing any processing itself.
+/// No-op entry point at the start of every sub-chain. Used as the first element
+/// in each {@code List<Handler>} so all sub-chains have a uniform starting
+/// reference point.
 ///
 /// ## Purpose
-/// - Provides a consistent entry point for the chain
+/// - Provides a consistent first element for every sub-chain
 /// - Can serve as an instrumentation point for logging, metrics, or security checks
-///
-/// ## Chain Position
-/// First handler in the chain. Always passes control to {@link RequestParserHandler}.
 public class HeadHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override

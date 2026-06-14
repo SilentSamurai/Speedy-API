@@ -272,7 +272,7 @@ Expansion paths are validated to ensure:
 
 ### Serialization
 
-The `JSONSerializerV2` handles serialization of multi-level expansions:
+The `JSONResponseSerializer` handles serialization of multi-level expansions:
 
 - Supports dot notation expansions
 - Maintains backward compatibility

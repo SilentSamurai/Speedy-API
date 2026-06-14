@@ -22,33 +22,52 @@
 
 ### Request Processing Flow
 
-All requests enter through `SpeedyApiController` (`/speedy/v1/**`) and are delegated to `SpeedyFactory.processReqV2()`,
-which runs the **handler chain** (Chain of Responsibility):
+All requests enter through `SpeedyApiController` (`/speedy/v1/**`) and are delegated to `SpeedyFactory.processReqV2()`.
+Processing is orchestrated in phases via **multiple sub-chains** (each a `List<Handler>` iterated with a simple `for`
+loop in `SpeedyEngineImpl.run()`). The switch dispatch lives in `processReqV2()` itself, not inside a handler.
 
 ```
-HeadHandler -> RequestParserHandler -> EntityCaptureHandler
-  -> SwitchHandler -> [ GetHandler | QueryHandler | CreateHandler | UpdateHandler | DeleteHandler ]
-    -> SpeedyResponseWriterHandler -> TailHandler
+SpeedyFactory.processReqV2()
+├── 1. engine.prepare(ctx)              — create QueryProcessor
+├── 2. engine.parseUri(ctx)             — uriChain: HeadHandler → UriParserHandler → TailHandler
+├── 3. engine.parseHeaders(ctx)         — headerChain: HeadHandler → RequestParserHandler → TailHandler
+├── 4. engine.resolveOperation(ctx)     — operationChain: HeadHandler → OperationResolverHandler → TailHandler
+├── 5. engine.selectSerializer(ctx)     — serializerSelectionChain: HeadHandler → SerializerSelectionHandler → TailHandler
+├── 6. engine.selectBodyParser(ctx)     — parserSelectionChain: HeadHandler → ParserSelectionHandler → TailHandler
+├── 7. engine.parseBody(ctx)            — bodyChain: HeadHandler → BodyParserHandler → TailHandler
+├── 8. switch (type) {                  — dispatch to operation-specific sub-chain
+│      GET_LIST  → engine.get(ctx)      —   getChain: HeadHandler → PermissionCheckHandler → GetHandler → TailHandler
+│      QUERY     → engine.query(ctx)    —   queryChain: HeadHandler → PermissionCheckHandler → QueryHandler → TailHandler
+│      CREATE    → engine.create(ctx)   —   createChain: HeadHandler → PermissionCheckHandler → CreateHandler → TailHandler
+│      UPDATE    → engine.update(ctx)   —   updateChain: HeadHandler → PermissionCheckHandler → UpdateHandler → TailHandler
+│      DELETE    → engine.delete(ctx)   —   deleteChain: HeadHandler → PermissionCheckHandler → DeleteHandler → TailHandler
+│      METADATA  → engine.metadata(ctx) —   metadataChain: HeadHandler → MetadataHandler → TailHandler
+│    }
+└── 9. serializer.write(resp, response) — write response directly (not via a handler)
 ```
 
 **Handler responsibilities:**
 
-| Handler                       | What it does                                                                                                                                                           |
-|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `HeadHandler`                 | Entry; passthrough decorator.                                                                                                                                          |
-| `RequestParserHandler`        | Reads `HttpMethod`, request URI, and JSON body from `HttpServletRequest`.                                                                                              |
-| `EntityCaptureHandler`        | Parses URI via `SpeedyUriContext` to resolve `EntityMetadata` from `MetaModel`.                                                                                        |
-| `SwitchHandler`               | Routes by HTTP method + URI suffix (`$query`, `$create`, `$update`, `$delete`). Checks action permissions via `EntityMetadata.is{Read/Create/Update/Delete}Allowed()`. |
-| `GetHandler`                  | Parses URI query params into `SpeedyQuery`, executes `executeMany()`, sets `JSONSerializerV2`.                                                                         |
-| `QueryHandler`                | Parses POST JSON body (`$from`, `$where`, `$orderBy`, `$page`, `$expand`, `$select`) into `SpeedyQuery`, supports count queries.                                       |
-| `CreateHandler`               | Parses JSON array body, fires PRE/POST_INSERT events, validates, bulk creates.                                                                                         |
-| `UpdateHandler`               | Parses PK + fields from JSON body, fires PRE/POST_UPDATE events, validates, updates.                                                                                   |
-| `DeleteHandler`               | Parses JSON array of PKs, fires PRE/POST_DELETE events, validates, bulk deletes.                                                                                       |
-| `SpeedyResponseWriterHandler` | Invokes `IResponseSerializerV2.write()` to serialize the response.                                                                                                     |
-| `TailHandler`                 | Terminates the chain (no-op).                                                                                                                                          |
+| Handler                       | What it does                                                                                                                                                                   |
+|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `HeadHandler`                 | No-op entry point at the start of every sub-chain.                                                                                                                             |
+| `UriParserHandler`            | Parses request URI via `SpeedyUriContext` to resolve `EntityMetadata`, query params, and expansion hints.                                                                      |
+| `RequestParserHandler`        | Reads `HttpMethod`, request URI, and HTTP headers from `HttpServletRequest`.                                                                                                   |
+| `OperationResolverHandler`    | Routes by HTTP method + URI suffix (`$query`, `$create`, `$update`, `$delete`) to a `SpeedyRequestType`; enforces action permissions.                                          |
+| `ParserSelectionHandler`      | Selects an `IRequestBodyParser` (JSON, XML, etc.) based on the `Content-Type` request header.                                                                                  |
+| `BodyParserHandler`           | Reads and parses the request body into a `SpeedyBody` using the selected parser.                                                                                               |
+| `SerializerSelectionHandler`  | Selects an `IResponseSerializerV2` (JSON, XML, etc.) based on the `Accept` request header via `ContentNegotiationManager`.                                                     |
+| `PermissionCheckHandler`      | Enforces `@SpeedyAction` per-entity/per-field CRUD gates. Parameterized by `PermissionType` (READ/CREATE/UPDATE/DELETE).                                                        |
+| `GetHandler`                  | Parses URI query params into `SpeedyQuery`, executes `executeMany()`.                                                                                                          |
+| `QueryHandler`                | Parses POST JSON body (`$from`, `$where`, `$orderBy`, `$page`, `$expand`, `$select`) into `SpeedyQuery`, supports count queries.                                               |
+| `CreateHandler`               | Parses JSON array body, fires PRE/POST_INSERT events, validates, bulk creates.                                                                                                 |
+| `UpdateHandler`               | Parses PK + fields from JSON body, fires PRE/POST_UPDATE events, validates, updates.                                                                                           |
+| `DeleteHandler`               | Parses JSON array of PKs, fires PRE/POST_DELETE events, validates, bulk deletes.                                                                                               |
+| `MetadataHandler`             | Returns the metamodel as a `SpeedyResponse` for `$metadata` requests.                                                                                                          |
+| `TailHandler`                 | No-op terminator at the end of every sub-chain.                                                                                                                                |
 
-Each handler holds a `final Handler next` reference and calls `next.process(context)` to pass control. The chain is
-assembled in `SpeedyFactory.createHandlerChain()`.
+Sub-chains are assembled inline in the `SpeedyEngineImpl` constructor. The `for` loop in `SpeedyEngineImpl.run()`
+iterates the list sequentially; handlers do **not** hold a `next` reference.
 
 ### RequestContext (Mutable State Object)
 
@@ -134,9 +153,9 @@ User-facing documentation lives in [`docs/`](docs/README.md). Keep docs updated 
 
 ### Chain of Responsibility
 
-The 12 handlers form a linear chain where each handler processes what it cares about and passes control via
-`next.process(context)`. The chain is wired in `SpeedyFactory.createHandlerChain()`. Individual handlers are unaware of
-their position in the chain.
+The 15 handlers are arranged in **multiple sub-chains** (one per lifecycle phase), each a `List<Handler>` iterated
+sequentially via a `for` loop in `SpeedyEngineImpl.run()`. Handlers do **not** hold a `next` reference. Sub-chains
+are wired inline in `SpeedyEngineImpl`'s constructor. Individual handlers are unaware of their position in the chain.
 
 ### Builder Pattern
 
@@ -150,7 +169,7 @@ their position in the chain.
 - **`QueryProcessor`** interface — implemented by `JooqQueryProcessorImpl` (in `speedy-jooq-query-processor`), swappable
   for other DB backends.
 - **`MetaModelProcessor`** interface — `JpaMetaModelProcessorV2` (JPA scan) or `FileMetaModelProcessor` (JSON file).
-- **`IResponseSerializerV2`** interface — `JSONSerializerV2` (entity list), `JSONCountSerializerV2` (count only),
+- **`IResponseSerializerV2`** interface — `JSONResponseSerializer` (entity list, count, batch, error, metadata),
   field-level predicate for key-only serialization.
 - **`Converter`** interface — type conversion between `SpeedyValue` and DB types.
 - **`FieldRule`** interface — 25 composable validation rule implementations.

@@ -172,7 +172,7 @@ keys, etc.).
 
 #### `@SpeedyAction` — Static CRUD Gating
 
-The `@SpeedyAction` annotation provides **static** per-entity and per-field CRUD gating enforced in the `SwitchHandler`:
+The `@SpeedyAction` annotation provides **static** per-entity and per-field CRUD gating enforced by `PermissionCheckHandler`:
 
 ```java
 

@@ -5,14 +5,9 @@ import com.github.silent.samurai.speedy.context.SpeedyContext;
 
 /// # TailHandler
 ///
-/// Terminates the handler chain. A no-op handler that performs no action.
-///
-/// ## Purpose
-/// - Marks the end of the handler chain
-/// - Prevents null pointer exceptions when the last handler calls {@code next.process()}
-///
-/// ## Chain Position
-/// Last handler in the chain. Does not call any next handler.
+/// No-op terminator at the end of every sub-chain. Used as the last element
+/// in each {@code List<Handler>} so all sub-chains have a uniform ending
+/// reference point.
 public class TailHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override

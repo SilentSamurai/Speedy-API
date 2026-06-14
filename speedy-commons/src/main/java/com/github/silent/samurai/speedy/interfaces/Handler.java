@@ -5,15 +5,16 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 
 /// # Handler
 ///
-/// Chain of Responsibility contract for the request processing pipeline.
-/// Each handler holds a reference to the next handler in the chain and
-/// calls {@code next.process(context)} to pass the mutable {@link SpeedyContext}
-/// downstream after completing its own work.
+/// Contract for a single processing step in the Speedy request pipeline.
+/// Handlers are aggregated into sub-chains ({@code List<Handler>}) that are
+/// iterated sequentially via a {@code for} loop in {@code SpeedyEngineImpl.run()}.
+/// Handlers do <b>not</b> hold a {@code next} reference.
 ///
-/// ## Chain Assembly
-/// Pre-built sub-chains are wired in {@code SpeedyEngineImpl} for each
-/// lifecycle phase: request parsing, body parsing, CRUD operations, and
-/// response writing.
+/// ## Sub-Chain Organization
+/// Sub-chains are wired in {@code SpeedyEngineImpl} for each lifecycle phase:
+/// URI parsing, header parsing, operation resolution, parser/body handling,
+/// serializer selection, and each CRUD operation type. Response writing is
+/// performed directly in {@code SpeedyFactory.processReqV2()}, not via a handler.
 ///
 /// @see com.github.silent.samurai.speedy.handlers package summary
 public interface Handler {
