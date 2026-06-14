@@ -6,9 +6,7 @@ import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
@@ -30,17 +28,16 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final ValidationProcessor validationProcessor;
     private final ConversionContext conversionContext;
 
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> requestChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> bodyChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> parserSelectionChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> serializerSelectionChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> getChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> queryChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> createChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> updateChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> deleteChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> metadataChain;
-    private final List<com.github.silent.samurai.speedy.interfaces.Handler> responseChain;
+    private final List<Handler> requestChain;
+    private final List<Handler> bodyChain;
+    private final List<Handler> parserSelectionChain;
+    private final List<Handler> serializerSelectionChain;
+    private final List<Handler> getChain;
+    private final List<Handler> queryChain;
+    private final List<Handler> createChain;
+    private final List<Handler> updateChain;
+    private final List<Handler> deleteChain;
+    private final List<Handler> metadataChain;
     private final ConcurrentHashMap<DataSource, QueryProcessor> queryProcessorCache = new ConcurrentHashMap<>();
 
     public SpeedyEngineImpl(ISpeedyConfiguration config,
@@ -123,11 +120,6 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                 new TailHandler()
         );
 
-        responseChain = List.of(
-                new HeadHandler(),
-                new SpeedyResponseWriterHandler(),
-                new TailHandler()
-        );
     }
 
     @Override
@@ -144,54 +136,77 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         return ctx;
     }
 
-    private void run(List<com.github.silent.samurai.speedy.interfaces.Handler> chain, SpeedyContext ctx) throws SpeedyHttpException {
-        for (com.github.silent.samurai.speedy.interfaces.Handler handler : chain) {
+    private void run(List<Handler> chain, SpeedyContext ctx) throws SpeedyHttpException {
+        for (Handler handler : chain) {
             handler.process(ctx);
         }
     }
 
     @Override
-    public QueryProcessor prepare() throws SpeedyHttpException {
+    public void prepare(SpeedyContext ctx) throws SpeedyHttpException {
         DataSource dataSource = config.dataSourcePerReq();
-        return queryProcessorCache.computeIfAbsent(
-                dataSource, ds -> config.queryProcessor(ds, dialect, conversionContext));
+        ctx.put(QueryProcessor.class, queryProcessorCache.computeIfAbsent(
+                dataSource, ds -> config.queryProcessor(ds, dialect, conversionContext)));
     }
 
     @Override
-    public void parseRequest(SpeedyContext ctx) throws SpeedyHttpException {
+    public SpeedyRequestType parseRequest(SpeedyContext ctx) throws SpeedyHttpException {
         run(requestChain, ctx);
+        return ctx.get(SpeedyRequestType.class);
     }
 
     @Override
-    public void selectBodyParser(SpeedyContext ctx) throws SpeedyHttpException {
+    public IRequestBodyParser selectBodyParser(SpeedyContext ctx) throws SpeedyHttpException {
         run(parserSelectionChain, ctx);
+        return ctx.get(IRequestBodyParser.class);
     }
 
     @Override
-    public void parseBody(SpeedyContext ctx) throws SpeedyHttpException {
+    public SpeedyBody parseBody(SpeedyContext ctx) throws SpeedyHttpException {
         run(bodyChain, ctx);
+        return ctx.get(SpeedyBody.class);
     }
 
     @Override
-    public void execute(SpeedyContext ctx) throws SpeedyHttpException {
-        SpeedyRequestType type = ctx.get(SpeedyRequestType.class);
-        switch (type) {
-            case GET_LIST -> run(getChain, ctx);
-            case QUERY -> run(queryChain, ctx);
-            case CREATE -> run(createChain, ctx);
-            case UPDATE -> run(updateChain, ctx);
-            case DELETE -> run(deleteChain, ctx);
-            case METADATA -> run(metadataChain, ctx);
-        }
+    public SpeedyResponse get(SpeedyContext ctx) throws SpeedyHttpException {
+        run(getChain, ctx);
+        return ctx.get(SpeedyResponse.class);
     }
 
     @Override
-    public void selectSerializer(SpeedyContext ctx) throws SpeedyHttpException {
+    public SpeedyResponse query(SpeedyContext ctx) throws SpeedyHttpException {
+        run(queryChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public SpeedyResponse create(SpeedyContext ctx) throws SpeedyHttpException {
+        run(createChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public SpeedyResponse update(SpeedyContext ctx) throws SpeedyHttpException {
+        run(updateChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public SpeedyResponse delete(SpeedyContext ctx) throws SpeedyHttpException {
+        run(deleteChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public SpeedyResponse metadata(SpeedyContext ctx) throws SpeedyHttpException {
+        run(metadataChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public IResponseSerializerV2 selectSerializer(SpeedyContext ctx) throws SpeedyHttpException {
         run(serializerSelectionChain, ctx);
+        return ctx.get(IResponseSerializerV2.class);
     }
 
-    @Override
-    public void writeResponse(SpeedyContext ctx) throws SpeedyHttpException {
-        run(responseChain, ctx);
-    }
 }

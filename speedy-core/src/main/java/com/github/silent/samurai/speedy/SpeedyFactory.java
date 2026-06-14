@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
@@ -143,21 +144,38 @@ public class SpeedyFactory {
     }
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // Start with the baseline JSON serializer as a fallback in case negotiation itself fails.
+        IResponseSerializerV2 serializer = documentSerializer;
         try {
             SpeedyContext ctx = engine.newContext(request, response);
-            ctx.put(QueryProcessor.class, engine.prepare());
-            engine.parseRequest(ctx);
-            engine.selectBodyParser(ctx);
-            engine.parseBody(ctx);
-            engine.execute(ctx);
-            engine.selectSerializer(ctx);
-            engine.writeResponse(ctx);
+            engine.prepare(ctx);
+
+            // Negotiate the output format before parsing — only the Accept header is needed,
+            // which is already in ctx. This lets the catch block use the client's preferred
+            // format for error responses too.
+            serializer = engine.selectSerializer(ctx);
+
+            SpeedyRequestType type = engine.parseRequest(ctx);
+            IRequestBodyParser parser = engine.selectBodyParser(ctx);
+            SpeedyBody body = engine.parseBody(ctx);
+
+            // Dispatch switch lives here — NOT inside the engine. See SpeedyEngine javadoc.
+            SpeedyResponse resp = switch (type) {
+                case GET_LIST -> engine.get(ctx);
+                case QUERY    -> engine.query(ctx);
+                case CREATE   -> engine.create(ctx);
+                case UPDATE   -> engine.update(ctx);
+                case DELETE   -> engine.delete(ctx);
+                case METADATA -> engine.metadata(ctx);
+            };
+
+            serializer.write(resp, response);
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;
             int status = exceptionMapper.getStatus(e);
             String message = exceptionMapper.getMessage(e);
             try {
-                documentSerializer.write(
+                serializer.write(
                         SpeedyErrorResponse.builder().status(status).message(message).build(),
                         response);
             } catch (SpeedyHttpException writeFailure) {

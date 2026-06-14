@@ -8,7 +8,6 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 
@@ -32,11 +31,8 @@ public class BodyParserHandler implements com.github.silent.samurai.speedy.inter
         SpeedyRequestType requestType = context.get(SpeedyRequestType.class);
 
         SpeedyBody body = switch (requestType) {
-            case GET_LIST -> {
-                SpeedyQueryImpl query = uriContext.getParsedQuery();
-                query.setType(SpeedyRequestType.GET_LIST);
-                yield query;
-            }
+            case GET_LIST -> SpeedyBody.empty(SpeedyRequestType.GET_LIST);
+            case METADATA -> SpeedyBody.empty(SpeedyRequestType.METADATA);
             case QUERY -> parser.parseQuery(rawBody,
                     context.get(MetaModel.class),
                     uriContext.getParsedQuery(),
@@ -53,11 +49,9 @@ public class BodyParserHandler implements com.github.silent.samurai.speedy.inter
                     context.get(SpeedyUriContext.class).getParsedQuery().getFrom(),
                     context.get(TransactionMode.class),
                     context.get(QueryProcessor.class));
-            case METADATA -> null;
+
         };
 
-        if (body != null) {
-            context.put(SpeedyBody.class, body);
-        }
+        context.put(SpeedyBody.class, body);
     }
 }

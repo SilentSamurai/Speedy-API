@@ -1,9 +1,8 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.Handler;
 import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
@@ -19,20 +18,11 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.function.Predicate;
 
-/// Handles GET /{Entity} requests using the URI-parsed SpeedyQuery body.
-///
-/// Reads the SpeedyQuery (set as body by BodyParserHandler for GET_LIST),
-/// executes the query with count, and produces the appropriate SpeedyEntityResponse
-/// or SpeedyCountResponse for the response serializer.
-///
-/// @see BodyParserHandler
-/// @see SpeedyQuery
-public class GetHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
+public class GetHandler implements Handler {
 
     @Override
     public void process(SpeedyContext context) throws SpeedyHttpException {
-        SpeedyQuery speedyQuery = (SpeedyQuery) context.get(SpeedyBody.class);
-        EntityMetadata resourceMetadata = speedyQuery.getFrom();
+        SpeedyQuery speedyQuery = context.get(SpeedyUriContext.class).getParsedQuery();
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
 
         if (speedyQuery.isCountRequest()) {
