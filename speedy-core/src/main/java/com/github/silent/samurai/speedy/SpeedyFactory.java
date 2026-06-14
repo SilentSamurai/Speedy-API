@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.engine.SpeedyEngine;
 import com.github.silent.samurai.speedy.engine.SpeedyEngineImpl;
 import com.github.silent.samurai.speedy.events.EventProcessor;
@@ -15,10 +16,10 @@ import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
+import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
 import com.github.silent.samurai.speedy.utils.DefaultExceptionMapper;
-import com.github.silent.samurai.speedy.utils.ExceptionUtils;
 import com.github.silent.samurai.speedy.validation.MetaModelVerifier;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +50,7 @@ public class SpeedyFactory {
     private final long maxRequestBodySize;
     private final SpeedyEngine engine;
     private final ConversionContext conversionContext;
+    private final IResponseSerializerV2 documentSerializer;
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this(speedyConfiguration, speedyConfiguration.getMaxRequestBodySize());
@@ -118,6 +120,17 @@ public class SpeedyFactory {
 
         this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor,
                 maxRequestBodySize, conversionContext, parserProviderMap, serializerProviderMap);
+
+        /// Errors and {@code $metadata} are server-level documents that are not content-negotiated;
+        /// they are always rendered in the baseline content type. The serializer is entity-agnostic,
+        /// so a single baseline instance handles both.
+        IResponseSerializerProvider baselineProvider =
+                serializerProviderMap.get(ContentNegotiationManager.DEFAULT_CONTENT_TYPE);
+        if (baselineProvider == null) {
+            throw new InternalServerError(
+                    "No IResponseSerializerProvider registered for '" + ContentNegotiationManager.DEFAULT_CONTENT_TYPE + "'");
+        }
+        this.documentSerializer = baselineProvider.create(metaModel, conversionContext);
     }
 
     static <T> Map<String, T> buildProviderMap(List<T> providers,
@@ -151,7 +164,13 @@ public class SpeedyFactory {
             if (e instanceof Error) throw (Error) e;
             int status = exceptionMapper.getStatus(e);
             String message = exceptionMapper.getMessage(e);
-            ExceptionUtils.writeException(response, status, message);
+            try {
+                documentSerializer.write(
+                        SpeedyErrorResponse.builder().status(status).message(message).build(),
+                        response);
+            } catch (SpeedyHttpException writeFailure) {
+                log.error("Failed to write error response for {}", request.getRequestURI(), writeFailure);
+            }
             log.error("Exception {} ", request.getRequestURI(), e);
         } finally {
             response.getWriter().flush();

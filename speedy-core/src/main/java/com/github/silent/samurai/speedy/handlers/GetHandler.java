@@ -51,6 +51,7 @@ public class GetHandler implements Handler {
         Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
         context.put(SpeedyResponse.class,
                 SpeedyEntityResponse.builder()
+                        .entityMetadata(context.getEntityMetadata())
                         .payload(entities)
                         .pageIndex(speedyQuery.getPageInfo().getPageNo())
                         .expands(speedyQuery.getExpand())

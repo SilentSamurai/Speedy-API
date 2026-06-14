@@ -11,6 +11,10 @@ public interface IResponseSerializerProvider {
     /// The MIME content type this provider handles (e.g. "application/json").
     String getContentType();
 
-    /// Creates a new serializer instance for the given entity, backed by the conversion context.
-    IResponseSerializerV2 create(MetaModel metaModel, EntityMetadata entityMetadata, ConversionContext context);
+    /// Creates a serializer backed by the conversion context.
+    ///
+    /// The serializer is entity-agnostic: per-call data (including the target
+    /// {@link EntityMetadata}) travels inside each {@link SpeedyResponse}, so a single
+    /// instance handles entity lists, counts, batches, errors, and metadata alike.
+    IResponseSerializerV2 create(MetaModel metaModel, ConversionContext context);
 }

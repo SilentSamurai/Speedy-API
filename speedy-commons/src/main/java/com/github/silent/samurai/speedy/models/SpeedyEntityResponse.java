@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.SpeedyResponseType;
+import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
@@ -19,6 +20,11 @@ import java.util.function.Predicate;
 @Getter
 @Builder
 public class SpeedyEntityResponse implements SpeedyResponse {
+
+    /// Metadata describing the entity type carried in this response.
+    /// Required for serialization; supplied by the handler that builds the response,
+    /// since the serializer is entity-agnostic and reads the type from the payload.
+    private final EntityMetadata entityMetadata;
 
     /// The list of entity instances returned by the query.
     private final List<? extends SpeedyValue> payload;

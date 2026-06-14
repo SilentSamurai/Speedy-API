@@ -1,58 +1,63 @@
-package com.github.silent.samurai.speedy.docs;
+package com.github.silent.samurai.speedy.json.response;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.json.JSONResponseSerializer;
+import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.Collection;
 
-public class MetaModelSerializer {
+/// Serializes the metamodel to JSON and writes the `$metadata` document.
+/// The metadata writer: {@link JSONResponseSerializer} delegates {@code writeMetadata} straight to it.
+public class JsonMetaModelSerializer {
 
-    public static JsonNode serializeMetaModel(MetaModel metaModel) {
+    public void write(SpeedyMetadataResponse metadataResponse, HttpServletResponse httpResponse) throws SpeedyHttpException {
+        JsonNode jsonElement = serializeMetaModel(metadataResponse.getMetaModel());
+        JsonHttpWriter.writeJson(metadataResponse, jsonElement, httpResponse);
+    }
+
+    private static JsonNode serializeMetaModel(MetaModel metaModel) {
         Collection<EntityMetadata> allEntityMetadata = metaModel.getAllEntityMetadata();
         ArrayNode entityArray = CommonUtil.json().createArrayNode();
         allEntityMetadata.stream()
-                .map(MetaModelSerializer::serializeEntityMetaModel)
+                .map(JsonMetaModelSerializer::serializeEntityMetaModel)
                 .forEach(entityArray::add);
         return entityArray;
     }
 
-    public static JsonNode serializeEntityMetaModel(EntityMetadata entityMetadata) {
+    private static JsonNode serializeEntityMetaModel(EntityMetadata entityMetadata) {
         ObjectMapper json = CommonUtil.json();
         ObjectNode jsonMetadata = json.createObjectNode();
         jsonMetadata.put("name", entityMetadata.getName());
         jsonMetadata.put("hasCompositeKey", entityMetadata.hasCompositeKey());
-        // Expose entity-level @SpeedySensitive so clients can see the
-        // default sensitivity that cascades to fields without overrides.
         jsonMetadata.put("sensitive", entityMetadata.isSensitive());
-//        jsonMetadata.put("dbTable", entityMetadata.getDbTableName());
         ArrayNode fieldArray = json.createArrayNode();
         entityMetadata.getAllFields().stream()
-                .map(MetaModelSerializer::serializeFieldMetadata)
+                .map(JsonMetaModelSerializer::serializeFieldMetadata)
                 .forEach(fieldArray::add);
         jsonMetadata.set("fields", fieldArray);
 
         ArrayNode keyArray = json.createArrayNode();
         entityMetadata.getKeyFields().stream()
-                .map(MetaModelSerializer::serializeFieldMetadata)
+                .map(JsonMetaModelSerializer::serializeFieldMetadata)
                 .forEach(keyArray::add);
         jsonMetadata.set("keyFields", keyArray);
 
         return jsonMetadata;
     }
 
-
-    public static JsonNode serializeFieldMetadata(FieldMetadata fieldMetadata) {
+    private static JsonNode serializeFieldMetadata(FieldMetadata fieldMetadata) {
         ObjectNode fieldMetadataJson = CommonUtil.json().createObjectNode();
-//        fieldMetadataJson.put("className", fieldMetadata.getClassFieldName());
         fieldMetadataJson.put("outputProperty", fieldMetadata.getOutputPropertyName());
-//        fieldMetadataJson.put("dbColumn", fieldMetadata.getDbColumnName());
         fieldMetadataJson.put("isAssociation", fieldMetadata.isAssociation());
 
         if (fieldMetadata instanceof KeyFieldMetadata keyFieldMetadata) {
@@ -76,6 +81,4 @@ public class MetaModelSerializer {
 
         return fieldMetadataJson;
     }
-
-
 }

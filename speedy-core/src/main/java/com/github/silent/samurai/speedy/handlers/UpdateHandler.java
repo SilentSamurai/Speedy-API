@@ -44,6 +44,7 @@ public class UpdateHandler implements Handler {
         List<SpeedyEntity> speedyEntities = List.of(savedEntity);
         context.put(SpeedyResponse.class,
                 SpeedyEntityResponse.builder()
+                        .entityMetadata(context.getEntityMetadata())
                         .payload(speedyEntities)
                         .pageIndex(0)
                         .status(200)

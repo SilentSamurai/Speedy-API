@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.handlers;
+package com.github.silent.samurai.speedy.engine;
 
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;

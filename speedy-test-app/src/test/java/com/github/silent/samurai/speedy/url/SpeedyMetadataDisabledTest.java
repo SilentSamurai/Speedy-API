@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.url;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.controllers.SpeedyApiController;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
 /// ## How we test
 /// We construct a SpeedyApiController manually, inject a mocked SpeedyFactory
 /// whose configuration returns `false` for `isMetadataEndpointEnabled()`, then call
-/// `controller.metadata()` directly and assert `ResponseStatusException` with 404.
+/// `controller.metadata(response)` directly and assert `ResponseStatusException` with 404.
 class SpeedyMetadataDisabledTest {
 
     @Test
@@ -39,8 +40,9 @@ class SpeedyMetadataDisabledTest {
         SpeedyApiController controller = new SpeedyApiController();
         ReflectionTestUtils.setField(controller, "speedyFactory", factory);
 
+        HttpServletResponse response = mock(HttpServletResponse.class);
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-                controller::metadata);
+                () -> controller.metadata(response));
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
     }
 }

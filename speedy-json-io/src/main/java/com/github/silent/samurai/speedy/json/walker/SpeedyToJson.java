@@ -24,7 +24,7 @@ public class SpeedyToJson {
     private final Predicate<FieldMetadata> fieldPredicate;
     private final JsonRegistry jsonRegistry;
 
-    public SpeedyToJson(MetaModel metaModel, Predicate<FieldMetadata> fieldPredicate, JsonRegistry jsonRegistry) {
+    public SpeedyToJson(Predicate<FieldMetadata> fieldPredicate, JsonRegistry jsonRegistry) {
         this.fieldPredicate = fieldPredicate;
         this.jsonRegistry = jsonRegistry;
     }
@@ -110,7 +110,7 @@ public class SpeedyToJson {
         return jsonObject;
     }
 
-    public ArrayNode onlyKeyCollection(Collection<SpeedyValue> collection, EntityMetadata entityMetadata)
+    private ArrayNode onlyKeyCollection(Collection<SpeedyValue> collection, EntityMetadata entityMetadata)
             throws SpeedyHttpException {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue speedyValue : collection) {
@@ -125,7 +125,7 @@ public class SpeedyToJson {
         return jsonArray;
     }
 
-    public ObjectNode onlyKeys(SpeedyEntity speedyEntity, EntityMetadata entityMetadata) {
+    private ObjectNode onlyKeys(SpeedyEntity speedyEntity, EntityMetadata entityMetadata) {
         ObjectNode jsonObject = json.createObjectNode();
         for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
             if (!fieldMetadata.isSerializable()) continue;
@@ -139,7 +139,7 @@ public class SpeedyToJson {
         return jsonObject;
     }
 
-    public void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
+    private void fromBasic(FieldMetadata fieldMetadata, SpeedyValue speedyValue, ObjectNode jsonObject) {
         Object encoded = jsonRegistry.encode(fieldMetadata.getValueType(), speedyValue);
         String name = fieldMetadata.getOutputPropertyName();
         if (encoded == null) {
@@ -155,7 +155,7 @@ public class SpeedyToJson {
         }
     }
 
-    public ArrayNode formCollectionOfBasics(FieldMetadata fieldMetadata, Collection<SpeedyValue> collection) {
+    private ArrayNode formCollectionOfBasics(FieldMetadata fieldMetadata, Collection<SpeedyValue> collection) {
         ArrayNode jsonArray = json.createArrayNode();
         for (SpeedyValue value : collection) {
             ObjectNode jsonObject = json.createObjectNode();

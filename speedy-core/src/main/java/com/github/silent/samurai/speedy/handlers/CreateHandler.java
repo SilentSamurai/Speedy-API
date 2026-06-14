@@ -58,6 +58,7 @@ public class CreateHandler implements Handler {
         if (entities.isEmpty()) {
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
+                            .entityMetadata(context.getEntityMetadata())
                             .payload(List.of())
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -91,6 +92,7 @@ public class CreateHandler implements Handler {
 
                     context.put(SpeedyResponse.class,
                             SpeedyEntityResponse.builder()
+                                    .entityMetadata(context.getEntityMetadata())
                                     .payload(saved)
                                     .pageIndex(0)
                                     .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -191,6 +193,7 @@ public class CreateHandler implements Handler {
         if (failed.isEmpty()) {
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
+                            .entityMetadata(context.getEntityMetadata())
                             .payload(succeeded)
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)

@@ -56,6 +56,7 @@ public class DeleteHandler implements Handler {
         if (keys.isEmpty()) {
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
+                            .entityMetadata(context.getEntityMetadata())
                             .payload(List.of())
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -84,6 +85,7 @@ public class DeleteHandler implements Handler {
 
                     context.put(SpeedyResponse.class,
                             SpeedyEntityResponse.builder()
+                                    .entityMetadata(context.getEntityMetadata())
                                     .payload(deleted)
                                     .pageIndex(0)
                                     .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -180,6 +182,7 @@ public class DeleteHandler implements Handler {
         if (failed.isEmpty()) {
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
+                            .entityMetadata(context.getEntityMetadata())
                             .payload(succeeded)
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)

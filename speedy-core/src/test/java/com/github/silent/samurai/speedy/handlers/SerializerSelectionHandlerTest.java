@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
+import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
@@ -10,6 +11,8 @@ import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.models.SpeedyBatchResponse;
 import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
+import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
+import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
@@ -139,7 +142,7 @@ class SerializerSelectionHandlerTest {
         }
 
         @Override
-        public IResponseSerializerV2 create(MetaModel metaModel, EntityMetadata entityMetadata, ConversionContext context) {
+        public IResponseSerializerV2 create(MetaModel metaModel, ConversionContext context) {
             return new StubSerializer("application/json");
         }
     }
@@ -151,7 +154,7 @@ class SerializerSelectionHandlerTest {
         }
 
         @Override
-        public IResponseSerializerV2 create(MetaModel metaModel, EntityMetadata entityMetadata, ConversionContext context) {
+        public IResponseSerializerV2 create(MetaModel metaModel, ConversionContext context) {
             return new StubSerializer("text/plain");
         }
     }
@@ -179,6 +182,14 @@ class SerializerSelectionHandlerTest {
 
         @Override
         public void writeBatch(SpeedyBatchResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
+        }
+
+        @Override
+        public void writeError(SpeedyErrorResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
+        }
+
+        @Override
+        public void writeMetadata(SpeedyMetadataResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
         }
     }
 }

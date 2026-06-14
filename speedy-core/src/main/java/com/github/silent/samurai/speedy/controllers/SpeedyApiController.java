@@ -1,13 +1,10 @@
 package com.github.silent.samurai.speedy.controllers;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.docs.MetaModelSerializer;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,14 +24,14 @@ public class SpeedyApiController {
     SpeedyFactory speedyFactory;
 
     @Hidden
-    @GetMapping(value = "/$metadata", produces = "application/json")
-    public String metadata() throws JsonProcessingException {
+    @GetMapping(value = "/$metadata")
+    public void metadata(HttpServletResponse response) throws SpeedyHttpException {
         if (!speedyFactory.getConfiguration().isMetadataEndpointEnabled()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        MetaModel metaModel = speedyFactory.getMetaModel();
-        JsonNode jsonElement = MetaModelSerializer.serializeMetaModel(metaModel);
-        return CommonUtil.json().writeValueAsString(jsonElement);
+        speedyFactory.getDocumentSerializer().write(
+                SpeedyMetadataResponse.builder().metaModel(speedyFactory.getMetaModel()).build(),
+                response);
     }
 
     @Hidden

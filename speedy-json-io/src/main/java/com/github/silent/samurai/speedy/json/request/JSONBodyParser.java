@@ -30,10 +30,10 @@ import static com.github.silent.samurai.speedy.utils.CommonUtil.json;
 @Slf4j
 public class JSONBodyParser implements IRequestBodyParser {
 
-    private final JsonRegistry jsonRegistry;
+    private final JsonToSpeedy jsonToSpeedy;
 
     public JSONBodyParser(JsonRegistry jsonRegistry) {
-        this.jsonRegistry = jsonRegistry;
+        this.jsonToSpeedy = new JsonToSpeedy(jsonRegistry);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class JSONBodyParser implements IRequestBodyParser {
             JsonQueryParser jsonQueryParser = new JsonQueryParser(metaModel, baseQuery.getFrom(), jsonBody);
             jsonQueryParser.setMaxPageSize(maxPageSize);
             jsonQueryParser.setDefaultPageSize(defaultPageSize);
-            jsonQueryParser.setJsonNode2SpeedyValue(new JsonToSpeedy(jsonRegistry));
+            jsonQueryParser.setJsonNode2SpeedyValue(jsonToSpeedy);
             SpeedyQuery query = jsonQueryParser.build();
             if (query instanceof SpeedyQueryImpl impl) {
                 impl.setType(SpeedyRequestType.QUERY);
@@ -85,11 +85,11 @@ public class JSONBodyParser implements IRequestBodyParser {
             }
             ObjectNode objectNode = (ObjectNode) jsonBody;
 
-            SpeedyEntityKey pk = new JsonToSpeedy(jsonRegistry).fromPkJson(entity, objectNode);
+            SpeedyEntityKey pk = jsonToSpeedy.fromPkJson(entity, objectNode);
             if (!queryProcessor.exists(pk)) {
                 throw new BadRequestException("Entity not present.");
             }
-            SpeedyEntity speedyEntity = new JsonToSpeedy(jsonRegistry).fromEntityMetadata(entity, objectNode);
+            SpeedyEntity speedyEntity = jsonToSpeedy.fromEntityMetadata(entity, objectNode);
             log.info(" pk {} -> entity {}", pk, speedyEntity);
 
             return SpeedyUpdateBody.builder()
@@ -127,12 +127,12 @@ public class JSONBodyParser implements IRequestBodyParser {
             if (element.isObject()) {
                 ObjectNode objectNode = (ObjectNode) element;
                 if (MetadataUtil.isPrimaryKeyComplete(resourceMetadata, objectNode)) {
-                    SpeedyEntityKey pk = new JsonToSpeedy(jsonRegistry).fromPkJson(resourceMetadata, objectNode);
+                    SpeedyEntityKey pk = jsonToSpeedy.fromPkJson(resourceMetadata, objectNode);
                     if (queryProcessor.exists(pk)) {
                         throw new BadRequestException("Entity already present.");
                     }
                 }
-                SpeedyEntity speedyEntity = new JsonToSpeedy(jsonRegistry).fromEntityMetadata(resourceMetadata, objectNode);
+                SpeedyEntity speedyEntity = jsonToSpeedy.fromEntityMetadata(resourceMetadata, objectNode);
                 log.info("parsed entity {}", speedyEntity);
                 parsedObjects.add(speedyEntity);
             } else {
@@ -155,7 +155,7 @@ public class JSONBodyParser implements IRequestBodyParser {
                 if (!MetadataUtil.isPrimaryKeyComplete(resourceMetadata, objectNode)) {
                     throw new BadRequestException("Primary Key Incomplete ");
                 }
-                SpeedyEntityKey pk = new JsonToSpeedy(jsonRegistry).fromPkJson(resourceMetadata, objectNode);
+                SpeedyEntityKey pk = jsonToSpeedy.fromPkJson(resourceMetadata, objectNode);
                 keysToBeRemoved.add(pk);
                 log.info("parsed primary key {}", pk);
             } else {

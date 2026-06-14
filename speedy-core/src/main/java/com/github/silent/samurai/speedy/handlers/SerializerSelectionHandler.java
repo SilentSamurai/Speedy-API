@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
+import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerProvider;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
@@ -24,6 +25,6 @@ public class SerializerSelectionHandler implements Handler {
 
         IResponseSerializerProvider selected = manager.selectSerializer(accept);
         context.put(IResponseSerializerV2.class,
-                selected.create(context.get(MetaModel.class), context.getEntityMetadata(), conversionContext));
+                selected.create(context.get(MetaModel.class), conversionContext));
     }
 }
