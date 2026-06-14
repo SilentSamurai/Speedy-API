@@ -32,7 +32,10 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final List<Handler> uriChain;
     private final List<Handler> headerChain;
     private final List<Handler> operationChain;
-    private final List<Handler> bodyChain;
+    private final List<Handler> queryBodyChain;
+    private final List<Handler> createBodyChain;
+    private final List<Handler> updateBodyChain;
+    private final List<Handler> deleteBodyChain;
     private final List<Handler> parserSelectionChain;
     private final List<Handler> serializerSelectionChain;
     private final List<Handler> getChain;
@@ -76,9 +79,24 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                 new TailHandler()
         );
 
-        bodyChain = List.of(
+        queryBodyChain = List.of(
                 new HeadHandler(),
-                new BodyParserHandler(),
+                new QueryBodyParserHandler(),
+                new TailHandler()
+        );
+        createBodyChain = List.of(
+                new HeadHandler(),
+                new CreateBodyParserHandler(),
+                new TailHandler()
+        );
+        updateBodyChain = List.of(
+                new HeadHandler(),
+                new UpdateBodyParserHandler(),
+                new TailHandler()
+        );
+        deleteBodyChain = List.of(
+                new HeadHandler(),
+                new DeleteBodyParserHandler(),
                 new TailHandler()
         );
 
@@ -185,8 +203,26 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     }
 
     @Override
-    public SpeedyBody parseBody(SpeedyContext ctx) throws SpeedyHttpException {
-        run(bodyChain, ctx);
+    public SpeedyBody parseQueryBody(SpeedyContext ctx) throws SpeedyHttpException {
+        run(queryBodyChain, ctx);
+        return ctx.get(SpeedyBody.class);
+    }
+
+    @Override
+    public SpeedyBody parseCreateBody(SpeedyContext ctx) throws SpeedyHttpException {
+        run(createBodyChain, ctx);
+        return ctx.get(SpeedyBody.class);
+    }
+
+    @Override
+    public SpeedyBody parseUpdateBody(SpeedyContext ctx) throws SpeedyHttpException {
+        run(updateBodyChain, ctx);
+        return ctx.get(SpeedyBody.class);
+    }
+
+    @Override
+    public SpeedyBody parseDeleteBody(SpeedyContext ctx) throws SpeedyHttpException {
+        run(deleteBodyChain, ctx);
         return ctx.get(SpeedyBody.class);
     }
 

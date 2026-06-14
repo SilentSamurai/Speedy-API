@@ -88,16 +88,15 @@ SpeedyFactory.processReqV2()
 ├── 4. engine.resolveOperation(ctx)     — operationChain: HeadHandler → OperationResolverHandler → TailHandler
 ├── 5. engine.selectSerializer(ctx)     — serializerSelectionChain: HeadHandler → SerializerSelectionHandler → TailHandler
 ├── 6. engine.selectBodyParser(ctx)     — parserSelectionChain: HeadHandler → ParserSelectionHandler → TailHandler
-├── 7. engine.parseBody(ctx)            — bodyChain: HeadHandler → BodyParserHandler → TailHandler
-├── 8. switch (type) {                  — dispatch to operation-specific sub-chain
-│      GET_LIST  → engine.get(ctx)      —   getChain: HeadHandler → PermissionCheckHandler → GetHandler → TailHandler
-│      QUERY     → engine.query(ctx)    —   queryChain: HeadHandler → PermissionCheckHandler → QueryHandler → TailHandler
-│      CREATE    → engine.create(ctx)   —   createChain: HeadHandler → PermissionCheckHandler → CreateHandler → TailHandler
-│      UPDATE    → engine.update(ctx)   —   updateChain: HeadHandler → PermissionCheckHandler → UpdateHandler → TailHandler
-│      DELETE    → engine.delete(ctx)   —   deleteChain: HeadHandler → PermissionCheckHandler → DeleteHandler → TailHandler
-│      METADATA  → engine.metadata(ctx) —   metadataChain: HeadHandler → MetadataHandler → TailHandler
+├── 7. switch (type) {                  — SINGLE dispatch: write ops parse their body then run the op; read ops just run
+│      GET_LIST  → engine.get(ctx)                                  —   getChain: HeadHandler → PermissionCheckHandler → GetHandler → TailHandler
+│      QUERY     → engine.parseQueryBody(ctx); engine.query(ctx)    —   queryBodyChain: …→ QueryBodyParserHandler →…; queryChain: …→ QueryHandler →…
+│      CREATE    → engine.parseCreateBody(ctx); engine.create(ctx)  —   createBodyChain: …→ CreateBodyParserHandler →…; createChain: …→ CreateHandler →…
+│      UPDATE    → engine.parseUpdateBody(ctx); engine.update(ctx)  —   updateBodyChain: …→ UpdateBodyParserHandler →…; updateChain: …→ UpdateHandler →…
+│      DELETE    → engine.parseDeleteBody(ctx); engine.delete(ctx)  —   deleteBodyChain: …→ DeleteBodyParserHandler →…; deleteChain: …→ DeleteHandler →…
+│      METADATA  → engine.metadata(ctx)                             —   metadataChain: HeadHandler → MetadataHandler → TailHandler
 │    }
-└── 9. serializer.write(resp, response) — write response directly (not via a handler)
+└── 8. serializer.write(resp, response) — write response directly (not via a handler)
 ```
 
 ### Key Design Decisions

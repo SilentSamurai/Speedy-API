@@ -34,16 +34,15 @@ SpeedyFactory.processReqV2()
 ├── 4. engine.resolveOperation(ctx)     — operationChain: HeadHandler → OperationResolverHandler → TailHandler
 ├── 5. engine.selectSerializer(ctx)     — serializerSelectionChain: HeadHandler → SerializerSelectionHandler → TailHandler
 ├── 6. engine.selectBodyParser(ctx)     — parserSelectionChain: HeadHandler → ParserSelectionHandler → TailHandler
-├── 7. engine.parseBody(ctx)            — bodyChain: HeadHandler → BodyParserHandler → TailHandler
-├── 8. switch (type) {                  — dispatch to operation-specific sub-chain
-│      GET_LIST  → engine.get(ctx)      —   getChain: HeadHandler → PermissionCheckHandler → GetHandler → TailHandler
-│      QUERY     → engine.query(ctx)    —   queryChain: HeadHandler → PermissionCheckHandler → QueryHandler → TailHandler
-│      CREATE    → engine.create(ctx)   —   createChain: HeadHandler → PermissionCheckHandler → CreateHandler → TailHandler
-│      UPDATE    → engine.update(ctx)   —   updateChain: HeadHandler → PermissionCheckHandler → UpdateHandler → TailHandler
-│      DELETE    → engine.delete(ctx)   —   deleteChain: HeadHandler → PermissionCheckHandler → DeleteHandler → TailHandler
-│      METADATA  → engine.metadata(ctx) —   metadataChain: HeadHandler → MetadataHandler → TailHandler
+├── 7. switch (type) {                  — SINGLE dispatch: write ops parse their body then run the op; read ops just run
+│      GET_LIST  → engine.get(ctx)                                  —   getChain: HeadHandler → PermissionCheckHandler → GetHandler → TailHandler
+│      QUERY     → engine.parseQueryBody(ctx); engine.query(ctx)    —   queryBodyChain: …→ QueryBodyParserHandler →…; queryChain: …→ QueryHandler →…
+│      CREATE    → engine.parseCreateBody(ctx); engine.create(ctx)  —   createBodyChain: …→ CreateBodyParserHandler →…; createChain: …→ CreateHandler →…
+│      UPDATE    → engine.parseUpdateBody(ctx); engine.update(ctx)  —   updateBodyChain: …→ UpdateBodyParserHandler →…; updateChain: …→ UpdateHandler →…
+│      DELETE    → engine.parseDeleteBody(ctx); engine.delete(ctx)  —   deleteBodyChain: …→ DeleteBodyParserHandler →…; deleteChain: …→ DeleteHandler →…
+│      METADATA  → engine.metadata(ctx)                             —   metadataChain: HeadHandler → MetadataHandler → TailHandler
 │    }
-└── 9. serializer.write(resp, response) — write response directly (not via a handler)
+└── 8. serializer.write(resp, response) — write response directly (not via a handler)
 ```
 
 **Handler responsibilities:**
@@ -55,7 +54,7 @@ SpeedyFactory.processReqV2()
 | `RequestParserHandler`        | Reads `HttpMethod`, request URI, and HTTP headers from `HttpServletRequest`.                                                                                                   |
 | `OperationResolverHandler`    | Routes by HTTP method + URI suffix (`$query`, `$create`, `$update`, `$delete`) to a `SpeedyRequestType`; enforces action permissions.                                          |
 | `ParserSelectionHandler`      | Selects an `IRequestBodyParser` (JSON, XML, etc.) based on the `Content-Type` request header.                                                                                  |
-| `BodyParserHandler`           | Reads and parses the request body into a `SpeedyBody` using the selected parser.                                                                                               |
+| `{Query,Create,Update,Delete}BodyParserHandler` | One per write op: parses the request body into the matching `SpeedyBody` subtype using the selected parser. Routed by the factory's single request-type switch (no switch inside the handler). |
 | `SerializerSelectionHandler`  | Selects an `IResponseSerializerV2` (JSON, XML, etc.) based on the `Accept` request header via `ContentNegotiationManager`.                                                     |
 | `PermissionCheckHandler`      | Enforces `@SpeedyAction` per-entity/per-field CRUD gates. Parameterized by `PermissionType` (READ/CREATE/UPDATE/DELETE).                                                        |
 | `GetHandler`                  | Parses URI query params into `SpeedyQuery`, executes `executeMany()`.                                                                                                          |

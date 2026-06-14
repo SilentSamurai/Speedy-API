@@ -151,24 +151,24 @@ public class SpeedyFactory {
 
             // 4. Negotiate an output + input format from the parsed headers. From here on, errors
             // in the catch block render in the client's negotiated format (before this, the
-            // documentSerializer JSON fallback is used).
+            // baseline JSON fallback is used).
             serializer                  = engine.selectSerializer(ctx);
             IRequestBodyParser parser   = engine.selectBodyParser(ctx);
 
-            // 5. Parse the body using the selected parser.
-            SpeedyBody body             = engine.parseBody(ctx);
-
-            // 6. Dispatch switch lives here — NOT inside the engine. See SpeedyEngine javadoc.
+            // 5. Single dispatch on the request type — this is the ONLY switch, and it lives
+            // HERE, not inside a handler. Write ops parse their body (with the parser selected
+            // above), then run the operation; read ops (GET_LIST, METADATA) carry nobody.
+            // See SpeedyEngine Javadoc.
             SpeedyResponse resp = switch (type) {
                 case GET_LIST -> engine.get(ctx);
-                case QUERY    -> engine.query(ctx);
-                case CREATE   -> engine.create(ctx);
-                case UPDATE   -> engine.update(ctx);
-                case DELETE   -> engine.delete(ctx);
+                case QUERY    -> { engine.parseQueryBody(ctx);  yield engine.query(ctx); }
+                case CREATE   -> { engine.parseCreateBody(ctx); yield engine.create(ctx); }
+                case UPDATE   -> { engine.parseUpdateBody(ctx); yield engine.update(ctx); }
+                case DELETE   -> { engine.parseDeleteBody(ctx); yield engine.delete(ctx); }
                 case METADATA -> engine.metadata(ctx);
             };
 
-            // 7. Write the response.
+            // 6. Write the response.
             serializer.write(resp, response);
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;

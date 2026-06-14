@@ -25,9 +25,10 @@ import jakarta.servlet.http.HttpServletResponse;
 ///    resolveOperation  -> SpeedyRequestType      classify op from URI + HTTP method
 /// 4. selectSerializer  -> IResponseSerializerV2  } negotiate output + input format
 ///    selectBodyParser  -> IRequestBodyParser     }
-/// 5. parseBody         -> SpeedyBody             parse body using the selected parser
-/// 6. switch(type)      -> SpeedyResponse         dispatch in the factory
-/// 7. serializer.write(resp, response)            write the response
+/// 5. switch(type)      -> SpeedyResponse         single dispatch in the factory: write ops
+///                                                parse their body (parseXBody) then run the
+///                                                operation; read ops just run the operation
+/// 6. serializer.write(resp, response)            write the response
 /// ```
 ///
 /// ## Every parse/select step returns its produced type — DO NOT void them
@@ -44,12 +45,16 @@ import jakarta.servlet.http.HttpServletResponse;
 /// Operation resolution needs both the parsed URI and the HTTP method, so it is its own step
 /// after the two parsers. DO NOT fold it back into {@link #parseHeaders}.
 ///
-/// ## Dispatch switch belongs in SpeedyFactory, NOT here
+/// ## A single dispatch switch belongs in SpeedyFactory, NOT here
 ///
-/// This interface exposes named operations ({@link #get}, {@link #query}, etc.) but does
-/// NOT decide which one to call. That switch lives in {@code SpeedyFactory.processReqV2}
-/// because choosing the operation is orchestration, not engine logic.
-/// DO NOT collapse these into a single {@code execute(SpeedyContext)} method.
+/// This interface exposes named operations ({@link #get}, {@link #query}, etc.) and the
+/// per-type body parsers ({@link #parseQueryBody}, {@link #parseCreateBody}, etc.) but does
+/// NOT decide which to call. That decision is one {@code switch(type)} in
+/// {@code SpeedyFactory.processReqV2}: each write-op arm parses its body then runs the
+/// operation; read ops (GET_LIST, METADATA) just run the operation. There is exactly ONE such
+/// switch — DO NOT add a second one, and DO NOT push it down into a handler (that is the very
+/// thing the old {@code BodyParserHandler} did wrong). DO NOT collapse these into a single
+/// {@code execute(SpeedyContext)} method either.
 public interface SpeedyEngine {
 
     SpeedyContext newContext(HttpServletRequest request, HttpServletResponse response) throws SpeedyHttpException;
@@ -72,9 +77,19 @@ public interface SpeedyEngine {
     /// Selects the body parser for the request's Content-Type. Stored in ctx AND returned.
     IRequestBodyParser selectBodyParser(SpeedyContext ctx) throws SpeedyHttpException;
 
-    /// Parses the raw body using the parser chosen by {@link #selectBodyParser}.
-    /// Stored in ctx AND returned.
-    SpeedyBody parseBody(SpeedyContext ctx) throws SpeedyHttpException;
+    // --- Per-type body parsers ---
+    // Each parses the raw body with the parser chosen by selectBodyParser into the SpeedyBody
+    // subtype for one request type, stores it in ctx for the matching operation handler, and
+    // returns it. The factory's single request-type switch routes each write op to its parser.
+    // GET_LIST / METADATA carry no body, so they have no parser here.
+
+    SpeedyBody parseQueryBody(SpeedyContext ctx) throws SpeedyHttpException;
+
+    SpeedyBody parseCreateBody(SpeedyContext ctx) throws SpeedyHttpException;
+
+    SpeedyBody parseUpdateBody(SpeedyContext ctx) throws SpeedyHttpException;
+
+    SpeedyBody parseDeleteBody(SpeedyContext ctx) throws SpeedyHttpException;
 
     // --- Operation methods ---
     // SpeedyFactory owns the switch that calls these; see SpeedyFactory.processReqV2.

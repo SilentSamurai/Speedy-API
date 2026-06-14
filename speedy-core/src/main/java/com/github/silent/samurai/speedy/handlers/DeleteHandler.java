@@ -25,10 +25,10 @@ import java.util.List;
 /// Handles DELETE /{Entity}/$delete requests with pre-parsed SpeedyDeleteBody.
 ///
 /// Reads the SpeedyDeleteBody (parsed from JSON by JSONBodyParser and set as
-/// body by BodyParserHandler), fires PRE/POST_DELETE events, validates keys,
+/// body by DeleteBodyParserHandler), fires PRE/POST_DELETE events, validates keys,
 /// and bulk-deletes entities in either BATCH or PER_ENTITY transaction mode.
 ///
-/// @see BodyParserHandler
+/// @see DeleteBodyParserHandler
 /// @see SpeedyDeleteBody
 @Slf4j
 public class DeleteHandler implements com.github.silent.samurai.speedy.interfaces.Handler {

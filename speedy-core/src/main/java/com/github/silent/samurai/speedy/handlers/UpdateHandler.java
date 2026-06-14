@@ -25,10 +25,10 @@ import java.util.List;
 /// Handles PUT/PATCH /{Entity}/$update requests with pre-parsed SpeedyUpdateBody.
 ///
 /// Reads the SpeedyUpdateBody (parsed from JSON by JSONBodyParser and set as
-/// body by BodyParserHandler), fires PRE/POST_UPDATE events, validates the entity,
+/// body by UpdateBodyParserHandler), fires PRE/POST_UPDATE events, validates the entity,
 /// and updates it in a single transaction.
 ///
-/// @see BodyParserHandler
+/// @see UpdateBodyParserHandler
 /// @see SpeedyUpdateBody
 @Slf4j
 public class UpdateHandler implements com.github.silent.samurai.speedy.interfaces.Handler {

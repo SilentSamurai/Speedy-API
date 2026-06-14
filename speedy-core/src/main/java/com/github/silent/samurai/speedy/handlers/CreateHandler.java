@@ -26,10 +26,10 @@ import java.util.List;
 /// Handles POST /{Entity}/$create requests with pre-parsed SpeedyCreateBody.
 ///
 /// Reads the SpeedyCreateBody (parsed from JSON by JSONBodyParser and set as
-/// body by BodyParserHandler), fires PRE/POST_INSERT events, validates entities,
+/// body by CreateBodyParserHandler), fires PRE/POST_INSERT events, validates entities,
 /// and bulk-creates them in either BATCH or PER_ENTITY transaction mode.
 ///
-/// @see BodyParserHandler
+/// @see CreateBodyParserHandler
 /// @see SpeedyCreateBody
 @Slf4j
 public class CreateHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
