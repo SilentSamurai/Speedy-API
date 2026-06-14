@@ -11,12 +11,7 @@ import java.util.Map;
  * <p>Mutation methods ({@link #withHeader}, {@link #withHeaders}) return new instances
  * — the original is unchanged. This enables safe interceptor chaining.
  */
-public final class SpeedyRequest {
-
-    private final String method;
-    private final String url;
-    private final Map<String, List<String>> headers;
-    private final String body;
+public record SpeedyRequest(String method, String url, Map<String, List<String>> headers, String body) {
 
     public SpeedyRequest(String method, String url, Map<String, List<String>> headers, String body) {
         this.method = method;
@@ -25,22 +20,6 @@ public final class SpeedyRequest {
                 ? Collections.emptyMap()
                 : Collections.unmodifiableMap(new HashMap<>(headers));
         this.body = body;
-    }
-
-    public String method() {
-        return method;
-    }
-
-    public String url() {
-        return url;
-    }
-
-    public Map<String, List<String>> headers() {
-        return headers;
-    }
-
-    public String body() {
-        return body;
     }
 
     /**
