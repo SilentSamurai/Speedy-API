@@ -75,16 +75,22 @@ public class SpeedyFactory {
         dialect = speedyConfiguration.getDialect();
 
         /// Build the conversion context with built-in defaults, then let SPI
-        /// modules (e.g. speedy-json-io's JsonConversionModule) contribute their
+        /// modules (e.g. speedy-json-io's JsonSpeedyProvider) contribute their
         /// registries, and finally apply user-supplied type modules so custom
         /// encodings can override or extend the built-in ones.
         this.conversionContext = ConversionContext.withDefaults();
-        for (SpeedyTypeModule module : ServiceLoader.load(SpeedyTypeModule.class)) {
-            module.contribute(conversionContext);
+        List<ISpeedyIoProvider> providers = StreamSupport
+                .stream(ServiceLoader.load(ISpeedyIoProvider.class).spliterator(), false)
+                .toList();
+        for (ISpeedyIoProvider provider : providers) {
+            provider.contributeModule(conversionContext);
         }
         for (SpeedyTypeModule module : speedyConfiguration.typeModules()) {
             module.contribute(conversionContext);
         }
+
+        log.info("Loaded {} IO provider(s): {}", providers.size(),
+                providers.stream().map(ISpeedyIoProvider::getContentType).toList());
 
         /// Extract the Java-type registry from the context and create the
         /// serializer / deserializer pair that the event and validation processors
@@ -102,35 +108,22 @@ public class SpeedyFactory {
         /// Discover all I/O format providers once at startup via SPI, validate that
         /// no two providers claim the same content type, and build content-type lookup
         /// maps. The maps are injected into the engine so handlers only need to select.
-        List<IRequestBodyParserProvider> parserProviders = StreamSupport
-                .stream(ServiceLoader.load(IRequestBodyParserProvider.class).spliterator(), false)
-                .toList();
-        List<IResponseSerializerProvider> serializerProviders = StreamSupport
-                .stream(ServiceLoader.load(IResponseSerializerProvider.class).spliterator(), false)
-                .toList();
-        log.info("Loaded {} request body parser(s): {}", parserProviders.size(),
-                parserProviders.stream().map(IRequestBodyParserProvider::getContentType).toList());
-        log.info("Loaded {} response serializer(s): {}", serializerProviders.size(),
-                serializerProviders.stream().map(IResponseSerializerProvider::getContentType).toList());
-
-        Map<String, IRequestBodyParserProvider> parserProviderMap = buildProviderMap(
-                parserProviders, IRequestBodyParserProvider::getContentType, "IRequestBodyParserProvider");
-        Map<String, IResponseSerializerProvider> serializerProviderMap = buildProviderMap(
-                serializerProviders, IResponseSerializerProvider::getContentType, "IResponseSerializerProvider");
+        Map<String, ISpeedyIoProvider> providerMap = buildProviderMap(
+                providers, ISpeedyIoProvider::getContentType, "ISpeedyIoProvider");
 
         this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor,
-                maxRequestBodySize, conversionContext, parserProviderMap, serializerProviderMap);
+                maxRequestBodySize, conversionContext, providerMap);
 
         /// Errors and {@code $metadata} are server-level documents that are not content-negotiated;
         /// they are always rendered in the baseline content type. The serializer is entity-agnostic,
         /// so a single baseline instance handles both.
-        IResponseSerializerProvider baselineProvider =
-                serializerProviderMap.get(ContentNegotiationManager.DEFAULT_CONTENT_TYPE);
+        ISpeedyIoProvider baselineProvider =
+                providerMap.get(ContentNegotiationManager.DEFAULT_CONTENT_TYPE);
         if (baselineProvider == null) {
             throw new InternalServerError(
-                    "No IResponseSerializerProvider registered for '" + ContentNegotiationManager.DEFAULT_CONTENT_TYPE + "'");
+                    "No ISpeedyIoProvider registered for '" + ContentNegotiationManager.DEFAULT_CONTENT_TYPE + "'");
         }
-        this.documentSerializer = baselineProvider.create(metaModel, conversionContext);
+        this.documentSerializer = baselineProvider.createSerializer(metaModel, conversionContext);
     }
 
     static <T> Map<String, T> buildProviderMap(List<T> providers,

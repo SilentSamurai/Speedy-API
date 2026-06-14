@@ -5,10 +5,7 @@ import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
-import com.github.silent.samurai.speedy.interfaces.IRequestBodyParserProvider;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyCreateBody;
@@ -30,8 +27,8 @@ class ParserSelectionHandlerTest {
 
     private final ConversionContext conversionContext = ConversionContext.withDefaults();
 
-    private ContentNegotiationManager manager(Map<String, IRequestBodyParserProvider> parserProviders) {
-        return new ContentNegotiationManager(parserProviders, Collections.emptyMap());
+    private ContentNegotiationManager manager(Map<String, ISpeedyIoProvider> providerMap) {
+        return new ContentNegotiationManager(providerMap);
     }
 
     @Test
@@ -122,36 +119,40 @@ class ParserSelectionHandlerTest {
         return new SpeedyHeaders(Collections.singletonMap(name, value));
     }
 
-    private static Map<String, IRequestBodyParserProvider> mapOf(IRequestBodyParserProvider... providers) {
-        Map<String, IRequestBodyParserProvider> map = new HashMap<>();
-        for (IRequestBodyParserProvider provider : providers) {
+    private static Map<String, ISpeedyIoProvider> mapOf(ISpeedyIoProvider... providers) {
+        Map<String, ISpeedyIoProvider> map = new HashMap<>();
+        for (ISpeedyIoProvider provider : providers) {
             map.put(provider.getContentType().toLowerCase(), provider);
         }
         return map;
     }
 
-    static class JsonParserProvider implements IRequestBodyParserProvider {
+    static class JsonParserProvider implements ISpeedyIoProvider {
         @Override
-        public String getContentType() {
-            return "application/json";
-        }
+        public String getContentType() { return "application/json"; }
 
         @Override
-        public IRequestBodyParser create(ConversionContext context) {
-            return new StubParser("application/json");
-        }
+        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return null; }
+
+        @Override
+        public IRequestBodyParser createParser(ConversionContext context) { return new StubParser("application/json"); }
+
+        @Override
+        public void contributeModule(ConversionContext ctx) {}
     }
 
-    static class TextParserProvider implements IRequestBodyParserProvider {
+    static class TextParserProvider implements ISpeedyIoProvider {
         @Override
-        public String getContentType() {
-            return "text/plain";
-        }
+        public String getContentType() { return "text/plain"; }
 
         @Override
-        public IRequestBodyParser create(ConversionContext context) {
-            return new StubParser("text/plain");
-        }
+        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return null; }
+
+        @Override
+        public IRequestBodyParser createParser(ConversionContext context) { return new StubParser("text/plain"); }
+
+        @Override
+        public void contributeModule(ConversionContext ctx) {}
     }
 
     static class StubParser implements IRequestBodyParser {

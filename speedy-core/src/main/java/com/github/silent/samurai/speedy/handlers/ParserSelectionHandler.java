@@ -4,7 +4,7 @@ import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
-import com.github.silent.samurai.speedy.interfaces.IRequestBodyParserProvider;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.request.RequestContext;
 
@@ -22,7 +22,7 @@ public class ParserSelectionHandler implements Handler {
         String contentType = headers.get("Content-Type");
         ConversionContext conversionContext = context.get(ConversionContext.class);
 
-        IRequestBodyParserProvider selected = manager.selectParser(contentType);
-        context.put(IRequestBodyParser.class, selected.create(conversionContext));
+        ISpeedyIoProvider selected = manager.selectProvider(contentType);
+        context.put(IRequestBodyParser.class, selected.createParser(conversionContext));
     }
 }

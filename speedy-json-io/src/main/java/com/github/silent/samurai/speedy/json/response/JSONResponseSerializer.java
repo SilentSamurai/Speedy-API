@@ -1,9 +1,8 @@
-package com.github.silent.samurai.speedy.json;
+package com.github.silent.samurai.speedy.json.response;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.json.response.*;
 import com.github.silent.samurai.speedy.models.SpeedyBatchResponse;
 import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;

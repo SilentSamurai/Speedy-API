@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.handlers;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializerProvider;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.request.RequestContext;
@@ -23,8 +23,8 @@ public class SerializerSelectionHandler implements Handler {
         String accept = request.getHeader("Accept");
         ConversionContext conversionContext = context.get(ConversionContext.class);
 
-        IResponseSerializerProvider selected = manager.selectSerializer(accept);
+        ISpeedyIoProvider selected = manager.selectProvider(accept);
         context.put(IResponseSerializerV2.class,
-                selected.create(context.get(MetaModel.class), conversionContext));
+                selected.createSerializer(context.get(MetaModel.class), conversionContext));
     }
 }

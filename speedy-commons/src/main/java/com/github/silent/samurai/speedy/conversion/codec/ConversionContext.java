@@ -12,7 +12,7 @@ import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry
 /// This subclass populates the bag with the built-in registries:
 /// {@link JavaTypeRegistry} and {@link DbConversionRegistry}.
 /// Format-specific registries (e.g. JsonRegistry from speedy-json-io) are
-/// contributed later via {@link com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule}
+/// contributed later via {@link com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider}
 /// discovered through ServiceLoader so that speedy-core stays free of
 /// compile-time dependencies on format modules.
 ///

@@ -9,7 +9,6 @@ import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.json.JSONResponseSerializer;
 import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;

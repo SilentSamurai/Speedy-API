@@ -4,10 +4,7 @@ import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializerProvider;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.models.SpeedyBatchResponse;
 import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
@@ -36,8 +33,8 @@ class SerializerSelectionHandlerTest {
     private final MetaModel metaModel = Mockito.mock(MetaModel.class);
     private final EntityMetadata entityMetadata = Mockito.mock(EntityMetadata.class);
 
-    private ContentNegotiationManager manager(Map<String, IResponseSerializerProvider> serializerProviders) {
-        return new ContentNegotiationManager(Collections.emptyMap(), serializerProviders);
+    private ContentNegotiationManager manager(Map<String, ISpeedyIoProvider> providerMap) {
+        return new ContentNegotiationManager(providerMap);
     }
 
     @Test
@@ -127,36 +124,40 @@ class SerializerSelectionHandlerTest {
         return context;
     }
 
-    private static Map<String, IResponseSerializerProvider> mapOf(IResponseSerializerProvider... providers) {
-        Map<String, IResponseSerializerProvider> map = new HashMap<>();
-        for (IResponseSerializerProvider provider : providers) {
+    private static Map<String, ISpeedyIoProvider> mapOf(ISpeedyIoProvider... providers) {
+        Map<String, ISpeedyIoProvider> map = new HashMap<>();
+        for (ISpeedyIoProvider provider : providers) {
             map.put(provider.getContentType().toLowerCase(), provider);
         }
         return map;
     }
 
-    static class JsonSerializerProvider implements IResponseSerializerProvider {
+    static class JsonSerializerProvider implements ISpeedyIoProvider {
         @Override
-        public String getContentType() {
-            return "application/json";
-        }
+        public String getContentType() { return "application/json"; }
 
         @Override
-        public IResponseSerializerV2 create(MetaModel metaModel, ConversionContext context) {
-            return new StubSerializer("application/json");
-        }
+        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return new StubSerializer("application/json"); }
+
+        @Override
+        public IRequestBodyParser createParser(ConversionContext context) { return null; }
+
+        @Override
+        public void contributeModule(ConversionContext ctx) {}
     }
 
-    static class TextSerializerProvider implements IResponseSerializerProvider {
+    static class TextSerializerProvider implements ISpeedyIoProvider {
         @Override
-        public String getContentType() {
-            return "text/plain";
-        }
+        public String getContentType() { return "text/plain"; }
 
         @Override
-        public IResponseSerializerV2 create(MetaModel metaModel, ConversionContext context) {
-            return new StubSerializer("text/plain");
-        }
+        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return new StubSerializer("text/plain"); }
+
+        @Override
+        public IRequestBodyParser createParser(ConversionContext context) { return null; }
+
+        @Override
+        public void contributeModule(ConversionContext ctx) {}
     }
 
     static class StubSerializer implements IResponseSerializerV2 {

@@ -6,7 +6,9 @@ import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
-import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
+import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.request.RequestContext;
@@ -47,8 +49,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                             ValidationProcessor validationProcessor,
                             long maxRequestBodySize,
                             ConversionContext conversionContext,
-                            Map<String, IRequestBodyParserProvider> parserProviders,
-                            Map<String, IResponseSerializerProvider> serializerProviders) {
+                            Map<String, ISpeedyIoProvider> providers) {
         this.config = config;
         this.dialect = dialect;
         this.metaModel = metaModel;
@@ -70,7 +71,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                 new TailHandler()
         );
 
-        ContentNegotiationManager negotiationManager = new ContentNegotiationManager(parserProviders, serializerProviders);
+        ContentNegotiationManager negotiationManager = new ContentNegotiationManager(providers);
 
         parserSelectionChain = List.of(
                 new HeadHandler(),
