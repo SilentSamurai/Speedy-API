@@ -54,7 +54,7 @@ class SpeedyFactoryProviderMapTest {
         public String getContentType() { return "application/json"; }
 
         @Override
-        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return null; }
+        public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
         public IRequestBodyParser createParser(ConversionContext context) { return null; }
@@ -68,7 +68,7 @@ class SpeedyFactoryProviderMapTest {
         public String getContentType() { return "APPLICATION/JSON"; }
 
         @Override
-        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return null; }
+        public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
         public IRequestBodyParser createParser(ConversionContext context) { return null; }

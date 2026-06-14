@@ -132,7 +132,7 @@ class ParserSelectionHandlerTest {
         public String getContentType() { return "application/json"; }
 
         @Override
-        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return null; }
+        public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
         public IRequestBodyParser createParser(ConversionContext context) { return new StubParser("application/json"); }
@@ -146,7 +146,7 @@ class ParserSelectionHandlerTest {
         public String getContentType() { return "text/plain"; }
 
         @Override
-        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return null; }
+        public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
         public IRequestBodyParser createParser(ConversionContext context) { return new StubParser("text/plain"); }

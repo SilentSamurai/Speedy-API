@@ -1,12 +1,11 @@
 package com.github.silent.samurai.speedy.engine;
 
-import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.serialization.WalkingResponseSerializer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -40,13 +39,13 @@ public class ContentNegotiationManager {
         }
     }
 
-    public IResponseSerializerV2 createDefaultSerializer(MetaModel metaModel, ConversionContext ctx) {
+    public IResponseSerializerV2 createDefaultSerializer() {
         ISpeedyIoProvider baseline = providers.get(DEFAULT_CONTENT_TYPE);
         if (baseline == null) {
             throw new SpeedyHttpRuntimeException(500,
                     "No ISpeedyIoProvider registered for '" + DEFAULT_CONTENT_TYPE + "'");
         }
-        return baseline.createSerializer(metaModel, ctx);
+        return new WalkingResponseSerializer(DEFAULT_CONTENT_TYPE, baseline.createWriter());
     }
 
     private ISpeedyIoProvider findProvider(String contentType) {

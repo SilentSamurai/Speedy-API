@@ -138,7 +138,7 @@ public class SpeedyFactory {
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // Start with the baseline JSON serializer as a fallback in case negotiation itself fails.
-        IResponseSerializerV2 serializer = contentNegotiationManager.createDefaultSerializer(metaModel, conversionContext);
+        IResponseSerializerV2 serializer = contentNegotiationManager.createDefaultSerializer();
         try {
             // 1. Get the request. prepare() stores the QueryProcessor in ctx.
             SpeedyContext ctx = engine.newContext(request, response);

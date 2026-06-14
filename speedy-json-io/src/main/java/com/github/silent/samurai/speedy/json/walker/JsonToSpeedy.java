@@ -34,7 +34,7 @@ import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
 /// and remain handled inline rather than through the registry.
 ///
 /// @see JsonRegistry
-/// @see SpeedyToJson
+/// @see com.github.silent.samurai.speedy.serialization.ResponseWalker
 public class JsonToSpeedy {
 
     private final JsonRegistry jsonRegistry;

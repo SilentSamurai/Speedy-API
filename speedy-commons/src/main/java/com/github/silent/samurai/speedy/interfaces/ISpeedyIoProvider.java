@@ -4,10 +4,9 @@ import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 
 /// Unified SPI for format-level I/O providers (JSON, YAML, XML, etc.).
 ///
-/// Merges the three previous interfaces into a single contract:
-/// - {@link IResponseSerializerV2} factory
-/// - {@link IRequestBodyParser} factory
-/// - type-module contribution (formerly {@code SpeedyTypeModule})
+/// Exposes two format-specific pieces: the {@link SpeedyResponseWriter} factory
+/// and the {@link IRequestBodyParser} factory. The format-agnostic
+/// {@code WalkingResponseSerializer} is constructed by the engine, not the provider.
 ///
 /// Register implementations via {@code META-INF/services/...ISpeedyIoProvider}.
 public interface ISpeedyIoProvider {
@@ -15,8 +14,9 @@ public interface ISpeedyIoProvider {
     /// The MIME content type this provider handles (e.g. "application/json").
     String getContentType();
 
-    /// Creates a response serializer backed by the conversion context.
-    IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context);
+    /// Creates a format-specific response writer. The engine wraps it in the
+    /// shared {@code WalkingResponseSerializer} that owns envelope composition.
+    SpeedyResponseWriter createWriter();
 
     /// Creates a request-body parser backed by the conversion context.
     IRequestBodyParser createParser(ConversionContext context);

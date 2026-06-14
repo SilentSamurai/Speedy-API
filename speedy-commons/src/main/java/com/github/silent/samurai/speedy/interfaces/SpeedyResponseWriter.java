@@ -1,0 +1,87 @@
+package com.github.silent.samurai.speedy.interfaces;
+
+import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.models.*;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.Map;
+
+/// Format-specific streaming sink for response serialization.
+///
+/// The shared {@code ResponseWalker} and {@code WalkingResponseSerializer} (both
+/// format-agnostic) drive a sequence of structural tokens against this interface;
+/// a format module (JSON, XML, YAML, …) implements the sink to render those tokens
+/// into bytes. This mirrors how {@link ISpeedyIoProvider} contributes a leaf-type
+/// registry — only the format-specific rendering lives in the format module.
+///
+/// ## Buffering contract
+/// Implementations are expected to **buffer** the document and commit nothing to the
+/// {@link HttpServletResponse} until {@link #finish}. This preserves transactional
+/// error handling: a {@link SpeedyHttpException} thrown mid-walk propagates before any
+/// HTTP status or body has been written, so the framework can still emit a clean error
+/// response. (A format may opt into true streaming later where that trade-off is acceptable.)
+///
+/// ## Token protocol
+/// Objects are written as {@link #startObject} / (repeated {@link #field} + value) / {@link #endObject}.
+/// Arrays are {@link #startArray} / (repeated values) / {@link #endArray}. A value is either a nested
+/// object/array, a {@link #writeNull}, or a {@link #writeLeaf} domain value. Each {@link #field} must be
+/// followed by exactly one value.
+public interface SpeedyResponseWriter {
+
+    void startObject() throws SpeedyHttpException;
+
+    void endObject() throws SpeedyHttpException;
+
+    /// Names the next value within the enclosing object.
+    void field(String name) throws SpeedyHttpException;
+
+    void startArray() throws SpeedyHttpException;
+
+    void endArray() throws SpeedyHttpException;
+
+    void writeNull() throws SpeedyHttpException;
+
+    void writeSpeedyInt(SpeedyInt value) throws SpeedyHttpException;
+
+    void writeSpeedyText(SpeedyText value) throws SpeedyHttpException;
+
+    void writeSpeedyDouble(SpeedyDouble value) throws SpeedyHttpException;
+
+    void writeSpeedyBoolean(SpeedyBoolean value) throws SpeedyHttpException;
+
+    void writeSpeedyDate(SpeedyDate value) throws SpeedyHttpException;
+
+    void writeSpeedyDateTime(SpeedyDateTime value) throws SpeedyHttpException;
+
+    void writeSpeedyTime(SpeedyTime value) throws SpeedyHttpException;
+
+    void writeSpeedyZonedDateTime(SpeedyZonedDateTime value) throws SpeedyHttpException;
+
+    void writeSpeedyEnum(SpeedyEnum value) throws SpeedyHttpException;
+
+    /// Dispatches a domain value to the typed {@code writeSpeedy*} method.
+    default void writeLeaf(ValueType type, SpeedyValue value) throws SpeedyHttpException {
+        if (value == null || value.isEmpty() || value.isNull()) {
+            writeNull();
+            return;
+        }
+        switch (type) {
+            case BOOL -> writeSpeedyBoolean((SpeedyBoolean) value);
+            case INT -> writeSpeedyInt((SpeedyInt) value);
+            case FLOAT -> writeSpeedyDouble((SpeedyDouble) value);
+            case TEXT -> writeSpeedyText((SpeedyText) value);
+            case DATE -> writeSpeedyDate((SpeedyDate) value);
+            case TIME -> writeSpeedyTime((SpeedyTime) value);
+            case DATE_TIME -> writeSpeedyDateTime((SpeedyDateTime) value);
+            case ZONED_DATE_TIME -> writeSpeedyZonedDateTime((SpeedyZonedDateTime) value);
+            case ENUM, ENUM_ORD -> writeSpeedyEnum((SpeedyEnum) value);
+            default -> throw new IllegalArgumentException("Unexpected leaf type: " + type);
+        }
+    }
+
+    /// Commits the buffered document to the HTTP response: status code, headers,
+    /// content type, then the rendered body.
+    void finish(HttpServletResponse out, int status, Map<String, String> headers, String contentType)
+            throws SpeedyHttpException;
+}

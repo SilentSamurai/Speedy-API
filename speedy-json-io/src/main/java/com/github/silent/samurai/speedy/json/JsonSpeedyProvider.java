@@ -4,15 +4,15 @@ import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
 import com.github.silent.samurai.speedy.json.request.JSONBodyParser;
-import com.github.silent.samurai.speedy.json.response.JSONResponseSerializer;
+import com.github.silent.samurai.speedy.json.response.JsonResponseWriter;
 import org.springframework.http.MediaType;
 
 /// Unified SPI provider for all JSON I/O.
 ///
-/// Implements the three-role {@link ISpeedyIoProvider} contract:
-/// - response serializer factory ({@link JSONResponseSerializer})
-/// - request body parser factory ({@link JSONBodyParser})
-/// - type-module contributor ({@link JsonRegistry})
+/// Implements the {@link ISpeedyIoProvider} contract:
+/// - Response writer factory ({@link JsonResponseWriter})
+/// - Request body parser factory ({@link JSONBodyParser})
+/// - Type-module contributor ({@link JsonRegistry})
 ///
 /// Discovered via ServiceLoader from {@code META-INF/services/...ISpeedyIoProvider}.
 public class JsonSpeedyProvider implements ISpeedyIoProvider {
@@ -23,8 +23,8 @@ public class JsonSpeedyProvider implements ISpeedyIoProvider {
     }
 
     @Override
-    public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) {
-        return new JSONResponseSerializer(context.get(JsonRegistry.class));
+    public SpeedyResponseWriter createWriter() {
+        return new JsonResponseWriter();
     }
 
     @Override

@@ -129,7 +129,7 @@ class SerializerSelectionHandlerTest {
         public String getContentType() { return "application/json"; }
 
         @Override
-        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return new StubSerializer("application/json"); }
+        public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
         public IRequestBodyParser createParser(ConversionContext context) { return null; }
@@ -143,46 +143,12 @@ class SerializerSelectionHandlerTest {
         public String getContentType() { return "text/plain"; }
 
         @Override
-        public IResponseSerializerV2 createSerializer(MetaModel metaModel, ConversionContext context) { return new StubSerializer("text/plain"); }
+        public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
         public IRequestBodyParser createParser(ConversionContext context) { return null; }
 
         @Override
         public void contributeModule(ConversionContext ctx) {}
-    }
-
-    static class StubSerializer implements IResponseSerializerV2 {
-
-        private final String contentType;
-
-        StubSerializer(String contentType) {
-            this.contentType = contentType;
-        }
-
-        @Override
-        public String getContentType() {
-            return contentType;
-        }
-
-        @Override
-        public void writeEntityList(SpeedyEntityResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
-        }
-
-        @Override
-        public void writeCount(SpeedyCountResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
-        }
-
-        @Override
-        public void writeBatch(SpeedyBatchResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
-        }
-
-        @Override
-        public void writeError(SpeedyErrorResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
-        }
-
-        @Override
-        public void writeMetadata(SpeedyMetadataResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
-        }
     }
 }

@@ -9,7 +9,8 @@ import java.util.function.Predicate;
 ///
 /// Utility for building a field-level filter predicate from the {@code $select}
 /// clause. Translates a {@code Set<String>} of output property names into a
-/// {@code Predicate<FieldMetadata>} for use by {@link SpeedyToJson}.
+/// {@code Predicate<FieldMetadata>} for use by
+/// {@link com.github.silent.samurai.speedy.serialization.ResponseWalker}.
 ///
 /// ## Purpose
 /// - Builds a predicate that returns {@code true} only for fields in the select set
