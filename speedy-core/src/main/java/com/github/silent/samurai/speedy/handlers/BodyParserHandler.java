@@ -3,10 +3,7 @@ package com.github.silent.samurai.speedy.handlers;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
@@ -21,7 +18,7 @@ import com.github.silent.samurai.speedy.context.SpeedyContext;
 ///
 /// @see IRequestBodyParser
 /// @see SpeedyRequestType
-public class BodyParserHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
+public class BodyParserHandler implements Handler {
 
     @Override
     public void process(SpeedyContext context) throws SpeedyHttpException {

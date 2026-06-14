@@ -10,7 +10,6 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
@@ -53,7 +52,7 @@ public class SpeedyFactory {
     private final long maxRequestBodySize;
     private final SpeedyEngine engine;
     private final ConversionContext conversionContext;
-    private final IResponseSerializerV2 documentSerializer;
+    private final ContentNegotiationManager contentNegotiationManager;
 
     public SpeedyFactory(ISpeedyConfiguration speedyConfiguration) throws SpeedyHttpException {
         this(speedyConfiguration, speedyConfiguration.getMaxRequestBodySize());
@@ -114,18 +113,10 @@ public class SpeedyFactory {
         Map<String, ISpeedyIoProvider> providerMap = buildProviderMap(
                 providers, ISpeedyIoProvider::getContentType, "ISpeedyIoProvider");
 
-        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor,
-                maxRequestBodySize, conversionContext, providerMap);
+        this.contentNegotiationManager = new ContentNegotiationManager(providerMap);
 
-        /// Errors are server-level documents that are not content-negotiated;
-        /// they are always rendered in the baseline content type. The serializer is entity-agnostic.
-        ISpeedyIoProvider baselineProvider =
-                providerMap.get(ContentNegotiationManager.DEFAULT_CONTENT_TYPE);
-        if (baselineProvider == null) {
-            throw new InternalServerError(
-                    "No ISpeedyIoProvider registered for '" + ContentNegotiationManager.DEFAULT_CONTENT_TYPE + "'");
-        }
-        this.documentSerializer = baselineProvider.createSerializer(metaModel, conversionContext);
+        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor,
+                maxRequestBodySize, conversionContext, contentNegotiationManager);
     }
 
     static <T> Map<String, T> buildProviderMap(List<T> providers,
@@ -147,7 +138,7 @@ public class SpeedyFactory {
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // Start with the baseline JSON serializer as a fallback in case negotiation itself fails.
-        IResponseSerializerV2 serializer = documentSerializer;
+        IResponseSerializerV2 serializer = contentNegotiationManager.createDefaultSerializer(metaModel, conversionContext);
         try {
             // 1. Get the request. prepare() stores the QueryProcessor in ctx.
             SpeedyContext ctx = engine.newContext(request, response);

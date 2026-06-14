@@ -18,7 +18,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class SpeedyEngineImpl implements SpeedyEngine {
@@ -51,7 +50,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                             ValidationProcessor validationProcessor,
                             long maxRequestBodySize,
                             ConversionContext conversionContext,
-                            Map<String, ISpeedyIoProvider> providers) {
+                            ContentNegotiationManager negotiationManager) {
         this.config = config;
         this.dialect = dialect;
         this.metaModel = metaModel;
@@ -82,8 +81,6 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                 new BodyParserHandler(),
                 new TailHandler()
         );
-
-        ContentNegotiationManager negotiationManager = new ContentNegotiationManager(providers);
 
         parserSelectionChain = List.of(
                 new HeadHandler(),
