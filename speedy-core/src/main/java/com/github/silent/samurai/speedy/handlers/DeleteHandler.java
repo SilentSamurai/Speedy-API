@@ -14,7 +14,8 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.*;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -30,10 +31,10 @@ import java.util.List;
 /// @see BodyParserHandler
 /// @see SpeedyDeleteBody
 @Slf4j
-public class DeleteHandler implements Handler {
+public class DeleteHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
         SpeedyDeleteBody body = (SpeedyDeleteBody) context.get(SpeedyBody.class);
         List<SpeedyEntityKey> keys = body.getKeys();
         TransactionMode mode = body.getMode();
@@ -45,9 +46,9 @@ public class DeleteHandler implements Handler {
         }
     }
 
-    private void processBatchDelete(RequestContext context, List<SpeedyEntityKey> keys)
+    private void processBatchDelete(SpeedyContext context, List<SpeedyEntityKey> keys)
             throws SpeedyHttpException {
-        EntityMetadata entityMetadata = context.getEntityMetadata();
+        EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
         EventProcessor eventProcessor = context.get(EventProcessor.class);
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         String entityLabel = entityMetadata.getName();
@@ -56,7 +57,7 @@ public class DeleteHandler implements Handler {
         if (keys.isEmpty()) {
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
-                            .entityMetadata(context.getEntityMetadata())
+                            .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                             .payload(List.of())
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -85,7 +86,7 @@ public class DeleteHandler implements Handler {
 
                     context.put(SpeedyResponse.class,
                             SpeedyEntityResponse.builder()
-                                    .entityMetadata(context.getEntityMetadata())
+                                    .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                                     .payload(deleted)
                                     .pageIndex(0)
                                     .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -116,9 +117,9 @@ public class DeleteHandler implements Handler {
         }
     }
 
-    private void processPerEntityDelete(RequestContext context, List<SpeedyEntityKey> keys)
+    private void processPerEntityDelete(SpeedyContext context, List<SpeedyEntityKey> keys)
             throws SpeedyHttpException {
-        EntityMetadata entityMetadata = context.getEntityMetadata();
+        EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
         EventProcessor eventProcessor = context.get(EventProcessor.class);
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         String entityLabel = entityMetadata.getName();
@@ -182,7 +183,7 @@ public class DeleteHandler implements Handler {
         if (failed.isEmpty()) {
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
-                            .entityMetadata(context.getEntityMetadata())
+                            .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                             .payload(succeeded)
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)

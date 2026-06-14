@@ -11,7 +11,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
 import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,7 +39,7 @@ class SerializerSelectionHandlerTest {
 
     @Test
     void missingAcceptHeader_selectsJsonProvider() throws SpeedyHttpException {
-        RequestContext context = createContext(null);
+        SpeedyContext context = createContext(null);
 
         SerializerSelectionHandler handler = new SerializerSelectionHandler(manager(mapOf(new JsonSerializerProvider())));
         handler.process(context);
@@ -50,7 +50,7 @@ class SerializerSelectionHandlerTest {
 
     @Test
     void wildcardAcceptHeader_selectsJsonProvider() throws SpeedyHttpException {
-        RequestContext context = createContext("*/*");
+        SpeedyContext context = createContext("*/*");
 
         SerializerSelectionHandler handler = new SerializerSelectionHandler(
                 manager(mapOf(new JsonSerializerProvider(), new TextSerializerProvider())));
@@ -61,7 +61,7 @@ class SerializerSelectionHandlerTest {
 
     @Test
     void unsupportedAcceptHeader_defaultsToJsonProvider() throws SpeedyHttpException {
-        RequestContext context = createContext("application/xml");
+        SpeedyContext context = createContext("application/xml");
 
         SerializerSelectionHandler handler = new SerializerSelectionHandler(manager(mapOf(new JsonSerializerProvider())));
         handler.process(context);
@@ -71,7 +71,7 @@ class SerializerSelectionHandlerTest {
 
     @Test
     void matchingAcceptHeader_selectsRequestedProvider() throws SpeedyHttpException {
-        RequestContext context = createContext("text/plain");
+        SpeedyContext context = createContext("text/plain");
 
         SerializerSelectionHandler handler = new SerializerSelectionHandler(
                 manager(mapOf(new JsonSerializerProvider(), new TextSerializerProvider())));
@@ -82,7 +82,7 @@ class SerializerSelectionHandlerTest {
 
     @Test
     void matchingAcceptHeaderWithCharset_selectsRequestedProvider() throws SpeedyHttpException {
-        RequestContext context = createContext("text/plain; charset=utf-8");
+        SpeedyContext context = createContext("text/plain; charset=utf-8");
 
         SerializerSelectionHandler handler = new SerializerSelectionHandler(
                 manager(mapOf(new JsonSerializerProvider(), new TextSerializerProvider())));
@@ -93,7 +93,7 @@ class SerializerSelectionHandlerTest {
 
     @Test
     void noProviders_throwsInternalServerError() {
-        RequestContext context = createContext("application/json");
+        SpeedyContext context = createContext("application/json");
 
         SerializerSelectionHandler handler = new SerializerSelectionHandler(manager(Collections.emptyMap()));
         assertThrows(InternalServerError.class, () -> handler.process(context));
@@ -101,13 +101,13 @@ class SerializerSelectionHandlerTest {
 
     @Test
     void noJsonProvider_throwsInternalServerError() {
-        RequestContext context = createContext("application/json");
+        SpeedyContext context = createContext("application/json");
 
         SerializerSelectionHandler handler = new SerializerSelectionHandler(manager(mapOf(new TextSerializerProvider())));
         assertThrows(InternalServerError.class, () -> handler.process(context));
     }
 
-    private RequestContext createContext(String acceptHeader) {
+    private SpeedyContext createContext(String acceptHeader) {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         when(request.getHeader("Accept")).thenReturn(acceptHeader);
 
@@ -116,7 +116,7 @@ class SerializerSelectionHandlerTest {
         when(uriContext.getParsedQuery()).thenReturn(speedyQuery);
         when(speedyQuery.getFrom()).thenReturn(entityMetadata);
 
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(HttpServletRequest.class, request);
         context.put(MetaModel.class, metaModel);
         context.put(SpeedyUriContext.class, uriContext);

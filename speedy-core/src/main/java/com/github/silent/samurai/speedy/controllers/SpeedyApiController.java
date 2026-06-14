@@ -2,16 +2,12 @@ package com.github.silent.samurai.speedy.controllers;
 
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
-import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 
@@ -25,13 +21,8 @@ public class SpeedyApiController {
 
     @Hidden
     @GetMapping(value = "/$metadata")
-    public void metadata(HttpServletResponse response) throws SpeedyHttpException {
-        if (!speedyFactory.getConfiguration().isMetadataEndpointEnabled()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        speedyFactory.getDocumentSerializer().write(
-                SpeedyMetadataResponse.builder().metaModel(speedyFactory.getMetaModel()).build(),
-                response);
+    public void metadata(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        speedyFactory.processReqV2(request, response);
     }
 
     @Hidden

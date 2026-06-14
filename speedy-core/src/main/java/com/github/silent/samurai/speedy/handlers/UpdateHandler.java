@@ -16,7 +16,8 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.models.SpeedyUpdateBody;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -30,10 +31,10 @@ import java.util.List;
 /// @see BodyParserHandler
 /// @see SpeedyUpdateBody
 @Slf4j
-public class UpdateHandler implements Handler {
+public class UpdateHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
         SpeedyUpdateBody body = (SpeedyUpdateBody) context.get(SpeedyBody.class);
         SpeedyEntity savedEntity = updateInTransaction(context, body.getEntity(), body.getPk());
 
@@ -44,7 +45,7 @@ public class UpdateHandler implements Handler {
         List<SpeedyEntity> speedyEntities = List.of(savedEntity);
         context.put(SpeedyResponse.class,
                 SpeedyEntityResponse.builder()
-                        .entityMetadata(context.getEntityMetadata())
+                        .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                         .payload(speedyEntities)
                         .pageIndex(0)
                         .status(200)
@@ -52,9 +53,9 @@ public class UpdateHandler implements Handler {
         );
     }
 
-    private SpeedyEntity updateInTransaction(RequestContext context, SpeedyEntity entity, SpeedyEntityKey pk)
+    private SpeedyEntity updateInTransaction(SpeedyContext context, SpeedyEntity entity, SpeedyEntityKey pk)
             throws SpeedyHttpException {
-        EntityMetadata entityMetadata = context.getEntityMetadata();
+        EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
         EventProcessor eventProcessor = context.get(EventProcessor.class);
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         TransactionMode mode = context.get(TransactionMode.class);

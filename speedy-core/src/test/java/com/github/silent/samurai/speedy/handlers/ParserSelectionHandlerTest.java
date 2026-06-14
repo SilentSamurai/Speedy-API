@@ -12,7 +12,7 @@ import com.github.silent.samurai.speedy.models.SpeedyCreateBody;
 import com.github.silent.samurai.speedy.models.SpeedyDeleteBody;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.models.SpeedyUpdateBody;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -33,7 +33,7 @@ class ParserSelectionHandlerTest {
 
     @Test
     void missingHeader_selectsJsonProvider() throws SpeedyHttpException {
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(new SpeedyHeaders(Collections.emptyMap()));
         context.put(conversionContext);
 
@@ -46,7 +46,7 @@ class ParserSelectionHandlerTest {
 
     @Test
     void wildcardHeader_selectsJsonProvider() throws SpeedyHttpException {
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(headers("Content-Type", "*/*"));
         context.put(conversionContext);
 
@@ -59,7 +59,7 @@ class ParserSelectionHandlerTest {
 
     @Test
     void unsupportedHeader_defaultsToJsonProvider() throws SpeedyHttpException {
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(headers("Content-Type", "application/xml"));
         context.put(conversionContext);
 
@@ -71,7 +71,7 @@ class ParserSelectionHandlerTest {
 
     @Test
     void matchingHeader_selectsRequestedProvider() throws SpeedyHttpException {
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(headers("Content-Type", "text/plain"));
         context.put(conversionContext);
 
@@ -84,7 +84,7 @@ class ParserSelectionHandlerTest {
 
     @Test
     void matchingHeaderWithCharset_selectsRequestedProvider() throws SpeedyHttpException {
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(headers("Content-Type", "text/plain; charset=utf-8"));
         context.put(conversionContext);
 
@@ -97,7 +97,7 @@ class ParserSelectionHandlerTest {
 
     @Test
     void noProviders_throwsInternalServerError() {
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(headers("Content-Type", "application/json"));
         context.put(conversionContext);
 
@@ -107,7 +107,7 @@ class ParserSelectionHandlerTest {
 
     @Test
     void noJsonProvider_throwsInternalServerError() {
-        RequestContext context = new RequestContext();
+        SpeedyContext context = new SpeedyContext();
         context.put(headers("Content-Type", "application/json"));
         context.put(conversionContext);
 

@@ -4,8 +4,7 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.PayloadTooLargeException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
-import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
 
@@ -16,14 +15,14 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-/// Reads raw HTTP request data and populates transient fields on RequestContext.
+/// Reads raw HTTP request data and populates transient fields on SpeedyContext.
 ///
 /// Extracts the HTTP method, request URI, request headers, and raw body bytes
 /// from HttpServletRequest. The raw bytes are stored for later parsing by
 /// IRequestBodyParser implementations based on Content-Type.
 ///
 /// @see IRequestBodyParser
-public class RequestParserHandler implements Handler {
+public class RequestParserHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     private final long maxRequestBodySize;
 
@@ -32,7 +31,7 @@ public class RequestParserHandler implements Handler {
     }
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
         HttpServletRequest request = context.get(HttpServletRequest.class);
         String method = request.getMethod();
         HttpMethod httpMethod = HttpMethod.valueOf(method);

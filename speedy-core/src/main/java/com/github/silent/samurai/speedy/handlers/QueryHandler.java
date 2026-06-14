@@ -11,7 +11,8 @@ import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.http.response.FieldPredicates;
 
 import java.math.BigInteger;
@@ -26,10 +27,10 @@ import java.util.function.Predicate;
 ///
 /// @see BodyParserHandler
 /// @see JSONBodyParser
-public class QueryHandler implements Handler {
+public class QueryHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
         SpeedyQuery speedyQuery = (SpeedyQuery) context.get(SpeedyBody.class);
         EntityMetadata resourceMetadata = speedyQuery.getFrom();
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
@@ -48,7 +49,7 @@ public class QueryHandler implements Handler {
             Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
-                            .entityMetadata(context.getEntityMetadata())
+                            .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                             .payload(speedyEntities)
                             .pageIndex(speedyQuery.getPageInfo().getPageNo())
                             .expands(speedyQuery.getExpand())

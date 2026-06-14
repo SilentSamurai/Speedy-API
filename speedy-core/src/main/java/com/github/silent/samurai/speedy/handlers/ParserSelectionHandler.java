@@ -6,9 +6,9 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 
-public class ParserSelectionHandler implements Handler {
+public class ParserSelectionHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     private final ContentNegotiationManager manager;
 
@@ -17,7 +17,7 @@ public class ParserSelectionHandler implements Handler {
     }
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
         SpeedyHeaders headers = context.get(SpeedyHeaders.class);
         String contentType = headers.get("Content-Type");
         ConversionContext conversionContext = context.get(ConversionContext.class);

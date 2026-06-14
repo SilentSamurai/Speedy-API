@@ -11,7 +11,7 @@ import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,16 +30,17 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final ValidationProcessor validationProcessor;
     private final ConversionContext conversionContext;
 
-    private final List<Handler> requestChain;
-    private final List<Handler> bodyChain;
-    private final List<Handler> parserSelectionChain;
-    private final List<Handler> serializerSelectionChain;
-    private final List<Handler> getChain;
-    private final List<Handler> queryChain;
-    private final List<Handler> createChain;
-    private final List<Handler> updateChain;
-    private final List<Handler> deleteChain;
-    private final List<Handler> responseChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> requestChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> bodyChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> parserSelectionChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> serializerSelectionChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> getChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> queryChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> createChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> updateChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> deleteChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> metadataChain;
+    private final List<com.github.silent.samurai.speedy.interfaces.Handler> responseChain;
     private final ConcurrentHashMap<DataSource, QueryProcessor> queryProcessorCache = new ConcurrentHashMap<>();
 
     public SpeedyEngineImpl(ISpeedyConfiguration config,
@@ -116,6 +117,12 @@ public class SpeedyEngineImpl implements SpeedyEngine {
                 new TailHandler()
         );
 
+        metadataChain = List.of(
+                new HeadHandler(),
+                new MetadataHandler(),
+                new TailHandler()
+        );
+
         responseChain = List.of(
                 new HeadHandler(),
                 new SpeedyResponseWriterHandler(),
@@ -124,8 +131,8 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     }
 
     @Override
-    public RequestContext newContext(HttpServletRequest request, HttpServletResponse response) {
-        RequestContext ctx = new RequestContext();
+    public SpeedyContext newContext(HttpServletRequest request, HttpServletResponse response) {
+        SpeedyContext ctx = new SpeedyContext();
         ctx.put(ISpeedyConfiguration.class, config);
         ctx.put(dialect);
         ctx.put(MetaModel.class, metaModel);
@@ -137,8 +144,8 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         return ctx;
     }
 
-    private void run(List<Handler> chain, RequestContext ctx) throws SpeedyHttpException {
-        for (Handler handler : chain) {
+    private void run(List<com.github.silent.samurai.speedy.interfaces.Handler> chain, SpeedyContext ctx) throws SpeedyHttpException {
+        for (com.github.silent.samurai.speedy.interfaces.Handler handler : chain) {
             handler.process(ctx);
         }
     }
@@ -151,22 +158,22 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     }
 
     @Override
-    public void parseRequest(RequestContext ctx) throws SpeedyHttpException {
+    public void parseRequest(SpeedyContext ctx) throws SpeedyHttpException {
         run(requestChain, ctx);
     }
 
     @Override
-    public void selectBodyParser(RequestContext ctx) throws SpeedyHttpException {
+    public void selectBodyParser(SpeedyContext ctx) throws SpeedyHttpException {
         run(parserSelectionChain, ctx);
     }
 
     @Override
-    public void parseBody(RequestContext ctx) throws SpeedyHttpException {
+    public void parseBody(SpeedyContext ctx) throws SpeedyHttpException {
         run(bodyChain, ctx);
     }
 
     @Override
-    public void execute(RequestContext ctx) throws SpeedyHttpException {
+    public void execute(SpeedyContext ctx) throws SpeedyHttpException {
         SpeedyRequestType type = ctx.get(SpeedyRequestType.class);
         switch (type) {
             case GET_LIST -> run(getChain, ctx);
@@ -174,16 +181,17 @@ public class SpeedyEngineImpl implements SpeedyEngine {
             case CREATE -> run(createChain, ctx);
             case UPDATE -> run(updateChain, ctx);
             case DELETE -> run(deleteChain, ctx);
+            case METADATA -> run(metadataChain, ctx);
         }
     }
 
     @Override
-    public void selectSerializer(RequestContext ctx) throws SpeedyHttpException {
+    public void selectSerializer(SpeedyContext ctx) throws SpeedyHttpException {
         run(serializerSelectionChain, ctx);
     }
 
     @Override
-    public void writeResponse(RequestContext ctx) throws SpeedyHttpException {
+    public void writeResponse(SpeedyContext ctx) throws SpeedyHttpException {
         run(responseChain, ctx);
     }
 }

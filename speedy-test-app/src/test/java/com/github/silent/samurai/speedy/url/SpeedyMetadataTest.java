@@ -22,21 +22,20 @@ class SpeedyMetadataTest {
     private MockMvc mvc;
 
     @Test
-    void getCategoryMetadata_returnsEntitySpecificData() throws Exception {
+    void getCategoryMetadata_returnsEntityData() throws Exception {
         mvc.perform(get(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").exists())
-                .andExpect(jsonPath("$").isMap())
+                .andExpect(jsonPath("$[?(@.name=='Category')]").exists())
                 .andReturn();
     }
 
     @Test
-    void getProductMetadata_returnsMetadata() throws Exception {
+    void getProductMetadata_returnsEntityData() throws Exception {
         mvc.perform(get(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").exists())
+                .andExpect(jsonPath("$[?(@.name=='Product')]").exists())
                 .andReturn();
     }
 

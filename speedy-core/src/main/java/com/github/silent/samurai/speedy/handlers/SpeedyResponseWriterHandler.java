@@ -4,13 +4,13 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class SpeedyResponseWriterHandler implements Handler {
+public class SpeedyResponseWriterHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
         if (context.has(IResponseSerializerV2.class) && context.has(SpeedyResponse.class)) {
             context.get(IResponseSerializerV2.class).write(
                     context.get(SpeedyResponse.class),

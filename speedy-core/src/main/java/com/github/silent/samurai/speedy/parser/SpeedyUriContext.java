@@ -192,6 +192,10 @@ public class SpeedyUriContext {
         return pathSegments.isEmpty() ? "" : pathSegments.get(pathSegments.size() - 1);
     }
 
+    public void setActionSuffix(String actionSuffix) {
+        this.actionSuffix = actionSuffix;
+    }
+
     public String getActionSuffix() {
         return actionSuffix;
     }

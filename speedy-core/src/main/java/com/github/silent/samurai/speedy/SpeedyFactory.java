@@ -17,7 +17,7 @@ import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
 import com.github.silent.samurai.speedy.utils.DefaultExceptionMapper;
 import com.github.silent.samurai.speedy.validation.MetaModelVerifier;
@@ -114,9 +114,8 @@ public class SpeedyFactory {
         this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor,
                 maxRequestBodySize, conversionContext, providerMap);
 
-        /// Errors and {@code $metadata} are server-level documents that are not content-negotiated;
-        /// they are always rendered in the baseline content type. The serializer is entity-agnostic,
-        /// so a single baseline instance handles both.
+        /// Errors are server-level documents that are not content-negotiated;
+        /// they are always rendered in the baseline content type. The serializer is entity-agnostic.
         ISpeedyIoProvider baselineProvider =
                 providerMap.get(ContentNegotiationManager.DEFAULT_CONTENT_TYPE);
         if (baselineProvider == null) {
@@ -145,7 +144,7 @@ public class SpeedyFactory {
 
     public void processReqV2(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            RequestContext ctx = engine.newContext(request, response);
+            SpeedyContext ctx = engine.newContext(request, response);
             ctx.put(QueryProcessor.class, engine.prepare());
             engine.parseRequest(ctx);
             engine.selectBodyParser(ctx);

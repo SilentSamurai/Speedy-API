@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 
 /// # TailHandler
 ///
@@ -13,10 +13,10 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 ///
 /// ## Chain Position
 /// Last handler in the chain. Does not call any next handler.
-public class TailHandler implements Handler {
+public class TailHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
 
     }
 }

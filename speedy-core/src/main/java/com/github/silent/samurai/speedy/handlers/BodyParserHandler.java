@@ -8,10 +8,9 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 
 /// Parses the raw request body into the appropriate SpeedyBody subtype.
 ///
@@ -23,10 +22,10 @@ import com.github.silent.samurai.speedy.request.RequestContext;
 ///
 /// @see IRequestBodyParser
 /// @see SpeedyRequestType
-public class BodyParserHandler implements Handler {
+public class BodyParserHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
+    public void process(SpeedyContext context) throws SpeedyHttpException {
         SpeedyUriContext uriContext = context.get(SpeedyUriContext.class);
         byte[] rawBody = context.get(byte[].class);
         IRequestBodyParser parser = context.get(IRequestBodyParser.class);
@@ -44,18 +43,21 @@ public class BodyParserHandler implements Handler {
                     context.get(ISpeedyConfiguration.class).getMaxPageSize(),
                     context.get(ISpeedyConfiguration.class).getDefaultPageSize());
             case CREATE -> parser.parseCreate(rawBody,
-                    context.getEntityMetadata(),
+                    context.get(SpeedyUriContext.class).getParsedQuery().getFrom(),
                     context.get(TransactionMode.class),
                     context.get(QueryProcessor.class));
             case UPDATE -> parser.parseUpdate(rawBody,
-                    context.getEntityMetadata(),
+                    context.get(SpeedyUriContext.class).getParsedQuery().getFrom(),
                     context.get(QueryProcessor.class));
             case DELETE -> parser.parseDelete(rawBody,
-                    context.getEntityMetadata(),
+                    context.get(SpeedyUriContext.class).getParsedQuery().getFrom(),
                     context.get(TransactionMode.class),
                     context.get(QueryProcessor.class));
+            case METADATA -> null;
         };
 
-        context.put(SpeedyBody.class, body);
+        if (body != null) {
+            context.put(SpeedyBody.class, body);
+        }
     }
 }
