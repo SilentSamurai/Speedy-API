@@ -10,10 +10,8 @@ import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
 import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
-import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
-import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -25,13 +23,11 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 class SerializerSelectionHandlerTest {
 
     private final ConversionContext conversionContext = ConversionContext.withDefaults();
     private final MetaModel metaModel = Mockito.mock(MetaModel.class);
-    private final EntityMetadata entityMetadata = Mockito.mock(EntityMetadata.class);
 
     private ContentNegotiationManager manager(Map<String, ISpeedyIoProvider> providerMap) {
         return new ContentNegotiationManager(providerMap);
@@ -108,18 +104,14 @@ class SerializerSelectionHandlerTest {
     }
 
     private SpeedyContext createContext(String acceptHeader) {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        when(request.getHeader("Accept")).thenReturn(acceptHeader);
-
-        SpeedyUriContext uriContext = Mockito.mock(SpeedyUriContext.class);
-        SpeedyQueryImpl speedyQuery = Mockito.mock(SpeedyQueryImpl.class);
-        when(uriContext.getParsedQuery()).thenReturn(speedyQuery);
-        when(speedyQuery.getFrom()).thenReturn(entityMetadata);
+        Map<String, String> headerMap = new HashMap<>();
+        if (acceptHeader != null) {
+            headerMap.put("Accept", acceptHeader);
+        }
 
         SpeedyContext context = new SpeedyContext();
-        context.put(HttpServletRequest.class, request);
+        context.put(new SpeedyHeaders(headerMap));
         context.put(MetaModel.class, metaModel);
-        context.put(SpeedyUriContext.class, uriContext);
         context.put(conversionContext);
         return context;
     }

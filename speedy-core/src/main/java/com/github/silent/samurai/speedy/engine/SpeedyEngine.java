@@ -6,44 +6,68 @@ import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
 import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
+import com.github.silent.samurai.speedy.models.SpeedyHeaders;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /// Pipeline interface for processing a single Speedy API request.
 ///
-/// ## Design contract — DO NOT REVERT
+/// ## The pipeline — DO NOT REVERT
 ///
-/// Each method either advances the shared {@link SpeedyContext} (pipeline state) or
-/// returns a typed result that the caller ({@code SpeedyFactory}) holds explicitly.
-/// For methods that produce a concrete output, both happen: the result is stored in
-/// {@code ctx} for downstream handlers AND returned so the factory's orchestration code
-/// is readable without inspecting the context bag.
+/// {@code SpeedyFactory.processReqV2} drives these steps in order:
+/// ```
+/// 1. newContext        -> SpeedyContext          get the request into ctx
+///    prepare(ctx)       (void)                    setup: store QueryProcessor in ctx
+/// 2. parseUri          -> SpeedyUriContext       parse the URI (also puts TransactionMode in ctx)
+/// 3. parseHeaders      -> SpeedyHeaders          parse method + headers + raw body bytes
+///    resolveOperation  -> SpeedyRequestType      classify op from URI + HTTP method
+/// 4. selectSerializer  -> IResponseSerializerV2  } negotiate output + input format
+///    selectBodyParser  -> IRequestBodyParser     }
+/// 5. parseBody         -> SpeedyBody             parse body using the selected parser
+/// 6. switch(type)      -> SpeedyResponse         dispatch in the factory
+/// 7. serializer.write(resp, response)            write the response
+/// ```
+///
+/// ## Every parse/select step returns its produced type — DO NOT void them
+///
+/// Each step stores its result in the shared {@link SpeedyContext} for downstream handlers AND
+/// returns it so the factory's orchestration reads cleanly without inspecting the context bag.
+/// The method name matches what it returns: {@link #parseUri} returns the parsed URI context,
+/// {@link #parseHeaders} returns the parsed headers, {@link #resolveOperation} returns the
+/// request type. {@link #prepare} is the one intentional {@code void} — it is setup, not a parse.
+/// DO NOT change these back to void or re-fuse them into a single {@code parseRequest}.
+///
+/// ## resolveOperation runs after parseUri AND parseHeaders
+///
+/// Operation resolution needs both the parsed URI and the HTTP method, so it is its own step
+/// after the two parsers. DO NOT fold it back into {@link #parseHeaders}.
 ///
 /// ## Dispatch switch belongs in SpeedyFactory, NOT here
 ///
 /// This interface exposes named operations ({@link #get}, {@link #query}, etc.) but does
 /// NOT decide which one to call. That switch lives in {@code SpeedyFactory.processReqV2}
 /// because choosing the operation is orchestration, not engine logic.
-/// DO NOT collapse these back into a single {@code execute(SpeedyContext)} method.
-///
-/// ## Return types are intentional — DO NOT void them
-///
-/// Methods return typed values even though the values are also in {@code ctx}. The return
-/// types make the data flow visible at the factory level and keep this interface testable
-/// without inspecting context internals. DO NOT change operation or negotiation methods
-/// back to void.
-///
+/// DO NOT collapse these into a single {@code execute(SpeedyContext)} method.
 public interface SpeedyEngine {
 
     SpeedyContext newContext(HttpServletRequest request, HttpServletResponse response) throws SpeedyHttpException;
 
     void prepare(SpeedyContext ctx) throws SpeedyHttpException;
 
-    /// Parses the HTTP method, URI, and raw body bytes into {@code ctx}.
-    /// Returns the {@link SpeedyRequestType} (also stored in ctx) so the factory can drive
-    /// the dispatch switch without an extra {@code ctx.get} call.
-    SpeedyRequestType parseRequest(SpeedyContext ctx) throws SpeedyHttpException;
+    /// Parses the request URI into a {@link SpeedyUriContext} (also puts {@code TransactionMode}
+    /// in ctx). Stored in ctx AND returned.
+    SpeedyUriContext parseUri(SpeedyContext ctx) throws SpeedyHttpException;
+
+    /// Parses the HTTP method, request headers, and raw body bytes. Returns the parsed
+    /// {@link SpeedyHeaders} (HTTP method and raw bytes are also stored in ctx).
+    SpeedyHeaders parseHeaders(SpeedyContext ctx) throws SpeedyHttpException;
+
+    /// Classifies the request into a {@link SpeedyRequestType} from the parsed URI and HTTP
+    /// method. Must run after {@link #parseUri} and {@link #parseHeaders}. Stored in ctx AND
+    /// returned so the factory drives the dispatch switch without an extra {@code ctx.get} call.
+    SpeedyRequestType resolveOperation(SpeedyContext ctx) throws SpeedyHttpException;
 
     /// Selects the body parser for the request's Content-Type. Stored in ctx AND returned.
     IRequestBodyParser selectBodyParser(SpeedyContext ctx) throws SpeedyHttpException;

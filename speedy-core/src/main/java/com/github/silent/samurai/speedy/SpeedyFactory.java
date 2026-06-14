@@ -18,6 +18,8 @@ import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
+import com.github.silent.samurai.speedy.models.SpeedyHeaders;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.utils.AdviceExceptionMapper;
 import com.github.silent.samurai.speedy.utils.DefaultExceptionMapper;
@@ -147,19 +149,25 @@ public class SpeedyFactory {
         // Start with the baseline JSON serializer as a fallback in case negotiation itself fails.
         IResponseSerializerV2 serializer = documentSerializer;
         try {
+            // 1. Get the request. prepare() stores the QueryProcessor in ctx.
             SpeedyContext ctx = engine.newContext(request, response);
             engine.prepare(ctx);
 
-            // Negotiate the output format before parsing — only the Accept header is needed,
-            // which is already in ctx. This lets the catch block use the client's preferred
-            // format for error responses too.
-            serializer = engine.selectSerializer(ctx);
+            // 2-3. Parse the URI and the headers, then resolve which operation this is.
+            SpeedyUriContext uriContext = engine.parseUri(ctx);
+            SpeedyHeaders headers       = engine.parseHeaders(ctx);
+            SpeedyRequestType type      = engine.resolveOperation(ctx);
 
-            SpeedyRequestType type = engine.parseRequest(ctx);
-            IRequestBodyParser parser = engine.selectBodyParser(ctx);
-            SpeedyBody body = engine.parseBody(ctx);
+            // 4. Negotiate an output + input format from the parsed headers. From here on, errors
+            // in the catch block render in the client's negotiated format (before this, the
+            // documentSerializer JSON fallback is used).
+            serializer                  = engine.selectSerializer(ctx);
+            IRequestBodyParser parser   = engine.selectBodyParser(ctx);
 
-            // Dispatch switch lives here — NOT inside the engine. See SpeedyEngine javadoc.
+            // 5. Parse the body using the selected parser.
+            SpeedyBody body             = engine.parseBody(ctx);
+
+            // 6. Dispatch switch lives here — NOT inside the engine. See SpeedyEngine javadoc.
             SpeedyResponse resp = switch (type) {
                 case GET_LIST -> engine.get(ctx);
                 case QUERY    -> engine.query(ctx);
@@ -169,6 +177,7 @@ public class SpeedyFactory {
                 case METADATA -> engine.metadata(ctx);
             };
 
+            // 7. Write the response.
             serializer.write(resp, response);
         } catch (Throwable e) {
             if (e instanceof Error) throw (Error) e;

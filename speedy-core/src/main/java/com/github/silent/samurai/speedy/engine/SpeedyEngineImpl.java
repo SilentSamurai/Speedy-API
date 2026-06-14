@@ -8,6 +8,8 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.models.SpeedyHeaders;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
@@ -28,7 +30,9 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     private final ValidationProcessor validationProcessor;
     private final ConversionContext conversionContext;
 
-    private final List<Handler> requestChain;
+    private final List<Handler> uriChain;
+    private final List<Handler> headerChain;
+    private final List<Handler> operationChain;
     private final List<Handler> bodyChain;
     private final List<Handler> parserSelectionChain;
     private final List<Handler> serializerSelectionChain;
@@ -55,10 +59,20 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         this.validationProcessor = validationProcessor;
         this.conversionContext = conversionContext;
 
-        requestChain = List.of(
+        uriChain = List.of(
+                new HeadHandler(),
+                new UriParserHandler(),
+                new TailHandler()
+        );
+
+        headerChain = List.of(
                 new HeadHandler(),
                 new RequestParserHandler(maxRequestBodySize),
-                new UriParserHandler(),
+                new TailHandler()
+        );
+
+        operationChain = List.of(
+                new HeadHandler(),
                 new OperationResolverHandler(),
                 new TailHandler()
         );
@@ -150,8 +164,20 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     }
 
     @Override
-    public SpeedyRequestType parseRequest(SpeedyContext ctx) throws SpeedyHttpException {
-        run(requestChain, ctx);
+    public SpeedyUriContext parseUri(SpeedyContext ctx) throws SpeedyHttpException {
+        run(uriChain, ctx);
+        return ctx.get(SpeedyUriContext.class);
+    }
+
+    @Override
+    public SpeedyHeaders parseHeaders(SpeedyContext ctx) throws SpeedyHttpException {
+        run(headerChain, ctx);
+        return ctx.get(SpeedyHeaders.class);
+    }
+
+    @Override
+    public SpeedyRequestType resolveOperation(SpeedyContext ctx) throws SpeedyHttpException {
+        run(operationChain, ctx);
         return ctx.get(SpeedyRequestType.class);
     }
 

@@ -18,6 +18,12 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.function.Predicate;
 
+/// Handles GET /{Entity} requests using the URI-parsed SpeedyQuery (parsed by UriParserHandler).
+/// Executes the query with count and produces the appropriate SpeedyEntityResponse
+/// or SpeedyCountResponse for the response serializer.
+///
+/// @see UriParserHandler
+/// @see SpeedyQuery
 public class GetHandler implements Handler {
 
     @Override
