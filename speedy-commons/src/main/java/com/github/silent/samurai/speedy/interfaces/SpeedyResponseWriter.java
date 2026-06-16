@@ -68,6 +68,30 @@ public interface SpeedyResponseWriter {
 
     void writeSpeedyEnum(SpeedyEnum value) throws SpeedyHttpException;
 
+    /// Writes a raw {@code long} for framework/envelope fields, bypassing the
+    /// {@link SpeedyValue} wrapper. The default boxes into a {@link SpeedyInt}; formats
+    /// that can render primitives directly override this to avoid the allocation.
+    default void writeInt(long value) throws SpeedyHttpException {
+        writeSpeedyInt(new SpeedyInt(value));
+    }
+
+    /// Writes a raw {@link String} for framework/envelope fields. Matches
+    /// {@link #writeLeaf} semantics for text: a null or empty value is written as a JSON
+    /// null. The default boxes into a {@link SpeedyText}; formats override to skip it.
+    default void writeText(String value) throws SpeedyHttpException {
+        if (value == null || value.isEmpty()) {
+            writeNull();
+        } else {
+            writeSpeedyText(new SpeedyText(value));
+        }
+    }
+
+    /// Writes a raw {@code boolean} for framework/envelope fields. The default boxes into
+    /// a {@link SpeedyBoolean}; formats override to skip it.
+    default void writeBool(boolean value) throws SpeedyHttpException {
+        writeSpeedyBoolean(new SpeedyBoolean(value));
+    }
+
     /// Dispatches a domain value to the typed {@code writeSpeedy*} method.
     default void writeLeaf(ValueType type, SpeedyValue value) throws SpeedyHttpException {
         if (value == null || value.isEmpty() || value.isNull()) {
@@ -86,6 +110,13 @@ public interface SpeedyResponseWriter {
             case ENUM, ENUM_ORD -> writeSpeedyEnum((SpeedyEnum) value);
             default -> throw new IllegalArgumentException("Unexpected leaf type: " + type);
         }
+    }
+
+    /// Discards any buffered, uncommitted document so a fresh document can be written.
+    /// Used by the error path when a write fails mid-document and the same writer is
+    /// reused: the partial output must be cleared before the error document is rendered.
+    /// The default is a no-op (non-buffering formats have nothing to discard).
+    default void reset() throws SpeedyHttpException {
     }
 
     /// Commits the buffered document to the HTTP response: status code, headers,

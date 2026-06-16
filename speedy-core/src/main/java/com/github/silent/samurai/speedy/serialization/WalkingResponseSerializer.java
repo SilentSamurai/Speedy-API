@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.serialization;
 
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
@@ -45,17 +44,17 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
         walker.writeCollection(response.getPayload(), response.getEntityMetadata(), response.getExpands(), w);
         w.field("pageIndex");
         if (response.getPageIndex() != null) {
-            w.writeLeaf(ValueType.INT, new SpeedyInt((long) response.getPageIndex()));
+            w.writeInt(response.getPageIndex());
         } else {
             w.writeNull();
         }
         w.field("pageSize");
-        w.writeLeaf(ValueType.INT, new SpeedyInt((long) response.getPayload().size()));
+        w.writeInt(response.getPayload().size());
         if (response.getTotalCount() != null) {
             w.field("totalCount");
-            w.writeLeaf(ValueType.INT, new SpeedyInt(response.getTotalCount().longValue()));
+            w.writeInt(response.getTotalCount().longValue());
             w.field("totalPages");
-            w.writeLeaf(ValueType.INT, new SpeedyInt((long) calculateTotalPages(response)));
+            w.writeInt(calculateTotalPages(response));
         }
         w.endObject();
 
@@ -68,7 +67,11 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
         w.startObject();
         w.field("count");
         BigInteger count = response.getCount();
-        w.writeLeaf(ValueType.INT, new SpeedyInt(count == null ? null : count.longValue()));
+        if (count == null) {
+            w.writeNull();
+        } else {
+            w.writeInt(count.longValue());
+        }
         w.endObject();
         w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
     }
@@ -90,13 +93,13 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
         for (SpeedyPartialFailure failure : response.getFailed()) {
             w.startObject();
             w.field("index");
-            w.writeLeaf(ValueType.INT, new SpeedyInt((long) failure.getIndex()));
+            w.writeInt(failure.getIndex());
             w.field("status");
-            w.writeLeaf(ValueType.INT, new SpeedyInt((long) failure.getStatus()));
+            w.writeInt(failure.getStatus());
             w.field("message");
-            w.writeLeaf(ValueType.TEXT, new SpeedyText(failure.getMessage()));
+            w.writeText(failure.getMessage());
             w.field("timestamp");
-            w.writeLeaf(ValueType.TEXT, new SpeedyText(failure.getTimestamp()));
+            w.writeText(failure.getTimestamp());
             w.field("inputPk");
             if (failure.getInputPk() != null) {
                 writeEntityKeys(failure.getInputPk(), w);
@@ -108,7 +111,7 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
         w.endArray();
 
         w.field("pageIndex");
-        w.writeLeaf(ValueType.INT, new SpeedyInt((long) response.getPageIndex()));
+        w.writeInt(response.getPageIndex());
         w.endObject();
 
         w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
@@ -117,13 +120,14 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
     @Override
     public void writeError(SpeedyErrorResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
         SpeedyResponseWriter w = writer;
+        w.reset(); // discard any partial document if a prior write failed mid-stream
         w.startObject();
         w.field("status");
-        w.writeLeaf(ValueType.INT, new SpeedyInt((long) response.getStatus()));
+        w.writeInt(response.getStatus());
         w.field("message");
-        w.writeLeaf(ValueType.TEXT, new SpeedyText(response.getMessage()));
+        w.writeText(response.getMessage());
         w.field("timestamp");
-        w.writeLeaf(ValueType.TEXT, new SpeedyText(LocalDateTime.now().toString()));
+        w.writeText(LocalDateTime.now().toString());
         w.endObject();
         w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
     }
@@ -169,11 +173,11 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
     private void writeEntityMetaModel(EntityMetadata entityMetadata, SpeedyResponseWriter w) throws SpeedyHttpException {
         w.startObject();
         w.field("name");
-        w.writeLeaf(ValueType.TEXT, new SpeedyText(entityMetadata.getName()));
+        w.writeText(entityMetadata.getName());
         w.field("hasCompositeKey");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(entityMetadata.hasCompositeKey()));
+        w.writeBool(entityMetadata.hasCompositeKey());
         w.field("sensitive");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(entityMetadata.isSensitive()));
+        w.writeBool(entityMetadata.isSensitive());
 
         w.field("fields");
         w.startArray();
@@ -195,38 +199,38 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
     private void writeFieldMetadata(FieldMetadata fieldMetadata, SpeedyResponseWriter w) throws SpeedyHttpException {
         w.startObject();
         w.field("outputProperty");
-        w.writeLeaf(ValueType.TEXT, new SpeedyText(fieldMetadata.getOutputPropertyName()));
+        w.writeText(fieldMetadata.getOutputPropertyName());
         w.field("isAssociation");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(fieldMetadata.isAssociation()));
+        w.writeBool(fieldMetadata.isAssociation());
 
         if (fieldMetadata instanceof KeyFieldMetadata keyFieldMetadata) {
             w.field("isKeyField");
-            w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(keyFieldMetadata.isKeyField()));
+            w.writeBool(keyFieldMetadata.isKeyField());
             w.field("isKeyGenerated");
-            w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(keyFieldMetadata.shouldGenerateKey()));
+            w.writeBool(keyFieldMetadata.shouldGenerateKey());
         }
 
         if (fieldMetadata.isAssociation()) {
             w.field("associatedWith");
-            w.writeLeaf(ValueType.TEXT, new SpeedyText(fieldMetadata.getAssociationMetadata().getName()));
+            w.writeText(fieldMetadata.getAssociationMetadata().getName());
             w.field("associatedField");
-            w.writeLeaf(ValueType.TEXT, new SpeedyText(fieldMetadata.getAssociatedFieldMetadata().getOutputPropertyName()));
+            w.writeText(fieldMetadata.getAssociatedFieldMetadata().getOutputPropertyName());
         }
 
         w.field("fieldType");
-        w.writeLeaf(ValueType.TEXT, new SpeedyText(fieldMetadata.getValueType().name()));
+        w.writeText(fieldMetadata.getValueType().name());
         w.field("isNullable");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(fieldMetadata.isNullable()));
+        w.writeBool(fieldMetadata.isNullable());
         w.field("isCollection");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(fieldMetadata.isCollection()));
+        w.writeBool(fieldMetadata.isCollection());
         w.field("isSerializable");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(fieldMetadata.isSerializable()));
+        w.writeBool(fieldMetadata.isSerializable());
         w.field("isDeserializable");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(fieldMetadata.isDeserializable()));
+        w.writeBool(fieldMetadata.isDeserializable());
         w.field("isUnique");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(fieldMetadata.isUnique()));
+        w.writeBool(fieldMetadata.isUnique());
         w.field("sensitive");
-        w.writeLeaf(ValueType.BOOL, new SpeedyBoolean(fieldMetadata.isSensitive()));
+        w.writeBool(fieldMetadata.isSensitive());
         w.endObject();
     }
 }

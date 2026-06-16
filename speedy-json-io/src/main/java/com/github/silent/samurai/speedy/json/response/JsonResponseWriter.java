@@ -1,10 +1,7 @@
 package com.github.silent.samurai.speedy.json.response;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -13,110 +10,220 @@ import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Map;
 
-/// JSON {@link SpeedyResponseWriter}. Realizes the format-agnostic token stream as a
-/// buffered Jackson tree, then serializes it to the {@link HttpServletResponse} in
-/// {@link #finish}. Buffering into a tree (rather than streaming straight to the socket)
-/// keeps the byte-for-byte output identical to the previous {@code ObjectNode}-based writers
-/// and preserves transactional error handling — nothing is committed until the walk succeeds.
+/// JSON {@link SpeedyResponseWriter}. Realizes the format-agnostic token stream by writing
+/// straight to a streaming Jackson {@link JsonGenerator} — the write-side mirror of the
+/// {@link com.github.silent.samurai.speedy.json.request.JsonStructureReader}'s
+/// {@code JsonParser} cursor. The generator handles all JSON syntax (nesting, commas,
+/// quoting, escaping) internally, so the writer holds no document tree and allocates no
+/// per-node objects: O(1) allocation beyond the generator's pooled internal buffers.
+///
+/// The generator targets an in-memory {@link ByteArrayOutputStream} rather than the socket,
+/// so nothing reaches the {@link HttpServletResponse} until {@link #finish}. This keeps the
+/// byte-for-byte output identical to the previous tree-based writer and preserves transactional
+/// error handling — a mid-walk failure propagates before any status or body is committed.
 public class JsonResponseWriter implements SpeedyResponseWriter {
 
-    private static final ObjectMapper JSON = CommonUtil.json();
-    private static final JsonNodeFactory NF = JSON.getNodeFactory();
+    private static final JsonFactory FACTORY = CommonUtil.json().getFactory();
     private static final DateTimeFormatter ISO_DATE = DateTimeFormatter.ISO_DATE;
     private static final DateTimeFormatter ISO_TIME = DateTimeFormatter.ISO_TIME;
     private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_DATE_TIME;
     private static final DateTimeFormatter ISO_OFFSET_DATE_TIME = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
-    private final Deque<JsonNode> stack = new ArrayDeque<>();
-
-    private JsonNode root;
-    private String pendingField;
+    private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(1024);
+    private JsonGenerator gen;
 
     public JsonResponseWriter() {
+        try {
+            // Targets the in-memory buffer (UTF-8); never actually throws for a ByteArrayOutputStream.
+            this.gen = FACTORY.createGenerator(buffer);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Override
-    public void startObject() {
-        open(NF.objectNode());
+    public void startObject() throws SpeedyHttpException {
+        try {
+            gen.writeStartObject();
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void endObject() {
-        stack.pop();
+    public void endObject() throws SpeedyHttpException {
+        try {
+            gen.writeEndObject();
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void startArray() {
-        open(NF.arrayNode());
+    public void startArray() throws SpeedyHttpException {
+        try {
+            gen.writeStartArray();
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void endArray() {
-        stack.pop();
+    public void endArray() throws SpeedyHttpException {
+        try {
+            gen.writeEndArray();
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void field(String name) {
-        this.pendingField = name;
+    public void field(String name) throws SpeedyHttpException {
+        try {
+            gen.writeFieldName(name);
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeNull() {
-        add(NF.nullNode());
+    public void writeNull() throws SpeedyHttpException {
+        try {
+            gen.writeNull();
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyInt(SpeedyInt value) {
-        add(NF.numberNode(value.getValue()));
+    public void writeSpeedyInt(SpeedyInt value) throws SpeedyHttpException {
+        try {
+            gen.writeNumber(value.getValue());
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyText(SpeedyText value) {
-        add(NF.textNode(value.getValue()));
+    public void writeSpeedyText(SpeedyText value) throws SpeedyHttpException {
+        try {
+            gen.writeString(value.getValue());
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyDouble(SpeedyDouble value) {
-        add(NF.numberNode(value.getValue()));
+    public void writeSpeedyDouble(SpeedyDouble value) throws SpeedyHttpException {
+        try {
+            gen.writeNumber(value.getValue());
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyBoolean(SpeedyBoolean value) {
-        add(NF.booleanNode(value.getValue()));
+    public void writeSpeedyBoolean(SpeedyBoolean value) throws SpeedyHttpException {
+        try {
+            gen.writeBoolean(value.getValue());
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyDate(SpeedyDate value) {
-        add(NF.textNode(value.getValue().format(ISO_DATE)));
+    public void writeSpeedyDate(SpeedyDate value) throws SpeedyHttpException {
+        try {
+            gen.writeString(value.getValue().format(ISO_DATE));
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyDateTime(SpeedyDateTime value) {
-        add(NF.textNode(value.getValue().format(ISO_DATE_TIME)));
+    public void writeSpeedyDateTime(SpeedyDateTime value) throws SpeedyHttpException {
+        try {
+            gen.writeString(value.getValue().format(ISO_DATE_TIME));
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyTime(SpeedyTime value) {
-        add(NF.textNode(value.getValue().format(ISO_TIME)));
+    public void writeSpeedyTime(SpeedyTime value) throws SpeedyHttpException {
+        try {
+            gen.writeString(value.getValue().format(ISO_TIME));
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyZonedDateTime(SpeedyZonedDateTime value) {
-        add(NF.textNode(value.getValue().format(ISO_OFFSET_DATE_TIME)));
+    public void writeSpeedyZonedDateTime(SpeedyZonedDateTime value) throws SpeedyHttpException {
+        try {
+            gen.writeString(value.getValue().format(ISO_OFFSET_DATE_TIME));
+        } catch (IOException e) {
+            throw wrap(e);
+        }
     }
 
     @Override
-    public void writeSpeedyEnum(SpeedyEnum value) {
-        if (value.getValueType() == ValueType.ENUM_ORD) {
-            add(NF.numberNode(value.asEnumOrd()));
-        } else {
-            add(NF.textNode(value.asEnum()));
+    public void writeSpeedyEnum(SpeedyEnum value) throws SpeedyHttpException {
+        try {
+            if (value.getValueType() == ValueType.ENUM_ORD) {
+                gen.writeNumber(value.asEnumOrd());
+            } else {
+                gen.writeString(value.asEnum());
+            }
+        } catch (IOException e) {
+            throw wrap(e);
+        }
+    }
+
+    @Override
+    public void writeInt(long value) throws SpeedyHttpException {
+        try {
+            gen.writeNumber(value);
+        } catch (IOException e) {
+            throw wrap(e);
+        }
+    }
+
+    @Override
+    public void writeText(String value) throws SpeedyHttpException {
+        try {
+            if (value == null || value.isEmpty()) {
+                gen.writeNull();
+            } else {
+                gen.writeString(value);
+            }
+        } catch (IOException e) {
+            throw wrap(e);
+        }
+    }
+
+    @Override
+    public void writeBool(boolean value) throws SpeedyHttpException {
+        try {
+            gen.writeBoolean(value);
+        } catch (IOException e) {
+            throw wrap(e);
+        }
+    }
+
+    @Override
+    public void reset() throws SpeedyHttpException {
+        buffer.reset();
+        try {
+            gen = FACTORY.createGenerator(buffer);
+        } catch (IOException e) {
+            throw wrap(e);
         }
     }
 
@@ -127,29 +234,14 @@ public class JsonResponseWriter implements SpeedyResponseWriter {
         out.setContentType(contentType);
         headers.forEach(out::setHeader);
         try {
-            JSON.writeValue(out.getWriter(), root);
+            gen.close(); // flush the complete document into the in-memory buffer
+            buffer.writeTo(out.getOutputStream());
         } catch (IOException e) {
             throw new InternalServerError("Internal Server Error", e);
         }
     }
 
-    /// Attaches a freshly opened container to its parent and makes it the current container.
-    private void open(JsonNode container) {
-        add(container);
-        stack.push(container);
-    }
-
-    /// Places a value/container into the enclosing object (under the pending field) or array,
-    /// or records it as the document root when no container is open.
-    private void add(JsonNode node) {
-        JsonNode top = stack.peek();
-        if (top == null) {
-            root = node;
-        } else if (top instanceof ObjectNode object) {
-            object.set(pendingField, node);
-            pendingField = null;
-        } else if (top instanceof ArrayNode array) {
-            array.add(node);
-        }
+    private static InternalServerError wrap(IOException e) {
+        return new InternalServerError("Internal Server Error", e);
     }
 }

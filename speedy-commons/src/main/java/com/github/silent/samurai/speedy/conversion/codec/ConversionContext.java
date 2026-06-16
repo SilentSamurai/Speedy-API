@@ -21,7 +21,8 @@ public final class ConversionContext extends SpeedyContext {
 
     /// Creates a {@code ConversionContext} pre-populated with
     /// {@link JavaTypeRegistry} and {@link DbConversionRegistry}.
-    /// Format-specific registries are contributed via SPI afterwards.
+    /// Format-level type registrations are contributed afterwards via
+    /// {@code ISpeedyConfiguration#typeModules()}.
     public static ConversionContext withDefaults() {
         ConversionContext ctx = new ConversionContext();
         ctx.put(JavaTypeRegistry.defaults());
