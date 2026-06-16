@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.interfaces.IRequestBodyParser;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.serialization.WalkingRequestParser;
 
 public class ParserSelectionHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
@@ -23,6 +24,7 @@ public class ParserSelectionHandler implements com.github.silent.samurai.speedy.
         ConversionContext conversionContext = context.get(ConversionContext.class);
 
         ISpeedyIoProvider selected = manager.selectProvider(contentType);
-        context.put(IRequestBodyParser.class, selected.createParser(conversionContext));
+        context.put(IRequestBodyParser.class,
+                new WalkingRequestParser(selected.getContentType(), selected.createReader(conversionContext)));
     }
 }

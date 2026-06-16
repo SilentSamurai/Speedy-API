@@ -10,11 +10,9 @@ import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry
 /// ## Design Philosophy
 /// Extends {@link SpeedyContext} which provides the generic typed-bag storage.
 /// This subclass populates the bag with the built-in registries:
-/// {@link JavaTypeRegistry} and {@link DbConversionRegistry}.
-/// Format-specific registries (e.g. JsonRegistry from speedy-json-io) are
-/// contributed later via {@link com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider}
-/// discovered through ServiceLoader so that speedy-core stays free of
-/// compile-time dependencies on format modules.
+/// {@link JavaTypeRegistry} and {@link DbConversionRegistry}. User-supplied
+/// type modules ({@code SpeedyTypeModule}) extend these afterwards via
+/// {@link #forType}.
 ///
 /// @see SpeedyContext
 /// @see JavaTypeRegistry
@@ -32,8 +30,7 @@ public final class ConversionContext extends SpeedyContext {
     }
 
     /// Returns a fluent {@link TypeBuilder} for registering a custom Java type
-    /// across all three registries (JavaTypeRegistry, JsonRegistry,
-    /// DbConversionRegistry).
+    /// into {@link JavaTypeRegistry}.
     public <T> TypeBuilder<T> forType(Class<T> type) {
         return new TypeBuilder<>(this, type);
     }

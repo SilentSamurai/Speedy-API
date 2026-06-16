@@ -94,7 +94,7 @@ class SpeedyV2OperatorErrorsTest {
             postQueryWithMessage(body, "only text values are supported for $matches");
         }
 
-        /// The parser coerces "2024*" via JsonToSpeedy.fromValueNode which
+        /// The parser coerces "2024*" via JsonStructureReader.readField which
         /// rejects it at the DateTime-ISO-format check before JooqQueryBuilder.matchPredicate
         /// ever runs. This produces a less-precise "must be ISO_DATE_TIME" error instead
         /// of "only text values are supported for $matches". The test reflects current behaviour.
@@ -112,7 +112,7 @@ class SpeedyV2OperatorErrorsTest {
     /// --- Gap 35: $in / $nin with association fields ---
     ///
     /// The parser successfully builds the condition (text values are coerced
-    /// via JsonToSpeedy.fromValueNode), but JooqQueryBuilder.inPredicate /
+    /// via JsonStructureReader.readField), but JooqQueryBuilder.inPredicate /
     /// notInPredicate checks fieldMetadata.isAssociation() at query execution
     /// time and throws "COLLECTION of Association Operation not supported".
 

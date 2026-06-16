@@ -9,8 +9,6 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.json.walker.JsonToSpeedy;
 import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
 import com.github.silent.samurai.speedy.json.parser.JsonQueryParser;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 class JooqQueryBuilderTest {
 
-    private final JsonToSpeedy jn2sv = new JsonToSpeedy(JsonRegistry.defaults());
     @Mock
     DataSource dataSource;
     @Mock
@@ -52,7 +49,6 @@ class JooqQueryBuilderTest {
     String json2SqlQuery(JsonNode jsonQuery) throws SpeedyHttpException {
         EntityMetadata entityMetadata = metaModel.findEntityMetadata(jsonQuery.get("$from").asText());
         JsonQueryParser builder = new JsonQueryParser(metaModel, entityMetadata, jsonQuery);
-        builder.setJsonNode2SpeedyValue(jn2sv);
         JooqQueryBuilder qb = new JooqQueryBuilder(builder.build(), dslContext, JooqConverters.defaults());
         qb.prepareQuery();
         String sql = qb.query.toString();

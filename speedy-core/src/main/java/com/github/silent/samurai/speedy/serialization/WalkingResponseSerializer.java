@@ -138,7 +138,7 @@ public class WalkingResponseSerializer implements IResponseSerializerV2 {
     private void writeEntityKeys(SpeedyEntity entity, SpeedyResponseWriter w) throws SpeedyHttpException {
         w.startObject();
         for (KeyFieldMetadata keyField : entity.getMetadata().getKeyFields()) {
-            w.field(keyField.getOutputPropertyName());
+            w.field(keyField);
             SpeedyValue value = entity.get(keyField);
             if (value == null || value.isNull()) {
                 w.writeNull();

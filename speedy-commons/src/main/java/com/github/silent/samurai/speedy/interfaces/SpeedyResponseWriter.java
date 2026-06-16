@@ -12,8 +12,7 @@ import java.util.Map;
 /// The shared {@code ResponseWalker} and {@code WalkingResponseSerializer} (both
 /// format-agnostic) drive a sequence of structural tokens against this interface;
 /// a format module (JSON, XML, YAML, …) implements the sink to render those tokens
-/// into bytes. This mirrors how {@link ISpeedyIoProvider} contributes a leaf-type
-/// registry — only the format-specific rendering lives in the format module.
+/// into bytes — only the format-specific rendering lives in the format module.
 ///
 /// ## Buffering contract
 /// Implementations are expected to **buffer** the document and commit nothing to the
@@ -33,8 +32,17 @@ public interface SpeedyResponseWriter {
 
     void endObject() throws SpeedyHttpException;
 
-    /// Names the next value within the enclosing object.
+    /// Names the next value within the enclosing object — for framework/envelope keys
+    /// that have no entity metadata (e.g. "payload", "status").
     void field(String name) throws SpeedyHttpException;
+
+    /// Names the next value within the enclosing object using its field metadata.
+    /// Self-describing formats emit the output property name (the default); schema-driven
+    /// formats (e.g. protobuf) override to emit the field's number. This is the write-side
+    /// counterpart to {@link StructureReader#nextField(EntityMetadata)}.
+    default void field(FieldMetadata field) throws SpeedyHttpException {
+        field(field.getOutputPropertyName());
+    }
 
     void startArray() throws SpeedyHttpException;
 

@@ -21,12 +21,12 @@ import java.util.function.Predicate;
 
 /// Handles POST /{Entity}/$query requests with JSON body DSL.
 ///
-/// Reads the SpeedyQuery (parsed from JSON body by JSONBodyParser and set as
+/// Reads the SpeedyQuery (parsed from the JSON body by WalkingRequestParser and set as
 /// body by QueryBodyParserHandler), executes the query with count, and produces
 /// SpeedyEntityResponse or SpeedyCountResponse.
 ///
 /// @see QueryBodyParserHandler
-/// @see JSONBodyParser
+/// @see com.github.silent.samurai.speedy.serialization.WalkingRequestParser
 public class QueryHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override

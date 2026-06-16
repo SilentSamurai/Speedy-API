@@ -76,17 +76,13 @@ public class SpeedyFactory {
         configuration = speedyConfiguration;
         dialect = speedyConfiguration.getDialect();
 
-        /// Build the conversion context with built-in defaults, then let SPI
-        /// modules (e.g. speedy-json-io's JsonSpeedyProvider) contribute their
-        /// registries, and finally apply user-supplied type modules so custom
-        /// encodings can override or extend the built-in ones.
+        /// Build the conversion context with built-in defaults, then apply
+        /// user-supplied type modules so custom encodings can override or extend
+        /// the built-in ones.
         this.conversionContext = ConversionContext.withDefaults();
         List<ISpeedyIoProvider> providers = StreamSupport
                 .stream(ServiceLoader.load(ISpeedyIoProvider.class).spliterator(), false)
                 .toList();
-        for (ISpeedyIoProvider provider : providers) {
-            provider.contributeModule(conversionContext);
-        }
         for (SpeedyTypeModule module : speedyConfiguration.typeModules()) {
             module.contribute(conversionContext);
         }

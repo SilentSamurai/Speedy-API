@@ -66,7 +66,7 @@ public class ResponseWalker {
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
             if (!fieldMetadata.isSerializable() || !fieldPredicate.test(fieldMetadata)) continue;
             if (!speedyEntity.has(fieldMetadata)) {
-                w.field(fieldMetadata.getOutputPropertyName());
+                w.field(fieldMetadata);
                 w.writeNull();
                 continue;
             }
@@ -75,12 +75,12 @@ public class ResponseWalker {
             } else if (fieldMetadata.isCollection()) {
                 SpeedyCollection speedyValue = (SpeedyCollection) speedyEntity.get(fieldMetadata);
                 if (!speedyValue.isEmpty()) {
-                    w.field(fieldMetadata.getOutputPropertyName());
+                    w.field(fieldMetadata);
                     writeBasicCollection(fieldMetadata, speedyValue.asCollection(), w);
                 }
             } else {
                 SpeedyValue value = speedyEntity.get(fieldMetadata);
-                w.field(fieldMetadata.getOutputPropertyName());
+                w.field(fieldMetadata);
                 if (!value.isEmpty()) {
                     w.writeLeaf(fieldMetadata.getValueType(), value);
                 } else {
@@ -97,19 +97,18 @@ public class ResponseWalker {
                                   FieldMetadata fieldMetadata,
                                   ExpansionPathTracker pathTracker,
                                   SpeedyResponseWriter w) throws SpeedyHttpException {
-        String name = fieldMetadata.getOutputPropertyName();
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
 
         if (pathTracker.shouldExpand(associationMetadata)) {
             if (fieldMetadata.isCollection()) {
                 Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
                 if (value != null) {
-                    w.field(name);
+                    w.field(fieldMetadata);
                     writeCollection(value, associationMetadata, pathTracker, w);
                 }
             } else if (speedyEntity.has(fieldMetadata) && speedyEntity.get(fieldMetadata) != null) {
                 SpeedyValue fieldValue = speedyEntity.get(fieldMetadata);
-                w.field(name);
+                w.field(fieldMetadata);
                 if (fieldValue.isObject()) {
                     writeEntity(fieldValue.asObject(), associationMetadata, pathTracker, w);
                 } else {
@@ -120,12 +119,12 @@ public class ResponseWalker {
             if (fieldMetadata.isCollection()) {
                 Collection<SpeedyValue> value = speedyEntity.get(fieldMetadata).asCollection();
                 if (!value.isEmpty()) {
-                    w.field(name);
+                    w.field(fieldMetadata);
                     writeOnlyKeyCollection(value, associationMetadata, w);
                 }
             } else {
                 SpeedyValue fieldValue = speedyEntity.get(fieldMetadata);
-                w.field(name);
+                w.field(fieldMetadata);
                 if (fieldValue.isObject()) {
                     writeOnlyKeys(fieldValue.asObject(), associationMetadata, w);
                 } else {
@@ -155,7 +154,7 @@ public class ResponseWalker {
         w.startObject();
         for (KeyFieldMetadata fieldMetadata : entityMetadata.getKeyFields()) {
             if (!fieldMetadata.isSerializable()) continue;
-            w.field(fieldMetadata.getOutputPropertyName());
+            w.field(fieldMetadata);
             if (!speedyEntity.has(fieldMetadata) || speedyEntity.get(fieldMetadata).isEmpty()) {
                 w.writeNull();
                 continue;
@@ -171,7 +170,7 @@ public class ResponseWalker {
         w.startArray();
         for (SpeedyValue value : collection) {
             w.startObject();
-            w.field(fieldMetadata.getOutputPropertyName());
+            w.field(fieldMetadata);
             w.writeLeaf(fieldMetadata.getValueType(), value);
             w.endObject();
         }

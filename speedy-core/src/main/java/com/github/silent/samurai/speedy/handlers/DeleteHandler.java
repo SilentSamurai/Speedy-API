@@ -24,7 +24,7 @@ import java.util.List;
 
 /// Handles DELETE /{Entity}/$delete requests with pre-parsed SpeedyDeleteBody.
 ///
-/// Reads the SpeedyDeleteBody (parsed from JSON by JSONBodyParser and set as
+/// Reads the SpeedyDeleteBody (parsed from JSON by WalkingRequestParser and set as
 /// body by DeleteBodyParserHandler), fires PRE/POST_DELETE events, validates keys,
 /// and bulk-deletes entities in either BATCH or PER_ENTITY transaction mode.
 ///

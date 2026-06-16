@@ -2,8 +2,7 @@ package com.github.silent.samurai.speedy.json;
 
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.json.request.JSONBodyParser;
+import com.github.silent.samurai.speedy.json.request.JsonRequestReader;
 import com.github.silent.samurai.speedy.json.response.JsonResponseWriter;
 import org.springframework.http.MediaType;
 
@@ -11,8 +10,7 @@ import org.springframework.http.MediaType;
 ///
 /// Implements the {@link ISpeedyIoProvider} contract:
 /// - Response writer factory ({@link JsonResponseWriter})
-/// - Request body parser factory ({@link JSONBodyParser})
-/// - Type-module contributor ({@link JsonRegistry})
+/// - Request reader factory ({@link JsonRequestReader})
 ///
 /// Discovered via ServiceLoader from {@code META-INF/services/...ISpeedyIoProvider}.
 public class JsonSpeedyProvider implements ISpeedyIoProvider {
@@ -28,12 +26,7 @@ public class JsonSpeedyProvider implements ISpeedyIoProvider {
     }
 
     @Override
-    public IRequestBodyParser createParser(ConversionContext context) {
-        return new JSONBodyParser(context.get(JsonRegistry.class));
-    }
-
-    @Override
-    public void contributeModule(ConversionContext ctx) {
-        ctx.put(JsonRegistry.defaults());
+    public SpeedyRequestReader createReader(ConversionContext context) {
+        return new JsonRequestReader();
     }
 }

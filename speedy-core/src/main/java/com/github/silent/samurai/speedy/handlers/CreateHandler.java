@@ -25,7 +25,7 @@ import java.util.List;
 
 /// Handles POST /{Entity}/$create requests with pre-parsed SpeedyCreateBody.
 ///
-/// Reads the SpeedyCreateBody (parsed from JSON by JSONBodyParser and set as
+/// Reads the SpeedyCreateBody (parsed from JSON by WalkingRequestParser and set as
 /// body by CreateBodyParserHandler), fires PRE/POST_INSERT events, validates entities,
 /// and bulk-creates them in either BATCH or PER_ENTITY transaction mode.
 ///

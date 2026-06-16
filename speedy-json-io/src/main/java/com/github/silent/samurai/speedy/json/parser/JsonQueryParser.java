@@ -12,12 +12,13 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
-import com.github.silent.samurai.speedy.json.walker.JsonToSpeedy;
+import com.github.silent.samurai.speedy.json.request.JsonStructureReader;
 import com.github.silent.samurai.speedy.parser.ConditionFactory;
 import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,8 @@ public class JsonQueryParser {
     final SpeedyQueryImpl speedyQuery;
     final ConditionFactory conditionFactory;
 
+    @Setter
     private int defaultPageSize = 20;
-    private JsonToSpeedy jsonToSpeedy;
 
     public JsonQueryParser(MetaModel metaModel, String from, JsonNode rootNode) throws NotFoundException {
         this.metaModel = metaModel;
@@ -58,16 +59,8 @@ public class JsonQueryParser {
         this.conditionFactory = speedyQuery.getConditionFactory();
     }
 
-    public void setJsonNode2SpeedyValue(JsonToSpeedy jsonToSpeedy) {
-        this.jsonToSpeedy = jsonToSpeedy;
-    }
-
     public void setMaxPageSize(int maxPageSize) {
         this.speedyQuery.setMaxPageSize(maxPageSize);
-    }
-
-    public void setDefaultPageSize(int defaultPageSize) {
-        this.defaultPageSize = defaultPageSize;
     }
 
     String getFrom() throws BadRequestException {
@@ -110,7 +103,7 @@ public class JsonQueryParser {
                     List<SpeedyValue> speedyValueList = new LinkedList<>();
                     for (JsonNode node : valueNode) {
                         if (node.isValueNode()) {
-                            SpeedyValue speedyValue = jsonToSpeedy.fromValueNode(queryField.getMetadataForParsing(), (ValueNode) node);
+                            SpeedyValue speedyValue = JsonStructureReader.decodeStandalone(node, queryField.getMetadataForParsing());
                             speedyValueList.add(speedyValue);
                         }
                     }
@@ -191,7 +184,7 @@ public class JsonQueryParser {
             this.conditionFactory.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);
         } else {
-            return new Literal(jsonToSpeedy.fromValueNode(metadata, symbol));
+            return new Literal(JsonStructureReader.decodeStandalone(symbol, metadata));
         }
     }
 

@@ -12,8 +12,6 @@ import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Identifier;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.json.registry.JsonRegistry;
-import com.github.silent.samurai.speedy.json.walker.JsonToSpeedy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +27,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class BuildQueryFromJsonTests {
 
-    private final JsonToSpeedy jn2sv = new JsonToSpeedy(JsonRegistry.defaults());
     private MetaModel metaModel;
     private ObjectMapper objectMapper;
     private JsonNode rootNode;
@@ -43,13 +40,11 @@ class BuildQueryFromJsonTests {
 
     private JsonQueryParser newQueryParser(MetaModel metaModel, String from, JsonNode rootNode) throws NotFoundException {
         JsonQueryParser parser = new JsonQueryParser(metaModel, from, rootNode);
-        parser.setJsonNode2SpeedyValue(jn2sv);
         return parser;
     }
 
     private JsonQueryParser newQueryParser(MetaModel metaModel, JsonNode rootNode) throws BadRequestException, NotFoundException {
         JsonQueryParser parser = new JsonQueryParser(metaModel, rootNode);
-        parser.setJsonNode2SpeedyValue(jn2sv);
         return parser;
     }
 

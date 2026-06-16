@@ -57,10 +57,7 @@ class SpeedyFactoryProviderMapTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public IRequestBodyParser createParser(ConversionContext context) { return null; }
-
-        @Override
-        public void contributeModule(ConversionContext ctx) {}
+        public SpeedyRequestReader createReader(ConversionContext context) { return null; }
     }
 
     static class UpperCaseJsonProvider implements ISpeedyIoProvider {
@@ -71,10 +68,7 @@ class SpeedyFactoryProviderMapTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public IRequestBodyParser createParser(ConversionContext context) { return null; }
-
-        @Override
-        public void contributeModule(ConversionContext ctx) {}
+        public SpeedyRequestReader createReader(ConversionContext context) { return null; }
     }
 
 }

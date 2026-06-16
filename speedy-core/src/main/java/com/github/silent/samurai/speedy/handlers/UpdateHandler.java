@@ -24,7 +24,7 @@ import java.util.List;
 
 /// Handles PUT/PATCH /{Entity}/$update requests with pre-parsed SpeedyUpdateBody.
 ///
-/// Reads the SpeedyUpdateBody (parsed from JSON by JSONBodyParser and set as
+/// Reads the SpeedyUpdateBody (parsed from JSON by WalkingRequestParser and set as
 /// body by UpdateBodyParserHandler), fires PRE/POST_UPDATE events, validates the entity,
 /// and updates it in a single transaction.
 ///

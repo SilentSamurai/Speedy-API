@@ -135,10 +135,7 @@ class ParserSelectionHandlerTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public IRequestBodyParser createParser(ConversionContext context) { return new StubParser("application/json"); }
-
-        @Override
-        public void contributeModule(ConversionContext ctx) {}
+        public SpeedyRequestReader createReader(ConversionContext context) { return new StubReader(); }
     }
 
     static class TextParserProvider implements ISpeedyIoProvider {
@@ -149,46 +146,19 @@ class ParserSelectionHandlerTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public IRequestBodyParser createParser(ConversionContext context) { return new StubParser("text/plain"); }
-
-        @Override
-        public void contributeModule(ConversionContext ctx) {}
+        public SpeedyRequestReader createReader(ConversionContext context) { return new StubReader(); }
     }
 
-    static class StubParser implements IRequestBodyParser {
-
-        private final String contentType;
-
-        StubParser(String contentType) {
-            this.contentType = contentType;
-        }
+    static class StubReader implements SpeedyRequestReader {
 
         @Override
-        public String getContentType() {
-            return contentType;
+        public StructureReader readDocument(byte[] rawBody) {
+            return null;
         }
 
         @Override
         public SpeedyQuery parseQuery(byte[] rawBody, MetaModel metaModel, SpeedyQuery baseQuery,
                                       int maxPageSize, int defaultPageSize) throws SpeedyHttpException {
-            return null;
-        }
-
-        @Override
-        public SpeedyCreateBody parseCreate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
-                                            QueryProcessor queryProcessor) throws SpeedyHttpException {
-            return null;
-        }
-
-        @Override
-        public SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity,
-                                            QueryProcessor queryProcessor) throws SpeedyHttpException {
-            return null;
-        }
-
-        @Override
-        public SpeedyDeleteBody parseDelete(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
-                                            QueryProcessor queryProcessor) throws SpeedyHttpException {
             return null;
         }
     }
