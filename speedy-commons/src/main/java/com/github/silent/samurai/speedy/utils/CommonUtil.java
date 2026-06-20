@@ -2,30 +2,26 @@ package com.github.silent.samurai.speedy.utils;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.silent.samurai.speedy.exceptions.ConversionException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommonUtil {
 
-
-    private static final Jackson2ObjectMapperBuilder jacksonBuildr = new Jackson2ObjectMapperBuilder();
     private static final ObjectMapper standardMapper;
 
     static {
-        jacksonBuildr.featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        jacksonBuildr.featuresToEnable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
-        standardMapper = jacksonBuildr.build();
+        standardMapper = new ObjectMapper().findAndRegisterModules();
+        standardMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        standardMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        standardMapper.enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
     }
 
     public static ObjectMapper json() {
@@ -94,14 +90,6 @@ public class CommonUtil {
             return Double.class;
         }
         return null;
-    }
-
-    public static String getRequestURI(HttpServletRequest request) {
-        String requestURI = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
-        if (request.getQueryString() != null) {
-            requestURI += "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8);
-        }
-        return requestURI.replaceAll(SpeedyConstant.URI, "");
     }
 
     public static String generateString(int length) {

@@ -3,10 +3,7 @@ package com.github.silent.samurai.speedy.utils;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyExceptionMapper;
-import jakarta.persistence.PersistenceException;
 import jakarta.servlet.http.HttpServletResponse;
-import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.exception.DataException;
 
 public class DefaultExceptionMapper implements ISpeedyExceptionMapper {
 
@@ -44,9 +41,10 @@ public class DefaultExceptionMapper implements ISpeedyExceptionMapper {
         }
 
         // 3. PersistenceException — unwrap cause
-        if (throwable instanceof PersistenceException && throwable.getCause() != null) {
-            Throwable cause = throwable.getCause();
-            if (cause instanceof ConstraintViolationException || cause instanceof DataException) {
+        if (hasClassInHierarchy(throwable, "jakarta.persistence.PersistenceException") && throwable.getCause() != null) {
+            String causeName = throwable.getCause().getClass().getName();
+            if (causeName.equals("org.hibernate.exception.ConstraintViolationException")
+                    || causeName.equals("org.hibernate.exception.DataException")) {
                 return HttpServletResponse.SC_BAD_REQUEST;
             }
         }

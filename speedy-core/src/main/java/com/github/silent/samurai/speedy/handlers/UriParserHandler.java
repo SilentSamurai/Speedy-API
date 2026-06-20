@@ -11,10 +11,13 @@ import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 public class UriParserHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
@@ -22,7 +25,7 @@ public class UriParserHandler implements com.github.silent.samurai.speedy.interf
     public void process(SpeedyContext context) throws SpeedyHttpException {
         MetaModel metaModel = context.get(MetaModel.class);
         HttpServletRequest httpRequest = context.get(HttpServletRequest.class);
-        String requestURI = CommonUtil.getRequestURI(httpRequest);
+        String requestURI = getRequestURI(httpRequest);
         JavaTypeRegistry jtr = context.get(ConversionContext.class).get(JavaTypeRegistry.class);
 
         UriComponents uriComponents = UriComponentsBuilder.fromUriString(requestURI).build();
@@ -103,5 +106,13 @@ public class UriParserHandler implements com.github.silent.samurai.speedy.interf
                         "Cannot downgrade to 'per-entity' per request. " +
                         "Remove the $transaction parameter or use 'batch'."
         );
+    }
+
+    private static String getRequestURI(HttpServletRequest request) {
+        String requestURI = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
+        if (request.getQueryString() != null) {
+            requestURI += "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8);
+        }
+        return requestURI.replaceAll(SpeedyConstant.URI, "");
     }
 }
