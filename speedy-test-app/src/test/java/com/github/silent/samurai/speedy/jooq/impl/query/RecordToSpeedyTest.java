@@ -12,7 +12,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
 import com.github.silent.samurai.speedy.models.SpeedyText;
-import com.github.silent.samurai.speedy.query.walker.RecordToSpeedy;
+import com.github.silent.samurai.speedy.walker.RecordToSpeedy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

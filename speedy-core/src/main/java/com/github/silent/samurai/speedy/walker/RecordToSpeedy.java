@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.walker;
+package com.github.silent.samurai.speedy.walker;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;

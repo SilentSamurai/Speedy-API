@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.query.walker;
+package com.github.silent.samurai.speedy.walker;
 
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
@@ -94,8 +94,8 @@ public class WalkingQueryProcessor implements QueryProcessor {
     public List<SpeedyEntity> create(List<SpeedyEntity> entities) throws SpeedyHttpException {
         try {
             for (SpeedyEntity entity : entities) {
-                SpeedyEntity columns = speedyToRecord.toInsertColumns(entity);
-                backend.insert(columns);
+                speedyToRecord.toInsertColumns(entity);
+                backend.insert(entity);
             }
 
             List<SpeedyEntity> entityList = new ArrayList<>(entities.size());
@@ -130,8 +130,8 @@ public class WalkingQueryProcessor implements QueryProcessor {
     @Override
     public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
         try {
-            SpeedyEntity columns = speedyToRecord.toUpdateColumns(entity);
-            backend.update(pk, columns);
+            speedyToRecord.toUpdateColumns(entity);
+            backend.update(pk, entity);
 
             List<SpeedyEntity> rows = backend.selectByKeys(List.of(pk));
             if (rows.isEmpty()) {

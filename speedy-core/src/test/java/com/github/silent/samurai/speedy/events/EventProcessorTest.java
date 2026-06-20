@@ -206,7 +206,7 @@ class EventProcessorTest {
         entity.put("id", new SpeedyText("PK-001"));
         entity.put("cost", new SpeedyInt(50L));
 
-        ep.triggerEvent(SpeedyEventType.POST_INSERT, productMetadata, entity);
+        ep.triggerEvent(SpeedyEventType.PRE_INSERT, productMetadata, entity);
 
         assertTrue(PojoHandler.WAS_CALLED.get());
         assertEquals("PK-001", PojoHandler.RECEIVED_PRODUCT.get().getId());
@@ -377,7 +377,7 @@ class EventProcessorTest {
             RECEIVED_NAME.set(null);
         }
 
-        @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.POST_INSERT})
+        @SpeedyEvent(value = "Product", eventType = {SpeedyEventType.PRE_INSERT})
         public void onPostInsert(Product product) {
             WAS_CALLED.set(true);
             RECEIVED_PRODUCT.set(product);
