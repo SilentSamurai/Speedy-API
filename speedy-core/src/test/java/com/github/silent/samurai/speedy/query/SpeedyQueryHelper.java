@@ -6,7 +6,7 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Expression;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.conditions.EqCondition;
+import com.github.silent.samurai.speedy.models.conditions.BinaryConditionImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,10 +55,10 @@ public class SpeedyQueryHelper {
     public boolean isOnlyIdentifiersPresent() {
         boolean isAllEqualCondition = speedyQuery.getWhere().getConditions()
                 .stream()
-                .allMatch(EqCondition.class::isInstance);
+                .allMatch(BinaryConditionImpl.class::isInstance);
         if (isAllEqualCondition) {
             Set<String> keywords = speedyQuery.getWhere().getConditions().stream()
-                    .map(EqCondition.class::cast)
+                    .map(BinaryConditionImpl.class::cast)
                     .map(condition -> condition.getField().getFieldMetadata().getOutputPropertyName())
                     .collect(Collectors.toSet());
             return MetadataUtil.hasOnlyPrimaryKeyFields(speedyQuery.getFrom(), keywords);

@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
-import com.github.silent.samurai.speedy.models.conditions.EqCondition;
+import com.github.silent.samurai.speedy.models.conditions.BinaryConditionImpl;
 import com.github.silent.samurai.speedy.query.SpeedyQueryHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +47,7 @@ public class SpeedyParserAssociationTest {
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
         assertEquals("ComposedProduct", speedyQuery.getFrom().getName());
-        EqCondition condition = (EqCondition) speedyQuery.getWhere().getConditions().get(0);
+        BinaryConditionImpl condition = (BinaryConditionImpl) speedyQuery.getWhere().getConditions().get(0);
         FieldMetadata fieldMetadata = condition.getField().getAssociatedFieldMetadata();
         Literal literal = (Literal) condition.getExpression();
         String condValue = literal.value().asText();

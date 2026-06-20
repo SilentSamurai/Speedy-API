@@ -28,7 +28,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 /// QueryField endDateField = conditionFactory.createQueryField("endDate");
 ///
 /// Identifier endDateIdentifier = new Identifier(endDateField);
-/// BinaryCondition condition = new LessThanEqualCondition(startDateField, endDateIdentifier);
+/// BinaryCondition condition = new BinaryConditionImpl(startDateField, ConditionOperator.LTE, endDateIdentifier);
 /// ```
 ///
 /// ### Associated Field Comparison
@@ -38,7 +38,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 /// QueryField profileLoginField = conditionFactory.createQueryField("profile.lastLogin");
 ///
 /// Identifier profileLoginIdentifier = new Identifier(profileLoginField);
-/// BinaryCondition condition = new GreaterThanEqualCondition(userCreatedField, profileLoginIdentifier);
+/// BinaryCondition condition = new BinaryConditionImpl(userCreatedField, ConditionOperator.GTE, profileLoginIdentifier);
 /// ```
 ///
 /// ### Price Comparison Example
@@ -48,7 +48,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 /// QueryField regularPriceField = conditionFactory.createQueryField("regularPrice");
 ///
 /// Identifier regularPriceIdentifier = new Identifier(regularPriceField);
-/// BinaryCondition condition = new LessThanCondition(salePriceField, regularPriceIdentifier);
+/// BinaryCondition condition = new BinaryConditionImpl(salePriceField, ConditionOperator.LT, regularPriceIdentifier);
 /// ```
 ///
 /// ### Equality Check Between Fields
@@ -58,7 +58,7 @@ package com.github.silent.samurai.speedy.interfaces.query;
 /// QueryField updatedByField = conditionFactory.createQueryField("updatedBy");
 ///
 /// Identifier updatedByIdentifier = new Identifier(updatedByField);
-/// BinaryCondition condition = new EqCondition(createdByField, updatedByIdentifier);
+/// BinaryCondition condition = new BinaryConditionImpl(createdByField, ConditionOperator.EQ, updatedByIdentifier);
 /// ```
 ///
 /// ## SQL Generation

@@ -12,7 +12,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
 import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
-import com.github.silent.samurai.speedy.models.conditions.*;
+
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
@@ -74,8 +74,8 @@ public class JooqQueryBuilder {
                 .reduce(DSL.noCondition(), org.jooq.Condition::and);
     }
 
-    org.jooq.Condition matchPredicate(MatchingCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getExpression().value();
+    org.jooq.Condition matchPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
         if (!speedyValue.isText()) {
             throw new BadRequestException("only text values are supported for $matches.");
         }
@@ -87,7 +87,7 @@ public class JooqQueryBuilder {
         return path.like(DSL.value(rawValue)).escape('\\');
     }
 
-    org.jooq.Condition equalPredicate(EqCondition bCondition) throws SpeedyHttpException {
+    org.jooq.Condition equalPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
         Expression expression = bCondition.getExpression();
         if (expression instanceof Literal l) {
             SpeedyValue speedyValue = l.value();
@@ -211,8 +211,8 @@ public class JooqQueryBuilder {
         }
     }
 
-    org.jooq.Condition inPredicate(InCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getExpression().value();
+    org.jooq.Condition inPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
         if (speedyValue.isCollection()) {
             FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
             if (!fieldMetadata.isAssociation()) {
@@ -235,8 +235,8 @@ public class JooqQueryBuilder {
         return path.in(DSL.value(rawValue));
     }
 
-    org.jooq.Condition notInPredicate(NotInCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getExpression().value();
+    org.jooq.Condition notInPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
         if (speedyValue.isCollection()) {
             FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
             if (!fieldMetadata.isAssociation()) {
@@ -262,8 +262,8 @@ public class JooqQueryBuilder {
     /**
      * Translates a {@code $between} condition to a JOOQ {@code Field.between(low, high)} predicate.
      */
-    org.jooq.Condition betweenPredicate(BetweenCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = bCondition.getExpression().value();
+    org.jooq.Condition betweenPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
+        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
         SpeedyValue[] arr = speedyValue.asCollection().toArray(new SpeedyValue[0]);
         Field<Object> path = getPath(bCondition.getField());
         Object low = toJooqType(bCondition, arr[0]);
@@ -274,7 +274,7 @@ public class JooqQueryBuilder {
     /**
      * Translates an {@code $isnull} condition to a JOOQ {@code Field.isNull()} predicate.
      */
-    org.jooq.Condition isNullPredicate(IsNullCondition bCondition) {
+    org.jooq.Condition isNullPredicate(BinaryCondition bCondition) {
         Field<Object> path = getPath(bCondition.getField());
         return path.isNull();
     }
@@ -282,7 +282,7 @@ public class JooqQueryBuilder {
     /**
      * Translates an {@code $isnotnull} condition to a JOOQ {@code Field.isNotNull()} predicate.
      */
-    org.jooq.Condition isNotNullPredicate(IsNotNullCondition bCondition) {
+    org.jooq.Condition isNotNullPredicate(BinaryCondition bCondition) {
         Field<Object> path = getPath(bCondition.getField());
         return path.isNotNull();
     }
@@ -297,7 +297,7 @@ public class JooqQueryBuilder {
 
         return switch (condition.getOperator()) {
             case EQ:
-                yield equalPredicate((EqCondition) bCondition);
+                yield equalPredicate(bCondition);
             case NEQ:
                 yield notEqualPredicate(bCondition);
             case LT:
@@ -309,17 +309,17 @@ public class JooqQueryBuilder {
             case GTE:
                 yield greaterThanOrEqualToPredicate(bCondition);
             case IN:
-                yield inPredicate((InCondition) bCondition);
+                yield inPredicate(bCondition);
             case NOT_IN:
-                yield notInPredicate((NotInCondition) bCondition);
+                yield notInPredicate(bCondition);
             case PATTERN_MATCHING:
-                yield matchPredicate((MatchingCondition) bCondition);
+                yield matchPredicate(bCondition);
             case BETWEEN:
-                yield betweenPredicate((BetweenCondition) bCondition);
+                yield betweenPredicate(bCondition);
             case ISNULL:
-                yield isNullPredicate((IsNullCondition) bCondition);
+                yield isNullPredicate(bCondition);
             case ISNOTNULL:
-                yield isNotNullPredicate((IsNotNullCondition) bCondition);
+                yield isNotNullPredicate(bCondition);
             case AND:
             case OR:
                 throw new BadRequestException("Unknown Operator");
