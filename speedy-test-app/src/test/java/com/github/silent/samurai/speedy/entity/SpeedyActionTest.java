@@ -35,10 +35,15 @@ class SpeedyActionTest {
 
     @Test
     void virtualEntity_postCreate_shouldBeBlocked() {
+        // Assert the *reason*, not just the 400: the request must be rejected by the
+        // permission gate, not by a downstream DB insert failure (which is mapped to
+        // 400 on H2/Postgres but 500 on MySQL). Checking the message makes this test
+        // fail on every backend if the @SpeedyAction(READ) gate stops blocking writes.
         client.create("VirtualEntity")
                 .field("name", "test")
                 .execute()
-                .expectBadRequest();
+                .expectBadRequest()
+                .expectJsonPath("$.message", containsString("not allowed for VirtualEntity"));
     }
 
     @Test

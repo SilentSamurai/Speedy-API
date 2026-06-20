@@ -1225,7 +1225,12 @@ public class SpeedyV2WhereClauseTest {
 
     // T011 - User Story 1: $between on string field (name)
     // Category names: cat-1-1 through cat-13-13
-    // $between ["cat-10-10", "cat-13-13"] should return 4 records (10, 11, 12, 13)
+    // $between ["cat-2-2", "cat-5-5"] should return 4 records (2, 3, 4, 5).
+    // Bounds use single-digit names on purpose: a range like ["cat-10-10","cat-13-13"]
+    // is collation-dependent — locale collations (e.g. Postgres en_US) ignore the
+    // hyphens and sort "cat-1-1" inside that range, giving 5 rows instead of 4.
+    // The 2..5 range has no multi-digit neighbours, so the result is 4 under binary,
+    // locale, and case-insensitive collations alike.
     @Test
     void testQuery24_between_string() throws Exception {
         ObjectNode body = CommonUtil.json().createObjectNode();
@@ -1233,8 +1238,8 @@ public class SpeedyV2WhereClauseTest {
         ArrayNode betweenArray = body.putObject("$where")
                 .putObject("name")
                 .putArray("$between");
-        betweenArray.add("cat-10-10");
-        betweenArray.add("cat-13-13");
+        betweenArray.add("cat-2-2");
+        betweenArray.add("cat-5-5");
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))

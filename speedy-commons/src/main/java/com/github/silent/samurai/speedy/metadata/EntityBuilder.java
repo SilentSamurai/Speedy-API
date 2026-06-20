@@ -48,6 +48,13 @@ public class EntityBuilder {
     }
 
     public EntityBuilder addActionType(ActionType actionType) {
+        // The default permission set is {ALL}. As soon as a specific action is
+        // declared (e.g. @SpeedyAction(READ)), drop the implicit ALL so the
+        // restriction actually takes effect — otherwise isCreateAllowed() and
+        // friends always return true via the lingering ALL entry.
+        if (actionType != ActionType.ALL) {
+            this.actionTypes.remove(ActionType.ALL);
+        }
         this.actionTypes.add(actionType);
         return this;
     }

@@ -93,10 +93,12 @@ public class SpeedyV2SelectFieldTest {
 
         String captured = output.toString();
         assertTrue(captured.contains("SQL Query:"), "SQL query should be logged");
-        String sqlLines = captured.substring(captured.indexOf("SQL Query:"));
-        assertTrue(sqlLines.contains("ID"), "SQL should select ID column");
-        assertTrue(sqlLines.contains("NAME"), "SQL should select NAME column");
-        assertTrue(sqlLines.contains("DESCRIPTION"), "SQL should select DESCRIPTION column");
+        // Lower-case the rendered SQL: identifier casing/quoting is dialect-specific
+        // (H2 renders "ID", Postgres "id", MySQL `id`), so compare case-insensitively.
+        String sqlLines = captured.substring(captured.indexOf("SQL Query:")).toLowerCase();
+        assertTrue(sqlLines.contains("id"), "SQL should select ID column");
+        assertTrue(sqlLines.contains("name"), "SQL should select NAME column");
+        assertTrue(sqlLines.contains("description"), "SQL should select DESCRIPTION column");
     }
 
     @Test
