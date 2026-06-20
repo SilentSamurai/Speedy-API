@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.advice.TestControllerAdvice;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.docs.SpeedyOpenApiCustomizer;
 import com.github.silent.samurai.speedy.events.EntityEvents;
+import com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
 import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
@@ -18,6 +19,7 @@ import org.springframework.core.env.Environment;
 import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Configuration
@@ -72,5 +74,10 @@ public class SpeedyConfig implements ISpeedyConfiguration {
             return SpeedyDialect.MYSQL;
         }
         return SpeedyDialect.H2;
+    }
+
+    @Override
+    public List<SpeedyTypeModule> typeModules() {
+        return List.of(new EmailTypeModule());
     }
 }

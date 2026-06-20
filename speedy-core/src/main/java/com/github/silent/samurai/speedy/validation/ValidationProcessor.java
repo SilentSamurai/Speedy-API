@@ -7,8 +7,8 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
+import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
+import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.slf4j.Logger;
@@ -31,14 +31,32 @@ public class ValidationProcessor {
 
     private final List<ISpeedyCustomValidation> validationList;
     private final MetaModel metaModel;
+    /// Shared serializer for converting SpeedyEntity to user POJOs before
+    /// invoking custom validation methods.
+    ///
+    /// @see SpeedyToJava#toJavaEntity
+    private final SpeedyToJava serializer;
+    /// Shared deserializer for synchronizing changes from user POJOs back to
+    /// SpeedyEntity after validation methods return.
+    ///
+    /// @see JavaToSpeedy#updateEntity
+    private final JavaToSpeedy deserializer;
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> createValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> updateValidationMethods = new HashMap<>();
     private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> deleteValidationMethods = new HashMap<>();
     private final DefaultFieldValidator defaultFieldValidator;
 
-    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel) {
+    /// Creates the validation processor with the necessary serialization infrastructure.
+    ///
+    /// @param validationList list of user-registered custom validation beans
+    /// @param metaModel      the global metamodel
+    /// @param serializer     serializer for {@code SpeedyEntity -> POJO}
+    /// @param deserializer   deserializer for {@code POJO -> SpeedyEntity}
+    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel, SpeedyToJava serializer, JavaToSpeedy deserializer) {
         this.validationList = validationList;
         this.metaModel = metaModel;
+        this.serializer = serializer;
+        this.deserializer = deserializer;
         this.defaultFieldValidator = new DefaultFieldValidator();
     }
 
@@ -94,7 +112,7 @@ public class ValidationProcessor {
         if (SpeedyEntity.class.isAssignableFrom(ioClass)) {
             param = entity;
         } else {
-            param = SpeedySerializer.toJavaEntity(entity, ioClass);
+            param = serializer.toJavaEntity(entity, ioClass);
         }
 
         Object valid;
@@ -109,7 +127,7 @@ public class ValidationProcessor {
 
         // If the validator modified the Java object, synchronise the changes back to the SpeedyEntity
         if (!SpeedyEntity.class.isAssignableFrom(ioClass)) {
-            SpeedyDeserializer.updateEntity(param, entity);
+            deserializer.updateEntity(param, entity);
         }
 
         if (valid instanceof Boolean) {

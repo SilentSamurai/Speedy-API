@@ -21,7 +21,7 @@ include the jpa implementation of the Speedy System
 
 <dependency>
     <groupId>com.github.silentsamurai</groupId>
-    <artifactId>speedy-jpa-impl</artifactId>
+    <artifactId>speedy-jpa-metamodel-processor</artifactId>
     <version>3.1.4</version>
 </dependency>
 ```
@@ -172,7 +172,7 @@ keys, etc.).
 
 #### `@SpeedyAction` — Static CRUD Gating
 
-The `@SpeedyAction` annotation provides **static** per-entity and per-field CRUD gating enforced in the `SwitchHandler`:
+The `@SpeedyAction` annotation provides **static** per-entity and per-field CRUD gating enforced by `PermissionCheckHandler`:
 
 ```java
 

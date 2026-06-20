@@ -19,5 +19,8 @@ public enum SpeedyRequestType {
     UPDATE,
 
     /// DELETE /{Entity}/$delete — bulk delete by PK array.
-    DELETE
+    DELETE,
+
+    /// GET / or GET /{Entity} — server/entity metadata description.
+    METADATA
 }

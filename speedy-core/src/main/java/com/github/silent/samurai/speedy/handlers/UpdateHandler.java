@@ -8,30 +8,34 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
+import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.models.SpeedyUpdateBody;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
 /// Handles PUT/PATCH /{Entity}/$update requests with pre-parsed SpeedyUpdateBody.
 ///
-/// Reads the SpeedyUpdateBody (parsed from JSON by JSONBodyParser and set as
-/// body by BodyParserHandler), fires PRE/POST_UPDATE events, validates the entity,
+/// Reads the SpeedyUpdateBody (parsed from JSON by WalkingRequestParser and set as
+/// body by UpdateBodyParserHandler), fires PRE/POST_UPDATE events, validates the entity,
 /// and updates it in a single transaction.
 ///
-/// @see BodyParserHandler
+/// @see UpdateBodyParserHandler
 /// @see SpeedyUpdateBody
 @Slf4j
-public class UpdateHandler implements Handler {
+public class UpdateHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
-        SpeedyUpdateBody body = (SpeedyUpdateBody) context.getRequest().getBody();
+    public void process(SpeedyContext context) throws SpeedyHttpException {
+        SpeedyUpdateBody body = (SpeedyUpdateBody) context.get(SpeedyBody.class);
         SpeedyEntity savedEntity = updateInTransaction(context, body.getEntity(), body.getPk());
 
         if (savedEntity == null) {
@@ -39,8 +43,9 @@ public class UpdateHandler implements Handler {
         }
 
         List<SpeedyEntity> speedyEntities = List.of(savedEntity);
-        context.setSpeedyResponse(
+        context.put(SpeedyResponse.class,
                 SpeedyEntityResponse.builder()
+                        .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                         .payload(speedyEntities)
                         .pageIndex(0)
                         .status(200)
@@ -48,12 +53,12 @@ public class UpdateHandler implements Handler {
         );
     }
 
-    private SpeedyEntity updateInTransaction(RequestContext context, SpeedyEntity entity, SpeedyEntityKey pk)
+    private SpeedyEntity updateInTransaction(SpeedyContext context, SpeedyEntity entity, SpeedyEntityKey pk)
             throws SpeedyHttpException {
-        EntityMetadata entityMetadata = context.getEntityMetadata();
-        EventProcessor eventProcessor = context.getEventProcessor();
-        QueryProcessor queryProcessor = context.getQueryProcessor();
-        TransactionMode mode = context.getRequest().getTransactionMode();
+        EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
+        EventProcessor eventProcessor = context.get(EventProcessor.class);
+        QueryProcessor queryProcessor = context.get(QueryProcessor.class);
+        TransactionMode mode = context.get(TransactionMode.class);
         String entityLabel = entityMetadata.getName();
 
         try {
@@ -61,7 +66,7 @@ public class UpdateHandler implements Handler {
             queryProcessor.runInTransaction(() -> {
                 try {
                     eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
-                    context.getValidationProcessor().validateUpdateRequestEntity(entityMetadata, entity);
+                    context.get(ValidationProcessor.class).validateUpdateRequestEntity(entityMetadata, entity);
                     result[0] = queryProcessor.update(pk, entity);
                     eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
                 } catch (Exception ex) {

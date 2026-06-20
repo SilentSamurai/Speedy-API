@@ -20,10 +20,11 @@ Published to: Maven Central via Sonatype Central Portal
 
 ```
 speedy-commons          (shared interfaces, models, enums, annotations, exceptions)
-    ├── speedy-jpa-impl         (JPA → MetaModel bridge)
+    ├── speedy-jpa-metamodel-processor         (JPA → MetaModel bridge)
     ├── speedy-java-client      (Java client SDK, MockMvc test support)
-    ├── speedy-static-impl      (file-based MetaModel for non-JPA use)
-    └── speedy-core             (core engine: handlers, query, serialization, OpenAPI)
+    ├── speedy-static-metamodel-processor      (file-based MetaModel for non-JPA use)
+    ├── speedy-jooq-query-processor        (jOOQ query execution)
+    └── speedy-core             (core engine: handlers, serialization, OpenAPI)
             └── spring-boot-starter-speedy-api  (auto-configuration starter)
                     └── speedy-test-app         (integration test application)
 
@@ -76,28 +77,37 @@ These interfaces define the contract that all implementations must follow:
 ## Request Processing Pipeline (speedy-core)
 
 All requests hit `SpeedyApiController` which delegates to `SpeedyFactory.processReqV2()`.
-The factory builds a Chain of Responsibility at startup:
+Processing is orchestrated in phases via **multiple sub-chains** (each a `List<Handler>` iterated
+sequentially in `SpeedyEngineImpl.run()`). The operation dispatch switch lives in `processReqV2()`.
 
 ```
-HeadHandler
-  → RequestParserHandler      (extract URI, HTTP method, parse JSON body)
-    → EntityCaptureHandler     (resolve entity from URI, build SpeedyQuery from URL or JSON body)
-      → SwitchHandler        (route by HTTP method + URI action)
-        ├── GET              → GetHandler → SpeedyResponseWriterHandler → TailHandler
-        ├── POST $query      → QueryHandler → SpeedyResponseWriterHandler → TailHandler
-        ├── POST $create     → CreateHandler → SpeedyResponseWriterHandler → TailHandler
-        ├── PUT/PATCH $update → UpdateHandler → SpeedyResponseWriterHandler → TailHandler
-        └── DELETE $delete   → DeleteHandler → SpeedyResponseWriterHandler → TailHandler
+SpeedyFactory.processReqV2()
+├── 1. engine.prepare(ctx)              — create QueryProcessor
+├── 2. engine.parseUri(ctx)             — uriChain: HeadHandler → UriParserHandler → TailHandler
+├── 3. engine.parseHeaders(ctx)         — headerChain: HeadHandler → RequestParserHandler → TailHandler
+├── 4. engine.resolveOperation(ctx)     — operationChain: HeadHandler → OperationResolverHandler → TailHandler
+├── 5. engine.selectSerializer(ctx)     — serializerSelectionChain: HeadHandler → SerializerSelectionHandler → TailHandler
+├── 6. engine.selectBodyParser(ctx)     — parserSelectionChain: HeadHandler → ParserSelectionHandler → TailHandler
+├── 7. switch (type) {                  — SINGLE dispatch: write ops parse their body then run the op; read ops just run
+│      GET_LIST  → engine.get(ctx)                                  —   getChain: HeadHandler → PermissionCheckHandler → GetHandler → TailHandler
+│      QUERY     → engine.parseQueryBody(ctx); engine.query(ctx)    —   queryBodyChain: …→ QueryBodyParserHandler →…; queryChain: …→ QueryHandler →…
+│      CREATE    → engine.parseCreateBody(ctx); engine.create(ctx)  —   createBodyChain: …→ CreateBodyParserHandler →…; createChain: …→ CreateHandler →…
+│      UPDATE    → engine.parseUpdateBody(ctx); engine.update(ctx)  —   updateBodyChain: …→ UpdateBodyParserHandler →…; updateChain: …→ UpdateHandler →…
+│      DELETE    → engine.parseDeleteBody(ctx); engine.delete(ctx)  —   deleteBodyChain: …→ DeleteBodyParserHandler →…; deleteChain: …→ DeleteHandler →…
+│      METADATA  → engine.metadata(ctx)                             —   metadataChain: HeadHandler → MetadataHandler → TailHandler
+│    }
+└── 8. serializer.write(resp, response) — write response directly (not via a handler)
 ```
 
 ### Key Design Decisions
 
-- Handler chain is immutable after construction — no runtime modification
+- Sub-chains are immutable after construction — no runtime modification
 - `RequestContext` is the mutable state bag that flows through the chain
 - `QueryProcessor` is cached per unique `DataSource` returned by `dataSourcePerReq()`. For single-tenant apps this means
   one `QueryProcessor` (and one JOOQ `DSLContext`) for the application lifetime. Multi-tenant deployments automatically
   get a cached instance per tenant's DataSource.
-- jOOQ is used for SQL generation and execution (not JPA/Hibernate at runtime)
+- jOOQ is used for SQL generation and execution (not JPA/Hibernate at runtime), implemented in
+  `speedy-jooq-query-processor`
 - JPA/Hibernate is only used at startup for metadata introspection via `EntityManagerFactory`
 
 ---
@@ -185,7 +195,7 @@ Register via: `registry.registerValidator(myValidator);`
 
 ## MetaModel Implementations
 
-### JPA (speedy-jpa-impl)
+### JPA (speedy-jpa-metamodel-processor)
 
 `JpaMetaModelProcessorV2` reads `EntityManagerFactory` metadata at startup. Supports:
 
@@ -194,7 +204,7 @@ Register via: `registry.registerValidator(myValidator);`
 - Associations (ManyToOne, OneToMany, etc.)
 - Jakarta Validation annotations for field rules
 
-### Static/File-based (speedy-static-impl)
+### Static/File-based (speedy-static-metamodel-processor)
 
 Reads entity metadata from JSON files. Useful for non-JPA data sources.
 
@@ -259,8 +269,10 @@ mvn test -pl antlr-parser
 - Package root: `com.github.silent.samurai.speedy`
 - Lombok used for `@Getter`, `@Setter`, `@Slf4j`, `@Getter` on classes
 - All exceptions extend `SpeedyHttpException` (carries HTTP status code)
-- Handler pattern: implement `Handler` interface, accept `RequestContext`, call `next.process(context)`
+- Handler pattern: implement `Handler` interface, accept `SpeedyContext`, no `next` reference (iteration is external
+  in `SpeedyEngineImpl.run()`)
 - New entity types/fields: add to JPA entities, MetaModel picks them up automatically
-- New CRUD behavior: add/modify handlers in the chain (see `SpeedyFactory.createHandlerChain()`)
-- New query operators: extend `ConditionOperator` enum + `ConditionFactory` + jOOQ query builder
-- Serialization: `JSONSerializerV2` for response output, `JsonNode2SpeedyValue` for input parsing
+- New CRUD behavior: add/modify handlers in the relevant sub-chain (wired in `SpeedyEngineImpl` constructor)
+- New query operators: extend `ConditionOperator` enum + `ConditionFactory` + `speedy-jooq-query-processor` query
+  builder
+- Serialization: `JSONResponseSerializer` for response output, `JsonNode2SpeedyValue` for input parsing

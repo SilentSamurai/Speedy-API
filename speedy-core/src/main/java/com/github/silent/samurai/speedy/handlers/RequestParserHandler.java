@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.handlers;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.PayloadTooLargeException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.models.SpeedyHeaders;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
 
@@ -15,14 +15,14 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-/// Reads raw HTTP request data and populates transient fields on RequestContext.
+/// Reads raw HTTP request data and populates transient fields on SpeedyContext.
 ///
 /// Extracts the HTTP method, request URI, request headers, and raw body bytes
 /// from HttpServletRequest. The raw bytes are stored for later parsing by
 /// IRequestBodyParser implementations based on Content-Type.
 ///
 /// @see IRequestBodyParser
-public class RequestParserHandler implements Handler {
+public class RequestParserHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     private final long maxRequestBodySize;
 
@@ -31,16 +31,14 @@ public class RequestParserHandler implements Handler {
     }
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
-        HttpServletRequest request = context.getHttpServletRequest();
-        String requestURI = CommonUtil.getRequestURI(request);
+    public void process(SpeedyContext context) throws SpeedyHttpException {
+        HttpServletRequest request = context.get(HttpServletRequest.class);
         String method = request.getMethod();
         HttpMethod httpMethod = HttpMethod.valueOf(method);
-        Map<String, String> headers = extractHeaders(request);
+        SpeedyHeaders headers = new SpeedyHeaders(extractHeaders(request));
 
-        context.setRequestUri(requestURI);
-        context.setHttpMethod(httpMethod);
-        context.setHeaders(headers);
+        context.put(httpMethod);
+        context.put(headers);
 
         try {
             long contentLength = request.getContentLengthLong();
@@ -50,7 +48,7 @@ public class RequestParserHandler implements Handler {
             }
 
             if (contentLength == 0) {
-                context.setRawBody(new byte[0]);
+                context.put(new byte[0]);
             } else if (maxRequestBodySize > 0 && contentLength == -1) {
                 InputStream is = request.getInputStream();
                 int readLimit = maxRequestBodySize >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) (maxRequestBodySize + 1);
@@ -59,9 +57,9 @@ public class RequestParserHandler implements Handler {
                     throw new PayloadTooLargeException(
                             "Request body exceeds maximum " + maxRequestBodySize + " bytes");
                 }
-                context.setRawBody(bodyBytes);
+                context.put(bodyBytes);
             } else {
-                context.setRawBody(request.getInputStream().readAllBytes());
+                context.put(request.getInputStream().readAllBytes());
             }
         } catch (IOException e) {
             throw new BadRequestException("Invalid Request", e);

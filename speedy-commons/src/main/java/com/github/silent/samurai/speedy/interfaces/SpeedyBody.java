@@ -11,4 +11,10 @@ public interface SpeedyBody {
 
     /// The type of request this body represents.
     SpeedyRequestType getType();
+
+    /// Returns a body that carries only the request type and no payload.
+    /// Used for operations that have no request body (e.g. METADATA).
+    static SpeedyBody empty(SpeedyRequestType type) {
+        return () -> type;
+    }
 }

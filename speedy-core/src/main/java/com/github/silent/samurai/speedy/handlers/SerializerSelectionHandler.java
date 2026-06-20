@@ -1,30 +1,28 @@
 package com.github.silent.samurai.speedy.handlers;
 
+import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.serializers.JSONSerializerV2;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
+import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
+import com.github.silent.samurai.speedy.models.SpeedyHeaders;
+import com.github.silent.samurai.speedy.serialization.WalkingResponseSerializer;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 
-@Slf4j
-public class SerializerSelectionHandler implements Handler {
+public class SerializerSelectionHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
+
+    private final ContentNegotiationManager manager;
+
+    public SerializerSelectionHandler(ContentNegotiationManager manager) {
+        this.manager = manager;
+    }
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
-        HttpServletRequest request = context.getHttpServletRequest();
-        String accept = request.getHeader("Accept");
+    public void process(SpeedyContext context) throws SpeedyHttpException {
+        SpeedyHeaders headers = context.get(SpeedyHeaders.class);
+        String accept = headers.get("Accept");
 
-        if (accept == null || accept.contains("*/*") || accept.contains("application/json")) {
-            context.setResponseSerializer(
-                    new JSONSerializerV2(context.getMetaModel(),
-                            context.getEntityMetadata())
-            );
-        } else {
-            log.warn("Unsupported Accept header '{}', defaulting to JSON", accept);
-            context.setResponseSerializer(
-                    new JSONSerializerV2(context.getMetaModel(),
-                            context.getEntityMetadata())
-            );
-        }
+        ISpeedyIoProvider selected = manager.selectProvider(accept);
+        context.put(IResponseSerializerV2.class,
+                new WalkingResponseSerializer(selected.getContentType(), selected.createWriter()));
     }
 }

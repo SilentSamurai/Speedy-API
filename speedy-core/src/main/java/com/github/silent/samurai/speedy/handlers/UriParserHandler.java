@@ -4,53 +4,62 @@ import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.request.RequestContext;
-import com.github.silent.samurai.speedy.request.SpeedyRequest;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpMethod;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Map;
-
-/// Parses the request URI via SpeedyUriContext and builds the SpeedyRequest.
-///
-/// Uses SpeedyUriContext to parse the URI into entity metadata, action suffix,
-/// and a URI-based SpeedyQuery. Resolves the transaction mode and constructs
-/// the SpeedyRequest envelope that flows through the remainder of the chain.
-///
-/// @see SpeedyUriContext
-/// @see SpeedyRequest
-public class UriParserHandler implements Handler {
+public class UriParserHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
-        MetaModel metaModel = context.getMetaModel();
-        String requestURI = context.getRequestUri();
+    public void process(SpeedyContext context) throws SpeedyHttpException {
+        MetaModel metaModel = context.get(MetaModel.class);
+        HttpServletRequest httpRequest = context.get(HttpServletRequest.class);
+        String requestURI = CommonUtil.getRequestURI(httpRequest);
+        JavaTypeRegistry jtr = context.get(ConversionContext.class).get(JavaTypeRegistry.class);
+
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString(requestURI).build();
+        java.util.List<String> pathSegments = uriComponents.getPathSegments();
+
+        // Server-level actions (e.g. /$metadata) have no entity to resolve
+        if (pathSegments.size() == 1 && "$metadata".equals(pathSegments.get(0))) {
+            SpeedyUriContext ctx = SpeedyUriContext.builder()
+                    .metaModel(metaModel)
+                    .requestURI(requestURI)
+                    .javaTypeRegistry(jtr)
+                    .build();
+            ctx.setActionSuffix(pathSegments.get(0));
+            context.put(ctx);
+            return;
+        }
 
         SpeedyUriContext parser = SpeedyUriContext.builder()
                 .metaModel(metaModel)
                 .requestURI(requestURI)
-                .maxPageSize(context.getConfiguration().getMaxPageSize())
-                .defaultPageSize(context.getConfiguration().getDefaultPageSize())
-                .maxQueryStringLength(context.getConfiguration().getMaxQueryStringLength())
-                .maxFilterCount(context.getConfiguration().getMaxFilterCount())
+                .maxPageSize(context.get(ISpeedyConfiguration.class).getMaxPageSize())
+                .defaultPageSize(context.get(ISpeedyConfiguration.class).getDefaultPageSize())
+                .maxQueryStringLength(context.get(ISpeedyConfiguration.class).getMaxQueryStringLength())
+                .maxFilterCount(context.get(ISpeedyConfiguration.class).getMaxFilterCount())
+                .javaTypeRegistry(jtr)
                 .build();
         SpeedyQuery uriSpeedyQuery = parser.parse();
 
         EntityMetadata resourceMetadata = uriSpeedyQuery.getFrom();
 
         TransactionMode effectiveMode = resolveTransactionMode(
-                context.getHttpServletRequest(),
+                httpRequest,
                 resourceMetadata
         );
 
-        HttpMethod httpMethod = context.getHttpMethod();
-        Map<String, String> headers = context.getHeaders();
-
-        SpeedyRequest request = new SpeedyRequest(parser, effectiveMode, httpMethod, requestURI, headers);
-        context.setRequest(request);
+        context.put(parser);
+        context.put(effectiveMode);
     }
 
     private TransactionMode resolveTransactionMode(

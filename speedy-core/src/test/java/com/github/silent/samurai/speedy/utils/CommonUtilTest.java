@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.mappings.TypeConverterRegistry;
+import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +24,7 @@ class CommonUtilTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonUtilTest.class);
 
+    private static final JavaTypeRegistry jtr = JavaTypeRegistry.defaults();
 
     @BeforeEach
     void setUp() {
@@ -78,14 +79,14 @@ class CommonUtilTest {
     @Test
     void stringToType() throws SpeedyHttpException {
         String input = "aisdiohaoisd-asdasd-asf";
-        String output = TypeConverterRegistry.fromString(input, String.class);
+        String output = jtr.parseString(input, String.class);
         Assertions.assertEquals(input, output);
     }
 
     @Test
     void stringToType2() throws SpeedyHttpException {
         String input = "New Category";
-        String output = TypeConverterRegistry.fromString(input, String.class);
+        String output = jtr.parseString(input, String.class);
         Assertions.assertEquals(input, output);
     }
 }

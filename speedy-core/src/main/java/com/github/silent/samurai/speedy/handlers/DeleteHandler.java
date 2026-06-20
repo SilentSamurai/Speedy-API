@@ -9,9 +9,13 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
+import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.models.*;
-import com.github.silent.samurai.speedy.request.RequestContext;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
@@ -20,18 +24,18 @@ import java.util.List;
 
 /// Handles DELETE /{Entity}/$delete requests with pre-parsed SpeedyDeleteBody.
 ///
-/// Reads the SpeedyDeleteBody (parsed from JSON by JSONBodyParser and set as
-/// body by BodyParserHandler), fires PRE/POST_DELETE events, validates keys,
+/// Reads the SpeedyDeleteBody (parsed from JSON by WalkingRequestParser and set as
+/// body by DeleteBodyParserHandler), fires PRE/POST_DELETE events, validates keys,
 /// and bulk-deletes entities in either BATCH or PER_ENTITY transaction mode.
 ///
-/// @see BodyParserHandler
+/// @see DeleteBodyParserHandler
 /// @see SpeedyDeleteBody
 @Slf4j
-public class DeleteHandler implements Handler {
+public class DeleteHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override
-    public void process(RequestContext context) throws SpeedyHttpException {
-        SpeedyDeleteBody body = (SpeedyDeleteBody) context.getRequest().getBody();
+    public void process(SpeedyContext context) throws SpeedyHttpException {
+        SpeedyDeleteBody body = (SpeedyDeleteBody) context.get(SpeedyBody.class);
         List<SpeedyEntityKey> keys = body.getKeys();
         TransactionMode mode = body.getMode();
 
@@ -42,17 +46,18 @@ public class DeleteHandler implements Handler {
         }
     }
 
-    private void processBatchDelete(RequestContext context, List<SpeedyEntityKey> keys)
+    private void processBatchDelete(SpeedyContext context, List<SpeedyEntityKey> keys)
             throws SpeedyHttpException {
-        EntityMetadata entityMetadata = context.getEntityMetadata();
-        EventProcessor eventProcessor = context.getEventProcessor();
-        QueryProcessor queryProcessor = context.getQueryProcessor();
+        EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
+        EventProcessor eventProcessor = context.get(EventProcessor.class);
+        QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         String entityLabel = entityMetadata.getName();
         int totalCount = keys.size();
 
         if (keys.isEmpty()) {
-            context.setSpeedyResponse(
+            context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
+                            .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                             .payload(List.of())
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -69,7 +74,7 @@ public class DeleteHandler implements Handler {
                         if (!queryProcessor.exists(key)) {
                             throw new BadRequestException("entity not found");
                         }
-                        context.getValidationProcessor().validateDeleteRequestEntity(entityMetadata, key);
+                        context.get(ValidationProcessor.class).validateDeleteRequestEntity(entityMetadata, key);
                         eventProcessor.triggerEvent(SpeedyEventType.PRE_DELETE, entityMetadata, key);
                     }
 
@@ -79,8 +84,9 @@ public class DeleteHandler implements Handler {
                         eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE, entityMetadata, key);
                     }
 
-                    context.setSpeedyResponse(
+                    context.put(SpeedyResponse.class,
                             SpeedyEntityResponse.builder()
+                                    .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                                     .payload(deleted)
                                     .pageIndex(0)
                                     .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -111,11 +117,11 @@ public class DeleteHandler implements Handler {
         }
     }
 
-    private void processPerEntityDelete(RequestContext context, List<SpeedyEntityKey> keys)
+    private void processPerEntityDelete(SpeedyContext context, List<SpeedyEntityKey> keys)
             throws SpeedyHttpException {
-        EntityMetadata entityMetadata = context.getEntityMetadata();
-        EventProcessor eventProcessor = context.getEventProcessor();
-        QueryProcessor queryProcessor = context.getQueryProcessor();
+        EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
+        EventProcessor eventProcessor = context.get(EventProcessor.class);
+        QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         String entityLabel = entityMetadata.getName();
 
         List<SpeedyEntity> succeeded = new ArrayList<>();
@@ -129,7 +135,7 @@ public class DeleteHandler implements Handler {
                         if (!queryProcessor.exists(key)) {
                             throw new BadRequestException("entity not found");
                         }
-                        context.getValidationProcessor().validateDeleteRequestEntity(entityMetadata, key);
+                        context.get(ValidationProcessor.class).validateDeleteRequestEntity(entityMetadata, key);
                         eventProcessor.triggerEvent(SpeedyEventType.PRE_DELETE, entityMetadata, key);
 
                         List<SpeedyEntity> singleResult = queryProcessor.delete(List.of(key));
@@ -175,8 +181,9 @@ public class DeleteHandler implements Handler {
                 entityLabel, keys.size(), succeeded.size(), failed.size());
 
         if (failed.isEmpty()) {
-            context.setSpeedyResponse(
+            context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
+                            .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
                             .payload(succeeded)
                             .pageIndex(0)
                             .fieldPredicate(KeyFieldMetadata.class::isInstance)
@@ -191,7 +198,7 @@ public class DeleteHandler implements Handler {
             throw new InternalServerError(failure.getMessage(), failure.getCause());
         } else {
             int status = succeeded.isEmpty() ? 400 : 207;
-            context.setSpeedyResponse(
+            context.put(SpeedyResponse.class,
                     SpeedyBatchResponse.builder()
                             .succeeded(succeeded)
                             .failed(failed)

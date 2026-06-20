@@ -83,7 +83,6 @@ public class SpeedyTestUtil {
          */
         @SuppressWarnings({"rawtypes", "unchecked"})
         public JsonResponseAssert is(Matcher<?> matcher) {
-            // Safe because Hamcrest performs runtime checks and we intentionally relax compile-time checks here.
             MatcherAssert.assertThat("JSON path: " + jsonPath, value, (Matcher) matcher);
             return parent;
         }

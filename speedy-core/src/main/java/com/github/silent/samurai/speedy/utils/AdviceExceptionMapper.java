@@ -64,8 +64,7 @@ public class AdviceExceptionMapper {
         // Walk hierarchy: exact match first, then superclass walk
         Class<?> current = type;
         while (current != null && Throwable.class.isAssignableFrom(current)) {
-            @SuppressWarnings("unchecked")
-            HandlerMethod handler = cache.get((Class<? extends Throwable>) current);
+            HandlerMethod handler = cache.get(current);
             if (handler != null) {
                 return handler;
             }

@@ -6,8 +6,8 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.mappings.SpeedyDeserializer;
-import com.github.silent.samurai.speedy.mappings.SpeedySerializer;
+import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
+import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,24 +27,30 @@ public class EventProcessor {
 
     private final MetaModel metaModel;
     private final RegistryImpl eventRegistry;
+    /// Shared serializer for converting SpeedyEntity to user POJOs before
+    /// invoking event handler methods.
+    ///
+    /// @see SpeedyToJava#toJavaEntity
+    private final SpeedyToJava serializer;
+    /// Shared deserializer for synchronizing changes from user POJOs back to
+    /// SpeedyEntity after event handler methods return.
+    ///
+    /// @see JavaToSpeedy#updateEntity
+    private final JavaToSpeedy deserializer;
 
-    /*
-    {
-        "POST_INSERT": {
-            Category: handler,
-            Customer: handler
-        },
-        "POST_UPDATE": {
-            Category: handler,
-            Customer: handler
-        }
-    }
-     */
     private final Map<SpeedyEventType, MultiValueMap<String, EventHandlerMetadata>> eventMap = new HashMap<>();
 
-    public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry) {
+    /// Creates the event processor with the necessary serialization infrastructure.
+    ///
+    /// @param metaModel     the global metamodel
+    /// @param eventRegistry the registry holding user-registered event handlers
+    /// @param serializer    serializer for {@code SpeedyEntity -> POJO}
+    /// @param deserializer  deserializer for {@code POJO -> SpeedyEntity}
+    public EventProcessor(MetaModel metaModel, RegistryImpl eventRegistry, SpeedyToJava serializer, JavaToSpeedy deserializer) {
         this.metaModel = metaModel;
         this.eventRegistry = eventRegistry;
+        this.serializer = serializer;
+        this.deserializer = deserializer;
     }
 
     public void processRegistry() {
@@ -90,7 +96,7 @@ public class EventProcessor {
         if (isEventPresent(eventType, entityMetadata)) {
             MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
             for (EventHandlerMetadata metadata : eventEntityMap.get(entityMetadata.getName())) {
-                metadata.invokeEventHandler(entity);
+                metadata.invokeEventHandler(entity, serializer, deserializer);
             }
         }
     }
@@ -112,14 +118,14 @@ public class EventProcessor {
             this.ioClass = ioClass;
         }
 
-        private Object invokeEventHandler(SpeedyEntity entity) throws Exception {
+        private Object invokeEventHandler(SpeedyEntity entity, SpeedyToJava ser, JavaToSpeedy deser) throws Exception {
             try {
                 if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
                     methodHandle.invoke(instance, entity);
                 } else {
-                    Object value = SpeedySerializer.toJavaEntity(entity, ioClass);
+                    Object value = ser.toJavaEntity(entity, ioClass);
                     methodHandle.invoke(instance, value);
-                    SpeedyDeserializer.updateEntity(value, entity);
+                    deser.updateEntity(value, entity);
                 }
             } catch (Throwable t) {
                 if (t instanceof Exception e) {

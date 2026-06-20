@@ -10,10 +10,11 @@
 | Module                           | Layer              | Purpose                                                                                                                                                                              |
 |----------------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `speedy-commons`                 | Shared Library     | Interfaces, enums, `SpeedyValue` types, `SpeedyQuery`/`Condition` model, annotations, metadata builders, serializers, validation rules. Zero dependencies beyond Spring Boot parent. |
-| `speedy-core`                    | Core Engine        | Handler chain, JOOQ-based query execution, URI/JSON parsing, response serialization, event/validation processing, `SpeedyApiController`.                                             |
+| `speedy-core`                    | Core Engine        | Handler chain, URI/JSON parsing, response serialization, event/validation processing, `SpeedyApiController`.                                                                         |
 | `antlr-parser`                   | Parser (Legacy)    | ANTLR4 grammar for a URL DSL. Compiled but runtime URI parsing uses `SpeedyUriContext` instead.                                                                                      |
-| `speedy-jpa-impl`                | JPA Bridge         | `JpaMetaModelProcessorV2` scans `EntityManagerFactory` to build the `MetaModel` from `@Entity` classes.                                                                              |
-| `speedy-static-impl`             | Static Bridge      | `FileMetaModelProcessor` builds `MetaModel` from a JSON file.                                                                                                                        |
+| `speedy-jpa-metamodel-processor`                | JPA Bridge         | `JpaMetaModelProcessorV2` scans `EntityManagerFactory` to build the `MetaModel` from `@Entity` classes.                                                                              |
+| `speedy-jooq-query-processor`    | jOOQ Bridge        | `JooqQueryProcessorImpl` — jOOQ-based query execution, `JooqQueryBuilder`, `SpeedyInsertQuery`, `SpeedyUpdateQuery`, `SpeedyDeleteQuery`, `JooqSqlToSpeedy`.                         |
+| `speedy-static-metamodel-processor`             | Static Bridge      | `FileMetaModelProcessor` builds `MetaModel` from a JSON file.                                                                                                                        |
 | `spring-boot-starter-speedy-api` | Auto-Configuration | `SpeedyApiAutoConfiguration` — conditionally creates `SpeedyFactory` and `SpeedyOpenApiCustomizer` beans. Entry point: `META-INF/spring/...AutoConfiguration.imports`.               |
 | `speedy-java-client`             | Client SDK         | Fluent Java client (`SpeedyApi`) with typed request builders for GET, query, create, update, delete.                                                                                 |
 | `speedy-test-app`                | Integration Tests  | Full Spring Boot app with 19 JPA entities, sample config, event handlers, validators.                                                                                                |
@@ -21,33 +22,51 @@
 
 ### Request Processing Flow
 
-All requests enter through `SpeedyApiController` (`/speedy/v1/**`) and are delegated to `SpeedyFactory.processReqV2()`,
-which runs the **handler chain** (Chain of Responsibility):
+All requests enter through `SpeedyApiController` (`/speedy/v1/**`) and are delegated to `SpeedyFactory.processReqV2()`.
+Processing is orchestrated in phases via **multiple sub-chains** (each a `List<Handler>` iterated with a simple `for`
+loop in `SpeedyEngineImpl.run()`). The switch dispatch lives in `processReqV2()` itself, not inside a handler.
 
 ```
-HeadHandler -> RequestParserHandler -> EntityCaptureHandler
-  -> SwitchHandler -> [ GetHandler | QueryHandler | CreateHandler | UpdateHandler | DeleteHandler ]
-    -> SpeedyResponseWriterHandler -> TailHandler
+SpeedyFactory.processReqV2()
+├── 1. engine.prepare(ctx)              — create QueryProcessor
+├── 2. engine.parseUri(ctx)             — uriChain: HeadHandler → UriParserHandler → TailHandler
+├── 3. engine.parseHeaders(ctx)         — headerChain: HeadHandler → RequestParserHandler → TailHandler
+├── 4. engine.resolveOperation(ctx)     — operationChain: HeadHandler → OperationResolverHandler → TailHandler
+├── 5. engine.selectSerializer(ctx)     — serializerSelectionChain: HeadHandler → SerializerSelectionHandler → TailHandler
+├── 6. engine.selectBodyParser(ctx)     — parserSelectionChain: HeadHandler → ParserSelectionHandler → TailHandler
+├── 7. switch (type) {                  — SINGLE dispatch: write ops parse their body then run the op; read ops just run
+│      GET_LIST  → engine.get(ctx)                                  —   getChain: HeadHandler → PermissionCheckHandler → GetHandler → TailHandler
+│      QUERY     → engine.parseQueryBody(ctx); engine.query(ctx)    —   queryBodyChain: …→ QueryBodyParserHandler →…; queryChain: …→ QueryHandler →…
+│      CREATE    → engine.parseCreateBody(ctx); engine.create(ctx)  —   createBodyChain: …→ CreateBodyParserHandler →…; createChain: …→ CreateHandler →…
+│      UPDATE    → engine.parseUpdateBody(ctx); engine.update(ctx)  —   updateBodyChain: …→ UpdateBodyParserHandler →…; updateChain: …→ UpdateHandler →…
+│      DELETE    → engine.parseDeleteBody(ctx); engine.delete(ctx)  —   deleteBodyChain: …→ DeleteBodyParserHandler →…; deleteChain: …→ DeleteHandler →…
+│      METADATA  → engine.metadata(ctx)                             —   metadataChain: HeadHandler → MetadataHandler → TailHandler
+│    }
+└── 8. serializer.write(resp, response) — write response directly (not via a handler)
 ```
 
 **Handler responsibilities:**
 
-| Handler                       | What it does                                                                                                                                                           |
-|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `HeadHandler`                 | Entry; passthrough decorator.                                                                                                                                          |
-| `RequestParserHandler`        | Reads `HttpMethod`, request URI, and JSON body from `HttpServletRequest`.                                                                                              |
-| `EntityCaptureHandler`        | Parses URI via `SpeedyUriContext` to resolve `EntityMetadata` from `MetaModel`.                                                                                        |
-| `SwitchHandler`               | Routes by HTTP method + URI suffix (`$query`, `$create`, `$update`, `$delete`). Checks action permissions via `EntityMetadata.is{Read/Create/Update/Delete}Allowed()`. |
-| `GetHandler`                  | Parses URI query params into `SpeedyQuery`, executes `executeMany()`, sets `JSONSerializerV2`.                                                                         |
-| `QueryHandler`                | Parses POST JSON body (`$from`, `$where`, `$orderBy`, `$page`, `$expand`, `$select`) into `SpeedyQuery`, supports count queries.                                       |
-| `CreateHandler`               | Parses JSON array body, fires PRE/POST_INSERT events, validates, bulk creates.                                                                                         |
-| `UpdateHandler`               | Parses PK + fields from JSON body, fires PRE/POST_UPDATE events, validates, updates.                                                                                   |
-| `DeleteHandler`               | Parses JSON array of PKs, fires PRE/POST_DELETE events, validates, bulk deletes.                                                                                       |
-| `SpeedyResponseWriterHandler` | Invokes `IResponseSerializerV2.write()` to serialize the response.                                                                                                     |
-| `TailHandler`                 | Terminates the chain (no-op).                                                                                                                                          |
+| Handler                       | What it does                                                                                                                                                                   |
+|-------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `HeadHandler`                 | No-op entry point at the start of every sub-chain.                                                                                                                             |
+| `UriParserHandler`            | Parses request URI via `SpeedyUriContext` to resolve `EntityMetadata`, query params, and expansion hints.                                                                      |
+| `RequestParserHandler`        | Reads `HttpMethod`, request URI, and HTTP headers from `HttpServletRequest`.                                                                                                   |
+| `OperationResolverHandler`    | Routes by HTTP method + URI suffix (`$query`, `$create`, `$update`, `$delete`) to a `SpeedyRequestType`; enforces action permissions.                                          |
+| `ParserSelectionHandler`      | Selects an `IRequestBodyParser` (JSON, XML, etc.) based on the `Content-Type` request header.                                                                                  |
+| `{Query,Create,Update,Delete}BodyParserHandler` | One per write op: parses the request body into the matching `SpeedyBody` subtype using the selected parser. Routed by the factory's single request-type switch (no switch inside the handler). |
+| `SerializerSelectionHandler`  | Selects an `IResponseSerializerV2` (JSON, XML, etc.) based on the `Accept` request header via `ContentNegotiationManager`.                                                     |
+| `PermissionCheckHandler`      | Enforces `@SpeedyAction` per-entity/per-field CRUD gates. Parameterized by `PermissionType` (READ/CREATE/UPDATE/DELETE).                                                        |
+| `GetHandler`                  | Parses URI query params into `SpeedyQuery`, executes `executeMany()`.                                                                                                          |
+| `QueryHandler`                | Parses POST JSON body (`$from`, `$where`, `$orderBy`, `$page`, `$expand`, `$select`) into `SpeedyQuery`, supports count queries.                                               |
+| `CreateHandler`               | Parses JSON array body, fires PRE/POST_INSERT events, validates, bulk creates.                                                                                                 |
+| `UpdateHandler`               | Parses PK + fields from JSON body, fires PRE/POST_UPDATE events, validates, updates.                                                                                           |
+| `DeleteHandler`               | Parses JSON array of PKs, fires PRE/POST_DELETE events, validates, bulk deletes.                                                                                               |
+| `MetadataHandler`             | Returns the metamodel as a `SpeedyResponse` for `$metadata` requests.                                                                                                          |
+| `TailHandler`                 | No-op terminator at the end of every sub-chain.                                                                                                                                |
 
-Each handler holds a `final Handler next` reference and calls `next.process(context)` to pass control. The chain is
-assembled in `SpeedyFactory.createHandlerChain()`.
+Sub-chains are assembled inline in the `SpeedyEngineImpl` constructor. The `for` loop in `SpeedyEngineImpl.run()`
+iterates the list sequentially; handlers do **not** hold a `next` reference.
 
 ### RequestContext (Mutable State Object)
 
@@ -67,7 +86,7 @@ Users integrate by implementing **`ISpeedyConfiguration`**:
 - `dataSourcePerReq()` — DataSource per request (supports multi-tenancy)
 - `getDialect()` — `SpeedyDialect` enum (H2, PostgreSQL, MySQL, etc.)
 
-### SQL Generation
+### SQL Generation (speedy-jooq-query-processor)
 
 - **`JooqQueryBuilder`** translates the `SpeedyQuery` condition tree into JOOQ `Condition` objects with automatic JOINs
   for associations.
@@ -133,9 +152,9 @@ User-facing documentation lives in [`docs/`](docs/README.md). Keep docs updated 
 
 ### Chain of Responsibility
 
-The 12 handlers form a linear chain where each handler processes what it cares about and passes control via
-`next.process(context)`. The chain is wired in `SpeedyFactory.createHandlerChain()`. Individual handlers are unaware of
-their position in the chain.
+The 15 handlers are arranged in **multiple sub-chains** (one per lifecycle phase), each a `List<Handler>` iterated
+sequentially via a `for` loop in `SpeedyEngineImpl.run()`. Handlers do **not** hold a `next` reference. Sub-chains
+are wired inline in `SpeedyEngineImpl`'s constructor. Individual handlers are unaware of their position in the chain.
 
 ### Builder Pattern
 
@@ -146,9 +165,10 @@ their position in the chain.
 
 ### Strategy Pattern
 
-- **`QueryProcessor`** interface — single implementation `JooqQueryProcessorImpl`, swappable for other DB backends.
+- **`QueryProcessor`** interface — implemented by `JooqQueryProcessorImpl` (in `speedy-jooq-query-processor`), swappable
+  for other DB backends.
 - **`MetaModelProcessor`** interface — `JpaMetaModelProcessorV2` (JPA scan) or `FileMetaModelProcessor` (JSON file).
-- **`IResponseSerializerV2`** interface — `JSONSerializerV2` (entity list), `JSONCountSerializerV2` (count only),
+- **`IResponseSerializerV2`** interface — `JSONResponseSerializer` (entity list, count, batch, error, metadata),
   field-level predicate for key-only serialization.
 - **`Converter`** interface — type conversion between `SpeedyValue` and DB types.
 - **`FieldRule`** interface — 25 composable validation rule implementations.
@@ -192,15 +212,16 @@ decoupled from the database.
 
 ### Module-Level Test Organization
 
-| Module               | Location                                                                          | Test Type                                                                          |
-|----------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
-| `speedy-commons`     | `src/test/java/.../validation/`, `metadata/`, `mappings/`, `io/`                  | Unit tests for value types, metadata builders, serializer/deserializer round-trips |
-| `speedy-core`        | `src/test/java/.../query/jooq/`, `parser/`, `helpers/`, `deserializer/`, `utils/` | Unit tests for query builders, URI parsing, data conversion                        |
-| `speedy-jpa-impl`    | `src/test/java/.../processors/`, `util/`                                          | Unit tests for JPA metamodel processor                                             |
-| `speedy-static-impl` | `src/test/java/.../file/impl/`                                                    | Unit tests for file-based metamodel                                                |
-| `speedy-java-client` | `src/test/java/.../QueryTest.java`                                                | Unit tests for client builders                                                     |
-| `antlr-parser`       | `src/test/java/.../AntlrRequestListenerTest.java`                                 | Unit tests for ANTLR grammar                                                       |
-| `speedy-test-app`    | `src/test/java/.../url/`, `query/`, `entity/`, `client/`, `validation/`           | **Integration tests** (`@SpringBootTest` + H2)                                     |
+| Module                        | Location                                                                          | Test Type                                                                          |
+|-------------------------------|-----------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
+| `speedy-commons`              | `src/test/java/.../validation/`, `metadata/`, `mappings/`, `io/`                  | Unit tests for value types, metadata builders, serializer/deserializer round-trips |
+| `speedy-core`                 | `src/test/java/.../query/jooq/`, `parser/`, `helpers/`, `deserializer/`, `utils/` | Unit tests for query builders, URI parsing, data conversion                        |
+| `speedy-jpa-metamodel-processor`             | `src/test/java/.../processors/`, `util/`                                          | Unit tests for JPA metamodel processor                                             |
+| `speedy-jooq-query-processor` | `src/test/java/.../jooq/impl/query/`                                              | Unit tests for jOOQ query builder, SQL generation, type conversion                 |
+| `speedy-static-metamodel-processor`          | `src/test/java/.../file/impl/`                                                    | Unit tests for file-based metamodel                                                |
+| `speedy-java-client`          | `src/test/java/.../QueryTest.java`                                                | Unit tests for client builders                                                     |
+| `antlr-parser`                | `src/test/java/.../AntlrRequestListenerTest.java`                                 | Unit tests for ANTLR grammar                                                       |
+| `speedy-test-app`             | `src/test/java/.../url/`, `query/`, `entity/`, `client/`, `validation/`           | **Integration tests** (`@SpringBootTest` + H2)                                     |
 
 ### Integration Test Structure (`speedy-test-app`)
 
