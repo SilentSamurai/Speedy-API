@@ -8,7 +8,9 @@ import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Expression;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
-import com.github.silent.samurai.speedy.models.conditions.*;
+import com.github.silent.samurai.speedy.models.conditions.BinaryConditionImpl;
+import com.github.silent.samurai.speedy.models.conditions.NormalField;
+import com.github.silent.samurai.speedy.models.conditions.AssociatedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,19 +26,8 @@ public class ConditionFactory {
 
     private BinaryCondition createCondition(QueryField field, ConditionOperator operator, Expression expression) throws SpeedyHttpException {
         return switch (operator) {
-            case EQ -> new EqCondition(field, expression);
-            case NEQ -> new NotEqCondition(field, expression);
-            case LT -> new LessThanCondition(field, expression);
-            case GT -> new GreaterThanCondition(field, expression);
-            case LTE -> new LessThanEqualCondition(field, expression);
-            case GTE -> new GreaterThanEqualCondition(field, expression);
-            case IN -> new InCondition(field, expression);
-            case NOT_IN -> new NotInCondition(field, expression);
-            case PATTERN_MATCHING -> new MatchingCondition(field, expression);
-            case BETWEEN -> new BetweenCondition(field, expression);
-            case ISNULL -> new IsNullCondition(field, expression);
-            case ISNOTNULL -> new IsNotNullCondition(field, expression);
             case AND, OR -> throw new BadRequestException("");
+            default -> new BinaryConditionImpl(field, operator, expression);
         };
     }
 

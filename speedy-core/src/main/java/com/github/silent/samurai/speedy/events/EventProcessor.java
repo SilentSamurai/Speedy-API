@@ -94,11 +94,22 @@ public class EventProcessor {
 
     public void triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         if (isEventPresent(eventType, entityMetadata)) {
+            boolean writeBack = isPreEvent(eventType);
             MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
             for (EventHandlerMetadata metadata : eventEntityMap.get(entityMetadata.getName())) {
-                metadata.invokeEventHandler(entity, serializer, deserializer);
+                metadata.invokeEventHandler(entity, serializer, deserializer, writeBack);
             }
         }
+    }
+
+    /// PRE events may mutate the entity (their edits are persisted), so handler changes are written
+    /// back. POST events are read-only side-effects fired on the already-persisted entity — writing
+    /// back would corrupt it (e.g. re-encoding an enum field to text), so it is skipped.
+    private static boolean isPreEvent(SpeedyEventType eventType) {
+        return switch (eventType) {
+            case PRE_INSERT, PRE_UPDATE, PRE_DELETE -> true;
+            case POST_INSERT, POST_UPDATE, POST_DELETE -> false;
+        };
     }
 
     public boolean isEventPresent(SpeedyEventType eventType, EntityMetadata entityMetadata) {
@@ -118,14 +129,16 @@ public class EventProcessor {
             this.ioClass = ioClass;
         }
 
-        private Object invokeEventHandler(SpeedyEntity entity, SpeedyToJava ser, JavaToSpeedy deser) throws Exception {
+        private Object invokeEventHandler(SpeedyEntity entity, SpeedyToJava ser, JavaToSpeedy deser, boolean writeBack) throws Exception {
             try {
                 if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
                     methodHandle.invoke(instance, entity);
                 } else {
                     Object value = ser.toJavaEntity(entity, ioClass);
                     methodHandle.invoke(instance, value);
-                    deser.updateEntity(value, entity);
+                    if (writeBack) {
+                        deser.updateEntity(value, entity);
+                    }
                 }
             } catch (Throwable t) {
                 if (t instanceof Exception e) {

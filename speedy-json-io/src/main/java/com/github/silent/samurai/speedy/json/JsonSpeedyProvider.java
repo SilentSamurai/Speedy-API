@@ -3,7 +3,6 @@ package com.github.silent.samurai.speedy.json;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.json.request.JsonStructureReader;
 import com.github.silent.samurai.speedy.json.response.JsonResponseWriter;
-import org.springframework.http.MediaType;
 
 /// Unified SPI provider for all JSON I/O.
 ///
@@ -16,7 +15,7 @@ public class JsonSpeedyProvider implements ISpeedyIoProvider {
 
     @Override
     public String getContentType() {
-        return MediaType.APPLICATION_JSON_VALUE;
+        return "application/json";
     }
 
     @Override

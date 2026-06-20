@@ -43,7 +43,7 @@ public class GetHandler implements Handler {
         }
 
         QueryResult result = queryProcessor.executeManyWithCount(speedyQuery);
-        List<SpeedyEntity> entities = result.getEntities();
+        List<SpeedyEntity> entities = result.entities();
 
         Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
         context.put(SpeedyResponse.class,
@@ -52,7 +52,7 @@ public class GetHandler implements Handler {
                         .payload(entities)
                         .pageIndex(speedyQuery.getPageInfo().getPageNo())
                         .expands(speedyQuery.getExpand())
-                        .totalCount(result.getTotalCount())
+                        .totalCount(result.totalCount())
                         .requestedPageSize(speedyQuery.getPageInfo().getPageSize())
                         .fieldPredicate(fieldPredicate)
                         .status(200)

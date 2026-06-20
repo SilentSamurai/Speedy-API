@@ -68,7 +68,9 @@ public class UpdateHandler implements com.github.silent.samurai.speedy.interface
                     eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
                     context.get(ValidationProcessor.class).validateUpdateRequestEntity(entityMetadata, entity);
                     result[0] = queryProcessor.update(pk, entity);
-                    eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, entity);
+                    // POST event carries the persisted state (generated keys, DB defaults, untouched
+                    // columns), not the partial request payload — consistent with POST_INSERT.
+                    eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, result[0]);
                 } catch (Exception ex) {
                     if (ex instanceof SpeedyHttpRuntimeException re) throw re;
                     if (ex instanceof RuntimeException re) throw re;

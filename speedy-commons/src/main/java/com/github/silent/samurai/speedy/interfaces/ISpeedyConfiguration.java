@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorProvider;
+import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorFactory;
+import com.github.silent.samurai.speedy.interfaces.query.backend.SpeedyBackend;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule;
 
@@ -44,12 +44,12 @@ public interface ISpeedyConfiguration {
         return 1_048_576;
     }
 
-    default QueryProcessor queryProcessor(DataSource dataSource, SpeedyDialect dialect, ConversionContext context) {
-        return ServiceLoader.load(QueryProcessorProvider.class)
+    default SpeedyBackend queryBackend(DataSource dataSource, SpeedyDialect dialect, ConversionContext context) {
+        return ServiceLoader.load(QueryProcessorFactory.class)
                 .findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException(
-                        "No QueryProcessor implementation on classpath. " +
-                                "Add 'speedy-jooq-query-processor' dependency or override queryProcessor() in ISpeedyConfiguration."))
+                        "No QueryProcessorFactory implementation on classpath. " +
+                                "Add 'speedy-jooq-query-processor' dependency or override queryBackend() in ISpeedyConfiguration."))
                 .create(dataSource, dialect, context);
     }
 

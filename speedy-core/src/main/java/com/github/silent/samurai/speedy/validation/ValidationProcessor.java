@@ -11,9 +11,9 @@ import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.util.Pair;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -41,9 +41,9 @@ public class ValidationProcessor {
     ///
     /// @see JavaToSpeedy#updateEntity
     private final JavaToSpeedy deserializer;
-    private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> createValidationMethods = new HashMap<>();
-    private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> updateValidationMethods = new HashMap<>();
-    private final Map<String, Pair<? extends ISpeedyCustomValidation, MethodHandle>> deleteValidationMethods = new HashMap<>();
+    private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> createValidationMethods = new HashMap<>();
+    private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> updateValidationMethods = new HashMap<>();
+    private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> deleteValidationMethods = new HashMap<>();
     private final DefaultFieldValidator defaultFieldValidator;
 
     /// Creates the validation processor with the necessary serialization infrastructure.
@@ -71,13 +71,13 @@ public class ValidationProcessor {
                         EntityMetadata entityMetadata = this.metaModel.findEntityMetadata(entityName);
                         MethodHandle methodHandle = MethodHandles.lookup().unreflect(declaredMethod);
                         if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.CREATE)) {
-                            createValidationMethods.put(entityMetadata.getName(), Pair.of(instance, methodHandle));
+                            createValidationMethods.put(entityMetadata.getName(), new Pair<>(instance, methodHandle));
                         }
                         if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.UPDATE)) {
-                            updateValidationMethods.put(entityMetadata.getName(), Pair.of(instance, methodHandle));
+                            updateValidationMethods.put(entityMetadata.getName(), new Pair<>(instance, methodHandle));
                         }
                         if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.DELETE)) {
-                            deleteValidationMethods.put(entityMetadata.getName(), Pair.of(instance, methodHandle));
+                            deleteValidationMethods.put(entityMetadata.getName(), new Pair<>(instance, methodHandle));
                         }
                     }
                 } catch (NotFoundException | IllegalAccessException e) {
@@ -94,9 +94,9 @@ public class ValidationProcessor {
         }
     }
 
-    private void invokeValidationMethod(Pair<? extends ISpeedyCustomValidation, MethodHandle> pair, SpeedyEntity entity) throws Exception {
-        ISpeedyCustomValidation instance = pair.getFirst();
-        MethodHandle methodHandle = pair.getSecond();
+    private void invokeValidationMethod(Pair<ISpeedyCustomValidation, MethodHandle> pair, SpeedyEntity entity) throws Exception {
+        ISpeedyCustomValidation instance = pair.first();
+        MethodHandle methodHandle = pair.second();
 
         MethodType methodType = methodHandle.type();
         Class<?>[] paramTypes = methodType.parameterArray();
@@ -140,7 +140,7 @@ public class ValidationProcessor {
 
     public void validateCreateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         if (createValidationMethods.containsKey(entityMetadata.getName())) {
-            Pair<? extends ISpeedyCustomValidation, MethodHandle> pair = createValidationMethods.get(entityMetadata.getName());
+            Pair<ISpeedyCustomValidation, MethodHandle> pair = createValidationMethods.get(entityMetadata.getName());
             invokeValidationMethod(pair, entity);
         } else {
             defaultFieldValidator.validateCreate(entityMetadata, entity);
@@ -149,7 +149,7 @@ public class ValidationProcessor {
 
     public void validateUpdateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
         if (updateValidationMethods.containsKey(entityMetadata.getName())) {
-            Pair<? extends ISpeedyCustomValidation, MethodHandle> pair = updateValidationMethods.get(entityMetadata.getName());
+            Pair<ISpeedyCustomValidation, MethodHandle> pair = updateValidationMethods.get(entityMetadata.getName());
             invokeValidationMethod(pair, entity);
         } else {
             // For PATCH/UPDATE only validate supplied fields, required check not enforced
@@ -159,7 +159,7 @@ public class ValidationProcessor {
 
     public void validateDeleteRequestEntity(EntityMetadata entityMetadata, SpeedyEntityKey entityKey) throws Exception {
         if (deleteValidationMethods.containsKey(entityMetadata.getName())) {
-            Pair<? extends ISpeedyCustomValidation, MethodHandle> pair = deleteValidationMethods.get(entityMetadata.getName());
+            Pair<ISpeedyCustomValidation, MethodHandle> pair = deleteValidationMethods.get(entityMetadata.getName());
             invokeValidationMethod(pair, entityKey);
         } else {
             // For delete requests, only validate the entity key fields

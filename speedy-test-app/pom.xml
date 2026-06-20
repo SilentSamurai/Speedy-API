@@ -49,6 +49,14 @@
         </dependency>
 
         <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-commons</artifactId>
+            <version>${project.parent.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
@@ -80,12 +88,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-            <version>3.0.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
@@ -99,18 +101,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!--        for coverage aggregator-->
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-commons</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <!--        for coverage aggregator-->
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
     </dependencies>
 
     <build>

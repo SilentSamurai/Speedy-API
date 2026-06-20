@@ -1,22 +1,20 @@
 package com.github.silent.samurai.speedy.exceptions;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 public class InternalServerError extends SpeedyHttpException {
 
     public InternalServerError() {
-        super(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "");
+        super(500, "");
     }
 
     public InternalServerError(String message) {
-        super(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
+        super(500, message);
     }
 
     public InternalServerError(String message, Throwable cause) {
-        super(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message, cause);
+        super(500, message, cause);
     }
 
     public InternalServerError(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message, cause, enableSuppression, writableStackTrace);
+        super(500, message, cause, enableSuppression, writableStackTrace);
     }
 }

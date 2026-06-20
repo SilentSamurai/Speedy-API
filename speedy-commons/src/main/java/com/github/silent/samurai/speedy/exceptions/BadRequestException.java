@@ -1,22 +1,20 @@
 package com.github.silent.samurai.speedy.exceptions;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 public class BadRequestException extends SpeedyHttpException {
 
     public BadRequestException() {
-        super(HttpServletResponse.SC_BAD_REQUEST, "");
+        super(400, "");
     }
 
     public BadRequestException(String message) {
-        super(HttpServletResponse.SC_BAD_REQUEST, message);
+        super(400, message);
     }
 
     public BadRequestException(String message, Throwable cause) {
-        super(HttpServletResponse.SC_BAD_REQUEST, message, cause);
+        super(400, message, cause);
     }
 
     public BadRequestException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(HttpServletResponse.SC_BAD_REQUEST, message, cause, enableSuppression, writableStackTrace);
+        super(400, message, cause, enableSuppression, writableStackTrace);
     }
 }

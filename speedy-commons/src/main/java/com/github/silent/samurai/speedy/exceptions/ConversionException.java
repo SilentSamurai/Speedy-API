@@ -1,22 +1,20 @@
 package com.github.silent.samurai.speedy.exceptions;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 public class ConversionException extends SpeedyHttpRuntimeException {
 
     public ConversionException() {
-        super(HttpServletResponse.SC_BAD_REQUEST, "");
+        super(400, "");
     }
 
     public ConversionException(String message) {
-        super(HttpServletResponse.SC_BAD_REQUEST, message);
+        super(400, message);
     }
 
     public ConversionException(String message, Throwable cause) {
-        super(HttpServletResponse.SC_BAD_REQUEST, message, cause);
+        super(400, message, cause);
     }
 
     public ConversionException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
-        super(HttpServletResponse.SC_BAD_REQUEST, message, cause, enableSuppression, writableStackTrace);
+        super(400, message, cause, enableSuppression, writableStackTrace);
     }
 }

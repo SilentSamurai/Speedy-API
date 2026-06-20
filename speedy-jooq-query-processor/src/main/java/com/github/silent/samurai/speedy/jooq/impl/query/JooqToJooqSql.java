@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.jooq.impl.query;
 
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import org.jooq.*;
@@ -11,7 +10,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 /// Executes FK-based association expansion queries.
-/// Used by JooqSqlToSpeedy during $expand resolution.
+/// Used by {@link JooqBackend#selectByFk} (driven by the shared {@code RecordToSpeedy} walker)
+/// during $expand resolution.
 public class JooqToJooqSql {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqToJooqSql.class);
@@ -22,27 +22,26 @@ public class JooqToJooqSql {
         this.dslContext = dslContext;
     }
 
-    public Optional<Result<Record>> findByFK(FieldMetadata fieldMetadata,
-                                             Record entityRecord) throws BadRequestException {
+    /// Fetches the single related row of {@code fieldMetadata}'s association whose key column equals
+    /// {@code fkColumnValue} (the parent row's already-converted foreign key); empty if none matches.
+    public Optional<Record> findByFK(FieldMetadata fieldMetadata, Object fkColumnValue) {
 
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associationFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
-
-        Optional<?> optional = JooqUtil.getValueFromRecord(entityRecord, fieldMetadata, dslContext.dialect());
-        if (optional.isEmpty()) {
-            LOGGER.error("foreign key not found: {}", fieldMetadata.getOutputPropertyName());
-            return Optional.empty();
-        }
 
         Field<Object> field = JooqUtil.getColumn(associationFieldMetadata, dslContext.dialect());
 
         SelectConditionStep<Record> query = dslContext
                 .select()
                 .from(associationMetadata.getDbTableName())
-                .where(field.eq(optional.get()));
+                .where(field.eq(fkColumnValue));
 
         LOGGER.info("expand query: {} ", query);
 
-        return Optional.of(query.fetch());
+        Result<Record> result = query.fetch();
+        if (result.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(result.get(0));
     }
 }

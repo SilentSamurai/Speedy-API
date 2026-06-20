@@ -45,7 +45,7 @@ public class QueryHandler implements com.github.silent.samurai.speedy.interfaces
             );
         } else {
             QueryResult result = queryProcessor.executeManyWithCount(speedyQuery);
-            List<SpeedyEntity> speedyEntities = result.getEntities();
+            List<SpeedyEntity> speedyEntities = result.entities();
             Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
             context.put(SpeedyResponse.class,
                     SpeedyEntityResponse.builder()
@@ -53,7 +53,7 @@ public class QueryHandler implements com.github.silent.samurai.speedy.interfaces
                             .payload(speedyEntities)
                             .pageIndex(speedyQuery.getPageInfo().getPageNo())
                             .expands(speedyQuery.getExpand())
-                            .totalCount(result.getTotalCount())
+                            .totalCount(result.totalCount())
                             .requestedPageSize(speedyQuery.getPageInfo().getPageSize())
                             .fieldPredicate(fieldPredicate)
                             .status(200)

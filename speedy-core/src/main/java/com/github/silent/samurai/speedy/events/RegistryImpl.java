@@ -39,7 +39,4 @@ public class RegistryImpl implements ISpeedyRegistry {
         return this;
     }
 
-    public List<Object> getControllerAdvices() {
-        return controllerAdvices;
-    }
 }

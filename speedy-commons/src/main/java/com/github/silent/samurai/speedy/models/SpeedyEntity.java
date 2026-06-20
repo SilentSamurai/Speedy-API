@@ -59,6 +59,10 @@ public class SpeedyEntity implements SpeedyValue {
         fields.put(fieldMetadata.getOutputPropertyName(), value);
     }
 
+    public void remove(FieldMetadata fieldMetadata) {
+        fields.remove(fieldMetadata.getOutputPropertyName());
+    }
+
     @Override
     public ValueType getValueType() {
         return ValueType.OBJECT;

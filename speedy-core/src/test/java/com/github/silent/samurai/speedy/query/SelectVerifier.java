@@ -16,9 +16,9 @@ import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import com.github.silent.samurai.speedy.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.util.Pair;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -95,7 +95,7 @@ public class SelectVerifier {
 
 
     public Pair<String, String> join(String selfField, String otherField) {
-        return Pair.of(selfField, otherField);
+        return new Pair<>(selfField, otherField);
     }
 
     @SafeVarargs
@@ -105,7 +105,7 @@ public class SelectVerifier {
         assertFalse(joins.isEmpty());
         assertEquals(joins.size(), paid.length);
         for (Pair<String, String> pair : paid) {
-            assertJoin(pair.getFirst(), pair.getSecond());
+            assertJoin(pair.first(), pair.second());
         }
     }
 

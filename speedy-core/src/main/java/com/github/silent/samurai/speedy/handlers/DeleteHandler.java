@@ -80,8 +80,9 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
 
                     List<SpeedyEntity> deleted = queryProcessor.delete(keys);
 
-                    for (SpeedyEntityKey key : keys) {
-                        eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE, entityMetadata, key);
+                    // POST event carries the full deleted row (as it existed), not just the key.
+                    for (SpeedyEntity entity : deleted) {
+                        eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE, entityMetadata, entity);
                     }
 
                     context.put(SpeedyResponse.class,
@@ -140,8 +141,9 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
 
                         List<SpeedyEntity> singleResult = queryProcessor.delete(List.of(key));
 
-                        eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE, entityMetadata, key);
                         if (!singleResult.isEmpty()) {
+                            // POST event carries the full deleted row (as it existed), not just the key.
+                            eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE, entityMetadata, singleResult.get(0));
                             succeeded.add(singleResult.get(0));
                         }
                     } catch (Exception ex) {
