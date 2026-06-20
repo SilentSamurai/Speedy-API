@@ -1,34 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>speedy-api-parent</artifactId>
         <groupId>com.github.silentsamurai</groupId>
+        <artifactId>speedy-api-parent</artifactId>
         <version>3.1.4</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>speedy-jpa-impl</artifactId>
-    <name>speedy-jpa-impl</name>
-
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-    </properties>
-
+    <artifactId>speedy-static-metamodel-processor</artifactId>
+    <name>speedy-static-metamodel-processor</name>
     <dependencies>
         <dependency>
-            <groupId>${project.parent.groupId}</groupId>
+            <groupId>com.github.silentsamurai</groupId>
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-        <!-- Jakarta Validation API for annotation scanning -->
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <version>3.0.2</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

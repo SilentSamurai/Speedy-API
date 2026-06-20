@@ -21,7 +21,7 @@ include the jpa implementation of the Speedy System
 
 <dependency>
     <groupId>com.github.silentsamurai</groupId>
-    <artifactId>speedy-jpa-impl</artifactId>
+    <artifactId>speedy-jpa-metamodel-processor</artifactId>
     <version>3.1.4</version>
 </dependency>
 ```

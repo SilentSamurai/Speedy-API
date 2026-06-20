@@ -32,7 +32,7 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-jpa-impl</artifactId>
+            <artifactId>speedy-jpa-metamodel-processor</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
@@ -55,7 +55,7 @@
 
         <!--        <dependency>-->
         <!--            <groupId>${project.parent.groupId}</groupId>-->
-        <!--            <artifactId>speedy-static-impl</artifactId>-->
+        <!--            <artifactId>speedy-static-metamodel-processor</artifactId>-->
         <!--            <version>${project.parent.version}</version>-->
         <!--        </dependency>-->
 
