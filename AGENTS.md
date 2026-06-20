@@ -258,7 +258,9 @@ log.info("Entity #{} failed",i, e);
 
 ### CI/CD
 
-- **`main.yml`**: PR checks on `main` — Ubuntu, JDK 17, `mvn clean install`
+- **`main.yml`**: PR checks on `main` — Ubuntu, JDK 17. Job `build` runs `mvn clean install` (H2); if it
+  passes and the PR touches code (not docs-only), job `db-tests` runs the `speedy-test-app` suite against
+  real Postgres + MySQL service containers (mirrors `db-tests/run-test.py`)
 - **`release.yml`**: Release on `release` branch — signs with GPG, deploys to Maven Central via `central-portal`
   profile, bumps version, tags `v<version>`
 - **`verify.yml`**: Pre-release verification — validates GPG key, tests Central Portal connectivity, compiles
