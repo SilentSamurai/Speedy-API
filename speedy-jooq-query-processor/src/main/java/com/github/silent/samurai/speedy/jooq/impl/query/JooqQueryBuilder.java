@@ -75,7 +75,7 @@ public class JooqQueryBuilder {
     }
 
     org.jooq.Condition matchPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
+        SpeedyValue speedyValue = bCondition.getLiteral().value();
         if (!speedyValue.isText()) {
             throw new BadRequestException("only text values are supported for $matches.");
         }
@@ -212,7 +212,7 @@ public class JooqQueryBuilder {
     }
 
     org.jooq.Condition inPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
+        SpeedyValue speedyValue = bCondition.getLiteral().value();
         if (speedyValue.isCollection()) {
             FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
             if (!fieldMetadata.isAssociation()) {
@@ -236,7 +236,7 @@ public class JooqQueryBuilder {
     }
 
     org.jooq.Condition notInPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
+        SpeedyValue speedyValue = bCondition.getLiteral().value();
         if (speedyValue.isCollection()) {
             FieldMetadata fieldMetadata = bCondition.getField().getFieldMetadata();
             if (!fieldMetadata.isAssociation()) {
@@ -263,7 +263,7 @@ public class JooqQueryBuilder {
      * Translates a {@code $between} condition to a JOOQ {@code Field.between(low, high)} predicate.
      */
     org.jooq.Condition betweenPredicate(BinaryCondition bCondition) throws SpeedyHttpException {
-        SpeedyValue speedyValue = ((Literal) bCondition.getExpression()).value();
+        SpeedyValue speedyValue = bCondition.getLiteral().value();
         SpeedyValue[] arr = speedyValue.asCollection().toArray(new SpeedyValue[0]);
         Field<Object> path = getPath(bCondition.getField());
         Object low = toJooqType(bCondition, arr[0]);

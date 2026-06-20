@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.Optional;
 
 /// Read/fetch half of the backend port. The format-agnostic
-/// {@link com.github.silent.samurai.speedy.walker.WalkingQueryProcessor} drives the
-/// orchestration and the {@link com.github.silent.samurai.speedy.walker.RecordToSpeedy}
+/// {@code WalkingQueryProcessor} (in speedy-core) drives the
+/// orchestration and the {@code RecordToSpeedy}
 /// walker assembles the entity tree; this port only *fetches rows* — the backend owns statement
 /// building, execution, and value decoding.
 ///
 /// A fetched row is returned as a *flat* {@link SpeedyEntity}: scalar fields decoded to their
 /// {@link com.github.silent.samurai.speedy.interfaces.SpeedyValue}, and each association field
 /// carrying its foreign-key value (decoded with the associated field's type). The
-/// {@link com.github.silent.samurai.speedy.walker.RecordToSpeedy} walker then resolves those
+/// {@code RecordToSpeedy} walker then resolves those
 /// associations into nested entities ({@code $expand}) or keys-only references. The backend's native
 /// row type (a jOOQ {@code Record}, a JDBC {@code ResultSet} row, a Mongo {@code Document}, …) never
 /// crosses this boundary — {@link SpeedyEntity}/{@code SpeedyValue} are the only currency.

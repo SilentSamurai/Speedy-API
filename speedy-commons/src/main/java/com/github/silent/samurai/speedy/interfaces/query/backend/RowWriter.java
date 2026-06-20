@@ -7,7 +7,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 /// Write/mutation half of the backend port — the write-side analogue of
 /// {@link com.github.silent.samurai.speedy.interfaces.SpeedyResponseWriter}.
 ///
-/// The format-agnostic {@link com.github.silent.samurai.speedy.walker.SpeedyToRecord} walker
+/// The format-agnostic {@code SpeedyToRecord} walker (in speedy-core)
 /// has already resolved each entity into a column {@link SpeedyEntity} (running application-side key
 /// generation, skipping empty values, and flattening associations to their FK column value); the
 /// port keeps the domain {@link com.github.silent.samurai.speedy.interfaces.SpeedyValue} as the

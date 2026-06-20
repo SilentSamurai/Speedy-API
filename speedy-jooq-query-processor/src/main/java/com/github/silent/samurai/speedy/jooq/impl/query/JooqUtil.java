@@ -134,8 +134,20 @@ public class JooqUtil {
     public static String transformIdentifier(String identifier, SQLDialect sqlDialect) {
         return switch (sqlDialect) {
             case H2 -> identifier.toUpperCase();
-            default -> identifier.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
+            default -> camelToSnake(identifier);
         };
+    }
+
+    /// Converts a camelCase identifier to snake_case, inserting a separator at lower/digit-to-upper
+    /// boundaries ({@code firstName -> first_name}, {@code address1Line -> address1_line}) and at
+    /// acronym-to-word boundaries ({@code userIDCard -> user_id_card}), then lower-casing. A faithful
+    /// replacement for the removed Spring {@code ParsingUtils.reconcatenateCamelCase}; the previous
+    /// single-rule {@code ([a-z])([A-Z])} regex silently dropped the acronym and digit boundaries.
+    private static String camelToSnake(String identifier) {
+        return identifier
+                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
+                .replaceAll("([a-z0-9])([A-Z])", "$1_$2")
+                .toLowerCase();
     }
 
     /* Jooq to java types

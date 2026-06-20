@@ -18,9 +18,10 @@ import java.util.function.Function;
 /// {@link com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy} to
 /// convert {@code SpeedyEntity ↔ POJO}).
 ///
-/// The other registries ({@code ApiIoRegistry}, {@code DbConversionRegistry}) are
-/// owned by format implementors and query processors respectively — users never
-/// register into them.
+/// The other registry users might hear about, {@code ApiIoRegistry}, is owned by
+/// format implementors. DB-side value conversion is owned entirely by the query
+/// processor backend — its registry lives in the backend module (e.g. jOOQ) and is
+/// not exposed on the {@link ConversionContext} — so users never register into either.
 ///
 /// @param <T> the Java type being registered
 public class TypeBuilder<T> {
