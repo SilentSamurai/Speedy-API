@@ -1,14 +1,12 @@
-package com.github.silent.samurai.speedy.conversion.walker.db;
+package com.github.silent.samurai.speedy.jooq.impl.conversion;
 
 import com.github.silent.samurai.speedy.conversion.codec.Codec;
-import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.query.Converter;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.util.Map;

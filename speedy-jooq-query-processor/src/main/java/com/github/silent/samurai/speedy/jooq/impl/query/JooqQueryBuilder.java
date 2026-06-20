@@ -11,7 +11,7 @@ import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
-import com.github.silent.samurai.speedy.interfaces.query.Converter;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
 import com.github.silent.samurai.speedy.models.conditions.*;
 import org.jooq.*;
 import org.jooq.Record;

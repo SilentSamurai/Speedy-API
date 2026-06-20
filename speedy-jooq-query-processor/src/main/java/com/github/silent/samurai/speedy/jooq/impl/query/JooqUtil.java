@@ -8,7 +8,7 @@ import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
-import org.springframework.data.util.ParsingUtils;
+
 
 import java.util.Objects;
 import java.util.Optional;
@@ -134,7 +134,7 @@ public class JooqUtil {
     public static String transformIdentifier(String identifier, SQLDialect sqlDialect) {
         return switch (sqlDialect) {
             case H2 -> identifier.toUpperCase();
-            default -> ParsingUtils.reconcatenateCamelCase(identifier, "_");
+            default -> identifier.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase();
         };
     }
 

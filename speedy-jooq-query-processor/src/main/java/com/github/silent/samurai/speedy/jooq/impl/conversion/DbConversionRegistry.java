@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.conversion.registry;
+package com.github.silent.samurai.speedy.jooq.impl.conversion;
 
 import com.github.silent.samurai.speedy.conversion.codec.Codec;
 import com.github.silent.samurai.speedy.enums.ColumnType;
@@ -14,15 +14,18 @@ import java.util.function.Function;
 /// ## Design Philosophy
 /// This is a pure registry — it stores and looks up codecs but does not perform
 /// routing logic (enum handling, null checks, ValueType dispatch). That belongs
-/// in the walker: {@link com.github.silent.samurai.speedy.conversion.walker.db.DbConverter}.
+/// in the walker: {@link DbConverter}.
 ///
 /// Each codec handles exactly one Java class — no {@code instanceof} branching
 /// inside decode lambdas. Registries can be chained via the parent constructor
 /// to form a fallback hierarchy: user-registered codecs as parent, built-in
 /// JDBC codecs (e.g. from {@code JooqConverters}) layered on top.
 ///
+/// Backend-internal: only the jOOQ query processor populates and reads this registry;
+/// library users register custom types into {@code JavaTypeRegistry} instead.
+///
 /// @see Codec
-/// @see com.github.silent.samurai.speedy.conversion.walker.db.DbConverter
+/// @see DbConverter
 public class DbConversionRegistry {
 
     private final DbConversionRegistry parent;

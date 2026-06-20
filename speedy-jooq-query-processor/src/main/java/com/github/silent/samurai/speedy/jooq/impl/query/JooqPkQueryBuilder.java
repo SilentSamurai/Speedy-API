@@ -5,7 +5,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.query.Converter;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.*;
 import org.jooq.Record;

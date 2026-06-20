@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.jooq.impl;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.conversion.registry.DbConversionRegistry;
-import com.github.silent.samurai.speedy.conversion.walker.db.DbConverter;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.DbConversionRegistry;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.DbConverter;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.Speedy;
 
@@ -18,7 +18,7 @@ import java.util.UUID;
 ///
 /// Each codec handles exactly **one** Java class — the JDBC driver's native type
 /// for the column. No {@code instanceof} branching inside the lambdas; the
-/// {@link com.github.silent.samurai.speedy.mappings.Codec#safeDecode(Object)}
+/// {@link com.github.silent.samurai.speedy.conversion.codec.Codec#safeDecode(Object)}
 /// method verifies the type at runtime via {@link Class#cast}.
 public final class JooqConverters {
 
