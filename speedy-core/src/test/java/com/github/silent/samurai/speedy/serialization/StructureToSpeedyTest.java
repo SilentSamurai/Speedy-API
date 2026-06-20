@@ -1,22 +1,22 @@
-package com.github.silent.samurai.speedy.json;
+package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.StructureReader;
-import com.github.silent.samurai.speedy.json.request.JsonRequestReader;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
-import com.github.silent.samurai.speedy.serialization.StructureToSpeedy;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,20 +25,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/// Structural branches of the format-agnostic {@link StructureToSpeedy} builder driven
-/// by a real JSON {@link StructureReader}: scalar collections, deserializable/unknown
-/// field skipping, and key completeness.
+/// Structural branches of the format-agnostic {@link StructureToSpeedy} builder driven by an
+/// {@link InMemoryStructureReader} (no format module): scalar collections, deserializable /
+/// unknown field skipping, and key completeness. The JSON strings are only a convenient way to
+/// build the input token tree.
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class StructureToSpeedyTest {
 
     private final StructureToSpeedy builder = new StructureToSpeedy();
-    private final JsonRequestReader requestReader = new JsonRequestReader();
 
     private SpeedyEntity parse(EntityMetadata entityMetadata, String json) throws SpeedyHttpException {
-        try (StructureReader r = requestReader.readDocument(json.getBytes(StandardCharsets.UTF_8))) {
-            r.begin();
-            return builder.fromEntity(entityMetadata, r);
+        StructureReader r = new InMemoryStructureReader(readTree(json));
+        r.begin();
+        return builder.fromEntity(entityMetadata, r);
+    }
+
+    private Object readTree(String json) throws SpeedyHttpException {
+        try {
+            return CommonUtil.json().readValue(json, Object.class);
+        } catch (IOException e) {
+            throw new BadRequestException("invalid test json", e);
         }
     }
 

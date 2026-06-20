@@ -9,8 +9,10 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.StructureReader;
 import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
-import com.github.silent.samurai.speedy.json.parser.JsonQueryParser;
+import com.github.silent.samurai.speedy.json.request.JsonStructureReader;
+import com.github.silent.samurai.speedy.serialization.StructureToQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -48,8 +50,10 @@ class JooqQueryBuilderTest {
 
     String json2SqlQuery(JsonNode jsonQuery) throws SpeedyHttpException {
         EntityMetadata entityMetadata = metaModel.findEntityMetadata(jsonQuery.get("$from").asText());
-        JsonQueryParser builder = new JsonQueryParser(metaModel, entityMetadata, jsonQuery);
-        JooqQueryBuilder qb = new JooqQueryBuilder(builder.build(), dslContext, JooqConverters.defaults());
+        StructureReader reader = new JsonStructureReader(jsonQuery.traverse());
+        JooqQueryBuilder qb = new JooqQueryBuilder(
+                new StructureToQuery().parse(entityMetadata, reader, Integer.MAX_VALUE, 20),
+                dslContext, JooqConverters.defaults());
         qb.prepareQuery();
         String sql = qb.query.toString();
         log.info("sql: {}", sql);

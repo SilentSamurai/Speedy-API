@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy;
 
-import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -57,7 +56,7 @@ class SpeedyFactoryProviderMapTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public SpeedyRequestReader createReader(ConversionContext context) { return null; }
+        public SpeedyRequestReader createReader() { return null; }
     }
 
     static class UpperCaseJsonProvider implements ISpeedyIoProvider {
@@ -68,7 +67,7 @@ class SpeedyFactoryProviderMapTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public SpeedyRequestReader createReader(ConversionContext context) { return null; }
+        public SpeedyRequestReader createReader() { return null; }
     }
 
 }

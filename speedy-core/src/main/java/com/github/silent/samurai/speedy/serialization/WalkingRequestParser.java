@@ -30,6 +30,7 @@ public class WalkingRequestParser implements IRequestBodyParser {
     private final String contentType;
     private final SpeedyRequestReader reader;
     private final StructureToSpeedy builder = new StructureToSpeedy();
+    private final StructureToQuery queryBuilder = new StructureToQuery();
 
     public WalkingRequestParser(String contentType, SpeedyRequestReader reader) {
         this.contentType = contentType;
@@ -44,7 +45,9 @@ public class WalkingRequestParser implements IRequestBodyParser {
     @Override
     public SpeedyQuery parseQuery(byte[] rawBody, MetaModel metaModel, SpeedyQuery baseQuery,
                                   int maxPageSize, int defaultPageSize) throws SpeedyHttpException {
-        return reader.parseQuery(rawBody, metaModel, baseQuery, maxPageSize, defaultPageSize);
+        try (StructureReader r = reader.readDocument(rawBody)) {
+            return queryBuilder.parse(baseQuery.getFrom(), r, maxPageSize, defaultPageSize);
+        }
     }
 
     @Override

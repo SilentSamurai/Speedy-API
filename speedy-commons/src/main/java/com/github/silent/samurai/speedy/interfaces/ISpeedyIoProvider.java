@@ -1,7 +1,5 @@
 package com.github.silent.samurai.speedy.interfaces;
 
-import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
-
 /// Unified SPI for format-level I/O providers (JSON, YAML, XML, etc.).
 ///
 /// Exposes two format-specific pieces: the {@link SpeedyResponseWriter} sink (write
@@ -19,8 +17,8 @@ public interface ISpeedyIoProvider {
     /// shared {@code WalkingResponseSerializer} that owns envelope composition.
     SpeedyResponseWriter createWriter();
 
-    /// Creates a format-specific request reader (streaming token source + query parse).
-    /// The engine wraps it in the shared {@code WalkingRequestParser} that owns
-    /// envelope composition.
-    SpeedyRequestReader createReader(ConversionContext context);
+    /// Creates a format-specific request reader: a {@code byte[] -> StructureReader} factory.
+    /// The engine wraps it in the shared {@code WalkingRequestParser} that owns envelope
+    /// composition and the {@code $query} parse.
+    SpeedyRequestReader createReader();
 }

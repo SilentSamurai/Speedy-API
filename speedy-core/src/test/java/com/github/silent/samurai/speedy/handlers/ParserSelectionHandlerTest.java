@@ -2,16 +2,10 @@ package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.models.SpeedyCreateBody;
-import com.github.silent.samurai.speedy.models.SpeedyDeleteBody;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
-import com.github.silent.samurai.speedy.models.SpeedyUpdateBody;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import org.junit.jupiter.api.Test;
 
@@ -135,7 +129,7 @@ class ParserSelectionHandlerTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public SpeedyRequestReader createReader(ConversionContext context) { return new StubReader(); }
+        public SpeedyRequestReader createReader() { return new StubReader(); }
     }
 
     static class TextParserProvider implements ISpeedyIoProvider {
@@ -146,19 +140,13 @@ class ParserSelectionHandlerTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public SpeedyRequestReader createReader(ConversionContext context) { return new StubReader(); }
+        public SpeedyRequestReader createReader() { return new StubReader(); }
     }
 
     static class StubReader implements SpeedyRequestReader {
 
         @Override
         public StructureReader readDocument(byte[] rawBody) {
-            return null;
-        }
-
-        @Override
-        public SpeedyQuery parseQuery(byte[] rawBody, MetaModel metaModel, SpeedyQuery baseQuery,
-                                      int maxPageSize, int defaultPageSize) throws SpeedyHttpException {
             return null;
         }
     }

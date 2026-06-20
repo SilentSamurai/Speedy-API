@@ -132,7 +132,7 @@ class SerializerSelectionHandlerTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public SpeedyRequestReader createReader(ConversionContext context) { return null; }
+        public SpeedyRequestReader createReader() { return null; }
     }
 
     static class TextSerializerProvider implements ISpeedyIoProvider {
@@ -143,6 +143,6 @@ class SerializerSelectionHandlerTest {
         public SpeedyResponseWriter createWriter() { return null; }
 
         @Override
-        public SpeedyRequestReader createReader(ConversionContext context) { return null; }
+        public SpeedyRequestReader createReader() { return null; }
     }
 }

@@ -148,10 +148,10 @@ class SpeedyV2OperatorErrorsTest {
 
     /// --- Gap 36: $eq / $ne / $lt / $gt / $lte / $gte with OBJECT/COLLECTION ---
     ///
-    /// The JSON query parser at JsonQueryParser.captureSingleBinaryQuery rejects
-    /// operator values that are JSON objects or arrays when the operator expects
-    /// a scalar value (JsonQueryParser.captureSingleBinaryQuery: isValueNode() ), returning "Invalid query"
-    /// before the JooqQueryBuilder predicate methods are reached.
+    /// The query parser at StructureToQuery.captureOperatorCondition rejects operator values
+    /// that are objects or arrays when the operator expects a scalar value (the value token is
+    /// neither VALUE nor NULL), returning "Invalid query" before the JooqQueryBuilder predicate
+    /// methods are reached.
 
     @Nested
     @DisplayName("$eq / $ne with OBJECT/COLLECTION")

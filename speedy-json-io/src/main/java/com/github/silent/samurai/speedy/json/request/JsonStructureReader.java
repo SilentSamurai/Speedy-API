@@ -19,6 +19,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.github.silent.samurai.speedy.utils.CommonUtil.json;
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.isDateFormatValid;
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.isDateTimeFormatValid;
 import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.isTimeFormatValid;
@@ -36,6 +37,18 @@ public class JsonStructureReader implements StructureReader {
 
     public JsonStructureReader(JsonParser parser) {
         this.parser = parser;
+    }
+
+    /// Opens a streaming JSON reader over the raw request body — the
+    /// {@code byte[] -> StructureReader} factory the provider hands to the shared request
+    /// parser (a {@link com.github.silent.samurai.speedy.interfaces.SpeedyRequestReader}). The
+    /// read-side mirror of {@code JsonResponseWriter} being handed to the serializer.
+    public static JsonStructureReader over(byte[] rawBody) throws SpeedyHttpException {
+        try {
+            return new JsonStructureReader(json().getFactory().createParser(rawBody));
+        } catch (IOException e) {
+            throw new BadRequestException("Invalid JSON body", e);
+        }
     }
 
     /// Decodes a single value node (e.g., a query filter literal) by streaming it through
@@ -62,26 +75,33 @@ public class JsonStructureReader implements StructureReader {
 
     @Override
     public FieldMetadata nextField(EntityMetadata entityMetadata) throws SpeedyHttpException {
-        while (true) {
-            JsonToken t = advance();
-            if (t == null || t == JsonToken.END_OBJECT) {
-                return null;
-            }
-            if (t != JsonToken.FIELD_NAME) {
-                throw new BadRequestException("Invalid JSON body");
-            }
-            String name;
-            try {
-                name = parser.currentName();
-            } catch (IOException e) {
-                throw new BadRequestException("Invalid JSON body", e);
-            }
-            advance(); // move onto the field's value token
+        String name;
+        while ((name = nextKey()) != null) {
             if (entityMetadata.has(name)) {
                 return entityMetadata.field(name);
             }
             skipValue(); // field unknown to the metadata — skip its value and continue
         }
+        return null;
+    }
+
+    @Override
+    public String nextKey() throws SpeedyHttpException {
+        JsonToken t = advance();
+        if (t == null || t == JsonToken.END_OBJECT) {
+            return null;
+        }
+        if (t != JsonToken.FIELD_NAME) {
+            throw new BadRequestException("Invalid JSON body");
+        }
+        String name;
+        try {
+            name = parser.currentName();
+        } catch (IOException e) {
+            throw new BadRequestException("Invalid JSON body", e);
+        }
+        advance(); // move onto the field's value token
+        return name;
     }
 
     @Override
@@ -158,6 +178,42 @@ public class JsonStructureReader implements StructureReader {
         } catch (IOException e) {
             throw new BadRequestException("Invalid JSON body", e);
         }
+    }
+
+    @Override
+    public String textValue() throws SpeedyHttpException {
+        if (parser.currentToken() != JsonToken.VALUE_STRING) {
+            return null;
+        }
+        try {
+            return parser.getValueAsString();
+        } catch (IOException e) {
+            throw new BadRequestException("Invalid JSON body", e);
+        }
+    }
+
+    @Override
+    public int intValue() throws SpeedyHttpException {
+        try {
+            return parser.getValueAsInt();
+        } catch (IOException e) {
+            throw new BadRequestException("Invalid JSON body", e);
+        }
+    }
+
+    @Override
+    public boolean boolValue() throws SpeedyHttpException {
+        try {
+            return parser.getValueAsBoolean();
+        } catch (IOException e) {
+            throw new BadRequestException("Invalid JSON body", e);
+        }
+    }
+
+    @Override
+    public boolean isBoolValue() {
+        JsonToken t = parser.currentToken();
+        return t == JsonToken.VALUE_TRUE || t == JsonToken.VALUE_FALSE;
     }
 
     @Override

@@ -44,6 +44,14 @@ public interface StructureReader extends AutoCloseable {
     /// schema-driven format (e.g. protobuf) resolves a wire field-number instead.
     FieldMetadata nextField(EntityMetadata entityMetadata) throws SpeedyHttpException;
 
+    /// Within the current object, advances to the next field and returns its **raw** wire key,
+    /// positioning on its value token; returns {@code null} at the end of the object.
+    ///
+    /// Unlike {@link #nextField(EntityMetadata)}, this resolves nothing and skips nothing — it
+    /// is used by the query parser, whose keys are framework markers ({@code $where},
+    /// {@code $or}, operator symbols) and field names alike, not just entity fields.
+    String nextKey() throws SpeedyHttpException;
+
     /// Within the current array, advances to the next element and returns its kind,
     /// or {@code null} at the end of the array.
     Kind nextElement() throws SpeedyHttpException;
@@ -52,6 +60,25 @@ public interface StructureReader extends AutoCloseable {
     /// type ({@code field.getValueType()}) — the read mirror of
     /// {@link SpeedyResponseWriter#writeLeaf}. A null token yields a null {@link SpeedyValue}.
     SpeedyValue readField(FieldMetadata field) throws SpeedyHttpException;
+
+    /// The current scalar value token as a {@link String} **only if it is a string token**,
+    /// otherwise {@code null}. Used by the query parser for framework scalars that have no
+    /// {@link FieldMetadata} (order direction, {@code $expand}/{@code $select} entries) and to
+    /// distinguish a {@code $field} reference / {@code $isnull} shorthand from a literal —
+    /// peeking does not advance the cursor, so a literal can still be {@link #readField}'d after.
+    String textValue() throws SpeedyHttpException;
+
+    /// The current scalar value token as an {@code int} (framework scalars such as
+    /// {@code $page.$index} / {@code $size}).
+    int intValue() throws SpeedyHttpException;
+
+    /// The current scalar value token as a {@code boolean} (the {@code $isnull}/{@code $isnotnull}
+    /// operator value).
+    boolean boolValue() throws SpeedyHttpException;
+
+    /// Whether the current scalar value token is a boolean — for validating that
+    /// {@code $isnull}/{@code $isnotnull} was given a boolean.
+    boolean isBoolValue() throws SpeedyHttpException;
 
     /// Skips the current value and any subtree.
     void skipValue() throws SpeedyHttpException;

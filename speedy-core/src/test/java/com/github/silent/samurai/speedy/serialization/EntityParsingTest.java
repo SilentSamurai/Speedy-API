@@ -1,35 +1,40 @@
-package com.github.silent.samurai.speedy.json;
+package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.data.*;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.StructureReader;
-import com.github.silent.samurai.speedy.json.request.JsonRequestReader;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.serialization.StructureToSpeedy;
+import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/// JSON entity parsing tests. Exercise the streaming read path end-to-end:
-/// the format-agnostic {@link StructureToSpeedy} builder driving a JSON
-/// {@code StructureReader} from {@link JsonRequestReader} over real entity metadata.
-/// Primary-key derivation now happens off the parsed entity ({@code toKey} /
-/// {@code isKeyComplete}) rather than a separate pk pass.
-class JsonEntityParsingTest {
+/// Entity parsing tests for the format-agnostic {@link StructureToSpeedy} builder, driven by an
+/// {@link InMemoryStructureReader} (no format module). Exercise key derivation
+/// ({@code toKey} / {@code isKeyComplete}), associations, and null handling over real entity
+/// metadata. The JSON strings are only a convenient way to build the input token tree.
+class EntityParsingTest {
 
     private final StructureToSpeedy builder = new StructureToSpeedy();
-    private final JsonRequestReader requestReader = new JsonRequestReader();
 
     private SpeedyEntity parse(EntityMetadata entityMetadata, String json) throws SpeedyHttpException {
-        try (StructureReader r = requestReader.readDocument(json.getBytes(StandardCharsets.UTF_8))) {
-            r.begin();
-            return builder.fromEntity(entityMetadata, r);
+        StructureReader r = new InMemoryStructureReader(readTree(json));
+        r.begin();
+        return builder.fromEntity(entityMetadata, r);
+    }
+
+    private Object readTree(String json) throws SpeedyHttpException {
+        try {
+            return CommonUtil.json().readValue(json, Object.class);
+        } catch (IOException e) {
+            throw new BadRequestException("invalid test json", e);
         }
     }
 
