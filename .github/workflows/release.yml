@@ -2,7 +2,20 @@ name: Publish package to the Maven Central Repository
 on:
     push:
         branches:
-            - release
+            - main
+        # A merge that only touches docs / load-tests / CI should not cut a
+        # Maven Central release. Triggers only when code/build files change.
+        paths-ignore:
+            - 'docs/**'
+            - 'k6-load-test/**'
+            - '**.md'
+            - '.github/**'
+
+# Serialize releases: never run two publishes at once (each bumps off Central),
+# and never cancel an in-flight publish.
+concurrency:
+    group: release
+    cancel-in-progress: false
 
 jobs:
     publish:

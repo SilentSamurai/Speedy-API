@@ -2,10 +2,14 @@ name: Verify Release Pull Request
 on:
     pull_request:
         branches:
-            - release
+            - main
 
 jobs:
     verify:
+        # Forks don't receive the publishing secrets (GPG key, OSSRH creds), so
+        # this credential check would always fail on fork PRs. Run it only for
+        # same-repo branches; fork PRs skip it (and still run main.yml's tests).
+        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v4
