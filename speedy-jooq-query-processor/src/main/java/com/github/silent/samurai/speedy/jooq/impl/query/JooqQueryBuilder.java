@@ -47,17 +47,18 @@ public class JooqQueryBuilder {
     }
 
     Object toJooqType(BinaryCondition bCondition, SpeedyValue speedyValue) throws SpeedyHttpException {
-        QueryField queryField = bCondition.getField();
-        if (queryField.isAssociated()) {
-            return converter.toColumnType(
-                    speedyValue,
-                    queryField.getAssociatedFieldMetadata()
-            );
-        }
-        return converter.toColumnType(
-                speedyValue,
-                bCondition.getField().getFieldMetadata()
-        );
+        return converter.toColumnType(speedyValue, conversionField(bCondition.getField()));
+    }
+
+    /// The metadata describing a query field's value type. When the query path navigates into an
+    /// association the value is typed by the associated (target) field; otherwise by the field itself.
+    /// This keys off the {@code QueryField}'s own association flag (set during query construction),
+    /// which is deliberately distinct from {@link FieldMetadata#isAssociation()} — see {@code NormalField}
+    /// (always non-associated, even when wrapping an FK column) vs {@code AssociatedField}.
+    private static FieldMetadata conversionField(QueryField queryField) {
+        return queryField.isAssociated()
+                ? queryField.getAssociatedFieldMetadata()
+                : queryField.getFieldMetadata();
     }
 
     org.jooq.Condition captureBooleanPredicate(BooleanCondition condition) throws SpeedyHttpException {
@@ -455,7 +456,7 @@ public class JooqQueryBuilder {
                 .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
         if (Objects.nonNull(speedyQuery.getWhere())) {
             org.jooq.Condition whereCondition = conditionToPredicate(this.speedyQuery.getWhere());
-            SelectConditionStep<? extends Record> where = query.where(whereCondition);
+            query.where(whereCondition);
             joins();
         }
         LOGGER.debug("SQL Count Query: {} ", query.toString());

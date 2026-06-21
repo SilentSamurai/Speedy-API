@@ -84,14 +84,16 @@ public class JooqUtil {
         return getTypedField(fieldMetadata, table, dialect);
     }
 
+    /// The metadata describing a field's stored value type. For an association field the stored value is
+    /// the foreign key, typed by the associated (target primary-key) field; for a plain field it is the
+    /// field itself. Centralises the FK special-case shared by column typing and value conversion.
+    static FieldMetadata conversionField(FieldMetadata fieldMetadata) {
+        return fieldMetadata.isAssociation() ? fieldMetadata.getAssociatedFieldMetadata() : fieldMetadata;
+    }
+
     private static <T> Field<T> getTypedField(FieldMetadata fieldMetadata, Table<?> table, SQLDialect dialect) {
-        DataType<?> sqlDataType;
-        if (fieldMetadata.isAssociation()) {
-            ColumnType sqlType = fieldMetadata.getAssociatedFieldMetadata().getColumnType();
-            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), sqlType);
-        } else {
-            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), fieldMetadata.getColumnType());
-        }
+        ColumnType columnType = conversionField(fieldMetadata).getColumnType();
+        DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), columnType);
         Objects.requireNonNull(fieldMetadata.getDbColumnName());
         Name columnName = DSL.name(
                 table.getName(),

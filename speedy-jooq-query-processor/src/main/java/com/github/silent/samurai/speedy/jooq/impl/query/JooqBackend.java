@@ -198,8 +198,7 @@ public class JooqBackend implements SpeedyBackend {
     /// stored value is the foreign key, whose type is described by the associated field's metadata —
     /// the same special-case {@link JooqUtil#getColumn} applies when typing the FK column.
     private Object toColumnValue(FieldMetadata field, SpeedyValue value) {
-        FieldMetadata conversionField = field.isAssociation() ? field.getAssociatedFieldMetadata() : field;
-        return converter.toColumnType(value, conversionField);
+        return converter.toColumnType(value, JooqUtil.conversionField(field));
     }
 
     private List<SpeedyEntity> wrap(Result<? extends Record> result, EntityMetadata entityMetadata) throws SpeedyHttpException {
@@ -225,7 +224,7 @@ public class JooqBackend implements SpeedyBackend {
             Object value = raw.get();
             // For an association field the stored value is the foreign key, decoded with the associated
             // field's type — the same special-case JooqUtil.getColumn applies when typing the FK column.
-            FieldMetadata conversionField = field.isAssociation() ? field.getAssociatedFieldMetadata() : field;
+            FieldMetadata conversionField = JooqUtil.conversionField(field);
             if (field.isCollection() && !field.isAssociation()) {
                 // jOOQ sometimes promotes scalar types (int -> decimal and vice-versa); the converter normalises.
                 Collection<?> items = (Collection<?>) value;
