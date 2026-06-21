@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class AnnotatedPersonValidationIT {
+class AnnotatedPersonValidationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -132,7 +132,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectBadRequest()
                     .expectJsonPath("$.message", containsString("salary must be > 0"));
@@ -151,7 +151,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", 0)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectBadRequest()
                     .expectJsonPath("$.message", containsString("debt must be < 0"));
@@ -170,7 +170,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 0.3)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectBadRequest()
                     .expectJsonPath("$.message", containsString("rating must be >= 0.5"));
@@ -189,10 +189,10 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123456.789)
+                    .field("precisionVal", 123456.789)
                     .execute()
                     .expectBadRequest()
-                    .expectJsonPath("$.message", containsString("precision_val numeric value out of bounds"));
+                    .expectJsonPath("$.message", containsString("precisionVal numeric value out of bounds"));
         }
 
         @Test
@@ -208,7 +208,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectBadRequest()
                     .expectJsonPath("$.message", containsString("score must be >= 0"));
@@ -227,7 +227,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectOk();
         }
@@ -245,7 +245,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectOk();
         }
@@ -263,7 +263,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 1)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectBadRequest()
                     .expectJsonPath("$.message", containsString("overdraft must be <= 0"));
@@ -282,7 +282,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectOk();
         }
@@ -300,7 +300,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", -100)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectOk();
         }
@@ -318,7 +318,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 5.1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectBadRequest()
                     .expectJsonPath("$.message", containsString("rating must be <= 5.0"));
@@ -337,7 +337,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 5.0)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectOk();
         }
@@ -355,7 +355,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 0.5)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectOk();
         }
@@ -373,7 +373,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .field("bookingDate", "2025-01-01")
                     .execute()
                     .expectOk();
@@ -392,7 +392,7 @@ class AnnotatedPersonValidationIT {
                     .field("debt", -10)
                     .field("overdraft", 0)
                     .field("rating", 1)
-                    .field("precision_val", 123.45)
+                    .field("precisionVal", 123.45)
                     .field("bookingDate", "2025-12-31")
                     .execute()
                     .expectOk();
@@ -406,6 +406,12 @@ class AnnotatedPersonValidationIT {
                     .field("age", 30)
                     .field("email", "john.doe@example.com")
                     .field("code", "ABC12")
+                    .field("salary", 1000)
+                    .field("score", 5)
+                    .field("debt", -10)
+                    .field("overdraft", 0)
+                    .field("rating", 1)
+                    .field("precisionVal", 123.45)
                     .execute()
                     .expectOk()
                     .expectJsonPathExists("$.payload[0].id");

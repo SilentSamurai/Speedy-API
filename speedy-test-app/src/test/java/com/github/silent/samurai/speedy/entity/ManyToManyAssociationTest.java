@@ -33,7 +33,7 @@ import static org.mockito.Mockito.mock;
 /// model, and the @ManyToMany collection fields are absent.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class ManyToManyAssociationIT {
+class ManyToManyAssociationTest {
 
     @Autowired
     EntityManagerFactory entityManagerFactory;

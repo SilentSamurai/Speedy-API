@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class CategoryUpdateDeleteValidationIT {
+class CategoryUpdateDeleteValidationTest {
 
     @Autowired
     MockMvc mockMvc;

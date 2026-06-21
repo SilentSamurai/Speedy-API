@@ -387,7 +387,9 @@ public class JooqQueryBuilder {
             String alias = joinAlias.get(joinKey);
 
             Field joinField = JooqUtil.getColumnWithTableAlias(alias, join.getAssociatedFieldMetadata(), dialect);
-            query.join(table.as(alias)).on(fromField.eq(joinField));
+            // LEFT (outer) join: filtering on an association path must not silently drop source rows
+            // whose FK is null — they are kept and excluded only if the predicate itself fails.
+            query.leftJoin(table.as(alias)).on(fromField.eq(joinField));
         }
     }
 

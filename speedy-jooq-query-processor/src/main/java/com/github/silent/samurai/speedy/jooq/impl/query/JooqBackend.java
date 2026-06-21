@@ -121,8 +121,33 @@ public class JooqBackend implements SpeedyBackend {
             Object value = toColumnValue(fieldMetadata, columns.get(fieldMetadata));
             step = (step == null ? insertQuery.set(field, value) : step.set(field, value));
         }
-        if (step != null) {
+        if (step == null) {
+            return;
+        }
+        java.util.List<KeyFieldMetadata> generatedKeys = new java.util.ArrayList<>();
+        for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
+            if (!keyField.isInsertable()) {
+                generatedKeys.add(keyField);
+            }
+        }
+        if (generatedKeys.isEmpty()) {
             step.execute();
+            return;
+        }
+        java.util.List<Field<?>> returningFields = new java.util.ArrayList<>();
+        for (KeyFieldMetadata kf : generatedKeys) {
+            returningFields.add(JooqUtil.getColumn(kf, dialect));
+        }
+        Record result = step.returning(returningFields.toArray(new Field[0])).fetchOne();
+        if (result != null) {
+            for (KeyFieldMetadata kf : generatedKeys) {
+                FieldMetadata conversionField = JooqUtil.conversionField(kf);
+                String columnName = JooqUtil.transformIdentifier(kf.getDbColumnName(), dialect);
+                Object value = result.get(columnName, Object.class);
+                if (value != null) {
+                    columns.put(kf, converter.toSpeedyValue(value, conversionField));
+                }
+            }
         }
     }
 
