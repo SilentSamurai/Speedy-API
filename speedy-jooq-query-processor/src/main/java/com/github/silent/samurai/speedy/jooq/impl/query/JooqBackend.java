@@ -124,9 +124,14 @@ public class JooqBackend implements SpeedyBackend {
         if (step == null) {
             return;
         }
-        java.util.List<KeyFieldMetadata> generatedKeys = new java.util.ArrayList<>();
+        // Keys the database assigns that the entity doesn't already carry. App-generated keys
+        // (e.g. UUID) are produced before insert and written as a normal column above, so they
+        // need no read-back — only DB-assigned keys (IDENTITY / AUTO_INCREMENT) do. Skipping
+        // already-present keys also avoids asking jOOQ to "return" a non-identity column, which
+        // MySQL's getGeneratedKeys emulation rejects with "Field '<pk>' does not exist".
+        List<KeyFieldMetadata> generatedKeys = new ArrayList<>();
         for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
-            if (!keyField.isInsertable()) {
+            if (!keyField.isInsertable() && !columns.has(keyField)) {
                 generatedKeys.add(keyField);
             }
         }
@@ -134,21 +139,59 @@ public class JooqBackend implements SpeedyBackend {
             step.execute();
             return;
         }
-        java.util.List<Field<?>> returningFields = new java.util.ArrayList<>();
+        populateGeneratedKeys(step, columns, generatedKeys);
+    }
+
+    /// Executes the insert and writes the database-assigned key(s) back onto {@code columns} so the
+    /// caller can refetch the row by primary key. Postgres/H2 return the values via a native
+    /// {@code RETURNING} clause. MySQL/MariaDB have no {@code RETURNING}: jOOQ would fall back to
+    /// JDBC {@code getGeneratedKeys()}, which surfaces the value under a synthetic label (e.g.
+    /// {@code GENERATED_KEY}) instead of the real column name, so a single identity is read with the
+    /// canonical {@code LAST_INSERT_ID()} idiom instead.
+    private void populateGeneratedKeys(InsertSetMoreStep<Record> step, SpeedyEntity columns,
+                                       List<KeyFieldMetadata> generatedKeys) throws SpeedyHttpException {
+        if (generatedKeys.size() == 1 && !supportsReturning()) {
+            step.execute();
+            KeyFieldMetadata kf = generatedKeys.get(0);
+            Object value = dsl().lastID();
+            if (value != null) {
+                columns.put(kf, converter.toSpeedyValue(value, JooqUtil.conversionField(kf)));
+            }
+            return;
+        }
+        List<Field<?>> returningFields = new ArrayList<>(generatedKeys.size());
         for (KeyFieldMetadata kf : generatedKeys) {
             returningFields.add(JooqUtil.getColumn(kf, dialect));
         }
         Record result = step.returning(returningFields.toArray(new Field[0])).fetchOne();
-        if (result != null) {
-            for (KeyFieldMetadata kf : generatedKeys) {
-                FieldMetadata conversionField = JooqUtil.conversionField(kf);
-                String columnName = JooqUtil.transformIdentifier(kf.getDbColumnName(), dialect);
-                Object value = result.get(columnName, Object.class);
-                if (value != null) {
-                    columns.put(kf, converter.toSpeedyValue(value, conversionField));
-                }
+        if (result == null) {
+            return;
+        }
+        for (int i = 0; i < generatedKeys.size(); i++) {
+            KeyFieldMetadata kf = generatedKeys.get(i);
+            Object value = returnedValue(result, returningFields.get(i), i);
+            if (value != null) {
+                columns.put(kf, converter.toSpeedyValue(value, JooqUtil.conversionField(kf)));
             }
         }
+    }
+
+    /// Reads a generated-key value from a {@code RETURNING} record: by the requested field first,
+    /// then positionally to tolerate dialects that surface generated keys under a synthetic label.
+    private static Object returnedValue(Record result, Field<?> field, int index) {
+        if (result.field(field) != null) {
+            return result.get(field);
+        }
+        if (index < result.size()) {
+            return result.get(index);
+        }
+        return null;
+    }
+
+    /// Whether the dialect supports a SQL {@code RETURNING}/{@code OUTPUT} clause for INSERT. MySQL
+    /// and MariaDB don't, so generated keys are read via {@code LAST_INSERT_ID()} instead.
+    private boolean supportsReturning() {
+        return dialect != SQLDialect.MYSQL && dialect != SQLDialect.MARIADB;
     }
 
     @Override
