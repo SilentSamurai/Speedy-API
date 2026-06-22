@@ -254,7 +254,16 @@ public class JooqBackend implements SpeedyBackend {
             Throwable sqlCause = dae.getCause();
             if (sqlCause instanceof java.sql.SQLException sqle) {
                 String state = sqle.getSQLState();
+                // 23xxx = integrity-constraint violation, 22xxx = data exception (bad client input).
                 if (state != null && (state.startsWith("23") || state.startsWith("22"))) {
+                    return Optional.of(new BadRequestException("Invalid Request", dae));
+                }
+                // MySQL/MariaDB report a missing required column (no default) or a wrong-typed value
+                // under the generic HY000 state, where H2/Postgres use 22/23. These are still bad
+                // client input, so normalise them to 400 too.
+                //   1364 = ER_NO_DEFAULT_FOR_FIELD, 1366 = ER_TRUNCATED_WRONG_VALUE_FOR_FIELD
+                int errorCode = sqle.getErrorCode();
+                if (errorCode == 1364 || errorCode == 1366) {
                     return Optional.of(new BadRequestException("Invalid Request", dae));
                 }
             }
