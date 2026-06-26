@@ -40,6 +40,21 @@ public interface ISpeedyConfiguration {
         return 100;
     }
 
+    /**
+     * Maximum nesting depth of boolean ({@code AND}/{@code OR}) groups allowed in a
+     * query's {@code WHERE} clause. Guards against pathologically nested queries.
+     */
+    default int getMaxConditionDepth() {
+        return 5;
+    }
+
+    /**
+     * Maximum number of {@code $expand} entries allowed in a single query.
+     */
+    default int getMaxExpandCount() {
+        return 10;
+    }
+
     default long getMaxRequestBodySize() {
         return 1_048_576;
     }

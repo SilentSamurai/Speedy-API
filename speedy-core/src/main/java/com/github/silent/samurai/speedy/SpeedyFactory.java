@@ -100,7 +100,7 @@ public class SpeedyFactory {
         this.eventProcessor = new EventProcessor(metaModel, eventRegistry, serializer, deserializer);
         this.eventProcessor.processRegistry();
 
-        this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel, serializer, deserializer);
+        this.validationProcessor = new ValidationProcessor(eventRegistry.getValidators(), metaModel, serializer, deserializer, speedyConfiguration);
         this.validationProcessor.process();
 
         /// Discover all I/O format providers once at startup via SPI, validate that

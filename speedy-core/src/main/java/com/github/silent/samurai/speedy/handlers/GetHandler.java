@@ -13,6 +13,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.http.response.FieldPredicates;
+import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -30,6 +31,8 @@ public class GetHandler implements Handler {
     public void process(SpeedyContext context) throws SpeedyHttpException {
         SpeedyQuery speedyQuery = context.get(SpeedyUriContext.class).getParsedQuery();
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
+
+        context.get(ValidationProcessor.class).validateQueryRequest(speedyQuery);
 
         if (speedyQuery.isCountRequest()) {
             BigInteger count = queryProcessor.executeCount(speedyQuery);

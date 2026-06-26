@@ -14,6 +14,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.http.response.FieldPredicates;
+import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -34,6 +35,8 @@ public class QueryHandler implements com.github.silent.samurai.speedy.interfaces
         SpeedyQuery speedyQuery = (SpeedyQuery) context.get(SpeedyBody.class);
         EntityMetadata resourceMetadata = speedyQuery.getFrom();
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
+
+        context.get(ValidationProcessor.class).validateQueryRequest(speedyQuery);
 
         if (speedyQuery.isCountRequest()) {
             BigInteger count = queryProcessor.executeCount(speedyQuery);

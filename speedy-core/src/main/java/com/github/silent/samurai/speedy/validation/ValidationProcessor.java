@@ -6,7 +6,9 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -45,6 +47,7 @@ public class ValidationProcessor {
     private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> updateValidationMethods = new HashMap<>();
     private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> deleteValidationMethods = new HashMap<>();
     private final DefaultFieldValidator defaultFieldValidator;
+    private final DefaultQueryValidator defaultQueryValidator;
 
     /// Creates the validation processor with the necessary serialization infrastructure.
     ///
@@ -52,12 +55,17 @@ public class ValidationProcessor {
     /// @param metaModel      the global metamodel
     /// @param serializer     serializer for {@code SpeedyEntity -> POJO}
     /// @param deserializer   deserializer for {@code POJO -> SpeedyEntity}
-    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel, SpeedyToJava serializer, JavaToSpeedy deserializer) {
+    /// @param configuration  global configuration supplying query-complexity limits
+    public ValidationProcessor(List<ISpeedyCustomValidation> validationList, MetaModel metaModel, SpeedyToJava serializer, JavaToSpeedy deserializer, ISpeedyConfiguration configuration) {
         this.validationList = validationList;
         this.metaModel = metaModel;
         this.serializer = serializer;
         this.deserializer = deserializer;
         this.defaultFieldValidator = new DefaultFieldValidator();
+        this.defaultQueryValidator = new DefaultQueryValidator(
+                configuration.getMaxConditionDepth(),
+                configuration.getMaxFilterCount(),
+                configuration.getMaxExpandCount());
     }
 
     private void captureValidators() {
@@ -165,5 +173,15 @@ public class ValidationProcessor {
             // For delete requests, only validate the entity key fields
             defaultFieldValidator.validateEntityKey(entityMetadata, entityKey);
         }
+    }
+
+    /**
+     * Validates a read request ({@code GET} or {@code POST /$query}). Both resolve
+     * to a {@link SpeedyQuery}, so they share one validator. There is no custom
+     * validation hook for reads ({@code SpeedyValidationRequestType} only models
+     * CREATE/UPDATE/DELETE), so this always runs the default query rules.
+     */
+    public void validateQueryRequest(SpeedyQuery query) throws BadRequestException {
+        defaultQueryValidator.validateQuery(query);
     }
 }
