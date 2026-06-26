@@ -65,6 +65,7 @@ public class JooqPkQueryBuilder {
         Condition condition = null;
         for (KeyFieldMetadata keyField : pk.getMetadata().getKeyFields()) {
             Object value = converter.toColumnType(pk.get(keyField), keyField);
+            value = JooqUtil.toDialectColumnValue(value, dialect);
             Field<Object> field = JooqUtil.getColumn(keyField, dialect);
             Condition eq = field.eq(value);
             condition = (condition == null) ? eq : condition.and(eq);
@@ -82,7 +83,8 @@ public class JooqPkQueryBuilder {
             KeyFieldMetadata keyField = keyFields.get(0);
             List<Object> values = new ArrayList<>(pks.size());
             for (SpeedyEntityKey pk : pks) {
-                values.add(converter.toColumnType(pk.get(keyField), keyField));
+                Object value = converter.toColumnType(pk.get(keyField), keyField);
+                values.add(JooqUtil.toDialectColumnValue(value, dialect));
             }
             Field<Object> field = JooqUtil.getColumn(keyField, dialect);
             return field.in(values);

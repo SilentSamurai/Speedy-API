@@ -120,19 +120,27 @@ public class JooqUtil {
 
     public static SQLDialect toJooqDialect(SpeedyDialect dialect) {
         return switch (dialect) {
-            case H2 -> SQLDialect.H2;
-            case MYSQL -> SQLDialect.MYSQL;
-            case POSTGRES -> SQLDialect.POSTGRES;
-            case SQLITE -> SQLDialect.SQLITE;
-            case MARIADB -> SQLDialect.MARIADB;
+            case H2, H2_1_4_197, H2_1_4_200, H2_2_0_202, H2_2_1_214 -> SQLDialect.H2;
+            case MYSQL, MYSQL_5_6, MYSQL_5_7, MYSQL_8_0, MYSQL_8_0_19, MYSQL_8_0_20, MYSQL_8_0_31,
+                 AURORA_MYSQL, MEMSQL, MEMSQL_6, MEMSQL_7, MEMSQL_8 -> SQLDialect.MYSQL;
+            case POSTGRES, POSTGRES_10, POSTGRES_11, POSTGRES_12, POSTGRES_13,
+                 POSTGRES_14, POSTGRES_15, POSTGRES_9_3, POSTGRES_9_4, POSTGRES_9_5,
+                 AURORA_POSTGRES, COCKROACHDB, COCKROACHDB_20, COCKROACHDB_21, COCKROACHDB_22,
+                 POSTGRESPLUS, REDSHIFT, YUGABYTEDB, YUGABYTEDB_2_9 -> SQLDialect.POSTGRES;
+            case SQLITE, SQLITE_3_25, SQLITE_3_28, SQLITE_3_30, SQLITE_3_38, SQLITE_3_39 -> SQLDialect.SQLITE;
+            case MARIADB, MARIADB_10_0, MARIADB_10_1, MARIADB_10_2, MARIADB_10_3,
+                 MARIADB_10_4, MARIADB_10_5, MARIADB_10_6, MARIADB_10_7 -> SQLDialect.MARIADB;
             case DERBY -> SQLDialect.DERBY;
-            case FIREBIRD -> SQLDialect.FIREBIRD;
+            case FIREBIRD, FIREBIRD_2_5, FIREBIRD_3_0, FIREBIRD_4_0 -> SQLDialect.FIREBIRD;
             case HSQLDB -> SQLDialect.HSQLDB;
             case DUCKDB -> SQLDialect.DUCKDB;
             case TRINO -> SQLDialect.TRINO;
-            case YUGABYTEDB -> SQLDialect.YUGABYTEDB;
             default -> SQLDialect.DEFAULT;
         };
+    }
+
+    static boolean isMySQLFamily(SQLDialect dialect) {
+        return dialect == SQLDialect.MYSQL || dialect == SQLDialect.MARIADB;
     }
 
     public static String transformIdentifier(String identifier, SQLDialect sqlDialect) {
@@ -178,8 +186,7 @@ public class JooqUtil {
     /// those dialects reject. Converting to {@link LocalDateTime} before handing the value
     /// to jOOQ avoids the unsupported syntax.
     public static Object toDialectColumnValue(Object columnValue, SQLDialect dialect) {
-        if (columnValue instanceof OffsetDateTime odt
-                && (dialect == SQLDialect.MYSQL || dialect == SQLDialect.MARIADB)) {
+        if (columnValue instanceof OffsetDateTime odt && isMySQLFamily(dialect)) {
             return odt.toLocalDateTime();
         }
         return columnValue;

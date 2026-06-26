@@ -110,6 +110,7 @@ public class JooqBackend implements SpeedyBackend {
         // The FK is stored under the association field; re-encode it (with the associated field's
         // type) to query the related table.
         Object fkColumnValue = converter.toColumnType(fk, association.getAssociatedFieldMetadata());
+        fkColumnValue = JooqUtil.toDialectColumnValue(fkColumnValue, dialect);
         Optional<Record> associatedRecord = new JooqToJooqSql(dsl()).findByFK(association, fkColumnValue);
         if (associatedRecord.isEmpty()) {
             return Optional.empty();
@@ -222,7 +223,7 @@ public class JooqBackend implements SpeedyBackend {
     /// Whether the dialect supports a SQL {@code RETURNING}/{@code OUTPUT} clause for INSERT. MySQL
     /// and MariaDB don't, so generated keys are read via {@code LAST_INSERT_ID()} instead.
     private boolean supportsReturning() {
-        return dialect != SQLDialect.MYSQL && dialect != SQLDialect.MARIADB;
+        return !JooqUtil.isMySQLFamily(dialect);
     }
 
     @Override
@@ -243,6 +244,7 @@ public class JooqBackend implements SpeedyBackend {
         }
         for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
             Object value = converter.toColumnType(pk.get(keyFieldMetadata), keyFieldMetadata);
+            value = JooqUtil.toDialectColumnValue(value, dialect);
             Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dialect);
             step.where(field.equal(value));
         }
