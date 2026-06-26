@@ -47,7 +47,8 @@ public class JooqQueryBuilder {
     }
 
     Object toJooqType(BinaryCondition bCondition, SpeedyValue speedyValue) throws SpeedyHttpException {
-        return converter.toColumnType(speedyValue, conversionField(bCondition.getField()));
+        Object columnValue = converter.toColumnType(speedyValue, conversionField(bCondition.getField()));
+        return JooqUtil.toDialectColumnValue(columnValue, dialect);
     }
 
     /// The metadata describing a query field's value type. When the query path navigates into an

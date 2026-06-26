@@ -10,6 +10,8 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -168,28 +170,18 @@ public class JooqUtil {
     TIMESTAMP	LocalDateTime
     TIMESTAMP WITH TIME ZONE	OffsetDateTime
     BLOB	byte[]
-    UUID	UUID
+    UUID
      */
 
-//    public static Object toJooqType(SpeedyValue value, ColumnType columnType) {
-//        if (value == SpeedyNull.SPEEDY_NULL) {
-//            return null;
-//        }
-//        return switch (columnType) {
-//            case INTEGER -> value.asLong();
-//            case BIGINT -> BigInteger.valueOf(value.asLong());
-//            case SMALLINT -> value.asInt();
-//            case DECIMAL, NUMERIC -> BigDecimal.valueOf(value.asDouble());
-//            case FLOAT, REAL, DOUBLE -> value.asDouble();
-//            case CHAR, VARCHAR, TEXT, CLOB -> value.asText();
-//            case DATE -> Date.valueOf(value.asDate());
-//            case TIME -> java.sql.Time.valueOf(value.asTime());
-//            case TIMESTAMP -> java.sql.Timestamp.valueOf(value.asDateTime());
-//            case TIMESTAMP_WITH_ZONE ->
-//                    OffsetDateTime.of(value.asZonedDateTime().toLocalDateTime(), value.asZonedDateTime().getOffset());
-//            case BOOLEAN -> value.asBoolean();
-//            case BLOB -> value.asText().getBytes(StandardCharsets.UTF_8);
-//            case UUID -> UUID.fromString(value.asText());
-//        };
-//    }
+    /// MySQL/MariaDB do not support {@code TIMESTAMP WITH TIME ZONE}; jOOQ renders
+    /// {@link OffsetDateTime} as the ANSI {@code timestamp with time zone '...'} literal which
+    /// those dialects reject. Converting to {@link LocalDateTime} before handing the value
+    /// to jOOQ avoids the unsupported syntax.
+    public static Object toDialectColumnValue(Object columnValue, SQLDialect dialect) {
+        if (columnValue instanceof OffsetDateTime odt
+                && (dialect == SQLDialect.MYSQL || dialect == SQLDialect.MARIADB)) {
+            return odt.toLocalDateTime();
+        }
+        return columnValue;
+    }
 }

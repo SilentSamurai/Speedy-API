@@ -304,7 +304,8 @@ public class JooqBackend implements SpeedyBackend {
     /// stored value is the foreign key, whose type is described by the associated field's metadata —
     /// the same special-case {@link JooqUtil#getColumn} applies when typing the FK column.
     private Object toColumnValue(FieldMetadata field, SpeedyValue value) {
-        return converter.toColumnType(value, JooqUtil.conversionField(field));
+        Object columnValue = converter.toColumnType(value, JooqUtil.conversionField(field));
+        return JooqUtil.toDialectColumnValue(columnValue, dialect);
     }
 
     private List<SpeedyEntity> wrap(Result<? extends Record> result, EntityMetadata entityMetadata) throws SpeedyHttpException {
