@@ -25,7 +25,7 @@ public class JooqUtil {
         transformSqlNames = setting;
     }
 
-    public static DataType<?> getSQLDataType(String fieldReference, ColumnType columnType) {
+    public static DataType<?> getSQLDataType(String fieldReference, ColumnType columnType, SQLDialect dialect) {
         return switch (columnType) {
             case INTEGER:
                 yield SQLDataType.INTEGER;
@@ -54,7 +54,9 @@ public class JooqUtil {
             case TIMESTAMP:
                 yield SQLDataType.TIMESTAMP;
             case TIMESTAMP_WITH_ZONE:
-                yield SQLDataType.TIMESTAMPWITHTIMEZONE;
+                yield isMySQLFamily(dialect)
+                        ? SQLDataType.LOCALDATETIME
+                        : SQLDataType.TIMESTAMPWITHTIMEZONE;
             case BOOLEAN:
                 yield SQLDataType.BOOLEAN;
             case BLOB:
@@ -95,7 +97,7 @@ public class JooqUtil {
 
     private static <T> Field<T> getTypedField(FieldMetadata fieldMetadata, Table<?> table, SQLDialect dialect) {
         ColumnType columnType = conversionField(fieldMetadata).getColumnType();
-        DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), columnType);
+        DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), columnType, dialect);
         Objects.requireNonNull(fieldMetadata.getDbColumnName());
         Name columnName = DSL.name(
                 table.getName(),
