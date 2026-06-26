@@ -12,6 +12,7 @@ import org.jooq.impl.SQLDataType;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -185,11 +186,11 @@ public class JooqUtil {
 
     /// MySQL/MariaDB do not support {@code TIMESTAMP WITH TIME ZONE}; jOOQ renders
     /// {@link OffsetDateTime} as the ANSI {@code timestamp with time zone '...'} literal which
-    /// those dialects reject. Converting to {@link LocalDateTime} before handing the value
-    /// to jOOQ avoids the unsupported syntax.
+    /// those dialects reject. Converting to {@link LocalDateTime} at UTC before handing the value
+    /// to jOOQ avoids the unsupported syntax while preserving the instant.
     public static Object toDialectColumnValue(Object columnValue, SQLDialect dialect) {
         if (columnValue instanceof OffsetDateTime odt && isMySQLFamily(dialect)) {
-            return odt.toLocalDateTime();
+            return odt.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
         }
         return columnValue;
     }
