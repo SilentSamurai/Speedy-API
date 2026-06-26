@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /// Read/fetch half of the backend port. The format-agnostic
-/// {@code WalkingQueryProcessor} (in speedy-core) drives the
+/// {@code DefaultQueryProcessor} (in speedy-core) drives the
 /// orchestration and the {@code RecordToSpeedy}
 /// walker assembles the entity tree; this port only *fetches rows* — the backend owns statement
 /// building, execution, and value decoding.
@@ -34,6 +34,13 @@ public interface RowReader {
     /// Rows for the given primary keys (single-key {@code IN} or composite-key {@code OR} is the
     /// backend's concern). Returns an empty list for empty input.
     List<SpeedyEntity> selectByKeys(List<SpeedyEntityKey> keys) throws SpeedyHttpException;
+
+    /// Whether a row exists for the given primary key — a presence check that should avoid selecting
+    /// and decoding the full row. Defaults to a {@link #selectByKeys} probe; backends should override
+    /// with a native existence query (e.g. {@code SELECT 1 ... LIMIT 1}).
+    default boolean existsByKey(SpeedyEntityKey key) throws SpeedyHttpException {
+        return !selectByKeys(List.of(key)).isEmpty();
+    }
 
     /// The single related row reached by following the foreign key of {@code association} from
     /// {@code parentRow} (used during {@code $expand}); empty when the FK is null or unresolved.

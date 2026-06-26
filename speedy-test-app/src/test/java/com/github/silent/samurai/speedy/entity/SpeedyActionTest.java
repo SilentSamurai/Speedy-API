@@ -33,6 +33,11 @@ class SpeedyActionTest {
         client = SpeedyTest.mockMvc(mockMvc);
     }
 
+    private String uniquePhone() {
+        String nanos = Long.toString(System.nanoTime());
+        return "+91" + nanos.substring(Math.max(0, nanos.length() - 10));
+    }
+
     @Test
     void virtualEntity_postCreate_shouldBeBlocked() {
         // Assert the *reason*, not just the 400: the request must be rejected by the
@@ -65,7 +70,7 @@ class SpeedyActionTest {
 
     @Test
     void userCreate_withCreatedAtSupplied_valueIsPersisted() {
-        String uniquePhone = "+91-" + Long.toString(System.nanoTime()).substring(4);
+        String uniquePhone = uniquePhone();
         String uniqueEmail = "user-" + System.nanoTime() + "@example.com";
         LocalDateTime suppliedCreatedAt = LocalDateTime.of(2000, 1, 1, 0, 0);
 
@@ -123,7 +128,7 @@ class SpeedyActionTest {
 
     @Test
     void userGet_includesReadOnlyFields() {
-        String uniquePhone = "+91-" + Long.toString(System.nanoTime()).substring(4);
+        String uniquePhone = uniquePhone();
         String uniqueEmail = "user-get-" + System.nanoTime() + "@example.com";
 
         SpeedyTestResult createResult = client.create("User")

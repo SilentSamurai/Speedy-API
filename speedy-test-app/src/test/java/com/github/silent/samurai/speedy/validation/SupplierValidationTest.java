@@ -33,9 +33,14 @@ class SupplierValidationTest {
         client = SpeedyTest.mockMvc(mockMvc);
     }
 
+    private String uniquePhone() {
+        String nanos = Long.toString(System.nanoTime());
+        return "+91" + nanos.substring(Math.max(0, nanos.length() - 10));
+    }
+
     @Test
     void createWithoutName_shouldFail() {
-        String uniquePhone = "+91-" + Long.toString(System.nanoTime()).substring(4);
+        String uniquePhone = uniquePhone();
 
         client.create("Supplier")
                 .field("phoneNo", uniquePhone)
@@ -55,7 +60,7 @@ class SupplierValidationTest {
 
     @Test
     void createValid_shouldSucceed() {
-        String uniquePhone = "+91-" + Long.toString(System.nanoTime()).substring(4);
+        String uniquePhone = uniquePhone();
         String supplierName = "Valid Supplier " + System.nanoTime();
 
         SpeedyTestResult result = client.create("Supplier")

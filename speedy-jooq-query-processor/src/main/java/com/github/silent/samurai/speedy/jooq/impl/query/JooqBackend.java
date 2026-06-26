@@ -26,9 +26,11 @@ import org.jooq.UpdateSetMoreStep;
 import org.jooq.conf.RenderNameStyle;
 import org.jooq.conf.RenderQuotedNames;
 import org.jooq.conf.Settings;
+import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,8 +41,12 @@ import java.util.Optional;
 /// jOOQ implementation of the {@link SpeedyBackend} port. Owns the {@link DSLContext} and the
 /// transactional context, and translates the shared walker's row/column operations into jOOQ
 /// statements. This is the jOOQ-specific code that the format-agnostic
-/// {@code WalkingQueryProcessor} drives — the persistence analogue of {@code JsonResponseWriter}.
+/// {@code DefaultQueryProcessor} drives — the persistence analogue of {@code JsonResponseWriter}.
 public class JooqBackend implements SpeedyBackend {
+
+    // MySQL/MariaDB error codes surfaced under the generic HY000 SQLState (H2/Postgres use 22/23).
+    private static final int ER_NO_DEFAULT_FOR_FIELD = 1364;
+    private static final int ER_TRUNCATED_WRONG_VALUE_FOR_FIELD = 1366;
 
     private final SQLDialect dialect;
     private final Settings settings = new Settings()
@@ -88,6 +94,11 @@ public class JooqBackend implements SpeedyBackend {
     }
 
     @Override
+    public boolean existsByKey(SpeedyEntityKey key) throws SpeedyHttpException {
+        return new JooqPkQueryBuilder(dsl(), dialect, converter).existsByPrimaryKey(key);
+    }
+
+    @Override
     public Optional<SpeedyEntity> selectByFk(FieldMetadata association, SpeedyEntity parentRow) throws SpeedyHttpException {
         if (!parentRow.has(association)) {
             return Optional.empty();
@@ -109,7 +120,30 @@ public class JooqBackend implements SpeedyBackend {
     // ---- RowWriter ----
 
     @Override
-    public void insert(SpeedyEntity columns) throws SpeedyHttpException {
+    public void insert(List<SpeedyEntity> entities) throws SpeedyHttpException {
+        List<InsertSetMoreStep<Record>> batch = new ArrayList<>(entities.size());
+        for (SpeedyEntity columns : entities) {
+            InsertSetMoreStep<Record> step = buildInsertStep(columns);
+            if (step == null) {
+                // entity has no insertable columns
+                continue;
+            }
+            List<KeyFieldMetadata> generatedKeys = generatedKeysToReadBack(columns);
+            if (generatedKeys.isEmpty()) {
+                // No DB-assigned key to read back, so it can ride along in a single batched round-trip.
+                batch.add(step);
+            } else {
+                // Must read the generated key back onto this entity, which batch execution can't do.
+                populateGeneratedKeys(step, columns, generatedKeys);
+            }
+        }
+        if (!batch.isEmpty()) {
+            dsl().batch(batch).execute();
+        }
+    }
+
+    /// Builds the INSERT step for one entity's set columns, or {@code null} if it has none.
+    private InsertSetMoreStep<Record> buildInsertStep(SpeedyEntity columns) {
         EntityMetadata entityMetadata = columns.getMetadata();
         InsertSetStep<Record> insertQuery = dsl().insertInto(JooqUtil.getTable(entityMetadata, dialect));
         InsertSetMoreStep<Record> step = null;
@@ -121,25 +155,22 @@ public class JooqBackend implements SpeedyBackend {
             Object value = toColumnValue(fieldMetadata, columns.get(fieldMetadata));
             step = (step == null ? insertQuery.set(field, value) : step.set(field, value));
         }
-        if (step == null) {
-            return;
-        }
-        // Keys the database assigns that the entity doesn't already carry. App-generated keys
-        // (e.g. UUID) are produced before insert and written as a normal column above, so they
-        // need no read-back — only DB-assigned keys (IDENTITY / AUTO_INCREMENT) do. Skipping
-        // already-present keys also avoids asking jOOQ to "return" a non-identity column, which
-        // MySQL's getGeneratedKeys emulation rejects with "Field '<pk>' does not exist".
+        return step;
+    }
+
+    /// Keys the database assigns that the entity doesn't already carry. App-generated keys (e.g. UUID)
+    /// are produced before insert and written as a normal column, so they need no read-back — only
+    /// DB-assigned keys (IDENTITY / AUTO_INCREMENT) do. Skipping already-present keys also avoids
+    /// asking jOOQ to "return" a non-identity column, which MySQL's getGeneratedKeys emulation rejects
+    /// with "Field '<pk>' does not exist".
+    private List<KeyFieldMetadata> generatedKeysToReadBack(SpeedyEntity columns) {
         List<KeyFieldMetadata> generatedKeys = new ArrayList<>();
-        for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
+        for (KeyFieldMetadata keyField : columns.getMetadata().getKeyFields()) {
             if (!keyField.isInsertable() && !columns.has(keyField)) {
                 generatedKeys.add(keyField);
             }
         }
-        if (generatedKeys.isEmpty()) {
-            step.execute();
-            return;
-        }
-        populateGeneratedKeys(step, columns, generatedKeys);
+        return generatedKeys;
     }
 
     /// Executes the insert and writes the database-assigned key(s) back onto {@code columns} so the
@@ -219,19 +250,18 @@ public class JooqBackend implements SpeedyBackend {
     }
 
     @Override
-    public void delete(SpeedyEntityKey pk) throws SpeedyHttpException {
-        EntityMetadata entityMetadata = pk.getMetadata();
+    public void deleteByKeys(List<SpeedyEntityKey> keys) throws SpeedyHttpException {
+        if (keys.isEmpty()) {
+            return;
+        }
+        EntityMetadata entityMetadata = keys.get(0).getMetadata();
+        // No key fields means no safe WHERE — never emit an unconditional DELETE.
+        if (entityMetadata.getKeyFields().isEmpty()) {
+            return;
+        }
         DeleteQuery<Record> deleteQuery = dsl().deleteQuery(JooqUtil.getTable(entityMetadata, dialect));
-        boolean conditionProvided = false;
-        for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
-            Object value = converter.toColumnType(pk.get(keyFieldMetadata), keyFieldMetadata);
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dialect);
-            deleteQuery.addConditions(field.equal(value));
-            conditionProvided = true;
-        }
-        if (conditionProvided) {
-            deleteQuery.execute();
-        }
+        deleteQuery.addConditions(new JooqPkQueryBuilder(dsl(), dialect, converter).keysCondition(keys));
+        deleteQuery.execute();
     }
 
     // ---- BackendSession ----
@@ -250,9 +280,9 @@ public class JooqBackend implements SpeedyBackend {
 
     @Override
     public Optional<SpeedyHttpException> classify(Exception cause) {
-        if (cause instanceof org.jooq.exception.DataAccessException dae) {
+        if (cause instanceof DataAccessException dae) {
             Throwable sqlCause = dae.getCause();
-            if (sqlCause instanceof java.sql.SQLException sqle) {
+            if (sqlCause instanceof SQLException sqle) {
                 String state = sqle.getSQLState();
                 // 23xxx = integrity-constraint violation, 22xxx = data exception (bad client input).
                 if (state != null && (state.startsWith("23") || state.startsWith("22"))) {
@@ -261,9 +291,8 @@ public class JooqBackend implements SpeedyBackend {
                 // MySQL/MariaDB report a missing required column (no default) or a wrong-typed value
                 // under the generic HY000 state, where H2/Postgres use 22/23. These are still bad
                 // client input, so normalise them to 400 too.
-                //   1364 = ER_NO_DEFAULT_FOR_FIELD, 1366 = ER_TRUNCATED_WRONG_VALUE_FOR_FIELD
                 int errorCode = sqle.getErrorCode();
-                if (errorCode == 1364 || errorCode == 1366) {
+                if (errorCode == ER_NO_DEFAULT_FOR_FIELD || errorCode == ER_TRUNCATED_WRONG_VALUE_FOR_FIELD) {
                     return Optional.of(new BadRequestException("Invalid Request", dae));
                 }
             }
