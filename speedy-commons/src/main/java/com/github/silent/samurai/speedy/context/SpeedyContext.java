@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /// Typed bag that stores objects keyed by their concrete class.
@@ -49,6 +50,13 @@ public class SpeedyContext {
             throw new IllegalStateException("No entry for type: " + type.getName());
         }
         return r;
+    }
+
+    /// Retrieves a value by its key type if present.
+    /// Returns an empty {@link Optional} when no value is registered, rather than
+    /// throwing like {@link #get(Class)}. Use for genuinely optional lookups.
+    public <R> Optional<R> find(Class<R> type) {
+        return Optional.ofNullable(type.cast(items.get(type)));
     }
 
     /// Checks whether a value exists for the given type.
