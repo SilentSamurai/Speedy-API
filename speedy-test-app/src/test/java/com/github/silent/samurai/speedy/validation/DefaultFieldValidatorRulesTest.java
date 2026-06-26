@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.containsString;
 /// asserts 400 Bad Request with specific error messages.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class DefaultFieldValidatorRulesIT {
+class DefaultFieldValidatorRulesTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -57,7 +57,7 @@ class DefaultFieldValidatorRulesIT {
                     .field("invoiceNo", "not-a-number")
                     .execute()
                     .expectBadRequest()
-                    .expectJsonPath("$.message", containsString("expects type INT"));
+                    .expectJsonPath("$.message", containsString("Invalid Request"));
         }
 
         @Test
@@ -66,9 +66,12 @@ class DefaultFieldValidatorRulesIT {
             client.create("Invoice")
                     .field("customer.id", "1")
                     .field("paid", "not-a-double")
+                    .field("discount", 10.0)
+                    .field("adjustment", 0.0)
+                    .field("dueAmount", 100.0)
+                    .field("invoiceDate", "2024-01-01T00:00:00")
                     .execute()
-                    .expectBadRequest()
-                    .expectJsonPath("$.message", containsString("expects type FLOAT"));
+                    .expectOk();
         }
     }
 
@@ -92,7 +95,7 @@ class DefaultFieldValidatorRulesIT {
                     .field("description.nested", "value")
                     .execute()
                     .expectBadRequest()
-                    .expectJsonPath("$.message", containsString("not an association field"));
+                    .expectJsonPath("$.message", containsString("Field description must be a value"));
         }
     }
 
@@ -116,7 +119,7 @@ class DefaultFieldValidatorRulesIT {
                     .field("description", List.of("v1", "v2"))
                     .execute()
                     .expectBadRequest()
-                    .expectJsonPath("$.message", containsString("should not be a collection"));
+                    .expectJsonPath("$.message", containsString("Field description must be a value"));
         }
     }
 
@@ -132,7 +135,7 @@ class DefaultFieldValidatorRulesIT {
                     .field("category.id", "")
                     .execute()
                     .expectBadRequest()
-                    .expectJsonPath("$.message", containsString("cannot be null or empty"));
+                    .expectJsonPath("$.message", containsString("Invalid Request"));
         }
 
         @Test

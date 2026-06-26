@@ -96,9 +96,9 @@ class JooqQueryBuilderTest {
         String expectedSql = """
                 select *
                 from "MULTIPLEFK"
-                  join "PRODUCT" "Product_1"
+                  left outer join "PRODUCT" "Product_1"
                     on "MULTIPLEFK"."A" = "Product_1"."ID"
-                  join "PRODUCT" "Product_2"
+                  left outer join "PRODUCT" "Product_2"
                     on "MULTIPLEFK"."B" = "Product_2"."ID"
                 where (
                   "Product_1"."ID" = '1'
@@ -126,9 +126,9 @@ class JooqQueryBuilderTest {
         String expected = """
                 select *
                 from "MULTIPLEFK"
-                  join "PRODUCT" "Product_1"
+                  left outer join "PRODUCT" "Product_1"
                     on "MULTIPLEFK"."A" = "Product_1"."ID"
-                  join "PRODUCT" "Product_2"
+                  left outer join "PRODUCT" "Product_2"
                     on "MULTIPLEFK"."B" = "Product_2"."ID"
                 where (
                   "Product_1"."NAME" = 'product-a'

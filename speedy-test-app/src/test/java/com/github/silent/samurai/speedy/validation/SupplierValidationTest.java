@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.validation;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
-import com.github.silent.samurai.speedy.entity.Product;
+import com.github.silent.samurai.speedy.entity.Supplier;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class ProductValidationIT {
+class SupplierValidationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -33,23 +33,40 @@ class ProductValidationIT {
         client = SpeedyTest.mockMvc(mockMvc);
     }
 
+    private String uniquePhone() {
+        String nanos = Long.toString(System.nanoTime());
+        return "+91" + nanos.substring(Math.max(0, nanos.length() - 10));
+    }
+
     @Test
-    void createWithInvalidTriggerName_shouldFail() {
-        client.create("Product")
-                .field("name", "invalid-trigger")
-                .field("category.id", "cat-1")
+    void createWithoutName_shouldFail() {
+        String uniquePhone = uniquePhone();
+
+        client.create("Supplier")
+                .field("phoneNo", uniquePhone)
+                .field("altPhoneNo", uniquePhone)
                 .execute()
-                .expectBadRequest()
-                .expectJsonPath("$.message", containsString("invalid-trigger"));
+                .expectBadRequest();
+    }
+
+    @Test
+    void createWithoutPhoneNo_shouldFail() {
+        client.create("Supplier")
+                .field("name", "Test Supplier " + System.nanoTime())
+                .field("altPhoneNo", "+91-9999999999")
+                .execute()
+                .expectBadRequest();
     }
 
     @Test
     void createValid_shouldSucceed() {
-        String productName = "Valid Product " + System.nanoTime();
+        String uniquePhone = uniquePhone();
+        String supplierName = "Valid Supplier " + System.nanoTime();
 
-        SpeedyTestResult result = client.create("Product")
-                .field("name", productName)
-                .field("category.id", "cat-1")
+        SpeedyTestResult result = client.create("Supplier")
+                .field("name", supplierName)
+                .field("phoneNo", uniquePhone)
+                .field("altPhoneNo", uniquePhone)
                 .execute()
                 .expectOk()
                 .expectJsonPath("$.payload.length()", greaterThan(0))
@@ -58,12 +75,13 @@ class ProductValidationIT {
         String id = result.jsonPath("$.payload[0].id");
 
         EntityManager em = entityManagerFactory.createEntityManager();
-        Product persisted = em.createQuery(
-                        "SELECT p FROM Product p WHERE p.id = :id", Product.class)
+        Supplier persisted = em.createQuery(
+                        "SELECT s FROM Supplier s WHERE s.id = :id", Supplier.class)
                 .setParameter("id", id)
                 .getSingleResult();
 
-        assertEquals(productName, persisted.getName());
+        assertEquals(supplierName, persisted.getName());
+        assertEquals(uniquePhone, persisted.getPhoneNo());
         em.close();
     }
 }

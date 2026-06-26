@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.containsString;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class WebsiteUrlValidationIT {
+class WebsiteUrlValidationTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -39,6 +39,12 @@ class WebsiteUrlValidationIT {
                     .field("age", 30)
                     .field("email", "john@example.com")
                     .field("code", "ABC12")
+                    .field("salary", 50000)
+                    .field("score", 10)
+                    .field("debt", -100)
+                    .field("overdraft", -50)
+                    .field("rating", 3.5)
+                    .field("precisionVal", 123.45)
                     .field("website", "not-a-url")
                     .execute()
                     .expectBadRequest()
@@ -53,6 +59,12 @@ class WebsiteUrlValidationIT {
                     .field("age", 30)
                     .field("email", "john@example.com")
                     .field("code", "ABC12")
+                    .field("salary", 50000)
+                    .field("score", 10)
+                    .field("debt", -100)
+                    .field("overdraft", -50)
+                    .field("rating", 3.5)
+                    .field("precisionVal", 123.45)
                     .field("website", "https://example.com")
                     .execute()
                     .expectOk()

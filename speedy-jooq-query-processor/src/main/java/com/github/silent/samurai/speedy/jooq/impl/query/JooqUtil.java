@@ -10,6 +10,9 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -23,7 +26,7 @@ public class JooqUtil {
         transformSqlNames = setting;
     }
 
-    public static DataType<?> getSQLDataType(String fieldReference, ColumnType columnType) {
+    public static DataType<?> getSQLDataType(String fieldReference, ColumnType columnType, SQLDialect dialect) {
         return switch (columnType) {
             case INTEGER:
                 yield SQLDataType.INTEGER;
@@ -52,7 +55,9 @@ public class JooqUtil {
             case TIMESTAMP:
                 yield SQLDataType.TIMESTAMP;
             case TIMESTAMP_WITH_ZONE:
-                yield SQLDataType.TIMESTAMPWITHTIMEZONE;
+                yield isMySQLFamily(dialect)
+                        ? SQLDataType.LOCALDATETIME
+                        : SQLDataType.TIMESTAMPWITHTIMEZONE;
             case BOOLEAN:
                 yield SQLDataType.BOOLEAN;
             case BLOB:
@@ -84,14 +89,16 @@ public class JooqUtil {
         return getTypedField(fieldMetadata, table, dialect);
     }
 
+    /// The metadata describing a field's stored value type. For an association field the stored value is
+    /// the foreign key, typed by the associated (target primary-key) field; for a plain field it is the
+    /// field itself. Centralises the FK special-case shared by column typing and value conversion.
+    static FieldMetadata conversionField(FieldMetadata fieldMetadata) {
+        return fieldMetadata.isAssociation() ? fieldMetadata.getAssociatedFieldMetadata() : fieldMetadata;
+    }
+
     private static <T> Field<T> getTypedField(FieldMetadata fieldMetadata, Table<?> table, SQLDialect dialect) {
-        DataType<?> sqlDataType;
-        if (fieldMetadata.isAssociation()) {
-            ColumnType sqlType = fieldMetadata.getAssociatedFieldMetadata().getColumnType();
-            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), sqlType);
-        } else {
-            sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), fieldMetadata.getColumnType());
-        }
+        ColumnType columnType = conversionField(fieldMetadata).getColumnType();
+        DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), columnType, dialect);
         Objects.requireNonNull(fieldMetadata.getDbColumnName());
         Name columnName = DSL.name(
                 table.getName(),
@@ -116,19 +123,27 @@ public class JooqUtil {
 
     public static SQLDialect toJooqDialect(SpeedyDialect dialect) {
         return switch (dialect) {
-            case H2 -> SQLDialect.H2;
-            case MYSQL -> SQLDialect.MYSQL;
-            case POSTGRES -> SQLDialect.POSTGRES;
-            case SQLITE -> SQLDialect.SQLITE;
-            case MARIADB -> SQLDialect.MARIADB;
+            case H2, H2_1_4_197, H2_1_4_200, H2_2_0_202, H2_2_1_214 -> SQLDialect.H2;
+            case MYSQL, MYSQL_5_6, MYSQL_5_7, MYSQL_8_0, MYSQL_8_0_19, MYSQL_8_0_20, MYSQL_8_0_31,
+                 AURORA_MYSQL, MEMSQL, MEMSQL_6, MEMSQL_7, MEMSQL_8 -> SQLDialect.MYSQL;
+            case POSTGRES, POSTGRES_10, POSTGRES_11, POSTGRES_12, POSTGRES_13,
+                 POSTGRES_14, POSTGRES_15, POSTGRES_9_3, POSTGRES_9_4, POSTGRES_9_5,
+                 AURORA_POSTGRES, COCKROACHDB, COCKROACHDB_20, COCKROACHDB_21, COCKROACHDB_22,
+                 POSTGRESPLUS, REDSHIFT, YUGABYTEDB, YUGABYTEDB_2_9 -> SQLDialect.POSTGRES;
+            case SQLITE, SQLITE_3_25, SQLITE_3_28, SQLITE_3_30, SQLITE_3_38, SQLITE_3_39 -> SQLDialect.SQLITE;
+            case MARIADB, MARIADB_10_0, MARIADB_10_1, MARIADB_10_2, MARIADB_10_3,
+                 MARIADB_10_4, MARIADB_10_5, MARIADB_10_6, MARIADB_10_7 -> SQLDialect.MARIADB;
             case DERBY -> SQLDialect.DERBY;
-            case FIREBIRD -> SQLDialect.FIREBIRD;
+            case FIREBIRD, FIREBIRD_2_5, FIREBIRD_3_0, FIREBIRD_4_0 -> SQLDialect.FIREBIRD;
             case HSQLDB -> SQLDialect.HSQLDB;
             case DUCKDB -> SQLDialect.DUCKDB;
             case TRINO -> SQLDialect.TRINO;
-            case YUGABYTEDB -> SQLDialect.YUGABYTEDB;
             default -> SQLDialect.DEFAULT;
         };
+    }
+
+    static boolean isMySQLFamily(SQLDialect dialect) {
+        return dialect == SQLDialect.MYSQL || dialect == SQLDialect.MARIADB;
     }
 
     public static String transformIdentifier(String identifier, SQLDialect sqlDialect) {
@@ -166,28 +181,17 @@ public class JooqUtil {
     TIMESTAMP	LocalDateTime
     TIMESTAMP WITH TIME ZONE	OffsetDateTime
     BLOB	byte[]
-    UUID	UUID
+    UUID
      */
 
-//    public static Object toJooqType(SpeedyValue value, ColumnType columnType) {
-//        if (value == SpeedyNull.SPEEDY_NULL) {
-//            return null;
-//        }
-//        return switch (columnType) {
-//            case INTEGER -> value.asLong();
-//            case BIGINT -> BigInteger.valueOf(value.asLong());
-//            case SMALLINT -> value.asInt();
-//            case DECIMAL, NUMERIC -> BigDecimal.valueOf(value.asDouble());
-//            case FLOAT, REAL, DOUBLE -> value.asDouble();
-//            case CHAR, VARCHAR, TEXT, CLOB -> value.asText();
-//            case DATE -> Date.valueOf(value.asDate());
-//            case TIME -> java.sql.Time.valueOf(value.asTime());
-//            case TIMESTAMP -> java.sql.Timestamp.valueOf(value.asDateTime());
-//            case TIMESTAMP_WITH_ZONE ->
-//                    OffsetDateTime.of(value.asZonedDateTime().toLocalDateTime(), value.asZonedDateTime().getOffset());
-//            case BOOLEAN -> value.asBoolean();
-//            case BLOB -> value.asText().getBytes(StandardCharsets.UTF_8);
-//            case UUID -> UUID.fromString(value.asText());
-//        };
-//    }
+    /// MySQL/MariaDB do not support {@code TIMESTAMP WITH TIME ZONE}; jOOQ renders
+    /// {@link OffsetDateTime} as the ANSI {@code timestamp with time zone '...'} literal which
+    /// those dialects reject. Converting to {@link LocalDateTime} at UTC before handing the value
+    /// to jOOQ avoids the unsupported syntax while preserving the instant.
+    public static Object toDialectColumnValue(Object columnValue, SQLDialect dialect) {
+        if (columnValue instanceof OffsetDateTime odt && isMySQLFamily(dialect)) {
+            return odt.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        }
+        return columnValue;
+    }
 }

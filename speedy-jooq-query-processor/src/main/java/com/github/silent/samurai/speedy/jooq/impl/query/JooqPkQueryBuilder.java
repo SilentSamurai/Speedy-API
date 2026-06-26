@@ -4,7 +4,6 @@ package com.github.silent.samurai.speedy.jooq.impl.query;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.*;
@@ -33,19 +32,8 @@ public class JooqPkQueryBuilder {
     public Result<Record> findByPrimaryKey(SpeedyEntityKey pk) throws SpeedyHttpException {
         EntityMetadata entityMetadata = pk.getMetadata();
         SelectJoinStep<Record> query = dslContext.select()
-                .from(JooqUtil.getTable(entityMetadata, dslContext.dialect()));
-
-        // Build the where clause for each primary key field
-        for (KeyFieldMetadata keyFieldMetadata : entityMetadata.getKeyFields()) {
-            SpeedyValue speedyValue = pk.get(keyFieldMetadata);
-            Object value = converter.toColumnType(
-                    speedyValue,
-                    keyFieldMetadata
-            );
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dslContext.dialect());
-
-            query.where(field.eq(value));
-        }
+                .from(JooqUtil.getTable(entityMetadata, dialect));
+        query.where(pkCondition(pk));
 
         LOGGER.info("Executing findByPrimaryKey query for entity '{}': {}", entityMetadata.getName(), query);
         return query.fetch();
@@ -58,42 +46,56 @@ public class JooqPkQueryBuilder {
 
         EntityMetadata entityMetadata = pks.get(0).getMetadata();
         SelectJoinStep<Record> query = dslContext.select()
-                .from(JooqUtil.getTable(entityMetadata, dslContext.dialect()));
+                .from(JooqUtil.getTable(entityMetadata, dialect));
+        query.where(keysCondition(pks));
 
+        LOGGER.debug("Executing findByPrimaryKeys query for entity '{}': {}", entityMetadata.getName(), query);
+        return query.fetch();
+    }
+
+    /// {@code true} if a row exists for the given primary key, without selecting or decoding its
+    /// columns (a {@code SELECT 1 ... WHERE <pk> ... LIMIT 1} probe).
+    public boolean existsByPrimaryKey(SpeedyEntityKey pk) throws SpeedyHttpException {
+        EntityMetadata entityMetadata = pk.getMetadata();
+        return dslContext.fetchExists(JooqUtil.getTable(entityMetadata, dialect), pkCondition(pk));
+    }
+
+    /// AND of equality conditions across every key field of a single primary key.
+    public Condition pkCondition(SpeedyEntityKey pk) throws SpeedyHttpException {
+        Condition condition = null;
+        for (KeyFieldMetadata keyField : pk.getMetadata().getKeyFields()) {
+            Object value = converter.toColumnType(pk.get(keyField), keyField);
+            value = JooqUtil.toDialectColumnValue(value, dialect);
+            Field<Object> field = JooqUtil.getColumn(keyField, dialect);
+            Condition eq = field.eq(value);
+            condition = (condition == null) ? eq : condition.and(eq);
+        }
+        return condition;
+    }
+
+    /// Condition matching any of the given primary keys: single-key {@code IN}, composite-key {@code OR}
+    /// of per-key {@link #pkCondition}. Callers must pass a non-empty list.
+    public Condition keysCondition(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
+        EntityMetadata entityMetadata = pks.get(0).getMetadata();
         List<KeyFieldMetadata> keyFields = new ArrayList<>(entityMetadata.getKeyFields());
 
         if (keyFields.size() == 1) {
             KeyFieldMetadata keyField = keyFields.get(0);
             List<Object> values = new ArrayList<>(pks.size());
             for (SpeedyEntityKey pk : pks) {
-                values.add(converter.toColumnType(pk.get(keyField), keyField));
+                Object value = converter.toColumnType(pk.get(keyField), keyField);
+                values.add(JooqUtil.toDialectColumnValue(value, dialect));
             }
-            Field<Object> field = JooqUtil.getColumn(keyField, dslContext.dialect());
-            query.where(field.in(values));
-        } else {
-            Condition combinedCondition = null;
-            for (SpeedyEntityKey pk : pks) {
-                Condition pkCondition = null;
-                for (KeyFieldMetadata keyField : keyFields) {
-                    Object value = converter.toColumnType(pk.get(keyField), keyField);
-                    Field<Object> field = JooqUtil.getColumn(keyField, dslContext.dialect());
-                    if (pkCondition == null) {
-                        pkCondition = field.eq(value);
-                    } else {
-                        pkCondition = pkCondition.and(field.eq(value));
-                    }
-                }
-                if (combinedCondition == null) {
-                    combinedCondition = pkCondition;
-                } else {
-                    combinedCondition = combinedCondition.or(pkCondition);
-                }
-            }
-            query.where(combinedCondition);
+            Field<Object> field = JooqUtil.getColumn(keyField, dialect);
+            return field.in(values);
         }
 
-        LOGGER.debug("Executing findByPrimaryKeys query for entity '{}': {}", entityMetadata.getName(), query);
-        return query.fetch();
+        Condition combined = null;
+        for (SpeedyEntityKey pk : pks) {
+            Condition pkCondition = pkCondition(pk);
+            combined = (combined == null) ? pkCondition : combined.or(pkCondition);
+        }
+        return combined;
     }
 
 }

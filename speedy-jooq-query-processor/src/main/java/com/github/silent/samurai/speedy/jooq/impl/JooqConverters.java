@@ -11,7 +11,9 @@ import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 /// Registers the default JDBC-type codecs into a {@link DbConversionRegistry}.
@@ -51,6 +53,10 @@ public final class JooqConverters {
                             szdt.asZonedDateTime().getOffset());
                 },
                 raw -> Speedy.from(raw.toZonedDateTime()));
+
+        r.register(ColumnType.TIMESTAMP_WITH_ZONE, LocalDateTime.class,
+                sv -> sv.asZonedDateTime().toLocalDateTime(),
+                raw -> Speedy.from(raw.atZone(ZoneOffset.UTC)));
 
         r.register(ColumnType.NUMERIC, BigDecimal.class,
                 sv -> BigDecimal.valueOf(((SpeedyDouble) sv).asDouble()),

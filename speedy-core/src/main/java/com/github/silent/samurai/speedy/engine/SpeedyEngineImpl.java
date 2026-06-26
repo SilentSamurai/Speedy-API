@@ -9,7 +9,7 @@ import com.github.silent.samurai.speedy.handlers.*;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.backend.SpeedyBackend;
-import com.github.silent.samurai.speedy.walker.WalkingQueryProcessor;
+import com.github.silent.samurai.speedy.walker.DefaultQueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
@@ -177,7 +177,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
     public void prepare(SpeedyContext ctx) throws SpeedyHttpException {
         DataSource dataSource = config.dataSourcePerReq();
         ctx.put(QueryProcessor.class, queryProcessorCache.computeIfAbsent(
-                dataSource, ds -> new WalkingQueryProcessor(
+                dataSource, ds -> new DefaultQueryProcessor(
                         config.queryBackend(ds, dialect, conversionContext))));
     }
 

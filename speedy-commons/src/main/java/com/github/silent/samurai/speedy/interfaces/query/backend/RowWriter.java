@@ -4,6 +4,8 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
+import java.util.List;
+
 /// Write/mutation half of the backend port — the write-side analogue of
 /// {@link com.github.silent.samurai.speedy.interfaces.SpeedyResponseWriter}.
 ///
@@ -18,10 +20,13 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 /// backing columns should be written (for an association field, the foreign key's value).
 public interface RowWriter {
 
-    void insert(SpeedyEntity columns) throws SpeedyHttpException;
+    /// Inserts all entities, writing any database-assigned key back onto each entity in place so the
+    /// caller can refetch by primary key. The backend owns batching (e.g. a single JDBC round-trip).
+    void insert(List<SpeedyEntity> entities) throws SpeedyHttpException;
 
     void update(SpeedyEntityKey pk, SpeedyEntity columns) throws SpeedyHttpException;
 
-    /// Deletes the single row identified by {@code key}; the core owns the multi-row loop.
-    void delete(SpeedyEntityKey key) throws SpeedyHttpException;
+    /// Deletes every row identified by {@code keys} (single-key {@code IN} or composite-key {@code OR}
+    /// is the backend's concern). Returns without effect for empty input.
+    void deleteByKeys(List<SpeedyEntityKey> keys) throws SpeedyHttpException;
 }

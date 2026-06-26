@@ -29,15 +29,15 @@ import java.util.Set;
 /// {@code com.github.silent.samurai.speedy.serialization.WalkingResponseSerializer}: the only
 /// backend-specific piece is the {@link SpeedyBackend} port (which owns its own value conversion), so
 /// a new backend reuses all the logic here.
-public class WalkingQueryProcessor implements QueryProcessor {
+public class DefaultQueryProcessor implements QueryProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WalkingQueryProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultQueryProcessor.class);
 
     private final SpeedyBackend backend;
     private final RecordToSpeedy recordToSpeedy;
     private final SpeedyToRecord speedyToRecord;
 
-    public WalkingQueryProcessor(SpeedyBackend backend) {
+    public DefaultQueryProcessor(SpeedyBackend backend) {
         this.backend = backend;
         this.recordToSpeedy = new RecordToSpeedy(backend);
         this.speedyToRecord = new SpeedyToRecord();
@@ -84,7 +84,7 @@ public class WalkingQueryProcessor implements QueryProcessor {
     @Override
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
-            return !backend.selectByKeys(List.of(entityKey)).isEmpty();
+            return backend.existsByKey(entityKey);
         } catch (Exception e) {
             throw wrap("Invalid Request", e);
         }
@@ -95,8 +95,8 @@ public class WalkingQueryProcessor implements QueryProcessor {
         try {
             for (SpeedyEntity entity : entities) {
                 speedyToRecord.toInsertColumns(entity);
-                backend.insert(entity);
             }
+            backend.insert(entities);
 
             List<SpeedyEntity> entityList = new ArrayList<>(entities.size());
 
@@ -167,9 +167,7 @@ public class WalkingQueryProcessor implements QueryProcessor {
                 }
             }
 
-            for (SpeedyEntityKey pk : pks) {
-                backend.delete(pk);
-            }
+            backend.deleteByKeys(pks);
             return entities;
         } catch (Exception e) {
             throw wrap("Invalid Request", e);

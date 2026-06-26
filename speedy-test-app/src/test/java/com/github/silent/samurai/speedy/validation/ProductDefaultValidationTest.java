@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class ProductDefaultValidationIT {
+class ProductDefaultValidationTest {
 
     @Autowired
     MockMvc mockMvc;
