@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.jooq.impl.conversion;
 import com.github.silent.samurai.speedy.conversion.codec.Codec;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.jooq.impl.dialect.DefaultDialect;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,30 +13,28 @@ import java.util.function.Function;
 /// using a compound key of {@code (ColumnType, Class<?>)}.
 ///
 /// ## Design Philosophy
-/// This is a pure registry — it stores and looks up codecs but does not perform
-/// routing logic (enum handling, null checks, ValueType dispatch). That belongs
-/// in the walker: {@link DbConverter}.
+/// This is a pure store — it holds and looks up codecs but performs no routing logic
+/// (enum handling, null checks, ValueType dispatch belong in the walker {@link TypeConverter})
+/// and no dialect logic (which dialect carries a value as which type belongs in
+/// {@link DefaultDialect}). Each {@link DefaultDialect} owns one registry, populated with the
+/// default codecs plus any dialect-specific overrides.
 ///
-/// Each codec handles exactly one Java class — no {@code instanceof} branching
-/// inside decode lambdas. Registries can be chained via the parent constructor
-/// to form a fallback hierarchy: user-registered codecs as parent, built-in
-/// JDBC codecs (e.g. from {@code JooqConverters}) layered on top.
-///
-/// Backend-internal: only the jOOQ query processor populates and reads this registry;
-/// library users register custom types into {@code JavaTypeRegistry} instead.
+/// Each codec handles exactly one Java class — no {@code instanceof} branching inside decode lambdas.
+/// Registries can be chained via the parent constructor to form a fallback hierarchy.
 ///
 /// @see Codec
-/// @see DbConverter
-public class DbConversionRegistry {
+/// @see TypeConverter
+/// @see DefaultDialect
+public class CodecRegistry {
 
-    private final DbConversionRegistry parent;
+    private final CodecRegistry parent;
     private final Map<ColumnType, Map<Class<?>, Codec<?>>> codecs = new HashMap<>();
 
-    public DbConversionRegistry() {
+    public CodecRegistry() {
         this.parent = null;
     }
 
-    public DbConversionRegistry(DbConversionRegistry parent) {
+    public CodecRegistry(CodecRegistry parent) {
         this.parent = parent;
     }
 
@@ -46,9 +45,9 @@ public class DbConversionRegistry {
     /// @param type   the Java class handled by this codec
     /// @param encode {@code SpeedyValue → T}
     /// @param decode {@code T → SpeedyValue}
-    public <T> DbConversionRegistry register(ColumnType col, Class<T> type,
-                                             Function<SpeedyValue, T> encode,
-                                             Function<T, SpeedyValue> decode) {
+    public <T> CodecRegistry register(ColumnType col, Class<T> type,
+                                      Function<SpeedyValue, T> encode,
+                                      Function<T, SpeedyValue> decode) {
         codecs.computeIfAbsent(col, k -> new HashMap<>()).put(type, new Codec<>(type, encode, decode));
         return this;
     }

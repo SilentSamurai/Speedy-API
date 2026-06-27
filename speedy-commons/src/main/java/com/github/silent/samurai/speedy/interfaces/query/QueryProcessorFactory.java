@@ -2,7 +2,6 @@ package com.github.silent.samurai.speedy.interfaces.query;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.interfaces.query.backend.SpeedyBackend;
-import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 
 import javax.sql.DataSource;
 
@@ -11,5 +10,5 @@ import javax.sql.DataSource;
 /// swappable by changing the classpath dependency.
 @FunctionalInterface
 public interface QueryProcessorFactory {
-    SpeedyBackend create(DataSource dataSource, SpeedyDialect dialect, ConversionContext context);
+    SpeedyBackend create(DataSource dataSource, SpeedyDialect dialect);
 }

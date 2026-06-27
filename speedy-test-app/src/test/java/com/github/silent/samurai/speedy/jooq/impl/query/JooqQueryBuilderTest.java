@@ -10,7 +10,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.StructureReader;
-import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
 import com.github.silent.samurai.speedy.json.request.JsonStructureReader;
 import com.github.silent.samurai.speedy.serialization.StructureToQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +53,7 @@ class JooqQueryBuilderTest {
         StructureReader reader = new JsonStructureReader(jsonQuery.traverse());
         JooqQueryBuilder qb = new JooqQueryBuilder(
                 new StructureToQuery().parse(entityMetadata, reader, Integer.MAX_VALUE, 20),
-                dslContext, JooqConverters.defaults());
+                dslContext, TypeConverter.defaults());
         qb.prepareQuery();
         String sql = qb.query.toString();
         log.info("sql: {}", sql);

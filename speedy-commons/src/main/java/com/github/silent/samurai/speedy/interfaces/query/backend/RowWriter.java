@@ -14,7 +14,7 @@ import java.util.List;
 /// generation, skipping empty values, and flattening associations to their FK column value); the
 /// port keeps the domain {@link com.github.silent.samurai.speedy.interfaces.SpeedyValue} as the
 /// boundary currency and performs the value-to-column conversion itself (via its own backend
-/// {@code Converter}) — leaf codec lives in the port, mirroring {@code SpeedyResponseWriter.writeLeaf}.
+/// {@code TypeConverter}) — leaf codec lives in the port, mirroring {@code SpeedyResponseWriter.writeLeaf}.
 ///
 /// {@code columns} is a {@link SpeedyEntity} carrying the table metadata and the set fields whose
 /// backing columns should be written (for an association field, the foreign key's value).

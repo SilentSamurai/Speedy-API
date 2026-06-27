@@ -4,7 +4,7 @@ package com.github.silent.samurai.speedy.jooq.impl.query;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import org.jooq.*;
 import org.jooq.Record;
@@ -21,9 +21,9 @@ public class JooqPkQueryBuilder {
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqPkQueryBuilder.class);
     final SQLDialect dialect;
     private final DSLContext dslContext;
-    private final Converter converter;
+    private final TypeConverter converter;
 
-    public JooqPkQueryBuilder(DSLContext dslContext, SQLDialect dialect, Converter converter) {
+    public JooqPkQueryBuilder(DSLContext dslContext, SQLDialect dialect, TypeConverter converter) {
         this.dslContext = dslContext;
         this.dialect = dialect;
         this.converter = converter;
@@ -65,7 +65,6 @@ public class JooqPkQueryBuilder {
         Condition condition = null;
         for (KeyFieldMetadata keyField : pk.getMetadata().getKeyFields()) {
             Object value = converter.toColumnType(pk.get(keyField), keyField);
-            value = JooqUtil.toDialectColumnValue(value, dialect);
             Field<Object> field = JooqUtil.getColumn(keyField, dialect);
             Condition eq = field.eq(value);
             condition = (condition == null) ? eq : condition.and(eq);
@@ -83,8 +82,7 @@ public class JooqPkQueryBuilder {
             KeyFieldMetadata keyField = keyFields.get(0);
             List<Object> values = new ArrayList<>(pks.size());
             for (SpeedyEntityKey pk : pks) {
-                Object value = converter.toColumnType(pk.get(keyField), keyField);
-                values.add(JooqUtil.toDialectColumnValue(value, dialect));
+                values.add(converter.toColumnType(pk.get(keyField), keyField));
             }
             Field<Object> field = JooqUtil.getColumn(keyField, dialect);
             return field.in(values);

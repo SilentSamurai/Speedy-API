@@ -178,7 +178,7 @@ public class SpeedyEngineImpl implements SpeedyEngine {
         DataSource dataSource = config.dataSourcePerReq();
         ctx.put(QueryProcessor.class, queryProcessorCache.computeIfAbsent(
                 dataSource, ds -> new DefaultQueryProcessor(
-                        config.queryBackend(ds, dialect, conversionContext))));
+                        config.queryBackend(ds, dialect))));
     }
 
     @Override

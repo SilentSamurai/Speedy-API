@@ -3,8 +3,9 @@ package com.github.silent.samurai.speedy.jooq.impl;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorFactory;
 import com.github.silent.samurai.speedy.interfaces.query.backend.SpeedyBackend;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
 import com.github.silent.samurai.speedy.jooq.impl.query.JooqBackend;
-import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
+import com.github.silent.samurai.speedy.jooq.impl.query.JooqUtil;
 
 import javax.sql.DataSource;
 
@@ -15,7 +16,7 @@ import javax.sql.DataSource;
 public class JooqBackendFactory implements QueryProcessorFactory {
 
     @Override
-    public SpeedyBackend create(DataSource dataSource, SpeedyDialect dialect, ConversionContext context) {
-        return new JooqBackend(dataSource, dialect, JooqConverters.defaults());
+    public SpeedyBackend create(DataSource dataSource, SpeedyDialect dialect) {
+        return new JooqBackend(dataSource, dialect, TypeConverter.defaults(JooqUtil.toJooqDialect(dialect)));
     }
 }

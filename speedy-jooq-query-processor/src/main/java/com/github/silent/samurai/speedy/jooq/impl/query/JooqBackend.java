@@ -9,7 +9,8 @@ import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.query.backend.SpeedyBackend;
-import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
+import com.github.silent.samurai.speedy.jooq.impl.Dialects;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -53,11 +54,11 @@ public class JooqBackend implements SpeedyBackend {
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
             .withRenderNameStyle(RenderNameStyle.AS_IS);
 
-    private final Converter converter;
+    private final TypeConverter converter;
     private final DSLContext dslContext;
     private final ThreadLocal<DSLContext> transactionalDslContext = new ThreadLocal<>();
 
-    public JooqBackend(DataSource dataSource, SpeedyDialect speedyDialect, Converter converter) {
+    public JooqBackend(DataSource dataSource, SpeedyDialect speedyDialect, TypeConverter converter) {
         this.dialect = JooqUtil.toJooqDialect(speedyDialect);
         this.dslContext = DSL.using(dataSource, dialect, settings);
         this.converter = converter;
@@ -110,7 +111,6 @@ public class JooqBackend implements SpeedyBackend {
         // The FK is stored under the association field; re-encode it (with the associated field's
         // type) to query the related table.
         Object fkColumnValue = converter.toColumnType(fk, association.getAssociatedFieldMetadata());
-        fkColumnValue = JooqUtil.toDialectColumnValue(fkColumnValue, dialect);
         Optional<Record> associatedRecord = new JooqToJooqSql(dsl()).findByFK(association, fkColumnValue);
         if (associatedRecord.isEmpty()) {
             return Optional.empty();
@@ -143,17 +143,17 @@ public class JooqBackend implements SpeedyBackend {
         }
     }
 
-    /// Builds the INSERT step for one entity's set columns, or {@code null} if it has none.
-    private InsertSetMoreStep<Record> buildInsertStep(SpeedyEntity columns) {
-        EntityMetadata entityMetadata = columns.getMetadata();
+    /// Builds the INSERT step for one entity's set entity, or {@code null} if it has none.
+    private InsertSetMoreStep<Record> buildInsertStep(SpeedyEntity entity) {
+        EntityMetadata entityMetadata = entity.getMetadata();
         InsertSetStep<Record> insertQuery = dsl().insertInto(JooqUtil.getTable(entityMetadata, dialect));
         InsertSetMoreStep<Record> step = null;
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (!columns.has(fieldMetadata)) {
+            if (!entity.has(fieldMetadata)) {
                 continue;
             }
             Field<Object> field = JooqUtil.getColumn(fieldMetadata, dialect);
-            Object value = toColumnValue(fieldMetadata, columns.get(fieldMetadata));
+            Object value = toColumnValue(fieldMetadata, entity.get(fieldMetadata));
             step = (step == null ? insertQuery.set(field, value) : step.set(field, value));
         }
         return step;
@@ -223,20 +223,20 @@ public class JooqBackend implements SpeedyBackend {
     /// Whether the dialect supports a SQL {@code RETURNING}/{@code OUTPUT} clause for INSERT. MySQL
     /// and MariaDB don't, so generated keys are read via {@code LAST_INSERT_ID()} instead.
     private boolean supportsReturning() {
-        return !JooqUtil.isMySQLFamily(dialect);
+        return Dialects.forJooq(dialect).supportsReturning();
     }
 
     @Override
-    public void update(SpeedyEntityKey pk, SpeedyEntity columns) throws SpeedyHttpException {
-        EntityMetadata entityMetadata = columns.getMetadata();
+    public void update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
+        EntityMetadata entityMetadata = entity.getMetadata();
         UpdateSetFirstStep<Record> updateQuery = dsl().update(JooqUtil.getTable(entityMetadata, dialect));
         UpdateSetMoreStep<Record> step = null;
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (!columns.has(fieldMetadata)) {
+            if (!entity.has(fieldMetadata)) {
                 continue;
             }
             Field<Object> field = JooqUtil.getColumn(fieldMetadata, dialect);
-            Object value = toColumnValue(fieldMetadata, columns.get(fieldMetadata));
+            Object value = toColumnValue(fieldMetadata, entity.get(fieldMetadata));
             step = (step == null ? updateQuery.set(field, value) : step.set(field, value));
         }
         if (step == null) {
@@ -244,7 +244,6 @@ public class JooqBackend implements SpeedyBackend {
         }
         for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
             Object value = converter.toColumnType(pk.get(keyFieldMetadata), keyFieldMetadata);
-            value = JooqUtil.toDialectColumnValue(value, dialect);
             Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dialect);
             step.where(field.equal(value));
         }
@@ -257,7 +256,7 @@ public class JooqBackend implements SpeedyBackend {
             return;
         }
         EntityMetadata entityMetadata = keys.get(0).getMetadata();
-        // No key fields means no safe WHERE — never emit an unconditional DELETE.
+        // No key fields mean no safe WHERE — never emit an unconditional DELETE.
         if (entityMetadata.getKeyFields().isEmpty()) {
             return;
         }
@@ -306,8 +305,8 @@ public class JooqBackend implements SpeedyBackend {
     /// stored value is the foreign key, whose type is described by the associated field's metadata —
     /// the same special-case {@link JooqUtil#getColumn} applies when typing the FK column.
     private Object toColumnValue(FieldMetadata field, SpeedyValue value) {
-        Object columnValue = converter.toColumnType(value, JooqUtil.conversionField(field));
-        return JooqUtil.toDialectColumnValue(columnValue, dialect);
+        // The converter is dialect-aware, so the encoded value is already dialect-correct.
+        return converter.toColumnType(value, JooqUtil.conversionField(field));
     }
 
     private List<SpeedyEntity> wrap(Result<? extends Record> result, EntityMetadata entityMetadata) throws SpeedyHttpException {

@@ -26,7 +26,7 @@ import java.util.Set;
 /// done **in place** and the same instance is returned — no parallel tree is allocated. Purely
 /// structural: it reads already-decoded {@link SpeedyValue}s and navigates foreign keys via
 /// {@link RowReader#selectByFk}; value decoding lives in the backend port, so this walker holds no
-/// {@code Converter}. Extracted from the former jOOQ {@code JooqSqlToSpeedy} with no behavioural change.
+/// {@code TypeConverter}. Extracted from the former jOOQ {@code JooqSqlToSpeedy} with no behavioural change.
 public class RecordToSpeedy {
 
     private final RowReader rowReader;

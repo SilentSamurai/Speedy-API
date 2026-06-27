@@ -6,8 +6,7 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
-import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
 import com.github.silent.samurai.speedy.models.SpeedyDouble;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,17 +17,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 /**
- * Verifies that {@link com.github.silent.samurai.speedy.jooq.impl.conversion.DbConverter} correctly
+ * Verifies that {@link TypeConverter} correctly
  * converts DECIMAL/NUMERIC JDBC values supplied as {@link BigDecimal} into {@link SpeedyDouble}.
  */
 class JooqBigDecimalConversionTest {
 
-    private Converter conversion;
+    private TypeConverter conversion;
     private FieldMetadata decimalFloatMetadata;
 
     @BeforeEach
     void setUp() {
-        conversion = JooqConverters.defaults();
+        conversion = TypeConverter.defaults();
         decimalFloatMetadata = new DecimalFieldMetadata();
     }
 

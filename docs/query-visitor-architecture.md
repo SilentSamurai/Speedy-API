@@ -317,7 +317,7 @@ public class JooqSelectVisitor implements QueryVisitor<SelectQuery<Record>> {
 
     private final DSLContext dslContext;
     private final SQLDialect dialect;
-    private final Converter converter;
+    private final TypeConverter converter;
     private SelectQuery<Record> query;
 
     // Stack for building nested AND/OR conditions
@@ -327,7 +327,7 @@ public class JooqSelectVisitor implements QueryVisitor<SelectQuery<Record>> {
     private final Map<String, FieldMetadata> joins = new HashMap<>();
     private final Map<String, String> joinAlias = new HashMap<>();
 
-    public JooqSelectVisitor(DSLContext dslContext, Converter converter) {
+    public JooqSelectVisitor(DSLContext dslContext, TypeConverter converter) {
         this.dslContext = dslContext;
         this.dialect = dslContext.dialect();
         this.converter = converter;

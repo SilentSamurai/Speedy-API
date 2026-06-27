@@ -7,49 +7,46 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
+import com.github.silent.samurai.speedy.jooq.impl.Dialects;
+import com.github.silent.samurai.speedy.jooq.impl.dialect.DefaultDialect;
 import com.github.silent.samurai.speedy.models.*;
-
-import java.util.Map;
+import org.jooq.SQLDialect;
 
 /// Converts between JDBC column values and {@link SpeedyValue} by routing on
 /// {@link ValueType} and {@link ColumnType} and delegating the actual
-/// type conversions to codecs looked up from a {@link DbConversionRegistry}.
+/// type conversions to codecs looked up from a {@link DefaultDialect}.
 ///
 /// This is the DB-side walker, analogous to {@link com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy}
 /// and {@link com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava} for the Java side.
+/// The dialect-dependent choice of encode carrier type and codec set is owned by the
+/// {@link DefaultDialect}, so this walker contains no dialect branching.
 ///
-/// @see DbConversionRegistry
-/// @see Converter
-public class DbConverter implements Converter {
+/// @see DefaultDialect
+public class TypeConverter {
 
-    /// Default target Java class when encoding a SpeedyValue for a ColumnType.
-    private static final Map<ColumnType, Class<?>> DEFAULT_ENCODE_TYPE = Map.ofEntries(
-            Map.entry(ColumnType.DATE, java.sql.Date.class),
-            Map.entry(ColumnType.TIME, java.sql.Time.class),
-            Map.entry(ColumnType.TIMESTAMP, java.sql.Timestamp.class),
-            Map.entry(ColumnType.TIMESTAMP_WITH_ZONE, java.time.OffsetDateTime.class),
-            Map.entry(ColumnType.NUMERIC, java.math.BigDecimal.class),
-            Map.entry(ColumnType.DECIMAL, java.math.BigDecimal.class),
-            Map.entry(ColumnType.REAL, Double.class),
-            Map.entry(ColumnType.BIGINT, java.math.BigInteger.class),
-            Map.entry(ColumnType.TEXT, String.class),
-            Map.entry(ColumnType.CLOB, String.class),
-            Map.entry(ColumnType.VARCHAR, String.class),
-            Map.entry(ColumnType.CHAR, String.class),
-            Map.entry(ColumnType.UUID, java.util.UUID.class)
-    );
+    private final DefaultDialect dialect;
 
-    private final DbConversionRegistry registry;
+    public TypeConverter(DefaultDialect dialect) {
+        this.dialect = dialect;
+    }
 
-    public DbConverter(DbConversionRegistry registry) {
-        this.registry = registry;
+    /// Dialect-agnostic default converter ({@link SQLDialect#DEFAULT}). Suitable for tests that don't
+    /// exercise dialect-specific encoding; production wiring passes the real dialect.
+    public static TypeConverter defaults() {
+        return defaults(SQLDialect.DEFAULT);
+    }
+
+    /// Converter for {@code dialect}, so encoded column values are dialect-correct (e.g.
+    /// {@code LocalDateTime} for zoned timestamps on MySQL/MariaDB).
+    public static TypeConverter defaults(SQLDialect dialect) {
+        return new TypeConverter(Dialects.forJooq(dialect));
     }
 
     private Object encode(ColumnType col, SpeedyValue sv) {
         if (sv == null || sv instanceof SpeedyNull) return null;
-        Class<?> targetType = DEFAULT_ENCODE_TYPE.get(col);
+        Class<?> targetType = dialect.encodeCarrier(col);
         if (targetType == null) return null;
-        Codec<?> codec = registry.findCodec(col, targetType);
+        Codec<?> codec = dialect.findCodec(col, targetType);
         if (codec != null) {
             return codec.safeEncode(sv);
         }
@@ -57,7 +54,7 @@ public class DbConverter implements Converter {
     }
 
     private SpeedyValue decodeOrThrow(ColumnType columnType, Object instance) {
-        Codec<?> codec = registry.findCodec(columnType, instance.getClass());
+        Codec<?> codec = dialect.findCodec(columnType, instance.getClass());
         if (codec == null) {
             throw new RuntimeException("No codec registered for " + columnType + " from " + instance.getClass());
         }
@@ -65,18 +62,17 @@ public class DbConverter implements Converter {
     }
 
     private Object encodeOrThrow(ColumnType columnType, SpeedyValue speedyValue) {
-        Class<?> targetType = DEFAULT_ENCODE_TYPE.get(columnType);
+        Class<?> targetType = dialect.encodeCarrier(columnType);
         if (targetType == null) {
             throw new RuntimeException("No default encode type for " + columnType);
         }
-        Codec<?> codec = registry.findCodec(columnType, targetType);
+        Codec<?> codec = dialect.findCodec(columnType, targetType);
         if (codec == null) {
             throw new RuntimeException("No codec registered for " + columnType + " -> " + targetType);
         }
         return codec.safeEncode(speedyValue);
     }
 
-    @Override
     public SpeedyValue toSpeedyValue(Object instance, FieldMetadata fieldMetadata) throws SpeedyHttpException {
         if (instance == null) {
             return SpeedyNull.SPEEDY_NULL;
@@ -88,7 +84,7 @@ public class DbConverter implements Converter {
         return switch (valueType) {
             case BOOL -> new SpeedyBoolean((Boolean) instance);
             case TEXT -> {
-                Codec<?> codec = registry.findCodec(columnType, instance.getClass());
+                Codec<?> codec = dialect.findCodec(columnType, instance.getClass());
                 if (codec != null) {
                     yield codec.safeDecode(instance);
                 }
@@ -133,7 +129,7 @@ public class DbConverter implements Converter {
                 }
             }
             case INT -> {
-                Codec<?> codec = registry.findCodec(columnType, instance.getClass());
+                Codec<?> codec = dialect.findCodec(columnType, instance.getClass());
                 if (codec != null) {
                     yield codec.safeDecode(instance);
                 }
@@ -143,7 +139,7 @@ public class DbConverter implements Converter {
                 throw new RuntimeException("Unsupported INT java type: " + instance.getClass());
             }
             case FLOAT -> {
-                Codec<?> codec = registry.findCodec(columnType, instance.getClass());
+                Codec<?> codec = dialect.findCodec(columnType, instance.getClass());
                 if (codec != null) {
                     yield codec.safeDecode(instance);
                 }
@@ -162,7 +158,6 @@ public class DbConverter implements Converter {
         };
     }
 
-    @Override
     public Object toColumnType(SpeedyValue speedyValue, FieldMetadata fieldMetadata) {
         ColumnType columnType = fieldMetadata.getColumnType();
         return switch (speedyValue.getValueType()) {
