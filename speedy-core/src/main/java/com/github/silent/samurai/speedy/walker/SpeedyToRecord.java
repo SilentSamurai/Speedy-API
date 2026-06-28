@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.RowWriter;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyText;
 
@@ -11,7 +12,7 @@ import java.util.UUID;
 
 /// Format-agnostic walker that flattens a source {@link SpeedyEntity} into a *column*
 /// set of fields — the fields whose backing columns a
-/// {@link com.github.silent.samurai.speedy.interfaces.query.backend.RowWriter} should write.
+/// {@link RowWriter} should write.
 /// Mutates the entity **in place**: removes key fields (for updates), flattens associations
 /// to FK scalars, strips null/empty values, and injects generated UUIDs.
 /// The write-side mirror of {@link RecordToSpeedy} and the persistence analogue of

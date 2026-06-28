@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.interfaces.query.backend;
+package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;

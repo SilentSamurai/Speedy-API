@@ -2,7 +2,6 @@ package com.github.silent.samurai.speedy.interfaces;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessorFactory;
-import com.github.silent.samurai.speedy.interfaces.query.backend.SpeedyBackend;
 import com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule;
 
 import javax.sql.DataSource;

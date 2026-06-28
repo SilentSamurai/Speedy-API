@@ -1,4 +1,4 @@
-package com.github.silent.samurai.speedy.interfaces.query.backend;
+package com.github.silent.samurai.speedy.interfaces;
 
 /// The thin "dumb port" a persistence backend implements, bundling the read, write, and session
 /// halves. Analogous to {@link com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider}
