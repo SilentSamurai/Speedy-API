@@ -7,12 +7,12 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
-import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
@@ -24,7 +24,7 @@ import java.util.List;
 
 /// Handles DELETE /{Entity}/$delete requests with pre-parsed SpeedyDeleteBody.
 ///
-/// Reads the SpeedyDeleteBody (parsed from JSON by WalkingRequestParser and set as
+/// Reads the SpeedyDeleteBody (parsed from JSON by DefaultRequestParser and set as
 /// body by DeleteBodyParserHandler), fires PRE/POST_DELETE events, validates keys,
 /// and bulk-deletes entities in either BATCH or PER_ENTITY transaction mode.
 ///

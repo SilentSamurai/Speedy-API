@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.persistence.EntityManagerFactory;
@@ -62,7 +62,7 @@ public class SpeedyV2WhereContainsClauseTest {
                 .add("cat-1-1")
                 .add("cat-2-2");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -110,7 +110,7 @@ public class SpeedyV2WhereContainsClauseTest {
                 .add("cat-1-1")
                 .add("cat-2-2");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -175,7 +175,7 @@ public class SpeedyV2WhereContainsClauseTest {
                 .add("cat-8-8")
                 .add("cat-9-9");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -222,7 +222,7 @@ public class SpeedyV2WhereContainsClauseTest {
                 .add("cat-8-8")
                 .add("cat-9-9");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 

@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
-import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
 import lombok.Builder;
 import lombok.Getter;
 

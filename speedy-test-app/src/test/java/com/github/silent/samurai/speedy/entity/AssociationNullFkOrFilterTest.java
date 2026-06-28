@@ -4,7 +4,7 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,7 +67,7 @@ class AssociationNullFkOrFilterTest {
                         .build());
 
         mvc.perform(MockMvcRequestBuilders
-                        .post(SpeedyConstant.URI + "/FkNullEntity/" + SpeedyEndpoint.QUERY.suffix())
+                        .post(SpeedyConstants.URI + "/FkNullEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andDo(MockMvcResultHandlers.print())

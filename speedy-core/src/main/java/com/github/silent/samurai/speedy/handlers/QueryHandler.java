@@ -1,11 +1,11 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
-import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
+import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
@@ -13,7 +13,8 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.http.response.FieldPredicates;
+import com.github.silent.samurai.speedy.serialization.DefaultRequestParser;
+import com.github.silent.samurai.speedy.serialization.FieldPredicates;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 
 import java.math.BigInteger;
@@ -22,12 +23,12 @@ import java.util.function.Predicate;
 
 /// Handles POST /{Entity}/$query requests with JSON body DSL.
 ///
-/// Reads the SpeedyQuery (parsed from the JSON body by WalkingRequestParser and set as
+/// Reads the SpeedyQuery (parsed from the JSON body by DefaultRequestParser and set as
 /// body by QueryBodyParserHandler), executes the query with count, and produces
 /// SpeedyEntityResponse or SpeedyCountResponse.
 ///
 /// @see QueryBodyParserHandler
-/// @see com.github.silent.samurai.speedy.serialization.WalkingRequestParser
+/// @see DefaultRequestParser
 public class QueryHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     @Override

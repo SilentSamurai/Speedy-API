@@ -3,10 +3,10 @@ package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.data.ComposedProduct;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
@@ -36,7 +36,7 @@ public class SpeedyParserAssociationTest {
 
     EntityMetadata entityMetadata = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
 
-    String UriRoot = SpeedyConstant.URI;
+    String UriRoot = SpeedyConstants.URI;
 
     @Test
     void processRequest1_1() throws Exception {

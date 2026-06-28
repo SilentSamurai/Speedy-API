@@ -1,0 +1,84 @@
+package com.github.silent.samurai.speedy.interfaces.metadata;
+
+import com.github.silent.samurai.speedy.enums.ActionType;
+import com.github.silent.samurai.speedy.enums.TransactionMode;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+public interface EntityMetadata {
+
+    String getName();
+
+    boolean has(String fieldName);
+
+    default FieldMetadata getField(String fieldName) throws NotFoundException {
+        if (has(fieldName)) {
+            return field(fieldName);
+        }
+        throw new NotFoundException(String.format("Field '%s' not found in entity %s", fieldName, getName()));
+    }
+
+    FieldMetadata field(String fieldName) throws NotFoundException;
+
+    Set<FieldMetadata> getAllFields();
+
+    Set<String> getAllFieldNames();
+
+    boolean hasCompositeKey();
+
+    Set<KeyFieldMetadata> getKeyFields();
+
+    Set<String> getKeyFieldNames();
+
+    Set<FieldMetadata> getAssociatedFields();
+
+    default Set<FieldMetadata> getAllNonKeyFields() {
+        return getAllFields().stream()
+                .filter(fm -> !(fm instanceof KeyFieldMetadata))
+                .collect(Collectors.toSet());
+    }
+
+    default Optional<FieldMetadata> getAssociatedField(EntityMetadata secondaryResource) {
+        return this.getAssociatedFields().stream()
+                .filter(fld -> fld.getAssociationMetadata() == secondaryResource)
+                .findAny();
+    }
+
+    String getDbTableName();
+
+    // Whether entity-level @SpeedySensitive is applied. When true, the
+    // $metadata endpoint exposes this and all fields default to sensitive
+    // unless individually overridden with @SpeedySensitive(false).
+    default boolean isSensitive() {
+        return false;
+    }
+
+    Set<ActionType> getActionType();
+
+    default boolean isReadOnly() {
+        return getActionType().contains(ActionType.READ) && getActionType().size() == 1;
+    }
+
+    default boolean isReadAllowed() {
+        return getActionType().contains(ActionType.READ) || getActionType().contains(ActionType.ALL);
+    }
+
+    default boolean isCreateAllowed() {
+        return getActionType().contains(ActionType.CREATE) || getActionType().contains(ActionType.ALL);
+    }
+
+    default boolean isUpdateAllowed() {
+        return getActionType().contains(ActionType.UPDATE) || getActionType().contains(ActionType.ALL);
+    }
+
+    default boolean isDeleteAllowed() {
+        return getActionType().contains(ActionType.DELETE) || getActionType().contains(ActionType.ALL);
+    }
+
+    default TransactionMode getTransactionMode() {
+        return TransactionMode.PER_ENTITY;
+    }
+}

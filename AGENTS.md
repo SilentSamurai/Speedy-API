@@ -170,7 +170,7 @@ are wired inline in `SpeedyEngineImpl`'s constructor. Individual handlers are un
 - **`MetaModelProcessor`** interface — `JpaMetaModelProcessorV2` (JPA scan) or `FileMetaModelProcessor` (JSON file).
 - **`IResponseSerializerV2`** interface — `JSONResponseSerializer` (entity list, count, batch, error, metadata),
   field-level predicate for key-only serialization.
-- **`Converter`** interface — type conversion between `SpeedyValue` and DB types.
+- **`TypeConverter`** — type conversion between `SpeedyValue` and DB types (jOOQ backend, dialect-aware).
 - **`FieldRule`** interface — 25 composable validation rule implementations.
 
 ### SPI / Plugin Pattern

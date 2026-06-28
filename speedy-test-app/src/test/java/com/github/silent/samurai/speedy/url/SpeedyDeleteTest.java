@@ -4,7 +4,7 @@ import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.Assertions;
@@ -52,7 +52,7 @@ public class SpeedyDeleteTest {
         long count = categoryRepository.count();
 
 
-        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
+        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders.delete(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
                 .content("[{'id':'" + category.getId() + "'}]")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -65,7 +65,7 @@ public class SpeedyDeleteTest {
 
     @Test
     void incompleteKey() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.UPDATE.suffix())
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.UPDATE.suffix())
                 .content("[{'name':'1'}]")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
@@ -75,18 +75,30 @@ public class SpeedyDeleteTest {
 
     @Test
     void emptyContent() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.delete(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isBadRequest());
 
-        updateRequest = MockMvcRequestBuilders.delete(SpeedyConstant.URI + "/Category/")
+        updateRequest = MockMvcRequestBuilders.delete(SpeedyConstants.URI + "/Category/")
                 .content("")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(updateRequest)
                 .andExpect(status().isBadRequest());
+    }
+
+    // Covers JooqBackend.deleteByKeys empty-list guard — empty JSON array body returns 200 with no-op
+    @Test
+    void emptyArrayBody() throws Exception {
+        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders
+                .delete(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
+                .content("[]")
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(deleteRequest)
+                .andExpect(status().isOk());
     }
 
 }

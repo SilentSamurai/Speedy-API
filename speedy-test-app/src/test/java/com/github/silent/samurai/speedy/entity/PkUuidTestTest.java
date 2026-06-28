@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Description;
@@ -71,7 +71,7 @@ class PkUuidTestTest {
         arrayNode.add(CommonUtil.json().createObjectNode()
                 .put("name", "test")
                 .put("description", "test des"));
-        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.CREATE.suffix())
+        MockHttpServletRequestBuilder createRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/PkUuidTest/" + SpeedyEndpoint.CREATE.suffix())
                 .content(arrayNode.toPrettyString())
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -90,7 +90,7 @@ class PkUuidTestTest {
 
         pkUuidTestRepository.save(test);
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/PkUuidTest/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("PkUuidTest")
@@ -134,7 +134,7 @@ class PkUuidTestTest {
         assertNotNull(test.getId());
 
         MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders
-                .patch(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.UPDATE.suffix())
+                .patch(SpeedyConstants.URI + "/PkUuidTest/" + SpeedyEndpoint.UPDATE.suffix())
                 .content(CommonUtil.json().createObjectNode()
                         .put("id", test.getId().toString())
                         .put("name", "updated-name")
@@ -163,7 +163,7 @@ class PkUuidTestTest {
         long count = pkUuidTestRepository.count();
 
         MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders
-                .delete(SpeedyConstant.URI + "/PkUuidTest/" + SpeedyEndpoint.DELETE.suffix())
+                .delete(SpeedyConstants.URI + "/PkUuidTest/" + SpeedyEndpoint.DELETE.suffix())
                 .content("[{\"id\":\"" + test.getId() + "\"}]")
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 

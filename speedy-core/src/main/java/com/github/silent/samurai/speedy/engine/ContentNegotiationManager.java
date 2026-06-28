@@ -3,9 +3,9 @@ package com.github.silent.samurai.speedy.engine;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
-import com.github.silent.samurai.speedy.interfaces.IResponseSerializerV2;
-import com.github.silent.samurai.speedy.interfaces.ISpeedyIoProvider;
-import com.github.silent.samurai.speedy.serialization.WalkingResponseSerializer;
+import com.github.silent.samurai.speedy.interfaces.response.IResponseSerializerV2;
+import com.github.silent.samurai.speedy.interfaces.request.ISpeedyIoProvider;
+import com.github.silent.samurai.speedy.serialization.DefaultResponseSerializer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
@@ -45,7 +45,7 @@ public class ContentNegotiationManager {
             throw new SpeedyHttpRuntimeException(500,
                     "No ISpeedyIoProvider registered for '" + DEFAULT_CONTENT_TYPE + "'");
         }
-        return new WalkingResponseSerializer(DEFAULT_CONTENT_TYPE, baseline.createWriter());
+        return new DefaultResponseSerializer(DEFAULT_CONTENT_TYPE, baseline.createWriter());
     }
 
     private ISpeedyIoProvider findProvider(String contentType) {

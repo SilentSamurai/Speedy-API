@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -32,7 +32,7 @@ class BodySizeLimitTest {
         json.append("A".repeat(200));
         json.append("\"}");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(json.toString())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(413))
@@ -46,7 +46,7 @@ class BodySizeLimitTest {
     void bodyWithinLimit_succeeds() throws Exception {
         String json = "[{\"name\":\"test-cat-" + UUID.randomUUID() + "\"}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful());
@@ -59,7 +59,7 @@ class BodySizeLimitTest {
         json.append("\"}");
         byte[] body = json.toString().getBytes();
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is(413))
@@ -71,7 +71,7 @@ class BodySizeLimitTest {
         String fieldValue = "A".repeat(70);
         String json = "[{\"name\":\"" + fieldValue + "\"}]";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix())
                         .content(json)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is2xxSuccessful());

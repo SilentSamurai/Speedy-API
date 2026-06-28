@@ -6,10 +6,10 @@ import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +78,7 @@ class SpeedyTypeTest {
     @Test
     void metadataEndpoint_entityPresent() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -90,7 +90,7 @@ class SpeedyTypeTest {
     @Test
     void metadataEndpoint_fieldsPresent() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -104,7 +104,7 @@ class SpeedyTypeTest {
     @Test
     void metadataEndpoint_textField_hasCorrectValueType() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -116,7 +116,7 @@ class SpeedyTypeTest {
     @Test
     void metadataEndpoint_bigIntField_hasCorrectValueType() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -128,7 +128,7 @@ class SpeedyTypeTest {
     @Test
     void metadataEndpoint_floatField_hasCorrectValueType() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)

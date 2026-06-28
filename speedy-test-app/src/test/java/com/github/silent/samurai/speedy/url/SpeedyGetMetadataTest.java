@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.url;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ class SpeedyGetMetadataTest {
     @Test
     void getMetadata() throws Exception {
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -102,7 +102,7 @@ class SpeedyGetMetadataTest {
 
     @Test
     void generatedKeyIsDeserializable() throws Exception {
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)

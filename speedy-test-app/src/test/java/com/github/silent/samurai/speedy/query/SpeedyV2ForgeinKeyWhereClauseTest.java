@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.query;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.ProcurementRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Matchers;
@@ -41,7 +41,7 @@ class SpeedyV2ForgeinKeyWhereClauseTest {
 
         procurementRepository.findById("1").orElseThrow();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Procurement")
@@ -86,7 +86,7 @@ class SpeedyV2ForgeinKeyWhereClauseTest {
 
         procurementRepository.findById("1").orElseThrow();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery
                                 .from("Procurement")

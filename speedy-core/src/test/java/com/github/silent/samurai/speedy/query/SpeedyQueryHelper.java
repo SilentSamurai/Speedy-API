@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Expression;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;

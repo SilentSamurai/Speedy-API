@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.engine.ContentNegotiationManager;
 import com.github.silent.samurai.speedy.engine.SpeedyEngine;
-import com.github.silent.samurai.speedy.engine.SpeedyEngineImpl;
+import com.github.silent.samurai.speedy.engine.DefaultSpeedyEngine;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.events.RegistryImpl;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
@@ -15,6 +15,12 @@ import com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.request.IRequestBodyParser;
+import com.github.silent.samurai.speedy.interfaces.request.ISpeedyIoProvider;
+import com.github.silent.samurai.speedy.interfaces.response.IResponseSerializerV2;
+import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
@@ -111,7 +117,7 @@ public class SpeedyFactory {
 
         this.contentNegotiationManager = new ContentNegotiationManager(providerMap);
 
-        this.engine = new SpeedyEngineImpl(configuration, dialect, metaModel, eventProcessor, validationProcessor,
+        this.engine = new DefaultSpeedyEngine(configuration, dialect, metaModel, eventProcessor, validationProcessor,
                 maxRequestBodySize, conversionContext, contentNegotiationManager);
     }
 

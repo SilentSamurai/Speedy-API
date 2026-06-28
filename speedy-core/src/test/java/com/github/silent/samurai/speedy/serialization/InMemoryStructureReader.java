@@ -2,11 +2,10 @@ package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.StructureReader;
-import com.github.silent.samurai.speedy.interfaces.StructureReader.Kind;
+import com.github.silent.samurai.speedy.interfaces.request.StructureReader;
 import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyDouble;
 import com.github.silent.samurai.speedy.models.SpeedyInt;

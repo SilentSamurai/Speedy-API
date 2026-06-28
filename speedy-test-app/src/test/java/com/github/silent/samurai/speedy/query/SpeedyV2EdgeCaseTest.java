@@ -8,7 +8,7 @@ import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
 import com.github.silent.samurai.speedy.entity.FkNullEntity;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
@@ -50,7 +50,7 @@ class SpeedyV2EdgeCaseTest {
         ObjectNode body = mapper.createObjectNode();
         body.putObject("$where").put("name", "test");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -59,7 +59,7 @@ class SpeedyV2EdgeCaseTest {
 
     @Test
     void malformedJson_shouldReturn400() throws Exception {
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content("{\"$from\":")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -70,7 +70,7 @@ class SpeedyV2EdgeCaseTest {
         ObjectNode body = mapper.createObjectNode();
         body.put("name", "test");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.CREATE.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.CREATE.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -78,7 +78,7 @@ class SpeedyV2EdgeCaseTest {
 
     @Test
     void postToMetadataEndpoint_shouldReturn4xx() throws Exception {
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.METADATA.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }
@@ -133,7 +133,7 @@ class SpeedyV2EdgeCaseTest {
         ObjectNode where = body.putObject("$where");
         where.put("nonexistent", "Karan");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -148,7 +148,7 @@ class SpeedyV2EdgeCaseTest {
         orNode.addObject().put("category.id", "1");
         orNode.addObject().put("id", "2");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

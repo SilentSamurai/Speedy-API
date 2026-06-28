@@ -1,16 +1,18 @@
 package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.data.MultipleFk;
 import com.github.silent.samurai.speedy.data.Product;
 import com.github.silent.samurai.speedy.data.StaticEntityMetadata;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.StructureReader;
-import com.github.silent.samurai.speedy.jooq.impl.JooqConverters;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.request.StructureReader;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
 import com.github.silent.samurai.speedy.json.request.JsonStructureReader;
 import com.github.silent.samurai.speedy.serialization.StructureToQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -53,7 +55,7 @@ class JooqQueryBuilderTest {
         StructureReader reader = new JsonStructureReader(jsonQuery.traverse());
         JooqQueryBuilder qb = new JooqQueryBuilder(
                 new StructureToQuery().parse(entityMetadata, reader, Integer.MAX_VALUE, 20),
-                dslContext, JooqConverters.defaults());
+                dslContext, TypeConverter.defaults());
         qb.prepareQuery();
         String sql = qb.query.toString();
         log.info("sql: {}", sql);
@@ -713,6 +715,133 @@ class JooqQueryBuilderTest {
                 offset 0 rows
                 fetch next 10 rows only""";
         assertEquals(expected, json2SqlQuery(jsonQuery));
+    }
+
+    private static ObjectNode createPageNode(ObjectMapper mapper) {
+        ObjectNode page = mapper.createObjectNode();
+        page.put("$index", 0);
+        page.put("$size", 10);
+        return page;
+    }
+
+    // Covers equalPredicate with Identifier (field-to-field $eq)
+    @Test
+    void where_eq_field_ref() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        body.set("$page", createPageNode(mapper));
+        ObjectNode whereNode = body.putObject("$where");
+        ObjectNode cond = whereNode.putObject("id");
+        cond.put("$eq", "$category");
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."ID" = "PRODUCT"."CATEGORY"
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(body));
+    }
+
+    // Covers notEqualPredicate with Identifier (field-to-field $ne)
+    @Test
+    void where_neq_field_ref() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        body.set("$page", createPageNode(mapper));
+        ObjectNode whereNode = body.putObject("$where");
+        ObjectNode cond = whereNode.putObject("id");
+        cond.put("$ne", "$name");
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."ID" <> "PRODUCT"."NAME"
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(body));
+    }
+
+    // Covers lessThanOrEqualToPredicate with Identifier (field-to-field $lte)
+    @Test
+    void where_lte_field_ref() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        body.set("$page", createPageNode(mapper));
+        ObjectNode whereNode = body.putObject("$where");
+        ObjectNode cond = whereNode.putObject("cost");
+        cond.put("$lte", "$id");
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."COST" <= "PRODUCT"."ID"
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(body));
+    }
+
+    // Covers greaterThanOrEqualToPredicate with Identifier (field-to-field $gte)
+    @Test
+    void where_gte_field_ref() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        body.set("$page", createPageNode(mapper));
+        ObjectNode whereNode = body.putObject("$where");
+        ObjectNode cond = whereNode.putObject("cost");
+        cond.put("$gte", "$id");
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."COST" >= "PRODUCT"."ID"
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(body));
+    }
+
+    // Covers lessThanPredicate with Identifier (field-to-field $lt) — complement to the integration test
+    @Test
+    void where_lt_field_ref() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        body.set("$page", createPageNode(mapper));
+        ObjectNode whereNode = body.putObject("$where");
+        ObjectNode cond = whereNode.putObject("cost");
+        cond.put("$lt", "$id");
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."COST" < "PRODUCT"."ID"
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(body));
+    }
+
+    // Covers greaterThanPredicate with Identifier (field-to-field $gt) — complement to the integration test
+    @Test
+    void where_gt_field_ref() throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        body.set("$page", createPageNode(mapper));
+        ObjectNode whereNode = body.putObject("$where");
+        ObjectNode cond = whereNode.putObject("cost");
+        cond.put("$gt", "$id");
+
+        String expected = """
+                select *
+                from "PRODUCT"
+                where "PRODUCT"."COST" > "PRODUCT"."ID"
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expected, json2SqlQuery(body));
     }
 
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,7 @@ public class SpeedyV2WhereValueTestClauseTest {
                 .prettyPrint()
                 .build();
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -90,7 +90,7 @@ public class SpeedyV2WhereValueTestClauseTest {
                 .putObject("localTime")
                 .put("$lt", "11:00:00");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 
@@ -133,7 +133,7 @@ public class SpeedyV2WhereValueTestClauseTest {
                 .putObject("localDateTime")
                 .put("$gte", "2030-11-23T11:00:00");
 
-        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/ValueTestEntity/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(body))
                 .contentType(MediaType.APPLICATION_JSON_VALUE);
 

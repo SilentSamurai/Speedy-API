@@ -2,7 +2,9 @@ package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.request.IRequestBodyParser;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 

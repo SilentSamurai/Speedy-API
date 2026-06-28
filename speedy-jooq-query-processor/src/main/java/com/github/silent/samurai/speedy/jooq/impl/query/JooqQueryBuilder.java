@@ -5,13 +5,13 @@ import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
-import com.github.silent.samurai.speedy.jooq.impl.conversion.Converter;
+import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
 
 import org.jooq.*;
 import org.jooq.Record;
@@ -35,10 +35,10 @@ public class JooqQueryBuilder {
     final Map<String, FieldMetadata> joins = new HashMap<>();
     final Map<String, String> joinAlias = new HashMap<>();
     final SQLDialect dialect;
-    private final Converter converter;
+    private final TypeConverter converter;
     SelectJoinStep<? extends Record> query;
 
-    public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext, Converter converter) {
+    public JooqQueryBuilder(SpeedyQuery speedyQuery, DSLContext dslContext, TypeConverter converter) {
         this.speedyQuery = speedyQuery;
         this.entityMetadata = speedyQuery.getFrom();
         this.dslContext = dslContext;
@@ -47,8 +47,8 @@ public class JooqQueryBuilder {
     }
 
     Object toJooqType(BinaryCondition bCondition, SpeedyValue speedyValue) throws SpeedyHttpException {
-        Object columnValue = converter.toColumnType(speedyValue, conversionField(bCondition.getField()));
-        return JooqUtil.toDialectColumnValue(columnValue, dialect);
+        // The converter is dialect-aware, so the encoded value is already dialect-correct.
+        return converter.toColumnType(speedyValue, conversionField(bCondition.getField()));
     }
 
     /// The metadata describing a query field's value type. When the query path navigates into an

@@ -2,17 +2,14 @@ package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.jooq.impl.Dialects;
 import org.jooq.*;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
 
 
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -27,48 +24,7 @@ public class JooqUtil {
     }
 
     public static DataType<?> getSQLDataType(String fieldReference, ColumnType columnType, SQLDialect dialect) {
-        return switch (columnType) {
-            case INTEGER:
-                yield SQLDataType.INTEGER;
-            case SMALLINT:
-                yield SQLDataType.SMALLINT;
-            case BIGINT:
-                yield SQLDataType.BIGINT;
-            case DECIMAL:
-                yield SQLDataType.DECIMAL;
-            case NUMERIC:
-                yield SQLDataType.NUMERIC;
-            case FLOAT:
-                yield SQLDataType.FLOAT;
-            case REAL:
-                yield SQLDataType.REAL;
-            case DOUBLE:
-                yield SQLDataType.DOUBLE;
-            case CHAR:
-                yield SQLDataType.CHAR;
-            case VARCHAR, TEXT:
-                yield SQLDataType.VARCHAR;
-            case DATE:
-                yield SQLDataType.DATE;
-            case TIME:
-                yield SQLDataType.TIME;
-            case TIMESTAMP:
-                yield SQLDataType.TIMESTAMP;
-            case TIMESTAMP_WITH_ZONE:
-                yield isMySQLFamily(dialect)
-                        ? SQLDataType.LOCALDATETIME
-                        : SQLDataType.TIMESTAMPWITHTIMEZONE;
-            case BOOLEAN:
-                yield SQLDataType.BOOLEAN;
-            case BLOB:
-                yield SQLDataType.BLOB;
-            case CLOB:
-                yield SQLDataType.CLOB;
-            case UUID:
-                yield SQLDataType.UUID;
-            default:
-                throw new RuntimeException(String.format("DataType not supported: {} for field {}", columnType, fieldReference));
-        };
+        return Dialects.forJooq(dialect).sqlDataType(columnType);
     }
 
     public static Table<Record> getTable(EntityMetadata entityMetadata, SQLDialect dialect) {
@@ -142,27 +98,8 @@ public class JooqUtil {
         };
     }
 
-    static boolean isMySQLFamily(SQLDialect dialect) {
-        return dialect == SQLDialect.MYSQL || dialect == SQLDialect.MARIADB;
-    }
-
     public static String transformIdentifier(String identifier, SQLDialect sqlDialect) {
-        return switch (sqlDialect) {
-            case H2 -> identifier.toUpperCase();
-            default -> camelToSnake(identifier);
-        };
-    }
-
-    /// Converts a camelCase identifier to snake_case, inserting a separator at lower/digit-to-upper
-    /// boundaries ({@code firstName -> first_name}, {@code address1Line -> address1_line}) and at
-    /// acronym-to-word boundaries ({@code userIDCard -> user_id_card}), then lower-casing. A faithful
-    /// replacement for the removed Spring {@code ParsingUtils.reconcatenateCamelCase}; the previous
-    /// single-rule {@code ([a-z])([A-Z])} regex silently dropped the acronym and digit boundaries.
-    private static String camelToSnake(String identifier) {
-        return identifier
-                .replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
-                .replaceAll("([a-z0-9])([A-Z])", "$1_$2")
-                .toLowerCase();
+        return Dialects.forJooq(sqlDialect).transformIdentifier(identifier);
     }
 
     /* Jooq to java types
@@ -183,15 +120,4 @@ public class JooqUtil {
     BLOB	byte[]
     UUID
      */
-
-    /// MySQL/MariaDB do not support {@code TIMESTAMP WITH TIME ZONE}; jOOQ renders
-    /// {@link OffsetDateTime} as the ANSI {@code timestamp with time zone '...'} literal which
-    /// those dialects reject. Converting to {@link LocalDateTime} at UTC before handing the value
-    /// to jOOQ avoids the unsupported syntax while preserving the instant.
-    public static Object toDialectColumnValue(Object columnValue, SQLDialect dialect) {
-        if (columnValue instanceof OffsetDateTime odt && isMySQLFamily(dialect)) {
-            return odt.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
-        }
-        return columnValue;
-    }
 }
