@@ -159,15 +159,16 @@ public class JooqBackend implements SpeedyBackend {
         return step;
     }
 
-    /// Keys the database assigns that the entity doesn't already carry. App-generated keys (e.g. UUID)
-    /// are produced before insert and written as a normal column, so they need no read-back — only
-    /// DB-assigned keys (IDENTITY / AUTO_INCREMENT) do. Skipping already-present keys also avoids
-    /// asking jOOQ to "return" a non-identity column, which MySQL's getGeneratedKeys emulation rejects
-    /// with "Field '<pk>' does not exist".
+    /// Keys the database assigns that the entity doesn't already carry. Which keys the database
+    /// assigns is a backend-neutral, metadata-driven decision ({@link KeyFieldMetadata#isDatabaseGenerated()}):
+    /// app-generated keys (e.g. UUID) are produced before insert and written as a normal column, so
+    /// they need no read-back — only DB-assigned keys (IDENTITY / AUTO_INCREMENT) do. Skipping
+    /// already-present keys also avoids asking jOOQ to "return" a non-identity column, which MySQL's
+    /// getGeneratedKeys emulation rejects with "Field '<pk>' does not exist".
     private List<KeyFieldMetadata> generatedKeysToReadBack(SpeedyEntity columns) {
         List<KeyFieldMetadata> generatedKeys = new ArrayList<>();
         for (KeyFieldMetadata keyField : columns.getMetadata().getKeyFields()) {
-            if (!keyField.isInsertable() && !columns.has(keyField)) {
+            if (keyField.isDatabaseGenerated() && !columns.has(keyField)) {
                 generatedKeys.add(keyField);
             }
         }
@@ -186,9 +187,7 @@ public class JooqBackend implements SpeedyBackend {
             step.execute();
             KeyFieldMetadata kf = generatedKeys.get(0);
             Object value = dsl().lastID();
-            if (value != null) {
-                columns.put(kf, converter.toSpeedyValue(value, JooqUtil.conversionField(kf)));
-            }
+            columns.put(kf, converter.toSpeedyValue(value, JooqUtil.conversionField(kf)));
             return;
         }
         List<Field<?>> returningFields = new ArrayList<>(generatedKeys.size());

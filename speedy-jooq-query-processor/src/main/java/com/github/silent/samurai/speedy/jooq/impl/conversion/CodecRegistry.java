@@ -34,10 +34,6 @@ public class CodecRegistry {
         this.parent = null;
     }
 
-    public CodecRegistry(CodecRegistry parent) {
-        this.parent = parent;
-    }
-
     /// Registers a codec that converts between a single Java class `T` and a
     /// SpeedyValue for the given {@link ColumnType}.
     ///
@@ -52,7 +48,7 @@ public class CodecRegistry {
         return this;
     }
 
-    /// Looks up a codec by ColumnType and Java class, walking supertypes if no
+    /// It looks up a codec by ColumnType and Java class, walking supertypes if no
     /// exact match is found, then falling back to the parent registry.
     public Codec<?> findCodec(ColumnType col, Class<?> clazz) {
         Map<Class<?>, Codec<?>> byClass = codecs.get(col);

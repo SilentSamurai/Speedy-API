@@ -4,7 +4,9 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
+import com.github.silent.samurai.speedy.helpers.MetadataUtil;
 import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /// Format-agnostic {@link QueryProcessor}: owns CRUD orchestration (query execution, the
@@ -55,12 +58,7 @@ public class DefaultQueryProcessor implements QueryProcessor {
     @Override
     public List<SpeedyEntity> executeMany(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
-            List<SpeedyEntity> rows = backend.select(speedyQuery);
-            List<SpeedyEntity> list = new ArrayList<>(rows.size());
-            for (SpeedyEntity row : rows) {
-                list.add(recordToSpeedy.fromRow(row, speedyQuery.getFrom(), speedyQuery.getExpand()));
-            }
-            return list;
+            return mapRows(backend.select(speedyQuery), speedyQuery);
         } catch (Exception e) {
             throw wrap("Invalid Request", e);
         }
@@ -70,11 +68,7 @@ public class DefaultQueryProcessor implements QueryProcessor {
     public QueryResult executeManyWithCount(SpeedyQuery speedyQuery) throws SpeedyHttpException {
         try {
             BigInteger totalCount = backend.count(speedyQuery);
-            List<SpeedyEntity> rows = backend.select(speedyQuery);
-            List<SpeedyEntity> list = new ArrayList<>(rows.size());
-            for (SpeedyEntity row : rows) {
-                list.add(recordToSpeedy.fromRow(row, speedyQuery.getFrom(), speedyQuery.getExpand()));
-            }
+            List<SpeedyEntity> list = mapRows(backend.select(speedyQuery), speedyQuery);
             return new QueryResult(list, totalCount);
         } catch (Exception e) {
             throw wrap("Invalid Request", e);
@@ -98,30 +92,34 @@ public class DefaultQueryProcessor implements QueryProcessor {
             }
             backend.insert(entities);
 
-            List<SpeedyEntity> entityList = new ArrayList<>(entities.size());
-
-            if (!entities.isEmpty()) {
-                List<SpeedyEntityKey> keys = new ArrayList<>(entities.size());
-                for (SpeedyEntity entity : entities) {
-                    keys.add(SpeedyEntityUtil.toEntityKey(entity));
+            // Which keys the database assigns is backend-neutral; the backend only owns the read-back
+            // mechanism. Hold every backend to the contract here so a missed read-back fails loudly and
+            // precisely instead of silently yielding an incomplete key (and a 200 with empty payload).
+            for (SpeedyEntity entity : entities) {
+                EntityMetadata entityMetadata = entity.getMetadata();
+                // The backend skips an entity with no columns to insert (buildInsertStep == null); such an
+                // entity has no row and no DB-generated key to read back, so don't hold it to the contract.
+                boolean hasColumnToInsert = entityMetadata.getAllFields().stream().anyMatch(entity::has);
+                if (!hasColumnToInsert) {
+                    continue;
                 }
-                EntityMetadata entityMetadata = entities.get(0).getMetadata();
-                Map<SpeedyEntityKey, SpeedyEntity> entityMap = refetchByKeys(keys, entityMetadata);
-
-                for (SpeedyEntityKey key : keys) {
-                    SpeedyEntity entity = entityMap.get(key);
-                    if (entity != null) {
-                        entityList.add(entity);
-                    }
-                }
-
-                if (entityList.size() != keys.size()) {
-                    LOGGER.warn("selectByKeys returned {} results for {} keys for entity '{}'",
-                            entityList.size(), keys.size(), entityMetadata.getName());
+                Optional<KeyFieldMetadata> missingKey =
+                        MetadataUtil.findUnpopulatedDatabaseGeneratedKey(entityMetadata, entity);
+                if (missingKey.isPresent()) {
+                    throw new InternalServerError("Persistence backend did not return database-generated key '"
+                            + missingKey.get().getOutputPropertyName() + "' after insert");
                 }
             }
 
-            return entityList;
+            if (entities.isEmpty()) {
+                return new ArrayList<>();
+            }
+
+            List<SpeedyEntityKey> keys = new ArrayList<>(entities.size());
+            for (SpeedyEntity entity : entities) {
+                keys.add(SpeedyEntityUtil.toEntityKey(entity));
+            }
+            return refetchInKeyOrder(keys, entities.get(0).getMetadata());
         } catch (Exception e) {
             throw wrap("Invalid Request", e);
         }
@@ -146,27 +144,21 @@ public class DefaultQueryProcessor implements QueryProcessor {
     @Override
     public List<SpeedyEntity> delete(List<SpeedyEntityKey> pks) throws SpeedyHttpException {
         try {
-            List<SpeedyEntity> entities;
+            // Nothing to delete: never hand the backend an empty key set (no WHERE -> table-wipe risk).
             if (pks.isEmpty()) {
-                entities = new ArrayList<>();
-            } else {
-                EntityMetadata entityMetadata = pks.get(0).getMetadata();
-                Map<SpeedyEntityKey, SpeedyEntity> entityMap = refetchByKeys(pks, entityMetadata);
-
-                entities = new ArrayList<>(pks.size());
-                for (SpeedyEntityKey key : pks) {
-                    SpeedyEntity entity = entityMap.get(key);
-                    if (entity != null) {
-                        entities.add(entity);
-                    }
-                }
-
-                if (entities.size() != pks.size()) {
-                    LOGGER.warn("selectByKeys returned {} results for {} keys for entity '{}'",
-                            entities.size(), pks.size(), entityMetadata.getName());
-                }
+                return new ArrayList<>();
             }
 
+            EntityMetadata entityMetadata = pks.get(0).getMetadata();
+            // Deleting "by keys" with no key fields would produce no WHERE clause and wipe the table.
+            // This safety invariant must hold for every backend, so enforce it here rather than relying
+            // on each impl to re-implement the guard.
+            if (entityMetadata.getKeyFields().isEmpty()) {
+                LOGGER.warn("Refusing key-less delete for entity '{}' (no key fields)", entityMetadata.getName());
+                return new ArrayList<>();
+            }
+
+            List<SpeedyEntity> entities = refetchInKeyOrder(pks, entityMetadata);
             backend.deleteByKeys(pks);
             return entities;
         } catch (Exception e) {
@@ -179,16 +171,39 @@ public class DefaultQueryProcessor implements QueryProcessor {
         backend.runInTransaction(block);
     }
 
-    /// Refetches rows for the given keys and indexes the rebuilt entities by their primary key.
-    private Map<SpeedyEntityKey, SpeedyEntity> refetchByKeys(List<SpeedyEntityKey> keys, EntityMetadata entityMetadata)
+    /// Rebuilds each backend row into a {@link SpeedyEntity}, preserving the backend's row order.
+    private List<SpeedyEntity> mapRows(List<SpeedyEntity> rows, SpeedyQuery query) throws SpeedyHttpException {
+        List<SpeedyEntity> list = new ArrayList<>(rows.size());
+        for (SpeedyEntity row : rows) {
+            list.add(recordToSpeedy.fromRow(row, query.getFrom(), query.getExpand()));
+        }
+        return list;
+    }
+
+    /// Refetches rows for the given keys and returns the rebuilt entities in the same order as
+    /// {@code keys}, dropping (and warning about) any key the backend did not return.
+    private List<SpeedyEntity> refetchInKeyOrder(List<SpeedyEntityKey> keys, EntityMetadata entityMetadata)
             throws SpeedyHttpException {
         List<SpeedyEntity> rows = backend.selectByKeys(keys);
-        Map<SpeedyEntityKey, SpeedyEntity> entityMap = new HashMap<>();
+        Map<SpeedyEntityKey, SpeedyEntity> entityMap = new HashMap<>(rows.size());
         for (SpeedyEntity row : rows) {
             SpeedyEntity entity = recordToSpeedy.fromRow(row, entityMetadata, Set.of());
             entityMap.put(SpeedyEntityUtil.toEntityKey(entity), entity);
         }
-        return entityMap;
+
+        List<SpeedyEntity> ordered = new ArrayList<>(keys.size());
+        for (SpeedyEntityKey key : keys) {
+            SpeedyEntity entity = entityMap.get(key);
+            if (entity != null) {
+                ordered.add(entity);
+            }
+        }
+
+        if (ordered.size() != keys.size()) {
+            LOGGER.warn("selectByKeys returned {} results for {} keys for entity '{}'",
+                    ordered.size(), keys.size(), entityMetadata.getName());
+        }
+        return ordered;
     }
 
     private SpeedyHttpException wrap(String message, Exception cause) {

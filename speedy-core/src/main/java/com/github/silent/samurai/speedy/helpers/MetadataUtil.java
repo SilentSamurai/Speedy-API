@@ -9,6 +9,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -44,6 +45,24 @@ public class MetadataUtil {
             }
         }
         return true;
+    }
+
+    /// The first database-generated key ({@link KeyFieldMetadata#isDatabaseGenerated()}) that the
+    /// backend did not populate after insert, if any. The persistence backend owns the read-back
+    /// *mechanism* (RETURNING / LAST_INSERT_ID), but which keys the database assigns is backend-neutral
+    /// metadata; core uses this to fail loudly and precisely when a backend skips the read-back, rather
+    /// than surfacing a confusing downstream "row not found".
+    public static Optional<KeyFieldMetadata> findUnpopulatedDatabaseGeneratedKey(EntityMetadata entityMetadata,
+                                                                                 SpeedyEntity entity) {
+        for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
+            // A backend that read the key back will have put() it; an absent key is the failure we
+            // want to catch (SpeedyEntity.get throws on an absent field, so check has() first).
+            if (keyField.isDatabaseGenerated()
+                    && (!entity.has(keyField) || entity.get(keyField) == SpeedyNull.SPEEDY_NULL)) {
+                return Optional.of(keyField);
+            }
+        }
+        return Optional.empty();
     }
 
 //    public String getEntityNameFromType(Class<?> entityType) {
