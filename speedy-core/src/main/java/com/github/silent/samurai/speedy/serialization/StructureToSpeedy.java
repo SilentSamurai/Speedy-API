@@ -2,12 +2,12 @@ package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.StructureReader;
-import com.github.silent.samurai.speedy.interfaces.StructureReader.Kind;
+import com.github.silent.samurai.speedy.interfaces.request.StructureReader;
+import com.github.silent.samurai.speedy.interfaces.request.StructureReader.Kind;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
@@ -17,7 +17,7 @@ import java.util.LinkedList;
 
 /// Format-agnostic builder: pulls tokens from a {@link StructureReader} and assembles a
 /// {@link SpeedyEntity} tree in document order, driven by {@link EntityMetadata}. The
-/// read-side mirror of {@link ResponseWalker} — structure only; leaf decoding lives on
+/// read-side mirror of {@link SpeedyToStructure} — structure only; leaf decoding lives on
 /// the reader ({@link StructureReader#readField}, the inverse of {@code writeLeaf}).
 ///
 /// Stateless and thread-safe; the same instance can serve every request.

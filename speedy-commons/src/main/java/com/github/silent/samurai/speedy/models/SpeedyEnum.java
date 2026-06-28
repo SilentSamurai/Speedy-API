@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.models;
 import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 import java.util.Objects;

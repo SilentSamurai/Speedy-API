@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.query;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ class SpeedyV2QueryValidationTest {
     MockMvc mvc;
 
     private void postQueryExpectingMessage(ObjectNode body, String message) throws Exception {
-        mvc.perform(post(SpeedyConstant.URI + "/" + body.get("$from").asText() + "/" + QUERY.suffix())
+        mvc.perform(post(SpeedyConstants.URI + "/" + body.get("$from").asText() + "/" + QUERY.suffix())
                         .content(CommonUtil.json().writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -100,7 +100,7 @@ class SpeedyV2QueryValidationTest {
         // GET routes through the same validator as $query (GetHandler); 11 expands exceeds the max of 10.
         String expands = String.join(",", "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8", "r9", "r10");
 
-        mvc.perform(get(SpeedyConstant.URI + "/Product?$expand=" + expands)
+        mvc.perform(get(SpeedyConstants.URI + "/Product?$expand=" + expands)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", containsString("$expand")));
@@ -113,7 +113,7 @@ class SpeedyV2QueryValidationTest {
         body.put("$from", "Category");
         body.putObject("$where").put("name", "cat-1-1");
 
-        mvc.perform(post(SpeedyConstant.URI + "/Category/" + QUERY.suffix())
+        mvc.perform(post(SpeedyConstants.URI + "/Category/" + QUERY.suffix())
                         .content(CommonUtil.json().writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())

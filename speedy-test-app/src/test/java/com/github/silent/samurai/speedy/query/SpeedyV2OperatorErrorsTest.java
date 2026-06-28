@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -44,14 +44,14 @@ class SpeedyV2OperatorErrorsTest {
     }
 
     private void postQuery(ObjectNode body) throws Exception {
-        mvc.perform(post(SpeedyConstant.URI + "/" + body.get("$from").asText() + "/" + QUERY.suffix())
+        mvc.perform(post(SpeedyConstants.URI + "/" + body.get("$from").asText() + "/" + QUERY.suffix())
                         .content(CommonUtil.json().writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
     }
 
     private void postQueryWithMessage(ObjectNode body, String message) throws Exception {
-        mvc.perform(post(SpeedyConstant.URI + "/" + body.get("$from").asText() + "/" + QUERY.suffix())
+        mvc.perform(post(SpeedyConstants.URI + "/" + body.get("$from").asText() + "/" + QUERY.suffix())
                         .content(CommonUtil.json().writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())

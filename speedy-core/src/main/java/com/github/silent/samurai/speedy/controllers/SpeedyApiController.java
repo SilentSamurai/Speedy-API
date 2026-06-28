@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.controllers;
 
 
 import com.github.silent.samurai.speedy.SpeedyFactory;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,7 +13,7 @@ import java.io.IOException;
 
 @Hidden
 @RestController
-@RequestMapping(SpeedyConstant.URI)
+@RequestMapping(SpeedyConstants.URI)
 public class SpeedyApiController {
 
     @Autowired

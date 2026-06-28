@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import jakarta.persistence.EntityManagerFactory;
 import org.assertj.core.util.Lists;
@@ -78,7 +78,7 @@ class SpeedyDatetimeTest {
                 .altPhoneNo("9013019322")
                 .phoneNo("9013019322");
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstant.URI + "/Supplier/" + SpeedyEndpoint.CREATE.suffix())
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Supplier/" + SpeedyEndpoint.CREATE.suffix())
                 .content(objectMapper.writeValueAsString(Lists.newArrayList(createSupplierRequest)))
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 

@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.models;
 
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 
 import java.util.Deque;
 import java.util.LinkedList;

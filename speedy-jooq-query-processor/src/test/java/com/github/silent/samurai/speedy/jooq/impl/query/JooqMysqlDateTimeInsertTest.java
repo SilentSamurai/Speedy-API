@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.data.StaticFieldMetadata;
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
 import com.github.silent.samurai.speedy.models.SpeedyZonedDateTime;

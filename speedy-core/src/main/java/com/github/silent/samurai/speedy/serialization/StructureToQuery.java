@@ -4,11 +4,11 @@ import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.StructureReader;
-import com.github.silent.samurai.speedy.interfaces.StructureReader.Kind;
+import com.github.silent.samurai.speedy.interfaces.request.StructureReader;
+import com.github.silent.samurai.speedy.interfaces.request.StructureReader.Kind;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Expression;
@@ -30,7 +30,7 @@ import java.util.List;
 /// operator handling, {@code $orderBy}, {@code $page}, {@code $expand}, {@code $select}) and
 /// assembles a {@link SpeedyQuery}. It drives a streaming {@link StructureReader} — no
 /// document tree — and the only format-specific step is leaf decoding, delegated to
-/// {@link StructureReader#readField}. The read-side mirror of {@link ResponseWalker} and the
+/// {@link StructureReader#readField}. The read-side mirror of {@link SpeedyToStructure} and the
 /// query-shaped sibling of {@link StructureToSpeedy}.
 ///
 /// Clauses are dispatched in document order (each writes an independent part of the query),

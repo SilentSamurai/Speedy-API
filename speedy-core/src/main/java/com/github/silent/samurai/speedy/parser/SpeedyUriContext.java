@@ -5,6 +5,9 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
@@ -77,9 +80,9 @@ public class SpeedyUriContext {
             throw new BadRequestException(
                     "Query string length " + sanitizedURI.length() + " exceeds maximum " + maxQueryStringLength);
         }
-        if (sanitizedURI.contains(SpeedyConstant.URI)) {
-            int indexOf = sanitizedURI.indexOf(SpeedyConstant.URI);
-            sanitizedURI = sanitizedURI.substring(indexOf + SpeedyConstant.URI.length());
+        if (sanitizedURI.contains(SpeedyConstants.URI)) {
+            int indexOf = sanitizedURI.indexOf(SpeedyConstants.URI);
+            sanitizedURI = sanitizedURI.substring(indexOf + SpeedyConstants.URI.length());
         }
 
         UriComponents uriComponents = UriComponentsBuilder.fromUriString(sanitizedURI)

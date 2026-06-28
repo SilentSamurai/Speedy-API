@@ -47,8 +47,8 @@ These interfaces in `speedy-commons` already form a clean, implementation-agnost
 package com.github.silent.samurai.speedy.interfaces.query;
 
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 
 /**
@@ -116,8 +116,8 @@ public interface QueryVisitor<T> {
 ```java
 package com.github.silent.samurai.speedy.interfaces.query;
 
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 
@@ -303,8 +303,8 @@ package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import org.jooq.*;
