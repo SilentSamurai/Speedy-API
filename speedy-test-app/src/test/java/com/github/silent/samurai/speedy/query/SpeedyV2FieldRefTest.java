@@ -242,4 +242,72 @@ class SpeedyV2FieldRefTest {
                 .andExpect(status().isOk())
                 .andReturn();
     }
+
+    // Covers lessThanOrEqualToPredicate Identifier branch — field-to-field $lte
+    @Test
+    void fieldRef_lte_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Inventory");
+        ObjectNode where = body.putObject("$where");
+        ObjectNode lteCondition = where.putObject("cost");
+        lteCondition.put("$lte", "$soldPrice");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.payload").isArray())
+                .andReturn();
+    }
+
+    // Covers greaterThanOrEqualToPredicate Identifier branch — field-to-field $gte
+    @Test
+    void fieldRef_gte_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Inventory");
+        ObjectNode where = body.putObject("$where");
+        ObjectNode gteCondition = where.putObject("cost");
+        gteCondition.put("$gte", "$discount");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/Inventory/" + SpeedyEndpoint.QUERY.suffix())
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.payload").isArray())
+                .andReturn();
+    }
+
+    // Covers notEqualPredicate Identifier branch — field-to-field $ne
+    @Test
+    void fieldRef_neq_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        ObjectNode where = body.putObject("$where");
+        ObjectNode neCondition = where.putObject("name");
+        neCondition.put("$ne", "$category");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.payload").isArray())
+                .andReturn();
+    }
+
+    // Covers equalPredicate Identifier branch — field-to-field $eq via explicit operator form
+    @Test
+    void fieldRef_eq_shouldSucceed() throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        body.put("$from", "Product");
+        ObjectNode where = body.putObject("$where");
+        ObjectNode eqCondition = where.putObject("name");
+        eqCondition.put("$eq", "$category");
+
+        mockMvc.perform(post(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.QUERY.suffix())
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.payload").isArray())
+                .andReturn();
+    }
 }

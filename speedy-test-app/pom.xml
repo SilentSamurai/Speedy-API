@@ -101,6 +101,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Validates the generated OpenAPI document against the OpenAPI 3.0 spec in tests. -->
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser</artifactId>
+            <version>2.1.6</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

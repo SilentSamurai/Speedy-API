@@ -89,4 +89,16 @@ public class SpeedyDeleteTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // Covers JooqBackend.deleteByKeys empty-list guard — empty JSON array body returns 200 with no-op
+    @Test
+    void emptyArrayBody() throws Exception {
+        MockHttpServletRequestBuilder deleteRequest = MockMvcRequestBuilders
+                .delete(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix())
+                .content("[]")
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(deleteRequest)
+                .andExpect(status().isOk());
+    }
+
 }

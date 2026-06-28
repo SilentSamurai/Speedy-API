@@ -18,7 +18,7 @@ public final class MySqlDialect extends DefaultDialect {
 
     @Override
     protected void registerDialectCodecs(CodecRegistry r) {
-        // Normalise to UTC on encode (matching the UTC assumption on decode) so the stored wall-clock
+        // Normalize to UTC on encoding (matching the UTC assumption on decoding) so the stored wall-clock
         // represents the same instant; a plain toLocalDateTime() would drop the offset and shift it.
         r.register(ColumnType.TIMESTAMP_WITH_ZONE, LocalDateTime.class,
                 sv -> sv.asZonedDateTime().withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime(),
