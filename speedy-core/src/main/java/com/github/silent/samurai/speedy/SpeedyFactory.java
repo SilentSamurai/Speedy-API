@@ -185,7 +185,11 @@ public class SpeedyFactory {
             }
             log.error("Exception {} ", request.getRequestURI(), e);
         } finally {
-            response.getWriter().flush();
+            try {
+                response.flushBuffer();
+            } catch (IOException e) {
+                log.debug("Failed to flush response buffer", e);
+            }
         }
     }
 

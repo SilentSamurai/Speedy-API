@@ -35,7 +35,7 @@ public class SpeedyInt implements SpeedyValue {
 
     @Override
     public Long asInt() {
-        return getValue().longValue();
+        return getValue();
     }
 
     @Override

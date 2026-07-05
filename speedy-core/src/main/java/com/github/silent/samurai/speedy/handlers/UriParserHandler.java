@@ -113,6 +113,6 @@ public class UriParserHandler implements com.github.silent.samurai.speedy.interf
         if (request.getQueryString() != null) {
             requestURI += "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8);
         }
-        return requestURI.replaceAll(SpeedyConstants.URI, "");
+        return requestURI.replaceFirst("^" + SpeedyConstants.URI, "");
     }
 }

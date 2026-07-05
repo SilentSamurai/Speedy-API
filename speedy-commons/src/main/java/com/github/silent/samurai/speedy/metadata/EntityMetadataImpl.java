@@ -15,24 +15,30 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
-@Setter
 public class EntityMetadataImpl implements EntityMetadata {
 
     boolean hasCompositeKey = false;
     private String name;
     private String dbTableName;
     private boolean isSensitive;
+    @Setter
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     private Set<ActionType> actionType;
     private Map<String, FieldMetadata> fieldMap;
+
+    private Set<FieldMetadata> allFieldsCache;
+    private Set<String> allFieldNamesCache;
+    private Set<KeyFieldMetadata> keyFieldsCache;
+    private Set<String> keyFieldNamesCache;
+    private Set<FieldMetadata> associatedFieldsCache;
 
     EntityMetadataImpl(String name, String dbTableName, boolean hasCompositeKey, boolean isSensitive, Set<ActionType> actionType, Map<String, FieldMetadata> fieldMap) {
         this.name = name;
         this.dbTableName = dbTableName;
         this.hasCompositeKey = hasCompositeKey;
         this.isSensitive = isSensitive;
-        this.actionType = actionType;
-        this.fieldMap = fieldMap;
+        this.actionType = actionType == null ? null : Set.copyOf(actionType);
+        this.fieldMap = fieldMap == null ? null : Map.copyOf(fieldMap);
     }
 
     @Override
@@ -50,16 +56,22 @@ public class EntityMetadataImpl implements EntityMetadata {
 
     @Override
     public Set<FieldMetadata> getAllFields() {
-        return fieldMap.values().stream()
-                .map(FieldMetadata.class::cast)
-                .collect(Collectors.toUnmodifiableSet());
+        if (allFieldsCache == null) {
+            allFieldsCache = fieldMap.values().stream()
+                    .map(FieldMetadata.class::cast)
+                    .collect(Collectors.toUnmodifiableSet());
+        }
+        return allFieldsCache;
     }
 
     @Override
     public Set<String> getAllFieldNames() {
-        return fieldMap.values().stream()
-                .map(FieldMetadata::getOutputPropertyName)
-                .collect(Collectors.toUnmodifiableSet());
+        if (allFieldNamesCache == null) {
+            allFieldNamesCache = fieldMap.values().stream()
+                    .map(FieldMetadata::getOutputPropertyName)
+                    .collect(Collectors.toUnmodifiableSet());
+        }
+        return allFieldNamesCache;
     }
 
     @Override
@@ -69,26 +81,35 @@ public class EntityMetadataImpl implements EntityMetadata {
 
     @Override
     public Set<KeyFieldMetadata> getKeyFields() {
-        return fieldMap.values().stream()
-                .filter(KeyFieldMetadata.class::isInstance)
-                .map(KeyFieldMetadata.class::cast)
-                .collect(Collectors.toUnmodifiableSet());
+        if (keyFieldsCache == null) {
+            keyFieldsCache = fieldMap.values().stream()
+                    .filter(KeyFieldMetadata.class::isInstance)
+                    .map(KeyFieldMetadata.class::cast)
+                    .collect(Collectors.toUnmodifiableSet());
+        }
+        return keyFieldsCache;
     }
 
     @Override
     public Set<String> getKeyFieldNames() {
-        return fieldMap.values().stream()
-                .filter(KeyFieldMetadata.class::isInstance)
-                .map(KeyFieldMetadata.class::cast)
-                .map(KeyFieldMetadata::getOutputPropertyName)
-                .collect(Collectors.toUnmodifiableSet());
+        if (keyFieldNamesCache == null) {
+            keyFieldNamesCache = fieldMap.values().stream()
+                    .filter(KeyFieldMetadata.class::isInstance)
+                    .map(KeyFieldMetadata.class::cast)
+                    .map(KeyFieldMetadata::getOutputPropertyName)
+                    .collect(Collectors.toUnmodifiableSet());
+        }
+        return keyFieldNamesCache;
     }
 
     @Override
     public Set<FieldMetadata> getAssociatedFields() {
-        return fieldMap.values().stream()
-                .filter(FieldMetadata::isAssociation)
-                .collect(Collectors.toUnmodifiableSet());
+        if (associatedFieldsCache == null) {
+            associatedFieldsCache = fieldMap.values().stream()
+                    .filter(FieldMetadata::isAssociation)
+                    .collect(Collectors.toUnmodifiableSet());
+        }
+        return associatedFieldsCache;
     }
 
     @Override

@@ -87,6 +87,10 @@ public class DefaultQueryProcessor implements QueryProcessor {
     @Override
     public List<SpeedyEntity> create(List<SpeedyEntity> entities) throws SpeedyHttpException {
         try {
+            if (entities.isEmpty()) {
+                return new ArrayList<>();
+            }
+
             for (SpeedyEntity entity : entities) {
                 speedyToRecord.toInsertColumns(entity);
             }
@@ -109,10 +113,6 @@ public class DefaultQueryProcessor implements QueryProcessor {
                     throw new InternalServerError("Persistence backend did not return database-generated key '"
                             + missingKey.get().getOutputPropertyName() + "' after insert");
                 }
-            }
-
-            if (entities.isEmpty()) {
-                return new ArrayList<>();
             }
 
             List<SpeedyEntityKey> keys = new ArrayList<>(entities.size());
@@ -211,7 +211,7 @@ public class DefaultQueryProcessor implements QueryProcessor {
             return she;
         }
         if (cause instanceof SpeedyHttpRuntimeException re) {
-            return new InternalServerError(re.getMessage(), re);
+            return new SpeedyHttpException(re.getStatus(), re.getMessage(), re);
         }
         return backend.classify(cause).orElseGet(() -> new InternalServerError(message, cause));
     }

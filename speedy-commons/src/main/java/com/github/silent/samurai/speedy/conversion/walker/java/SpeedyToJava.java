@@ -122,17 +122,20 @@ public class SpeedyToJava {
                     }
 
                     if (wrapper.isWritableProperty(name)) wrapper.setPropertyValue(name, val);
+                } catch (ConversionException e) {
+                    throw e;
                 } catch (Exception e) {
                     throw new ConversionException(
-                            String.format("Failed to convert field %s in class %s: %s",
-                                    name, clazz.getSimpleName(), e.getMessage()), e);
+                            "Failed to convert field " + name + " in class " + clazz.getSimpleName(), e);
                 }
             }
 
             return instance;
+        } catch (ConversionException e) {
+            throw e;
         } catch (Exception e) {
             throw new ConversionException(
-                    String.format("Cannot convert %s to composite class %s", value, clazz.getSimpleName()), e);
+                    "Cannot convert " + value + " to composite class " + clazz.getSimpleName(), e);
         }
     }
 }

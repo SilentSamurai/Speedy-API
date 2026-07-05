@@ -19,7 +19,7 @@ public class MetaModelVerifier {
         this.metaModel = metaModel;
     }
 
-    public boolean verify() throws SpeedyHttpException {
+    public void verify() throws SpeedyHttpException {
         for (EntityMetadata entityMetadata : metaModel.getAllEntityMetadata()) {
             Objects.requireNonNull(entityMetadata);
             Objects.requireNonNull(entityMetadata.getName(), "Entity Name not found");
@@ -48,7 +48,6 @@ public class MetaModelVerifier {
             }
 
         }
-        return true;
     }
 
 

@@ -2,8 +2,10 @@ package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
@@ -68,6 +70,10 @@ public class SpeedyUriContext {
             throw e;
         } catch (NotFoundException e) {
             throw new BadRequestException(e.getMessage(), e);
+        } catch (SpeedyHttpException e) {
+            throw e;
+        } catch (SpeedyHttpRuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new BadRequestException("Invalid URL", e);
         }
@@ -212,7 +218,7 @@ public class SpeedyUriContext {
             MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
             int filterCount = 0;
             for (Map.Entry<String, List<String>> entry : queryParams.entrySet()) {
-                String key = entry.getKey().strip().trim();
+                String key = entry.getKey().strip();
                 if (!key.startsWith("$")) {
                     filterCount++;
                     if (filterCount > maxFilterCount) {
@@ -284,10 +290,9 @@ public class SpeedyUriContext {
                         try {
                             return javaTypeRegistry.parseString(item.replaceAll("['\" ]", ""), String.class);
                         } catch (SpeedyHttpException e) {
-                            return null;
+                            throw new SpeedyHttpRuntimeException(e.getStatus(), e.getMessage(), e);
                         }
                     })
-                    .filter(Objects::nonNull)
                     .flatMap(qry -> Arrays.stream(qry.split(",")))
                     .toList();
             for (String field : fields) {

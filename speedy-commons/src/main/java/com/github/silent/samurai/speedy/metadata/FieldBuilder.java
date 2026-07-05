@@ -40,7 +40,6 @@ public class FieldBuilder {
     List<FieldRule> validations = new java.util.ArrayList<>();
 
     public FieldBuilder(EntityBuilder entityBuilder, String name) {
-        this.validations = new java.util.ArrayList<>();
         this.entityBuilder = entityBuilder;
         this.dbColumnName = name;
         this.outputPropertyName = name;

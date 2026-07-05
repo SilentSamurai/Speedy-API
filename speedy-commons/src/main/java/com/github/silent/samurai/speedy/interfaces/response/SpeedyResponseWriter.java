@@ -79,11 +79,12 @@ public interface SpeedyResponseWriter {
         writeSpeedyInt(new SpeedyInt(value));
     }
 
-    /// Writes a raw {@link String} for framework/envelope fields. Matches
-    /// {@link #writeLeaf} semantics for text: a null or empty value is written as a JSON
-    /// null. The default boxes into a {@link SpeedyText}; formats override to skip it.
+    /// Writes a raw {@link String} for framework/envelope fields. A null value is
+    /// written as a null token; an empty string is written as an empty string (not
+    /// null, since "" and null have distinct semantics). The default boxes into a
+    /// {@link SpeedyText}; formats override to skip it.
     default void writeText(String value) throws SpeedyHttpException {
-        if (value == null || value.isEmpty()) {
+        if (value == null) {
             writeNull();
         } else {
             writeSpeedyText(new SpeedyText(value));
@@ -112,7 +113,7 @@ public interface SpeedyResponseWriter {
             case DATE_TIME -> writeSpeedyDateTime((SpeedyDateTime) value);
             case ZONED_DATE_TIME -> writeSpeedyZonedDateTime((SpeedyZonedDateTime) value);
             case ENUM, ENUM_ORD -> writeSpeedyEnum((SpeedyEnum) value);
-            default -> throw new IllegalArgumentException("Unexpected leaf type: " + type);
+            default -> throw new IllegalStateException("Unexpected leaf type: " + type);
         }
     }
 

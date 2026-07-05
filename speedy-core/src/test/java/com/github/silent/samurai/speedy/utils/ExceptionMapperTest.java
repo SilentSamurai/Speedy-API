@@ -5,10 +5,7 @@ import com.github.silent.samurai.speedy.annotations.SpeedyExceptionHandler;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyExceptionMapper;
-import jakarta.persistence.PersistenceException;
 import jakarta.servlet.http.HttpServletResponse;
-import org.hibernate.exception.ConstraintViolationException;
-import org.hibernate.exception.DataException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -125,26 +122,6 @@ class ExceptionMapperTest {
     }
 
     // --- DefaultExceptionMapper tests ---
-
-    @Test
-    void defaultMapperHandlesPersistenceExceptionWithConstraintViolation() {
-        DefaultExceptionMapper mapper = new DefaultExceptionMapper(new AdviceExceptionMapper(controllerAdvices));
-        ConstraintViolationException cause = new ConstraintViolationException("constraint violated", null, "unique_email");
-        PersistenceException e = new PersistenceException("persistence error", cause);
-
-        int status = mapper.getStatus(e);
-        Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, status);
-    }
-
-    @Test
-    void defaultMapperHandlesPersistenceExceptionWithDataException() {
-        DefaultExceptionMapper mapper = new DefaultExceptionMapper(new AdviceExceptionMapper(controllerAdvices));
-        DataException cause = new DataException("data error", null);
-        PersistenceException e = new PersistenceException("persistence error", cause);
-
-        int status = mapper.getStatus(e);
-        Assertions.assertEquals(HttpServletResponse.SC_BAD_REQUEST, status);
-    }
 
     @Test
     void defaultMapperHandlesJsonProcessingException() {

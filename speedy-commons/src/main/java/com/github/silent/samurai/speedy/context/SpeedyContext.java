@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.context;
 
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -66,6 +67,6 @@ public class SpeedyContext {
 
     /// Returns all stored key types.
     public Set<Class<?>> types() {
-        return items.keySet();
+        return Collections.unmodifiableSet(items.keySet());
     }
 }

@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.backend;
 
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.InternalServerError;
+import com.github.silent.samurai.speedy.exceptions.NotImplementedException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
@@ -58,7 +60,8 @@ public class RecordToSpeedy {
                         continue;
                     }
                     if (fieldMetadata.isCollection()) {
-                        throw new BadRequestException("operation not supported");
+                        throw new NotImplementedException("Collection association expansion is not supported for field '"
+                                + fieldMetadata.getOutputPropertyName() + "' on entity '" + entityMetadata.getName() + "'");
                     } else {
                         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
                         SpeedyEntity associatedEntity = enrich(
@@ -70,7 +73,8 @@ public class RecordToSpeedy {
                     }
                 } else {
                     if (fieldMetadata.isCollection()) {
-                        throw new BadRequestException("operation not supported");
+                        throw new NotImplementedException("Collection association key reference is not supported for field '"
+                                + fieldMetadata.getOutputPropertyName() + "' on entity '" + entityMetadata.getName() + "'");
                     } else {
                         Optional<SpeedyEntityKey> associatedEntityKey = createSpeedyKeyFromFK(row, fieldMetadata);
                         if (associatedEntityKey.isEmpty() || associatedEntityKey.get().isEmpty()) {
@@ -93,7 +97,9 @@ public class RecordToSpeedy {
 
     public Optional<SpeedyEntityKey> createSpeedyKeyFromFK(SpeedyEntity row, FieldMetadata fieldMetadata) throws SpeedyHttpException {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-        KeyFieldMetadata keyFieldMetadata = associationMetadata.getKeyFields().stream().findAny().orElseThrow();
+        KeyFieldMetadata keyFieldMetadata = associationMetadata.getKeyFields().stream().findAny()
+                .orElseThrow(() -> new InternalServerError(
+                        "Associated entity '" + associationMetadata.getName() + "' has no key fields"));
         // foreign key column, decoded with the associated field's type by the backend
         if (!row.has(fieldMetadata)) {
             return Optional.empty();

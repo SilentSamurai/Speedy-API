@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
@@ -72,7 +73,7 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
                 try {
                     for (SpeedyEntityKey key : keys) {
                         if (!queryProcessor.exists(key)) {
-                            throw new BadRequestException("entity not found");
+                            throw new NotFoundException("entity not found: " + key);
                         }
                         context.get(ValidationProcessor.class).validateDeleteRequestEntity(entityMetadata, key);
                         eventProcessor.triggerEvent(SpeedyEventType.PRE_DELETE, entityMetadata, key);
@@ -134,7 +135,7 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
                 queryProcessor.runInTransaction(() -> {
                     try {
                         if (!queryProcessor.exists(key)) {
-                            throw new BadRequestException("entity not found");
+                            throw new NotFoundException("entity not found: " + key);
                         }
                         context.get(ValidationProcessor.class).validateDeleteRequestEntity(entityMetadata, key);
                         eventProcessor.triggerEvent(SpeedyEventType.PRE_DELETE, entityMetadata, key);
@@ -172,7 +173,8 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
                 } else {
                     failed.add(SpeedyPartialFailure.builder()
                             .index(i).status(500)
-                            .message(e.getMessage()).timestamp(Instant.now().toString())
+                            .message(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())
+                            .timestamp(Instant.now().toString())
                             .inputPk(key).cause(e).build());
                     log.info("Entity #{} failed in per-entity transaction", i, e);
                 }
@@ -194,10 +196,7 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
             );
         } else if (keys.size() == 1) {
             SpeedyPartialFailure failure = failed.get(0);
-            if (failure.getStatus() == 400) {
-                throw new BadRequestException(failure.getMessage(), failure.getCause());
-            }
-            throw new InternalServerError(failure.getMessage(), failure.getCause());
+            throw new SpeedyHttpException(failure.getStatus(), failure.getMessage(), failure.getCause());
         } else {
             int status = succeeded.isEmpty() ? 400 : 207;
             context.put(SpeedyResponse.class,

@@ -115,9 +115,9 @@ public class ValidationProcessor {
         Class<?> ioClass = paramTypes[1];
         Object param;
 
-        // 1. If the method expects SpeedyEntity (or subclass) -> use entity directly
+        // 1. If the method expects SpeedyEntity (or a supertype like Object/SpeedyValue) -> use entity directly
         // 2. Otherwise, convert the SpeedyEntity to the requested Java class
-        if (SpeedyEntity.class.isAssignableFrom(ioClass)) {
+        if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
             param = entity;
         } else {
             param = serializer.toJavaEntity(entity, ioClass);
@@ -134,7 +134,7 @@ public class ValidationProcessor {
         }
 
         // If the validator modified the Java object, synchronise the changes back to the SpeedyEntity
-        if (!SpeedyEntity.class.isAssignableFrom(ioClass)) {
+        if (!ioClass.isAssignableFrom(SpeedyEntity.class)) {
             deserializer.updateEntity(param, entity);
         }
 

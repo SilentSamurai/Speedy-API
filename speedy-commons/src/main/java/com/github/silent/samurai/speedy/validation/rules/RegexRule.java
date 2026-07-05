@@ -11,18 +11,20 @@ import java.util.regex.Pattern;
  */
 public class RegexRule implements FieldRule {
 
-    private final String pattern;
+    private final Pattern pattern;
+    private final String patternSource;
 
     public RegexRule(String pattern) {
-        this.pattern = pattern;
+        this.pattern = Pattern.compile(pattern);
+        this.patternSource = pattern;
     }
 
     @Override
     public void validate(FieldMetadata fm, SpeedyValue val, List<String> errors) {
         if (val == null || val.isEmpty()) return;
 
-        if (!val.isText() || !Pattern.matches(pattern, val.asText())) {
-            errors.add(fm.getOutputPropertyName() + " does not match pattern " + pattern);
+        if (!val.isText() || !pattern.matcher(val.asText()).matches()) {
+            errors.add(fm.getOutputPropertyName() + " does not match pattern " + patternSource);
         }
     }
 }

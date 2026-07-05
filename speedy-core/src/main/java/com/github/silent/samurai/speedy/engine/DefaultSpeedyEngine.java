@@ -50,7 +50,14 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
     private final List<Handler> updateChain;
     private final List<Handler> deleteChain;
     private final List<Handler> metadataChain;
-    private final ConcurrentHashMap<DataSource, QueryProcessor> queryProcessorCache = new ConcurrentHashMap<>();
+    private static final int MAX_QUERY_PROCESSOR_CACHE_SIZE = 100;
+    private final java.util.Map<DataSource, QueryProcessor> queryProcessorCache =
+            java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>(16, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(java.util.Map.Entry<DataSource, QueryProcessor> eldest) {
+                    return size() > MAX_QUERY_PROCESSOR_CACHE_SIZE;
+                }
+            });
 
     public DefaultSpeedyEngine(ISpeedyConfiguration config,
                                SpeedyDialect dialect,
@@ -180,9 +187,15 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
     @Override
     public void prepare(SpeedyContext ctx) throws SpeedyHttpException {
         DataSource dataSource = config.dataSourcePerReq();
-        ctx.put(QueryProcessor.class, queryProcessorCache.computeIfAbsent(
-                dataSource, ds -> new DefaultQueryProcessor(
-                        config.queryBackend(ds, dialect))));
+        QueryProcessor qp;
+        synchronized (queryProcessorCache) {
+            qp = queryProcessorCache.get(dataSource);
+            if (qp == null) {
+                qp = new DefaultQueryProcessor(config.queryBackend(dataSource, dialect));
+                queryProcessorCache.put(dataSource, qp);
+            }
+        }
+        ctx.put(QueryProcessor.class, qp);
     }
 
     @Override

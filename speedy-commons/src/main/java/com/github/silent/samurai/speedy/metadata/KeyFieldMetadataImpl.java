@@ -12,7 +12,6 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter
-@Setter
 public class KeyFieldMetadataImpl extends FieldMetadataImpl implements KeyFieldMetadata {
 
     private final boolean isKeyField = true;

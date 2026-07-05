@@ -102,8 +102,8 @@ public class EventProcessor {
         }
     }
 
-    /// PRE events may mutate the entity (their edits are persisted), so handler changes are written
-    /// back. POST events are read-only side-effects fired on the already-persisted entity — writing
+    /// PRE-events may mutate the entity (their edits are persisted), so handler changes are written
+    /// back. POST-events are read-only side effects fired on the already-persisted entity — writing
     /// back would corrupt it (e.g. re-encoding an enum field to text), so it is skipped.
     private static boolean isPreEvent(SpeedyEventType eventType) {
         return switch (eventType) {

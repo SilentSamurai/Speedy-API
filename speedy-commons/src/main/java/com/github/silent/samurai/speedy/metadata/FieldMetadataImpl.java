@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 
 @Getter
-@Setter
 public class FieldMetadataImpl implements FieldMetadata {
     private final ColumnType columnType;
     private final ValueType valueType;
@@ -38,8 +37,11 @@ public class FieldMetadataImpl implements FieldMetadata {
     private final DynamicEnum dynamicEnum;
     private final List<FieldRule> validations;
 
+    @Setter
     private EntityMetadata entityMetadata;
+    @Setter
     private EntityMetadata associationMetadata;
+    @Setter
     private FieldMetadata associatedFieldMetadata;
 
     public FieldMetadataImpl(ColumnType columnType,

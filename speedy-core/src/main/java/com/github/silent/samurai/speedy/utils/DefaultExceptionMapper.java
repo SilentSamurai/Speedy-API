@@ -40,16 +40,7 @@ public class DefaultExceptionMapper implements ISpeedyExceptionMapper {
             return ((SpeedyHttpRuntimeException) throwable).getStatus();
         }
 
-        // 3. PersistenceException — unwrap cause
-        if (hasClassInHierarchy(throwable, "jakarta.persistence.PersistenceException") && throwable.getCause() != null) {
-            String causeName = throwable.getCause().getClass().getName();
-            if (causeName.equals("org.hibernate.exception.ConstraintViolationException")
-                    || causeName.equals("org.hibernate.exception.DataException")) {
-                return HttpServletResponse.SC_BAD_REQUEST;
-            }
-        }
-
-        // 4. Jackson parsing errors
+        // 3. Jackson parsing errors
         if (hasClassInHierarchy(throwable, "com.fasterxml.jackson.core.JsonProcessingException")) {
             return HttpServletResponse.SC_BAD_REQUEST;
         }
@@ -77,16 +68,24 @@ public class DefaultExceptionMapper implements ISpeedyExceptionMapper {
             return adviceMessage;
         }
 
-        // 2. Use throwable's message for non-500 errors
+        int status = getStatus(throwable);
+
+        // 2. Fallback masking for 5xx
+        if (status >= 500) {
+            return "Internal Server Error";
+        }
+
+        // 3. For persistence-derived exceptions at 4xx, mask DB internals (schema/table/SQL text)
+        if (hasClassInHierarchy(throwable, "jakarta.persistence.PersistenceException")
+                || hasClassInHierarchy(throwable, "org.hibernate.exception.ConstraintViolationException")
+                || hasClassInHierarchy(throwable, "org.hibernate.exception.DataException")) {
+            return "Invalid request";
+        }
+
+        // 4. Use throwable's message for other 4xx exceptions
         String message = throwable.getMessage();
         if (message == null || message.isEmpty()) {
             message = throwable.getClass().getSimpleName();
-        }
-
-        // 3. Fallback masking for 5xx
-        int status = getStatus(throwable);
-        if (status >= 500) {
-            return "Internal Server Error";
         }
 
         return message;

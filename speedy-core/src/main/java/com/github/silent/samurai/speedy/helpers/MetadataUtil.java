@@ -38,10 +38,9 @@ public class MetadataUtil {
 
     public static boolean isKeyCompleteInEntity(EntityMetadata entityMetadata, SpeedyEntity entity) {
         for (KeyFieldMetadata keyField : entityMetadata.getKeyFields()) {
-            SpeedyValue keyFieldValue = entity.get(keyField);
-            if (keyFieldValue == SpeedyNull.SPEEDY_NULL) {
-                return false;
-            }
+            if (!entity.has(keyField)) return false;
+            SpeedyValue value = entity.get(keyField);
+            if (value == null || value.isNull() || value.isEmpty()) return false;
         }
         return true;
     }

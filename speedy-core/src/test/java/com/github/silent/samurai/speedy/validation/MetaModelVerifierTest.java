@@ -39,7 +39,7 @@ class MetaModelVerifierTest {
         when(fieldMetadata.getDbColumnName()).thenReturn("test_column");
 
         MetaModelVerifier verifier = new MetaModelVerifier(metaModel);
-        assertTrue(verifier.verify());
+        assertDoesNotThrow(verifier::verify);
     }
 
     @Test

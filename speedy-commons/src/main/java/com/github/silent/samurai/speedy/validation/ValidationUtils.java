@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.validation;
 
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -20,13 +21,13 @@ public final class ValidationUtils {
         // utility class
     }
 
-    public static <T> void validate(T object) {
+    public static <T> void validate(T object) throws BadRequestException {
         Set<ConstraintViolation<T>> violations = VALIDATOR.validate(object);
         if (!violations.isEmpty()) {
             String message = violations.stream()
                     .map(v -> v.getPropertyPath() + " " + v.getMessage())
                     .collect(Collectors.joining(", "));
-            throw new IllegalArgumentException("Validation failed: " + message);
+            throw new BadRequestException("Validation failed: " + message);
         }
     }
 }

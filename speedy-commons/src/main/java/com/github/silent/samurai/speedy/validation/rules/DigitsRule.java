@@ -25,7 +25,7 @@ public class DigitsRule implements FieldRule {
         if (val == null || val.isEmpty()) return;
         if (!val.isNumber()) return;
 
-        BigDecimal num = val.isDouble() ? BigDecimal.valueOf(val.asDouble()) : BigDecimal.valueOf(val.asLong());
+        BigDecimal num = val.isDouble() ? BigDecimal.valueOf(val.asDouble()) : BigDecimal.valueOf(val.asInt());
         num = num.stripTrailingZeros();
         int intPart = num.precision() - num.scale();
         int fracPart = Math.max(num.scale(), 0);

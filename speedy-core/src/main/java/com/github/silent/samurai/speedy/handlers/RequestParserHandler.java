@@ -49,17 +49,20 @@ public class RequestParserHandler implements com.github.silent.samurai.speedy.in
 
             if (contentLength == 0) {
                 context.put(new byte[0]);
-            } else if (maxRequestBodySize > 0 && contentLength == -1) {
+            } else if (contentLength == -1) {
+                // Chunked transfer encoding (unknown length). Always bound the read to prevent OOM.
+                long effectiveLimit = maxRequestBodySize > 0 ? maxRequestBodySize : Integer.MAX_VALUE;
                 InputStream is = request.getInputStream();
-                int readLimit = maxRequestBodySize >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) (maxRequestBodySize + 1);
+                int readLimit = effectiveLimit >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) (effectiveLimit + 1);
                 byte[] bodyBytes = is.readNBytes(readLimit);
-                if (bodyBytes.length > maxRequestBodySize) {
+                if (maxRequestBodySize > 0 && bodyBytes.length > maxRequestBodySize) {
                     throw new PayloadTooLargeException(
                             "Request body exceeds maximum " + maxRequestBodySize + " bytes");
                 }
                 context.put(bodyBytes);
             } else {
-                context.put(request.getInputStream().readAllBytes());
+                // contentLength > 0 — already checked against maxRequestBodySize above
+                context.put(request.getInputStream().readNBytes((int) contentLength));
             }
         } catch (IOException e) {
             throw new BadRequestException("Invalid Request", e);

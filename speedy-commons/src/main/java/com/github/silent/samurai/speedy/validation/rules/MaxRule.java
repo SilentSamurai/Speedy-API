@@ -21,7 +21,8 @@ public class MaxRule implements FieldRule {
         if (val == null || val.isEmpty()) return;
         if (!val.isNumber()) return;
         // Compare via BigDecimal so FLOAT/DECIMAL values are not truncated by (or thrown on) asLong().
-        BigDecimal num = val.isDouble() ? BigDecimal.valueOf(val.asDouble()) : BigDecimal.valueOf(val.asLong());
+        // Use asInt() (overridden by SpeedyEnum) instead of asLong() (not overridden by SpeedyEnum, throws on ENUM_ORD).
+        BigDecimal num = val.isDouble() ? BigDecimal.valueOf(val.asDouble()) : BigDecimal.valueOf(val.asInt());
         if (num.compareTo(BigDecimal.valueOf(max)) > 0) {
             errors.add(fm.getOutputPropertyName() + " must be <= " + max);
         }

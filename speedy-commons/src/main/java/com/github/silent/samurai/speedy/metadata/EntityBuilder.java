@@ -77,7 +77,9 @@ public class EntityBuilder {
     }
 
     public FieldBuilder field(String fieldName) {
-        assert !fieldName.isBlank();
+        if (fieldName == null || fieldName.isBlank()) {
+            throw new IllegalArgumentException("Field name cannot be null or blank");
+        }
         FieldBuilder fieldBuilder = new FieldBuilder(this, fieldName);
         this.fieldMap.put(fieldName, fieldBuilder);
         return fieldBuilder;
@@ -96,7 +98,9 @@ public class EntityBuilder {
     }
 
     public KeyFieldBuilder keyField(String fieldName) {
-        assert !fieldName.isBlank();
+        if (fieldName == null || fieldName.isBlank()) {
+            throw new IllegalArgumentException("Key field name cannot be null or blank");
+        }
         KeyFieldBuilder fieldBuilder = new KeyFieldBuilder(this, fieldName);
         this.fieldMap.put(fieldName, fieldBuilder);
         return fieldBuilder;

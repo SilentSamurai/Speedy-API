@@ -26,7 +26,8 @@ public class ConditionFactory {
 
     private BinaryCondition createCondition(QueryField field, ConditionOperator operator, Expression expression) throws SpeedyHttpException {
         return switch (operator) {
-            case AND, OR -> throw new BadRequestException("");
+            case AND, OR -> throw new BadRequestException(
+                    "AND/OR operators are not valid for a binary condition; use a boolean condition instead");
             default -> new BinaryConditionImpl(field, operator, expression);
         };
     }
@@ -39,6 +40,10 @@ public class ConditionFactory {
             if (parts.length == 2) {
                 fieldName = parts[0];
                 associatedField = parts[1];
+            } else {
+                throw new BadRequestException(
+                        "Field path '" + fieldName + "' has " + parts.length
+                                + " segments; only single-level association paths (e.g. 'entity.field') are supported");
             }
         }
         if (associatedField != null) {

@@ -197,9 +197,12 @@ public class StructureToQuery {
         } else {
             throw new BadRequestException("Invalid query");
         }
-        // Legacy honors only the first operator of a field's operator object — drain the rest.
-        while (r.nextKey() != null) {
-            r.skipValue();
+        // Multiple operators on the same field are not supported — reject explicitly
+        // instead of silently dropping all but the first.
+        if (r.nextKey() != null) {
+            throw new BadRequestException(
+                    "Field '" + queryField.getMetadataForParsing().getOutputPropertyName()
+                            + "' has multiple operators in a single condition object; combine them with $and instead");
         }
         return condition;
     }
@@ -254,8 +257,7 @@ public class StructureToQuery {
 
     private void buildOrderBy(SpeedyQueryImpl query, StructureReader r) throws SpeedyHttpException {
         if (r.currentKind() != Kind.OBJECT) {
-            r.skipValue();
-            return;
+            throw new BadRequestException("$orderBy must be an object of field-name -> asc|desc");
         }
         String fieldName;
         while ((fieldName = r.nextKey()) != null) {
@@ -272,8 +274,7 @@ public class StructureToQuery {
 
     private void buildPaging(SpeedyQueryImpl query, StructureReader r) throws SpeedyHttpException {
         if (r.currentKind() != Kind.OBJECT) {
-            r.skipValue();
-            return;
+            throw new BadRequestException("$page must be an object with $index and/or $size");
         }
         String key;
         while ((key = r.nextKey()) != null) {
@@ -300,8 +301,7 @@ public class StructureToQuery {
 
     private void buildExpand(SpeedyQueryImpl query, StructureReader r) throws SpeedyHttpException {
         if (r.currentKind() != Kind.ARRAY) {
-            r.skipValue();
-            return;
+            throw new BadRequestException("$expand must be an array of field names or dot-separated paths");
         }
         Kind elem;
         while ((elem = r.nextElement()) != null) {

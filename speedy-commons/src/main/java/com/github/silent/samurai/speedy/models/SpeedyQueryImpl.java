@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
+import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
@@ -36,7 +37,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private Set<String> select = new LinkedHashSet<>();
     private boolean countRequest = false;
     private String responseFormat;
-    private int maxPageSize = Integer.MAX_VALUE;
+    private int maxPageSize = 1000;
 
     public SpeedyQueryImpl(EntityMetadata from) {
         this.from = from;
@@ -61,10 +62,14 @@ public class SpeedyQueryImpl implements SpeedyQuery {
         pageInfo.setPageNo(pageNo);
     }
 
-    public void addPageSize(int pageSize) {
-        if (pageSize > 0) {
-            pageInfo.setPageSize(pageSize);
+    public void addPageSize(int pageSize) throws BadRequestException {
+        if (pageSize <= 0) {
+            throw new BadRequestException("Page size must be > 0, got " + pageSize);
         }
+        if (pageSize > maxPageSize) {
+            throw new BadRequestException("Page size " + pageSize + " exceeds maximum allowed " + maxPageSize);
+        }
+        pageInfo.setPageSize(pageSize);
     }
 
     public void addExpand(String expand) {

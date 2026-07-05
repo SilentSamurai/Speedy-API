@@ -198,7 +198,7 @@ public class JsonResponseWriter implements SpeedyResponseWriter {
     @Override
     public void writeText(String value) throws SpeedyHttpException {
         try {
-            if (value == null || value.isEmpty()) {
+            if (value == null) {
                 gen.writeNull();
             } else {
                 gen.writeString(value);

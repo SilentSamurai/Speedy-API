@@ -121,7 +121,7 @@ class CategoryUpdateDeleteValidationTest {
             SpeedyTestResult result = client.delete("Category")
                     .key("id", "")
                     .execute()
-                    .expectBadRequest();
+                    .expectNotFound();
 
             assertThat(result.responseBody(), containsString("entity not found"));
         }

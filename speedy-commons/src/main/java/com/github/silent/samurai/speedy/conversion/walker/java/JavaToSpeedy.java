@@ -64,7 +64,8 @@ public class JavaToSpeedy {
             }
         }
         if (!javaTypeRegistry.canToSpeedy(valueType, clazz)) {
-            return SpeedyNull.SPEEDY_NULL;
+            throw new ConversionException(
+                    "Cannot convert Java type " + clazz.getName() + " to SpeedyValue " + valueType);
         }
 
         return javaTypeRegistry.toSpeedy(instance, valueType);
@@ -105,7 +106,7 @@ public class JavaToSpeedy {
 
                     if (fm.isAssociation()) {
                         EntityMetadata assocMd = fm.getAssociationMetadata();
-                        SpeedyEntity child = entity.has(fm) && entity.isObject() ?
+                        SpeedyEntity child = entity.has(fm) && entity.get(fm).isObject() ?
                                 entity.get(fm).asObject() : new SpeedyEntity(assocMd);
                         updateEntity(srcVal, child);
                         entity.put(fm, child);
@@ -113,17 +114,20 @@ public class JavaToSpeedy {
                         SpeedyValue sv = fromJavaObject(fm, srcVal);
                         if (!(sv instanceof SpeedyNull) || !entity.has(fm)) entity.put(fm, sv);
                     }
+                } catch (ConversionException e) {
+                    throw e;
                 } catch (Exception e) {
                     throw new ConversionException(
-                            String.format("Failed to convert field %s in class %s: %s",
-                                    name, clazz.getSimpleName(), e.getMessage()), e);
+                            "Failed to convert field " + name + " in class " + clazz.getSimpleName(), e);
                 }
             }
 
             return entity;
+        } catch (ConversionException e) {
+            throw e;
         } catch (Exception e) {
             throw new ConversionException(
-                    String.format("Cannot convert %s to SpeedyEntity", instance), e);
+                    "Cannot convert " + instance.getClass().getName() + " to SpeedyEntity", e);
         }
     }
 }

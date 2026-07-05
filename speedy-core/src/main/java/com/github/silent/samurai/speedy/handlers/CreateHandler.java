@@ -81,9 +81,9 @@ public class CreateHandler implements com.github.silent.samurai.speedy.interface
                     for (SpeedyEntity entity : saved) {
                         if (entity == null || entity.isEmpty()) {
                             log.info("{} save failed", entityLabel);
-                        } else {
-                            log.info("{} saved {}", entityLabel, entity);
+                            continue;
                         }
+                        log.info("{} saved {}", entityLabel, entity);
                         if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, entity)) {
                             throw new BadRequestException("Incomplete Key after save");
                         }
@@ -145,9 +145,9 @@ public class CreateHandler implements com.github.silent.samurai.speedy.interface
 
                         if (savedEntity == null || savedEntity.isEmpty()) {
                             log.info("{} save failed", entityLabel);
-                        } else {
-                            log.info("{} saved {}", entityLabel, savedEntity);
+                            throw new BadRequestException("Save returned null or empty entity");
                         }
+                        log.info("{} saved {}", entityLabel, savedEntity);
                         if (!MetadataUtil.isKeyCompleteInEntity(entityMetadata, savedEntity)) {
                             throw new BadRequestException("Incomplete Key after save");
                         }
@@ -180,7 +180,8 @@ public class CreateHandler implements com.github.silent.samurai.speedy.interface
                 } else {
                     failed.add(SpeedyPartialFailure.builder()
                             .index(i).status(500)
-                            .message(e.getMessage()).timestamp(Instant.now().toString())
+                            .message(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName())
+                            .timestamp(Instant.now().toString())
                             .inputPk(inputPk).cause(e).build());
                     log.info("Entity #{} failed in per-entity transaction", i, e);
                 }
@@ -202,10 +203,7 @@ public class CreateHandler implements com.github.silent.samurai.speedy.interface
             );
         } else if (entities.size() == 1) {
             SpeedyPartialFailure failure = failed.get(0);
-            if (failure.getStatus() == 400) {
-                throw new BadRequestException(failure.getMessage(), failure.getCause());
-            }
-            throw new InternalServerError(failure.getMessage(), failure.getCause());
+            throw new SpeedyHttpException(failure.getStatus(), failure.getMessage(), failure.getCause());
         } else {
             int status = succeeded.isEmpty() ? 400 : 207;
             context.put(SpeedyResponse.class,

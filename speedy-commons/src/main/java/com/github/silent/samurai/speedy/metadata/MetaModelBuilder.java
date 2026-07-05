@@ -30,7 +30,7 @@ public class MetaModelBuilder {
         if (entityMap.containsKey(name)) {
             return entityMap.get(name);
         }
-        throw new NotFoundException("entity not found" + name);
+        throw new NotFoundException("entity not found: " + name);
     }
 
     public MetaModel build() throws NotFoundException {
@@ -63,17 +63,7 @@ public class MetaModelBuilder {
             }
         } catch (NotFoundException e) {
             // this should never happen
-            throw new RuntimeException(e);
-        }
-
-
-        for (EntityMetadata entityMetadata : metaModelProcessor.getAllEntityMetadata()) {
-
-            for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-                if (fieldMetadata.isAssociation()) {
-
-                }
-            }
+            throw new IllegalStateException(e);
         }
 
 
