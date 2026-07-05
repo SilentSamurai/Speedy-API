@@ -1,34 +1,39 @@
 package com.github.silent.samurai.speedy.io;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.client.Speedy;
+import com.github.silent.samurai.speedy.client.SpeedyResult;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
+import com.github.silent.samurai.speedy.client.format.XmlFormat;
+import com.github.silent.samurai.speedy.client.format.YamlFormat;
+import com.github.silent.samurai.speedy.client.test.MockMvcTransport;
 import com.github.silent.samurai.speedy.entity.ValueTestEntity;
-import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import net.bytebuddy.utility.RandomString;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/// Round-trips every {@code ValueType} through each {@link IoFormat} reader (request) and
-/// writer (response): the leaf switch each I/O provider must implement. TEXT/INT/FLOAT via
+/// Round-trips every {@code ValueType} through each wire format via the production
+/// {@link Speedy} client: the leaf switch each I/O provider must implement. TEXT/INT/FLOAT via
 /// TypeOverrideEntity, the temporal + BOOL types via ValueTestEntity, and ENUM (string) +
 /// ENUM_ORD (ordinal) via Task. Each case runs once per format in a single run.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -41,34 +46,35 @@ class SpeedyIoValueTypeTest {
     @Autowired
     private ValueTestRepository valueTestRepository;
 
-    /// POSTs a single-object create body and returns the created id.
-    private String create(IoMvc io, String entity, ObjectNode fields) throws Exception {
-        ArrayNode body = CommonUtil.json().createArrayNode();
-        body.add(fields);
-        MvcResult result = io.post(SpeedyConstants.URI + "/" + entity + "/" + SpeedyEndpoint.CREATE.suffix(), body);
-        String id = io.tree(result).at("/payload/0/id").asText();
-        assertFalse(id.isEmpty());
-        return id;
+    static Stream<Arguments> formats() {
+        return Stream.of(
+                Arguments.of(Named.of("JSON", (SpeedyFormat) new JsonFormat(new ObjectMapper()))),
+                Arguments.of(Named.of("YAML", (SpeedyFormat) new YamlFormat())),
+                Arguments.of(Named.of("XML", (SpeedyFormat) new XmlFormat())));
     }
 
-    private JsonNode get(IoMvc io, String entity, String id) throws Exception {
-        MvcResult result = io.get(SpeedyConstants.URI + "/" + entity + "?id='" + id + "'");
-        JsonNode payload = io.tree(result).get("payload");
-        assertEquals(1, payload.size());
-        return payload.get(0);
+    private Speedy client(SpeedyFormat format) {
+        return Speedy.builder()
+                .baseUrl("http://localhost")
+                .transport(new MockMvcTransport(mvc))
+                .format(format)
+                .build();
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void textIntFloat_roundTrip(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
-        ObjectNode fields = CommonUtil.json().createObjectNode();
-        fields.put("textField", "hello io");
-        fields.put("bigIntField", 42);
-        fields.put("floatField", 3.14);
+    @MethodSource("formats")
+    void textIntFloat_roundTrip(SpeedyFormat format) {
+        Speedy speedy = client(format);
 
-        String id = create(io, "TypeOverrideEntity", fields);
-        JsonNode got = get(io, "TypeOverrideEntity", id);
+        SpeedyResult created = speedy.create("TypeOverrideEntity")
+                .field("textField", "hello io")
+                .field("bigIntField", 42)
+                .field("floatField", 3.14)
+                .execute();
+        String id = created.firstRaw().get("id").asText();
+        assertFalse(id.isEmpty());
+
+        JsonNode got = speedy.get("TypeOverrideEntity").key("id", id).execute().firstRaw();
 
         assertEquals("hello io", got.get("textField").asText());
         assertEquals(42, got.get("bigIntField").asInt());
@@ -76,20 +82,23 @@ class SpeedyIoValueTypeTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void temporalAndBoolean_roundTrip(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
-        ObjectNode fields = CommonUtil.json().createObjectNode();
-        fields.put("localDateTime", "2021-01-01T00:00:00");
-        fields.put("localDate", "2021-01-01");
-        fields.put("localTime", "00:00:00");
-        fields.put("instantTime", "2021-01-01T00:00:00Z");
-        fields.put("zonedDateTime", "2021-01-01T00:00+09:00");
-        fields.put("booleanValue", true);
-        fields.put("doubleValue", 2.718);
+    @MethodSource("formats")
+    void temporalAndBoolean_roundTrip(SpeedyFormat format) {
+        Speedy speedy = client(format);
 
-        String id = create(io, "ValueTestEntity", fields);
-        JsonNode got = get(io, "ValueTestEntity", id);
+        SpeedyResult created = speedy.create("ValueTestEntity")
+                .field("localDateTime", "2021-01-01T00:00:00")
+                .field("localDate", "2021-01-01")
+                .field("localTime", "00:00:00")
+                .field("instantTime", "2021-01-01T00:00:00Z")
+                .field("zonedDateTime", "2021-01-01T00:00+09:00")
+                .field("booleanValue", true)
+                .field("doubleValue", 2.718)
+                .execute();
+        String id = created.firstRaw().get("id").asText();
+        assertFalse(id.isEmpty());
+
+        JsonNode got = speedy.get("ValueTestEntity").key("id", id).execute().firstRaw();
 
         // Response leaf rendering (writer)
         assertEquals("2021-01-01T00:00:00", got.get("localDateTime").asText());
@@ -111,16 +120,19 @@ class SpeedyIoValueTypeTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void enumStringAndOrdinal_roundTrip(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
-        ObjectNode fields = CommonUtil.json().createObjectNode();
-        fields.put("title", "io-enum-" + RandomString.make(6));
-        fields.put("priority", "LOW");   // ENUM (string)
-        fields.put("difficulty", 0);      // ENUM_ORD (ordinal)
+    @MethodSource("formats")
+    void enumStringAndOrdinal_roundTrip(SpeedyFormat format) {
+        Speedy speedy = client(format);
 
-        String id = create(io, "Task", fields);
-        JsonNode got = get(io, "Task", id);
+        SpeedyResult created = speedy.create("Task")
+                .field("title", "io-enum-" + RandomString.make(6))
+                .field("priority", "LOW")   // ENUM (string)
+                .field("difficulty", 0)      // ENUM_ORD (ordinal)
+                .execute();
+        String id = created.firstRaw().get("id").asText();
+        assertFalse(id.isEmpty());
+
+        JsonNode got = speedy.get("Task").key("id", id).execute().firstRaw();
 
         assertEquals("LOW", got.get("priority").asText());
         assertEquals(0, got.get("difficulty").asInt());

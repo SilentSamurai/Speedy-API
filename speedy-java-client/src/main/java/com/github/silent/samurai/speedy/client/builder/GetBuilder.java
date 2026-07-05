@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
 import com.github.silent.samurai.speedy.client.exception.SpeedyException;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
 import com.github.silent.samurai.speedy.client.internal.FieldUtil;
+import com.github.silent.samurai.speedy.client.internal.FormatHeaders;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
@@ -34,15 +37,22 @@ public class GetBuilder {
     private final PathBuilder paths;
     private final RequestSender sender;
     private final ResponseParser parser;
+    private final SpeedyFormat format;
     private Integer pageSize;
     private Integer pageNo;
 
     public GetBuilder(String entity, PathBuilder paths, RequestSender sender,
                       ObjectMapper mapper, ResponseParser parser) {
+        this(entity, paths, sender, mapper, parser, new JsonFormat(mapper));
+    }
+
+    public GetBuilder(String entity, PathBuilder paths, RequestSender sender,
+                      ObjectMapper mapper, ResponseParser parser, SpeedyFormat format) {
         this.entity = entity;
         this.paths = paths;
         this.sender = sender;
         this.parser = parser;
+        this.format = format;
         this.pkNode = mapper.createObjectNode();
         this.selectFields = new ArrayList<>();
         this.expandRelations = new ArrayList<>();
@@ -101,7 +111,7 @@ public class GetBuilder {
         if (!queryString.isEmpty()) {
             url = url + "?" + queryString;
         }
-        SpeedyRequest request = new SpeedyRequest("GET", url, Collections.emptyMap(), null);
+        SpeedyRequest request = new SpeedyRequest("GET", url, FormatHeaders.acceptOnly(format), null);
         try {
             SpeedyRawResponse response = sender.send(request);
             return parser.parseEntityResponse(response);

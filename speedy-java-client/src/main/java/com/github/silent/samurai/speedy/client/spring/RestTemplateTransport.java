@@ -26,6 +26,8 @@ import java.util.Map;
  */
 public class RestTemplateTransport implements SpeedyTransport {
 
+    private static final String DEFAULT_MEDIA_TYPE = "application/json;charset=UTF-8";
+
     private final RestTemplate restTemplate;
 
     public RestTemplateTransport() {
@@ -43,9 +45,11 @@ public class RestTemplateTransport implements SpeedyTransport {
         try {
             HttpMethod method = HttpMethod.valueOf(request.method());
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Accept", "application/json;charset=UTF-8");
-            if (request.body() != null && !request.body().isEmpty()) {
-                headers.set("Content-Type", "application/json;charset=UTF-8");
+            if (!hasHeader(request, "Accept")) {
+                headers.set("Accept", DEFAULT_MEDIA_TYPE);
+            }
+            if (request.body() != null && !request.body().isEmpty() && !hasHeader(request, "Content-Type")) {
+                headers.set("Content-Type", DEFAULT_MEDIA_TYPE);
             }
             for (Map.Entry<String, List<String>> entry : request.headers().entrySet()) {
                 for (String value : entry.getValue()) {
@@ -81,5 +85,9 @@ public class RestTemplateTransport implements SpeedyTransport {
                     responseHeaders,
                     e.getResponseBodyAsString());
         }
+    }
+
+    private static boolean hasHeader(SpeedyRequest request, String name) {
+        return request.headers().keySet().stream().anyMatch(k -> k.equalsIgnoreCase(name));
     }
 }

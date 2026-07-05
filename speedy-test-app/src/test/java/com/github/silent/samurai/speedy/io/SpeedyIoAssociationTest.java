@@ -1,29 +1,33 @@
 package com.github.silent.samurai.speedy.io;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.client.Speedy;
+import com.github.silent.samurai.speedy.client.SpeedyResult;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
+import com.github.silent.samurai.speedy.client.format.XmlFormat;
+import com.github.silent.samurai.speedy.client.format.YamlFormat;
+import com.github.silent.samurai.speedy.client.test.MockMvcTransport;
 import net.bytebuddy.utility.RandomString;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-/// A nested foreign-key association round-trips once per {@link IoFormat}: a {@code Product} is
-/// created with an inline {@code category: {id: "1"}} object, and read back to confirm the
-/// nested object is both parsed (request) and rendered (response) — exercising the
-/// {@code startObject}/{@code endObject} nesting inside {@code payload} that the flat CRUD suite
-/// never hits.
+/// A nested foreign-key association round-trips once per wire format through the production
+/// {@link Speedy} client: a {@code Product} is created with an inline {@code category.id}
+/// field, and read back to confirm the nested object is both sent (request) and parsed
+/// (response) — exercising the FK nesting the flat CRUD suite never hits.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedyIoAssociationTest {
@@ -34,25 +38,37 @@ class SpeedyIoAssociationTest {
     @Autowired
     private MockMvc mvc;
 
+    static Stream<Arguments> formats() {
+        return Stream.of(
+                Arguments.of(Named.of("JSON", (SpeedyFormat) new JsonFormat(new ObjectMapper()))),
+                Arguments.of(Named.of("YAML", (SpeedyFormat) new YamlFormat())),
+                Arguments.of(Named.of("XML", (SpeedyFormat) new XmlFormat())));
+    }
+
+    private Speedy client(SpeedyFormat format) {
+        return Speedy.builder()
+                .baseUrl("http://localhost")
+                .transport(new MockMvcTransport(mvc))
+                .format(format)
+                .build();
+    }
+
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void createAndReadNestedForeignKey(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
+    @MethodSource("formats")
+    void createAndReadNestedForeignKey(SpeedyFormat format) {
+        Speedy speedy = client(format);
         String name = "io-assoc-" + RandomString.make(8);
 
-        ObjectNode product = CommonUtil.json().createObjectNode();
-        product.put("name", name);
-        product.put("description", "io-assoc-desc");
-        product.putObject("category").put("id", CATEGORY_ID); // nested FK object
-        ArrayNode body = CommonUtil.json().createArrayNode();
-        body.add(product);
-
-        MvcResult created = io.post(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.CREATE.suffix(), body);
-        String id = io.tree(created).at("/payload/0/id").asText();
+        SpeedyResult created = speedy.create("Product")
+                .field("name", name)
+                .field("description", "io-assoc-desc")
+                .field("category.id", CATEGORY_ID) // nested FK object
+                .execute();
+        String id = created.firstRaw().get("id").asText();
         assertFalse(id.isEmpty());
 
-        MvcResult read = io.get(SpeedyConstants.URI + "/Product?id='" + id + "'");
-        JsonNode got = io.tree(read).get("payload").get(0);
+        SpeedyResult fetched = speedy.get("Product").key("id", id).execute();
+        var got = fetched.firstRaw();
 
         assertEquals(name, got.get("name").asText());
         // The FK is rendered back as a nested object, not a flat scalar.

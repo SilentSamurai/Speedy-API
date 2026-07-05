@@ -34,6 +34,13 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
+        <!-- YAML wire format (optional) — consumers add this to use YamlFormat -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Spring Test dependency for MockMvc support (optional) -->
         <dependency>
             <groupId>org.springframework</groupId>

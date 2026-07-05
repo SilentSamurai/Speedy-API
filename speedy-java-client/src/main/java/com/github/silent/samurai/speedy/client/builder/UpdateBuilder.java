@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
 import com.github.silent.samurai.speedy.client.exception.SpeedyException;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
 import com.github.silent.samurai.speedy.client.internal.FieldUtil;
+import com.github.silent.samurai.speedy.client.internal.FormatHeaders;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
@@ -13,7 +16,6 @@ import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Fluent builder for updating entities via the Speedy API.
@@ -34,14 +36,21 @@ public class UpdateBuilder {
     private final RequestSender sender;
     private final ObjectMapper mapper;
     private final ResponseParser parser;
+    private final SpeedyFormat format;
 
     public UpdateBuilder(String entity, PathBuilder paths, RequestSender sender,
                          ObjectMapper mapper, ResponseParser parser) {
+        this(entity, paths, sender, mapper, parser, new JsonFormat(mapper));
+    }
+
+    public UpdateBuilder(String entity, PathBuilder paths, RequestSender sender,
+                         ObjectMapper mapper, ResponseParser parser, SpeedyFormat format) {
         this.entity = entity;
         this.paths = paths;
         this.sender = sender;
         this.mapper = mapper;
         this.parser = parser;
+        this.format = format;
         this.body = mapper.createObjectNode();
         this.pkNode = mapper.createObjectNode();
     }
@@ -81,13 +90,8 @@ public class UpdateBuilder {
         if (!pkNode.isEmpty()) {
             body.setAll(pkNode);
         }
-        String jsonBody;
-        try {
-            jsonBody = mapper.writeValueAsString(body);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize request body", e);
-        }
-        SpeedyRequest request = new SpeedyRequest("PATCH", url, Collections.emptyMap(), jsonBody);
+        String requestBody = format.write(body);
+        SpeedyRequest request = new SpeedyRequest("PATCH", url, FormatHeaders.forBody(format), requestBody);
         try {
             SpeedyRawResponse response = sender.send(request);
             return parser.parseEntityResponse(response);

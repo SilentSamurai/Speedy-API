@@ -1,29 +1,36 @@
 package com.github.silent.samurai.speedy.io;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
+import com.github.silent.samurai.speedy.client.Speedy;
+import com.github.silent.samurai.speedy.client.exception.SpeedyException;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
+import com.github.silent.samurai.speedy.client.format.XmlFormat;
+import com.github.silent.samurai.speedy.client.format.YamlFormat;
+import com.github.silent.samurai.speedy.client.test.MockMvcTransport;
 import net.bytebuddy.utility.RandomString;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-/// The error envelope ({@code status}/{@code message}/{@code timestamp}) rendered once per
-/// {@link IoFormat}. Uses validation failures on a valid entity (empty and over-long name),
-/// which occur AFTER content negotiation, so the error body is written by the negotiated
-/// writer — proving errors are not silently forced to JSON. (Pre-negotiation failures such as
-/// an unknown entity intentionally fall back to JSON and are out of scope here.)
+/// The error envelope ({@code status}/{@code message}/{@code timestamp}) rendered once per wire
+/// format, driven through the production {@link Speedy} client. Uses validation failures on a
+/// valid entity (empty and over-long name), which occur AFTER content negotiation, so the error
+/// body is written by the negotiated writer and mapped to a typed {@link SpeedyException} —
+/// proving errors are not silently forced to JSON on either side of the wire.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedyIoErrorTest {
@@ -31,38 +38,46 @@ class SpeedyIoErrorTest {
     @Autowired
     private MockMvc mvc;
 
-    private static ArrayNode oneCategory(String name) {
-        ArrayNode body = CommonUtil.json().createArrayNode();
-        body.addObject().put("name", name);
-        return body;
+    static Stream<Arguments> formats() {
+        return Stream.of(
+                Arguments.of(Named.of("JSON", (SpeedyFormat) new JsonFormat(new ObjectMapper()))),
+                Arguments.of(Named.of("YAML", (SpeedyFormat) new YamlFormat())),
+                Arguments.of(Named.of("XML", (SpeedyFormat) new XmlFormat())));
     }
 
-    /// Asserts the standard error envelope, parsed in the negotiated format.
-    private static void assertErrorEnvelope(IoMvc io, MvcResult result, int expectedStatus) {
-        JsonNode error = io.tree(result); // also asserts the negotiated content type
-        assertEquals(expectedStatus, error.get("status").asInt());
-        assertNotNull(error.get("message"), "error had no message");
-        assertFalse(error.get("message").asText().isEmpty(), "error message was empty");
-        assertNotNull(error.get("timestamp"), "error had no timestamp");
+    private Speedy client(SpeedyFormat format) {
+        return Speedy.builder()
+                .baseUrl("http://localhost")
+                .transport(new MockMvcTransport(mvc))
+                .format(format)
+                .build();
     }
 
-    @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void emptyName_returns400Envelope(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
-        MvcResult result = io.post(
-                SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix(),
-                oneCategory(""), 400);
-        assertErrorEnvelope(io, result, 400);
+    private static void assertErrorEnvelope(SpeedyException ex, int expectedStatus) {
+        assertEquals(expectedStatus, ex.statusCode());
+        assertNotNull(ex.serverMessage());
+        assertFalse(ex.serverMessage().isEmpty());
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void tooLongName_returns400Envelope(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
-        MvcResult result = io.post(
-                SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix(),
-                oneCategory(RandomString.make(251)), 400);
-        assertErrorEnvelope(io, result, 400);
+    @MethodSource("formats")
+    void emptyName_returns400Envelope(SpeedyFormat format) {
+        Speedy speedy = client(format);
+
+        SpeedyException ex = assertThrows(SpeedyException.class,
+                () -> speedy.create("Category").field("name", "").execute());
+
+        assertErrorEnvelope(ex, 400);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("formats")
+    void tooLongName_returns400Envelope(SpeedyFormat format) {
+        Speedy speedy = client(format);
+
+        SpeedyException ex = assertThrows(SpeedyException.class,
+                () -> speedy.create("Category").field("name", RandomString.make(251)).execute());
+
+        assertErrorEnvelope(ex, 400);
     }
 }

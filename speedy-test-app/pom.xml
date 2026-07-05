@@ -56,6 +56,18 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-xml-io</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
             <type>test-jar</type>

@@ -1,30 +1,37 @@
 package com.github.silent.samurai.speedy.io;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
+import com.github.silent.samurai.speedy.client.Speedy;
+import com.github.silent.samurai.speedy.client.SpeedyResult;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
+import com.github.silent.samurai.speedy.client.format.XmlFormat;
+import com.github.silent.samurai.speedy.client.format.YamlFormat;
+import com.github.silent.samurai.speedy.client.test.MockMvcTransport;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
-import com.github.silent.samurai.speedy.utils.CommonUtil;
 import net.bytebuddy.utility.RandomString;
+import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/// CRUD run once per {@link IoFormat}: create (single + bulk), get (by key + all),
-/// update (PATCH), delete (single + bulk). Each asserts the response was rendered in the
-/// negotiated format and verifies the effect against the repository — proving the same
-/// endpoints behave identically across every wire format.
+/// CRUD driven through the production {@link Speedy} client (via {@link MockMvcTransport}) once
+/// per wire format: create (single + bulk), get (by key + query), update, delete (single + bulk).
+/// Proves the same endpoints behave identically across every wire format from the client's
+/// perspective, not just the server's.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedyIoCrudTest {
@@ -35,111 +42,114 @@ class SpeedyIoCrudTest {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    private static ArrayNode array(String... names) {
-        ArrayNode array = CommonUtil.json().createArrayNode();
-        for (String name : names) {
-            array.addObject().put("name", name);
-        }
-        return array;
+    static Stream<Arguments> formats() {
+        return Stream.of(
+                Arguments.of(Named.of("JSON", (SpeedyFormat) new JsonFormat(new ObjectMapper()))),
+                Arguments.of(Named.of("YAML", (SpeedyFormat) new YamlFormat())),
+                Arguments.of(Named.of("XML", (SpeedyFormat) new XmlFormat())));
     }
 
-    private MvcResult createCategories(IoMvc io, ArrayNode body) throws Exception {
-        return io.post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.CREATE.suffix(), body);
+    private Speedy client(SpeedyFormat format) {
+        return Speedy.builder()
+                .baseUrl("http://localhost")
+                .transport(new MockMvcTransport(mvc))
+                .format(format)
+                .build();
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void createSingle(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
+    @MethodSource("formats")
+    void createSingle(SpeedyFormat format) {
+        Speedy speedy = client(format);
         String name = "io-crud-" + RandomString.make(8);
-        MvcResult result = createCategories(io, array(name));
 
-        JsonNode payload = io.tree(result).get("payload");
-        assertEquals(1, payload.size());
-        assertFalse(payload.get(0).get("id").asText().isEmpty());
+        SpeedyResult created = speedy.create("Category").field("name", name).execute();
+
+        assertEquals(1, created.size());
+        assertFalse(created.firstRaw().get("id").asText().isEmpty());
         assertTrue(categoryRepository.findByName(name).isPresent());
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void createBulk(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
+    @MethodSource("formats")
+    void createBulk(SpeedyFormat format) {
+        Speedy speedy = client(format);
         String a = "io-bulk-" + RandomString.make(8);
         String b = "io-bulk-" + RandomString.make(8);
         String c = "io-bulk-" + RandomString.make(8);
-        MvcResult result = createCategories(io, array(a, b, c));
 
-        assertEquals(3, io.tree(result).get("payload").size());
+        ObjectMapper json = new ObjectMapper();
+        SpeedyResult created = speedy.createMany("Category")
+                .items(List.of(
+                        json.createObjectNode().put("name", a),
+                        json.createObjectNode().put("name", b),
+                        json.createObjectNode().put("name", c)))
+                .execute();
+
+        assertEquals(3, created.size());
         assertTrue(categoryRepository.findByName(a).isPresent());
         assertTrue(categoryRepository.findByName(b).isPresent());
         assertTrue(categoryRepository.findByName(c).isPresent());
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void getByKeyAndGetAll(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
+    @MethodSource("formats")
+    void getByKeyAndQueryAll(SpeedyFormat format) {
+        Speedy speedy = client(format);
         String name = "io-get-" + RandomString.make(8);
-        createCategories(io, array(name));
+        String id = speedy.create("Category").field("name", name).execute().firstRaw().get("id").asText();
 
-        MvcResult byName = io.get(SpeedyConstants.URI + "/Category?name='" + name + "'");
-        JsonNode payload = io.tree(byName).get("payload");
-        assertEquals(1, payload.size());
-        assertEquals(name, payload.get(0).get("name").asText());
+        SpeedyResult byKey = speedy.get("Category").key("id", id).execute();
+        assertEquals(name, byKey.firstRaw().get("name").asText());
 
-        MvcResult all = io.get(SpeedyConstants.URI + "/Category/");
-        assertFalse(io.tree(all).get("payload").isEmpty());
+        SpeedyResult all = speedy.query("Category").pageSize(1000).execute();
+        assertFalse(all.isEmpty());
+        assertTrue(all.raw().findValuesAsText("id").contains(id));
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void updatePatch(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
+    @MethodSource("formats")
+    void updatePatch(SpeedyFormat format) {
+        Speedy speedy = client(format);
         String name = "io-upd-" + RandomString.make(8);
         String newName = "io-upd-" + RandomString.make(8);
-        String id = io.tree(createCategories(io, array(name))).at("/payload/0/id").asText();
+        String id = speedy.create("Category").field("name", name).execute().firstRaw().get("id").asText();
 
-        ObjectNode body = CommonUtil.json().createObjectNode();
-        body.put("id", id);
-        body.put("name", newName);
+        speedy.update("Category").key("id", id).field("name", newName).execute();
 
-        MvcResult result = io.patch(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.UPDATE.suffix(), body);
-
-        io.tree(result); // asserts negotiated format
         assertEquals(newName, categoryRepository.findById(id).orElseThrow().getName());
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void deleteSingle(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
+    @MethodSource("formats")
+    void deleteSingle(SpeedyFormat format) {
+        Speedy speedy = client(format);
         String name = "io-del-" + RandomString.make(8);
-        String id = io.tree(createCategories(io, array(name))).at("/payload/0/id").asText();
+        String id = speedy.create("Category").field("name", name).execute().firstRaw().get("id").asText();
 
-        ArrayNode body = CommonUtil.json().createArrayNode();
-        body.addObject().put("id", id);
+        speedy.delete("Category").key("id", id).execute();
 
-        MvcResult result = io.delete(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix(), body);
-
-        io.tree(result); // asserts negotiated format
         assertFalse(categoryRepository.findByName(name).isPresent());
     }
 
     @ParameterizedTest(name = "{0}")
-    @EnumSource(IoFormat.class)
-    void deleteBulk(IoFormat fmt) throws Exception {
-        IoMvc io = new IoMvc(mvc, fmt);
+    @MethodSource("formats")
+    void deleteBulk(SpeedyFormat format) {
+        Speedy speedy = client(format);
         String a = "io-delb-" + RandomString.make(8);
         String b = "io-delb-" + RandomString.make(8);
-        JsonNode created = io.tree(createCategories(io, array(a, b))).get("payload");
 
-        ArrayNode body = CommonUtil.json().createArrayNode();
-        body.addObject().put("id", created.get(0).get("id").asText());
-        body.addObject().put("id", created.get(1).get("id").asText());
+        ObjectMapper json = new ObjectMapper();
+        SpeedyResult created = speedy.createMany("Category")
+                .items(List.of(
+                        json.createObjectNode().put("name", a),
+                        json.createObjectNode().put("name", b)))
+                .execute();
 
-        MvcResult result = io.delete(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.DELETE.suffix(), body);
+        ObjectNode pkA = json.createObjectNode().put("id", created.raw().get(0).get("id").asText());
+        ObjectNode pkB = json.createObjectNode().put("id", created.raw().get(1).get("id").asText());
+        speedy.deleteMany("Category", List.of(pkA, pkB));
 
-        io.tree(result); // asserts negotiated format
         assertFalse(categoryRepository.findByName(a).isPresent());
         assertFalse(categoryRepository.findByName(b).isPresent());
     }

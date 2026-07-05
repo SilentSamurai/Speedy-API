@@ -43,6 +43,7 @@
         <module>speedy-jooq-query-processor</module>
         <module>speedy-json-io</module>
         <module>speedy-yaml-io</module>
+        <module>speedy-xml-io</module>
         <module>jacoco-aggregate</module>
     </modules>
 
