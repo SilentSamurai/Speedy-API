@@ -50,6 +50,12 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-yaml-io</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
             <type>test-jar</type>

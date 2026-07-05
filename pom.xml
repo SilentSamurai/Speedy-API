@@ -42,6 +42,7 @@
         <module>speedy-static-metamodel-processor</module>
         <module>speedy-jooq-query-processor</module>
         <module>speedy-json-io</module>
+        <module>speedy-yaml-io</module>
         <module>jacoco-aggregate</module>
     </modules>
 
