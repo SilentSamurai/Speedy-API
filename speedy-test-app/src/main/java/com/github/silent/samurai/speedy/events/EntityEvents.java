@@ -30,25 +30,19 @@ public class EntityEvents implements ISpeedyEventHandler {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.POST_INSERT, SpeedyEventType.PRE_INSERT})
+    @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.PRE_INSERT})
+    public void categoryPreInsertEvent(SpeedyEntity category) throws Exception {
+        LOGGER.info("Category Pre Insert Event");
+        if ("generic-error-trigger".equalsIgnoreCase(category.get("name").asText())) {
+            throw new RuntimeException("Simulated unexpected runtime error");
+        }
+    }
+
+    @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.POST_INSERT})
     public void categoryPostInsertEvent(SpeedyEntity category) throws Exception {
         LOGGER.info("Category Post Insert Event");
-        boolean shouldThrowRuntime = false;
-        try {
-            if ("generic-error-trigger".equalsIgnoreCase(category.get("name").asText())) {
-                shouldThrowRuntime = true;
-                throw new RuntimeException("Simulated unexpected runtime error");
-            }
-            String id = category.get("id").asText();
-            POST_INSERT_CATEGORIES.put(id, true);
-        } catch (RuntimeException e) {
-            if (shouldThrowRuntime) {
-                throw e;
-            }
-            LOGGER.warn("Failed to extract category ID from SpeedyEntity in POST_INSERT handler", e);
-        } catch (Exception e) {
-            LOGGER.warn("Failed to extract category ID from SpeedyEntity in POST_INSERT handler", e);
-        }
+        String id = category.get("id").asText();
+        POST_INSERT_CATEGORIES.put(id, true);
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_INSERT})
