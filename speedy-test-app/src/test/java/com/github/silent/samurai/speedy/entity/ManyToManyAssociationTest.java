@@ -2,9 +2,9 @@ package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessorV2;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;

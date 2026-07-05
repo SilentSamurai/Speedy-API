@@ -5,8 +5,8 @@ import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.ConversionException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
@@ -64,7 +64,8 @@ public class JavaToSpeedy {
             }
         }
         if (!javaTypeRegistry.canToSpeedy(valueType, clazz)) {
-            return SpeedyNull.SPEEDY_NULL;
+            throw new ConversionException(
+                    "Cannot convert Java type " + clazz.getName() + " to SpeedyValue " + valueType);
         }
 
         return javaTypeRegistry.toSpeedy(instance, valueType);
@@ -105,7 +106,7 @@ public class JavaToSpeedy {
 
                     if (fm.isAssociation()) {
                         EntityMetadata assocMd = fm.getAssociationMetadata();
-                        SpeedyEntity child = entity.has(fm) && entity.isObject() ?
+                        SpeedyEntity child = entity.has(fm) && entity.get(fm).isObject() ?
                                 entity.get(fm).asObject() : new SpeedyEntity(assocMd);
                         updateEntity(srcVal, child);
                         entity.put(fm, child);
@@ -113,17 +114,20 @@ public class JavaToSpeedy {
                         SpeedyValue sv = fromJavaObject(fm, srcVal);
                         if (!(sv instanceof SpeedyNull) || !entity.has(fm)) entity.put(fm, sv);
                     }
+                } catch (ConversionException e) {
+                    throw e;
                 } catch (Exception e) {
                     throw new ConversionException(
-                            String.format("Failed to convert field %s in class %s: %s",
-                                    name, clazz.getSimpleName(), e.getMessage()), e);
+                            "Failed to convert field " + name + " in class " + clazz.getSimpleName(), e);
                 }
             }
 
             return entity;
+        } catch (ConversionException e) {
+            throw e;
         } catch (Exception e) {
             throw new ConversionException(
-                    String.format("Cannot convert %s to SpeedyEntity", instance), e);
+                    "Cannot convert " + instance.getClass().getName() + " to SpeedyEntity", e);
         }
     }
 }

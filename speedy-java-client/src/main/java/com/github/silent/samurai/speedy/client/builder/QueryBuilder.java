@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
+import com.github.silent.samurai.speedy.client.internal.FormatHeaders;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
@@ -13,7 +16,6 @@ import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Fluent builder for executing advanced queries against the Speedy API.
@@ -41,14 +43,21 @@ public class QueryBuilder {
     private final RequestSender sender;
     private final ObjectMapper mapper;
     private final ResponseParser parser;
+    private final SpeedyFormat format;
 
     public QueryBuilder(String entity, PathBuilder paths, RequestSender sender,
                         ObjectMapper mapper, ResponseParser parser) {
+        this(entity, paths, sender, mapper, parser, new JsonFormat(mapper));
+    }
+
+    public QueryBuilder(String entity, PathBuilder paths, RequestSender sender,
+                        ObjectMapper mapper, ResponseParser parser, SpeedyFormat format) {
         this.entity = entity;
         this.paths = paths;
         this.sender = sender;
         this.mapper = mapper;
         this.parser = parser;
+        this.format = format;
         this.body = mapper.createObjectNode();
         this.body.put("$from", entity);
     }
@@ -177,13 +186,8 @@ public class QueryBuilder {
      */
     public SpeedyResult execute() {
         String url = paths.queryPath(entity);
-        String jsonBody;
-        try {
-            jsonBody = mapper.writeValueAsString(body);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize query body", e);
-        }
-        SpeedyRequest request = new SpeedyRequest("POST", url, Collections.emptyMap(), jsonBody);
+        String requestBody = format.write(body);
+        SpeedyRequest request = new SpeedyRequest("POST", url, FormatHeaders.forBody(format), requestBody);
         try {
             SpeedyRawResponse response = sender.send(request);
             return parser.parseEntityResponse(response);
@@ -201,13 +205,8 @@ public class QueryBuilder {
      */
     public long count() {
         String url = paths.countPath(entity);
-        String jsonBody;
-        try {
-            jsonBody = mapper.writeValueAsString(body);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize query body", e);
-        }
-        SpeedyRequest request = new SpeedyRequest("POST", url, Collections.emptyMap(), jsonBody);
+        String requestBody = format.write(body);
+        SpeedyRequest request = new SpeedyRequest("POST", url, FormatHeaders.forBody(format), requestBody);
         try {
             SpeedyRawResponse response = sender.send(request);
             return parser.parseCountResponse(response);

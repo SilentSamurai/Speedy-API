@@ -5,18 +5,27 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
 import com.github.silent.samurai.speedy.client.exception.*;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 
 /**
  * Central point for parsing server responses into domain types.
- * Enforces the client-server JSON contract and routes errors to typed exceptions.
+ * Enforces the client-server envelope contract (via the configured
+ * {@link SpeedyFormat}) and routes errors to typed exceptions.
  */
 public class ResponseParser {
 
     private final ObjectMapper mapper;
+    private final SpeedyFormat format;
 
     public ResponseParser(ObjectMapper mapper) {
+        this(mapper, new JsonFormat(mapper));
+    }
+
+    public ResponseParser(ObjectMapper mapper, SpeedyFormat format) {
         this.mapper = mapper;
+        this.format = format;
     }
 
     /**
@@ -31,24 +40,20 @@ public class ResponseParser {
         if (!response.is2xx()) {
             throw parseError(response);
         }
-        try {
-            String body = response.body();
-            if (body == null || body.isEmpty()) {
-                return new SpeedyResult(mapper.createArrayNode(), 0, 0, 0, 0, mapper);
-            }
-            JsonNode root = mapper.readTree(body);
-            JsonNode payload = root.has("payload") ? root.get("payload") : mapper.createArrayNode();
-            if (payload == null || payload.isNull() || !payload.isArray()) {
-                payload = mapper.createArrayNode();
-            }
-            int pageIndex = root.has("pageIndex") ? root.get("pageIndex").asInt(0) : 0;
-            int pageSize = root.has("pageSize") ? root.get("pageSize").asInt(0) : 0;
-            long totalCount = root.has("totalCount") ? root.get("totalCount").asLong(0) : 0;
-            int totalPages = root.has("totalPages") ? root.get("totalPages").asInt(0) : 0;
-            return new SpeedyResult(payload, pageIndex, pageSize, totalCount, totalPages, mapper);
-        } catch (JsonProcessingException e) {
-            throw new SpeedyDeserializationException("Failed to parse entity response: " + e.getMessage(), e);
+        String body = response.body();
+        if (body == null || body.isEmpty()) {
+            return new SpeedyResult(mapper.createArrayNode(), 0, 0, 0, 0, mapper);
         }
+        JsonNode root = format.read(body);
+        JsonNode payload = root.has("payload") ? root.get("payload") : mapper.createArrayNode();
+        if (payload == null || payload.isNull() || !payload.isArray()) {
+            payload = mapper.createArrayNode();
+        }
+        int pageIndex = root.has("pageIndex") ? root.get("pageIndex").asInt(0) : 0;
+        int pageSize = root.has("pageSize") ? root.get("pageSize").asInt(0) : 0;
+        long totalCount = root.has("totalCount") ? root.get("totalCount").asLong(0) : 0;
+        int totalPages = root.has("totalPages") ? root.get("totalPages").asInt(0) : 0;
+        return new SpeedyResult(payload, pageIndex, pageSize, totalCount, totalPages, mapper);
     }
 
     /**
@@ -63,16 +68,12 @@ public class ResponseParser {
         if (!response.is2xx()) {
             throw parseError(response);
         }
-        try {
-            String body = response.body();
-            if (body == null || body.isEmpty()) {
-                return 0;
-            }
-            JsonNode root = mapper.readTree(body);
-            return root.has("count") ? root.get("count").asLong(0) : 0;
-        } catch (JsonProcessingException e) {
-            throw new SpeedyDeserializationException("Failed to parse count response: " + e.getMessage(), e);
+        String body = response.body();
+        if (body == null || body.isEmpty()) {
+            return 0;
         }
+        JsonNode root = format.read(body);
+        return root.has("count") ? root.get("count").asLong(0) : 0;
     }
 
     /**
@@ -89,11 +90,11 @@ public class ResponseParser {
         String body = response.body();
 
         if (body != null && !body.isEmpty()) {
-            try {
-                JsonNode root = mapper.readTree(body);
+            JsonNode root = tryReadErrorBody(body);
+            if (root != null) {
                 serverMessage = root.has("message") ? root.get("message").asText() : null;
                 timestamp = root.has("timestamp") ? root.get("timestamp").asText() : null;
-            } catch (JsonProcessingException e) {
+            } else {
                 serverMessage = body;
             }
         }
@@ -111,6 +112,24 @@ public class ResponseParser {
                 return new SpeedyServerException(statusCode, serverMessage, timestamp, body);
             default:
                 return new SpeedyException(statusCode, serverMessage, timestamp, body);
+        }
+    }
+
+    /**
+     * Errors thrown before the server completes content negotiation are written
+     * with its JSON baseline serializer, so fall back to JSON when the
+     * configured format can't parse the body.
+     */
+    private JsonNode tryReadErrorBody(String body) {
+        try {
+            return format.read(body);
+        } catch (RuntimeException ignored) {
+            // fall through to JSON baseline
+        }
+        try {
+            return mapper.readTree(body);
+        } catch (JsonProcessingException ignored) {
+            return null;
         }
     }
 }

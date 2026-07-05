@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.models;
 
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.interfaces.query.PageInfo;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 public class PageInfoImpl implements PageInfo {
 
-    private int pageSize = SpeedyConstant.defaultPageSize;
+    private int pageSize = SpeedyConstants.defaultPageSize;
     private int pageNo = 0;
 }

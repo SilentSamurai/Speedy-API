@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.utils;
 import org.junit.jupiter.api.Test;
 
 import static com.github.silent.samurai.speedy.utils.CommonUtil.convertToEnum;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CommonUtilTest {
 
@@ -19,8 +20,8 @@ class CommonUtilTest {
         Status s1 = convertToEnum(Status.class, stringNode); // ACTIVE
         Status s2 = convertToEnum(Status.class, intNode);    // INACTIVE
 
-        assert s1 == Status.ACTIVE;
-        assert s2 == Status.INACTIVE;
+        assertEquals(Status.ACTIVE, s1);
+        assertEquals(Status.INACTIVE, s2);
 
     }
 }

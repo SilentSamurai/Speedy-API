@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.validation.rules;
 
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.models.SpeedyDouble;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.json;
 
-import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.request.ISpeedyIoProvider;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyRequestReader;
+import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponseWriter;
 import com.github.silent.samurai.speedy.json.request.JsonStructureReader;
 import com.github.silent.samurai.speedy.json.response.JsonResponseWriter;
 

@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.client.SpeedyResult;
 import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
 import com.github.silent.samurai.speedy.client.exception.SpeedyException;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
 import com.github.silent.samurai.speedy.client.internal.FieldUtil;
+import com.github.silent.samurai.speedy.client.internal.FormatHeaders;
 import com.github.silent.samurai.speedy.client.internal.PathBuilder;
 import com.github.silent.samurai.speedy.client.internal.RequestSender;
 import com.github.silent.samurai.speedy.client.internal.ResponseParser;
@@ -14,7 +17,6 @@ import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
 import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
 
 import java.io.IOException;
-import java.util.Collections;
 
 /**
  * Fluent builder for deleting entities by primary key via the Speedy API.
@@ -33,14 +35,21 @@ public class DeleteBuilder {
     private final RequestSender sender;
     private final ObjectMapper mapper;
     private final ResponseParser parser;
+    private final SpeedyFormat format;
 
     public DeleteBuilder(String entity, PathBuilder paths, RequestSender sender,
                          ObjectMapper mapper, ResponseParser parser) {
+        this(entity, paths, sender, mapper, parser, new JsonFormat(mapper));
+    }
+
+    public DeleteBuilder(String entity, PathBuilder paths, RequestSender sender,
+                         ObjectMapper mapper, ResponseParser parser, SpeedyFormat format) {
         this.entity = entity;
         this.paths = paths;
         this.sender = sender;
         this.mapper = mapper;
         this.parser = parser;
+        this.format = format;
         this.pkNode = mapper.createObjectNode();
     }
 
@@ -61,15 +70,10 @@ public class DeleteBuilder {
      */
     public SpeedyResult execute() {
         String url = paths.deletePath(entity);
-        String jsonBody;
-        try {
-            ArrayNode array = mapper.createArrayNode();
-            array.add(pkNode);
-            jsonBody = mapper.writeValueAsString(array);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize request body", e);
-        }
-        SpeedyRequest request = new SpeedyRequest("DELETE", url, Collections.emptyMap(), jsonBody);
+        ArrayNode array = mapper.createArrayNode();
+        array.add(pkNode);
+        String requestBody = format.write(array);
+        SpeedyRequest request = new SpeedyRequest("DELETE", url, FormatHeaders.forBody(format), requestBody);
         try {
             SpeedyRawResponse response = sender.send(request);
             return parser.parseEntityResponse(response);

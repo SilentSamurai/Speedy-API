@@ -7,20 +7,20 @@ public enum ConditionOperator {
 
     public static ConditionOperator fromSymbol(String symbol) throws BadRequestException {
         return switch (symbol) {
-            case "=", "==", "$eq" -> EQ;
-            case "!=", "$neq", "$ne" -> NEQ;
-            case "<", "$lt" -> LT;
-            case "<=", "$lte" -> LTE;
-            case ">", "$gt" -> GT;
-            case ">=", "$gte" -> GTE;
-            case "=*", "$matches" -> PATTERN_MATCHING;
-            case "<>", "$in" -> IN;
-            case "<!>", "$nin" -> NOT_IN;
-            case "&", ",", "&&", "$and" -> AND;
-            case "$between" -> BETWEEN;
-            case "$isnull" -> ISNULL;
-            case "$isnotnull" -> ISNOTNULL;
-            case "|", "||", "$or" -> OR;
+            case "=", "==", "$eq", "eq" -> EQ;
+            case "!=", "$neq", "$ne", "neq", "ne" -> NEQ;
+            case "<", "$lt", "lt" -> LT;
+            case "<=", "$lte", "lte" -> LTE;
+            case ">", "$gt", "gt" -> GT;
+            case ">=", "$gte", "gte" -> GTE;
+            case "=*", "$matches", "matches" -> PATTERN_MATCHING;
+            case "<>", "$in", "in" -> IN;
+            case "<!>", "$nin", "nin" -> NOT_IN;
+            case "&", ",", "&&", "$and", "and" -> AND;
+            case "$between", "between" -> BETWEEN;
+            case "$isnull", "isnull" -> ISNULL;
+            case "$isnotnull", "isnotnull" -> ISNOTNULL;
+            case "|", "||", "$or", "or" -> OR;
             default -> throw new BadRequestException("Operator not recognized: " + symbol);
         };
     }

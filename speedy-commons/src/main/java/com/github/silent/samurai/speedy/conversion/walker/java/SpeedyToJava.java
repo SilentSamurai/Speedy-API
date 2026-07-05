@@ -5,7 +5,7 @@ import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.ConversionException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
@@ -122,17 +122,20 @@ public class SpeedyToJava {
                     }
 
                     if (wrapper.isWritableProperty(name)) wrapper.setPropertyValue(name, val);
+                } catch (ConversionException e) {
+                    throw e;
                 } catch (Exception e) {
                     throw new ConversionException(
-                            String.format("Failed to convert field %s in class %s: %s",
-                                    name, clazz.getSimpleName(), e.getMessage()), e);
+                            "Failed to convert field " + name + " in class " + clazz.getSimpleName(), e);
                 }
             }
 
             return instance;
+        } catch (ConversionException e) {
+            throw e;
         } catch (Exception e) {
             throw new ConversionException(
-                    String.format("Cannot convert %s to composite class %s", value, clazz.getSimpleName()), e);
+                    "Cannot convert " + value + " to composite class " + clazz.getSimpleName(), e);
         }
     }
 }

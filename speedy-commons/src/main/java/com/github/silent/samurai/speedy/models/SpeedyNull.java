@@ -5,7 +5,7 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 public class SpeedyNull implements SpeedyValue {
 
-    public static SpeedyNull SPEEDY_NULL = new SpeedyNull();
+    public static final SpeedyNull SPEEDY_NULL = new SpeedyNull();
 
     @Override
     public ValueType getValueType() {

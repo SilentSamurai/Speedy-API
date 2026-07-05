@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.url;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import jakarta.persistence.EntityManagerFactory;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +49,7 @@ class SpeedyGetTest {
     @Test
     void getViaPrimaryKey() throws Exception {
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + "/Category?id='1'")
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstants.URI + "/Category?id='1'")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -66,7 +66,7 @@ class SpeedyGetTest {
     @Test
     void getVia() throws Exception {
 
-        MvcResult mvcResult = mvc.perform(get(SpeedyConstant.URI + "/Category?id='not-there'")
+        MvcResult mvcResult = mvc.perform(get(SpeedyConstants.URI + "/Category?id='not-there'")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
@@ -77,7 +77,7 @@ class SpeedyGetTest {
     @Test
     void getAll() throws Exception {
 
-        mvc.perform(get(SpeedyConstant.URI + "/Category/")
+        mvc.perform(get(SpeedyConstants.URI + "/Category/")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -91,7 +91,7 @@ class SpeedyGetTest {
     @Test
     void getViaFilter() throws Exception {
 
-        mvc.perform(get(SpeedyConstant.URI + "/Category?name='cat-1-1'")
+        mvc.perform(get(SpeedyConstants.URI + "/Category?name='cat-1-1'")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
@@ -111,7 +111,7 @@ class SpeedyGetTest {
     @Test
     void getViaFilterArg() throws Exception {
 
-        mvc.perform(get(SpeedyConstant.URI + "/Category?id='1'")
+        mvc.perform(get(SpeedyConstants.URI + "/Category?id='1'")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
@@ -125,7 +125,7 @@ class SpeedyGetTest {
     @Test
     void getAssociation() throws Exception {
 
-        mvc.perform(get(SpeedyConstant.URI + "/Product?category.id = '1'")
+        mvc.perform(get(SpeedyConstants.URI + "/Product?category.id = '1'")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isOk())
                 .andDo(MockMvcResultHandlers.print())
@@ -138,7 +138,7 @@ class SpeedyGetTest {
     @Test
     void getviadoublequotes() throws Exception {
 
-        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstant.URI + "/Category?id=\"1\"")
+        MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders.get(SpeedyConstants.URI + "/Category?id=\"1\"")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -154,7 +154,7 @@ class SpeedyGetTest {
 
     @Test
     void getWithExpand() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/Product?$expand=Category")
+        mvc.perform(get(SpeedyConstants.URI + "/Product?$expand=Category")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -168,7 +168,7 @@ class SpeedyGetTest {
 
     @Test
     void getWithPagination() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/Product?$page=0&$pageSize=3")
+        mvc.perform(get(SpeedyConstants.URI + "/Product?$page=0&$pageSize=3")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -186,7 +186,7 @@ class SpeedyGetTest {
 
     @Test
     void getWithMultiConditionAnd() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/Product?name='prod-1-1'&category.id=1")
+        mvc.perform(get(SpeedyConstants.URI + "/Product?name='prod-1-1'&category.id=1")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())

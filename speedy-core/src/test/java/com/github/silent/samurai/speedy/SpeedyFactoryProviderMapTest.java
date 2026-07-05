@@ -1,8 +1,10 @@
 package com.github.silent.samurai.speedy;
 
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
-import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.request.ISpeedyIoProvider;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyRequestReader;
+import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponseWriter;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

@@ -47,8 +47,8 @@ These interfaces in `speedy-commons` already form a clean, implementation-agnost
 package com.github.silent.samurai.speedy.interfaces.query;
 
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 
 /**
@@ -116,8 +116,8 @@ public interface QueryVisitor<T> {
 ```java
 package com.github.silent.samurai.speedy.interfaces.query;
 
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 
@@ -303,8 +303,8 @@ package com.github.silent.samurai.speedy.query.jooq;
 
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import org.jooq.*;
@@ -317,7 +317,7 @@ public class JooqSelectVisitor implements QueryVisitor<SelectQuery<Record>> {
 
     private final DSLContext dslContext;
     private final SQLDialect dialect;
-    private final Converter converter;
+    private final TypeConverter converter;
     private SelectQuery<Record> query;
 
     // Stack for building nested AND/OR conditions
@@ -327,7 +327,7 @@ public class JooqSelectVisitor implements QueryVisitor<SelectQuery<Record>> {
     private final Map<String, FieldMetadata> joins = new HashMap<>();
     private final Map<String, String> joinAlias = new HashMap<>();
 
-    public JooqSelectVisitor(DSLContext dslContext, Converter converter) {
+    public JooqSelectVisitor(DSLContext dslContext, TypeConverter converter) {
         this.dslContext = dslContext;
         this.dialect = dslContext.dialect();
         this.converter = converter;

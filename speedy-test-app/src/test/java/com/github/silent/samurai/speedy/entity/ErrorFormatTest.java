@@ -4,7 +4,7 @@ import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.client.test.SpeedyTestResult;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.util.SpeedyTestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class ErrorFormatTest {
     void notFoundError_hasStandardFormat() throws Exception {
         String body = "{\"$from\":\"NonExistentEntity\"}";
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/NonExistentEntity/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/NonExistentEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(body)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError())
@@ -54,7 +54,7 @@ class ErrorFormatTest {
 
     @Test
     void methodNotAllowed_onMetadataPost() throws Exception {
-        mockMvc.perform(post(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.METADATA.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().is4xxClientError());
     }

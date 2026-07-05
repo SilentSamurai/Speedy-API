@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.models.conditions;
 
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import lombok.Getter;
 

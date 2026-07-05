@@ -2,7 +2,7 @@ package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,7 +23,7 @@ class SpeedyMetadataTest {
 
     @Test
     void getCategoryMetadata_returnsEntityData() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.METADATA.suffix())
+        mvc.perform(get(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.name=='Category')]").exists())
@@ -32,7 +32,7 @@ class SpeedyMetadataTest {
 
     @Test
     void getProductMetadata_returnsEntityData() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/Product/" + SpeedyEndpoint.METADATA.suffix())
+        mvc.perform(get(SpeedyConstants.URI + "/Product/" + SpeedyEndpoint.METADATA.suffix())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.name=='Product')]").exists())
@@ -41,7 +41,7 @@ class SpeedyMetadataTest {
 
     @Test
     void getGlobalMetadata_showsSensitiveFields() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+        mvc.perform(get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                         .contentType(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.name=='SensitiveClassEntity')].sensitive").value(true))

@@ -1,9 +1,9 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.enums.PermissionType;
-import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.ForbiddenException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 
@@ -26,7 +26,7 @@ public class PermissionCheckHandler implements com.github.silent.samurai.speedy.
         };
         if (!allowed) {
             String op = permission.name().toLowerCase();
-            throw new BadRequestException(
+            throw new ForbiddenException(
                     String.format("%s not allowed for %s", op, entityMetadata.getName()));
         }
     }

@@ -1,9 +1,10 @@
 package com.github.silent.samurai.speedy.validation.rules;
 
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -15,8 +16,18 @@ public class DateRangeRule implements FieldRule {
     private final String message;
 
     public DateRangeRule(String min, String max, String message) {
-        this.min = LocalDate.parse(min);
-        this.max = LocalDate.parse(max);
+        if (min == null || max == null) {
+            throw new IllegalArgumentException("DateRangeRule min and max must not be null");
+        }
+        try {
+            this.min = LocalDate.parse(min);
+            this.max = LocalDate.parse(max);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("DateRangeRule min/max is not a valid date: " + e.getMessage(), e);
+        }
+        if (this.min.isAfter(this.max)) {
+            throw new IllegalArgumentException("DateRangeRule min (" + min + ") must not be after max (" + max + ")");
+        }
         this.message = message == null || message.isBlank() ? "date out of range" : message;
     }
 

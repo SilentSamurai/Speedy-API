@@ -2,8 +2,8 @@ package com.github.silent.samurai.speedy.file.impl;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.file.impl.processor.FileProcessor;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
-import com.github.silent.samurai.speedy.interfaces.MetaModelProcessor;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModelProcessor;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

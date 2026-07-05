@@ -9,7 +9,7 @@
 
 | Module                           | Layer              | Purpose                                                                                                                                                                              |
 |----------------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `speedy-commons`                 | Shared Library     | Interfaces, enums, `SpeedyValue` types, `SpeedyQuery`/`Condition` model, annotations, metadata builders, serializers, validation rules. Zero dependencies beyond Spring Boot parent. |
+| `speedy-commons`                 | Shared Library     | Interfaces, enums, `SpeedyValue` types, `SpeedyQuery`/`Condition` model, annotations, metadata builders, serializers, validation rules. Dependencies: Lombok (provided), Spring Framework (`BeanWrapper`, `DateTimeFormat`), `jakarta.servlet-api` (response writer interface). |
 | `speedy-core`                    | Core Engine        | Handler chain, URI/JSON parsing, response serialization, event/validation processing, `SpeedyApiController`.                                                                         |
 | `antlr-parser`                   | Parser (Legacy)    | ANTLR4 grammar for a URL DSL. Compiled but runtime URI parsing uses `SpeedyUriContext` instead.                                                                                      |
 | `speedy-jpa-metamodel-processor`                | JPA Bridge         | `JpaMetaModelProcessorV2` scans `EntityManagerFactory` to build the `MetaModel` from `@Entity` classes.                                                                              |
@@ -170,7 +170,7 @@ are wired inline in `SpeedyEngineImpl`'s constructor. Individual handlers are un
 - **`MetaModelProcessor`** interface — `JpaMetaModelProcessorV2` (JPA scan) or `FileMetaModelProcessor` (JSON file).
 - **`IResponseSerializerV2`** interface — `JSONResponseSerializer` (entity list, count, batch, error, metadata),
   field-level predicate for key-only serialization.
-- **`Converter`** interface — type conversion between `SpeedyValue` and DB types.
+- **`TypeConverter`** — type conversion between `SpeedyValue` and DB types (jOOQ backend, dialect-aware).
 - **`FieldRule`** interface — 25 composable validation rule implementations.
 
 ### SPI / Plugin Pattern

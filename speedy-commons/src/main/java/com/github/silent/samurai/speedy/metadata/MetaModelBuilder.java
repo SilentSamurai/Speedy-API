@@ -1,9 +1,9 @@
 package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.MetaModel;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ public class MetaModelBuilder {
         if (entityMap.containsKey(name)) {
             return entityMap.get(name);
         }
-        throw new NotFoundException("entity not found" + name);
+        throw new NotFoundException("entity not found: " + name);
     }
 
     public MetaModel build() throws NotFoundException {
@@ -63,17 +63,7 @@ public class MetaModelBuilder {
             }
         } catch (NotFoundException e) {
             // this should never happen
-            throw new RuntimeException(e);
-        }
-
-
-        for (EntityMetadata entityMetadata : metaModelProcessor.getAllEntityMetadata()) {
-
-            for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-                if (fieldMetadata.isAssociation()) {
-
-                }
-            }
+            throw new IllegalStateException(e);
         }
 
 

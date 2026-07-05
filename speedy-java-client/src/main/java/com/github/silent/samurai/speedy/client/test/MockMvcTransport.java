@@ -24,6 +24,8 @@ import java.util.Map;
  */
 public class MockMvcTransport implements SpeedyTransport {
 
+    private static final String DEFAULT_MEDIA_TYPE = "application/json;charset=UTF-8";
+
     private final MockMvc mockMvc;
     private ResultActions lastResultActions;
 
@@ -75,9 +77,13 @@ public class MockMvcTransport implements SpeedyTransport {
         }
 
         builder.characterEncoding("UTF-8");
-        builder.header("Accept", "application/json;charset=UTF-8");
+        if (!hasHeader(request, "Accept")) {
+            builder.header("Accept", DEFAULT_MEDIA_TYPE);
+        }
         if (request.body() != null && !request.body().isEmpty()) {
-            builder.contentType("application/json;charset=UTF-8");
+            if (!hasHeader(request, "Content-Type")) {
+                builder.contentType(DEFAULT_MEDIA_TYPE);
+            }
             builder.content(request.body());
         }
 
@@ -88,5 +94,9 @@ public class MockMvcTransport implements SpeedyTransport {
         }
 
         return builder;
+    }
+
+    private static boolean hasHeader(SpeedyRequest request, String name) {
+        return request.headers().keySet().stream().anyMatch(k -> k.equalsIgnoreCase(name));
     }
 }

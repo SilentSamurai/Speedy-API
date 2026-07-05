@@ -7,11 +7,11 @@ import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
-import com.github.silent.samurai.speedy.interfaces.SpeedyResponse;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
-import com.github.silent.samurai.speedy.interfaces.query.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
@@ -24,7 +24,7 @@ import java.util.List;
 
 /// Handles PUT/PATCH /{Entity}/$update requests with pre-parsed SpeedyUpdateBody.
 ///
-/// Reads the SpeedyUpdateBody (parsed from JSON by WalkingRequestParser and set as
+/// Reads the SpeedyUpdateBody (parsed from JSON by DefaultRequestParser and set as
 /// body by UpdateBodyParserHandler), fires PRE/POST_UPDATE events, validates the entity,
 /// and updates it in a single transaction.
 ///
@@ -63,41 +63,20 @@ public class UpdateHandler implements com.github.silent.samurai.speedy.interface
 
         try {
             SpeedyEntity[] result = new SpeedyEntity[1];
-            queryProcessor.runInTransaction(() -> {
-                try {
+            queryProcessor.runInTransaction(TransactionRunner.wrap(() -> {
                     eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
                     context.get(ValidationProcessor.class).validateUpdateRequestEntity(entityMetadata, entity);
                     result[0] = queryProcessor.update(pk, entity);
                     // POST event carries the persisted state (generated keys, DB defaults, untouched
                     // columns), not the partial request payload — consistent with POST_INSERT.
                     eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, result[0]);
-                } catch (Exception ex) {
-                    if (ex instanceof SpeedyHttpRuntimeException re) throw re;
-                    if (ex instanceof RuntimeException re) throw re;
-                    if (ex instanceof SpeedyHttpException she) {
-                        throw new SpeedyHttpRuntimeException(she.getStatus(), she);
-                    }
-                    throw new SpeedyHttpRuntimeException(500, ex);
-                }
-            });
+            }));
 
             log.info("Update committed: entity={}, mode={}, pk={}", entityLabel, mode, pk);
             return result[0];
         } catch (Exception e) {
             log.info("Update rolled back: entity={}, mode={}, pk={}", entityLabel, mode, pk);
-            if (e instanceof SpeedyHttpException she) {
-                throw she;
-            }
-            if (e instanceof SpeedyHttpRuntimeException sre) {
-                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
-            }
-            if (e.getCause() instanceof SpeedyHttpException she) {
-                throw she;
-            }
-            if (e.getCause() instanceof SpeedyHttpRuntimeException sre) {
-                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
-            }
-            throw new InternalServerError("Update failed", e);
+            throw TransactionRunner.unwrap("Update", e);
         }
     }
 }

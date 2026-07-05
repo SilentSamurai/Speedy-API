@@ -9,9 +9,9 @@ import java.time.ZonedDateTime;
 
 public class Speedy {
 
-    public SpeedyNull NULL = SpeedyNull.SPEEDY_NULL;
-    public SpeedyInt I_ZERO = from(0L);
-    public SpeedyDouble F_ZERO = from(0.0);
+    public static final SpeedyNull NULL = SpeedyNull.SPEEDY_NULL;
+    public static final SpeedyInt I_ZERO = from(0L);
+    public static final SpeedyDouble F_ZERO = from(0.0);
 
     public static SpeedyBoolean from(Boolean value) {
         return new SpeedyBoolean(value);

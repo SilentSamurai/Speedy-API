@@ -3,7 +3,7 @@ package com.github.silent.samurai.speedy.query;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class SpeedyV2NegativeTest {
     void single_level_expand() throws Exception {
 
         MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders
-                .post(SpeedyConstant.URI + "/NotPresent/" + SpeedyEndpoint.QUERY.suffix())
+                .post(SpeedyConstants.URI + "/NotPresent/" + SpeedyEndpoint.QUERY.suffix())
                 .content(CommonUtil.json().writeValueAsString(
                         SpeedyQuery.from("Product")
                                 .prettyPrint()

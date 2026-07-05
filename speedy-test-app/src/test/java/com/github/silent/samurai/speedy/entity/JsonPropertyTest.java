@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,7 +66,7 @@ class JsonPropertyTest {
     @Test
     void metadataEndpoint_outputPropertyUsesJsonPropertyValue() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)

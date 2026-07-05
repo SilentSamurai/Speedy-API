@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.parser;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Expression;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
@@ -26,7 +26,8 @@ public class ConditionFactory {
 
     private BinaryCondition createCondition(QueryField field, ConditionOperator operator, Expression expression) throws SpeedyHttpException {
         return switch (operator) {
-            case AND, OR -> throw new BadRequestException("");
+            case AND, OR -> throw new BadRequestException(
+                    "AND/OR operators are not valid for a binary condition; use a boolean condition instead");
             default -> new BinaryConditionImpl(field, operator, expression);
         };
     }
@@ -39,6 +40,10 @@ public class ConditionFactory {
             if (parts.length == 2) {
                 fieldName = parts[0];
                 associatedField = parts[1];
+            } else {
+                throw new BadRequestException(
+                        "Field path '" + fieldName + "' has " + parts.length
+                                + " segments; only single-level association paths (e.g. 'entity.field') are supported");
             }
         }
         if (associatedField != null) {

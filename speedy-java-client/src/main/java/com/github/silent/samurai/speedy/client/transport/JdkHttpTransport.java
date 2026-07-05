@@ -21,6 +21,7 @@ public class JdkHttpTransport implements SpeedyTransport {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(30);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(60);
+    private static final String DEFAULT_MEDIA_TYPE = "application/json;charset=UTF-8";
 
     private final HttpClient httpClient;
 
@@ -49,9 +50,11 @@ public class JdkHttpTransport implements SpeedyTransport {
                 builder.method(method, HttpRequest.BodyPublishers.noBody());
             }
 
-            builder.header("Accept", "application/json;charset=UTF-8");
-            if (body != null && !body.isEmpty()) {
-                builder.header("Content-Type", "application/json;charset=UTF-8");
+            if (!hasHeader(request, "Accept")) {
+                builder.header("Accept", DEFAULT_MEDIA_TYPE);
+            }
+            if (body != null && !body.isEmpty() && !hasHeader(request, "Content-Type")) {
+                builder.header("Content-Type", DEFAULT_MEDIA_TYPE);
             }
 
             for (Map.Entry<String, List<String>> entry : request.headers().entrySet()) {
@@ -70,5 +73,9 @@ public class JdkHttpTransport implements SpeedyTransport {
             Thread.currentThread().interrupt();
             throw new IOException("Request interrupted", e);
         }
+    }
+
+    private static boolean hasHeader(SpeedyRequest request, String name) {
+        return request.headers().keySet().stream().anyMatch(k -> k.equalsIgnoreCase(name));
     }
 }

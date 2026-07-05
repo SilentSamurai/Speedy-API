@@ -10,6 +10,9 @@ import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.conversion.registry.JavaTypeRegistry;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
@@ -41,7 +44,7 @@ class SpeedyUriContextTest {
     EntityMetadata productMetadata = StaticEntityMetadata.createEntityMetadata(Product.class);
     EntityMetadata vtentity = StaticEntityMetadata.createEntityMetadata(ValueTest.class);
     EntityMetadata composedEntity = StaticEntityMetadata.createEntityMetadata(ComposedProduct.class);
-    String UriRoot = SpeedyConstant.URI;
+    String UriRoot = SpeedyConstants.URI;
 
     @BeforeEach
     void setUp() throws NotFoundException {
@@ -52,7 +55,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest() throws Exception {
-        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstants.URI + "/Product").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
         assertEquals("Product", speedyQuery.getFrom().getName());
@@ -61,7 +64,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest_1() {
-        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstant.URI + "Product").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstants.URI + "Product").build();
         try {
             parser.parse();
         } catch (RuntimeException e) {
@@ -73,7 +76,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest3() throws Exception {
-        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product?id=1").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstants.URI + "/Product?id=1").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -88,7 +91,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest2() throws Exception {
-        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product/").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstants.URI + "/Product/").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -98,7 +101,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest4() throws Exception {
-        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product/?id='1'").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstants.URI + "/Product/?id='1'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -113,7 +116,7 @@ class SpeedyUriContextTest {
 
     @Test
     void processRequest6() throws Exception {
-        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstant.URI + "/Product").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstants.URI + "/Product").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 
@@ -123,7 +126,7 @@ class SpeedyUriContextTest {
 
     @Test
     void association_test() throws Exception {
-        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstant.URI + "/ComposedProduct?productItem.id='1'").build();
+        SpeedyUriContext parser = SpeedyUriContext.builder().javaTypeRegistry(javaTypeRegistry).metaModel(metaModel).requestURI(SpeedyConstants.URI + "/ComposedProduct?productItem.id='1'").build();
         SpeedyQuery speedyQuery = parser.parse();
         SpeedyQueryHelper speedyQueryHelper = new SpeedyQueryHelper(speedyQuery);
 

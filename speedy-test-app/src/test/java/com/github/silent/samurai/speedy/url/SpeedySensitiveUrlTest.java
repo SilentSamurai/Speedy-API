@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.url;
 
 import com.github.silent.samurai.speedy.TestApplication;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -23,7 +23,7 @@ class SpeedySensitiveUrlTest {
     @Test
     void sensitiveFieldRef_publicFieldEqualsSecretField_shouldBeRejected() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveTestEntity?publicField=$secretField")
+                .get(SpeedyConstants.URI + "/SensitiveTestEntity?publicField=$secretField")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -34,7 +34,7 @@ class SpeedySensitiveUrlTest {
     @Test
     void sensitiveFieldRef_publicFieldEqualsAmount_shouldBeRejected() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveTestEntity?publicField=$amount")
+                .get(SpeedyConstants.URI + "/SensitiveTestEntity?publicField=$amount")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -45,7 +45,7 @@ class SpeedySensitiveUrlTest {
     @Test
     void nonSensitiveFieldRef_publicFieldEqualsLiteralValue_shouldSucceed() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveTestEntity?publicField=hello")
+                .get(SpeedyConstants.URI + "/SensitiveTestEntity?publicField=hello")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -56,7 +56,7 @@ class SpeedySensitiveUrlTest {
     @Test
     void literalOnSensitiveField_secretFieldEqualsLiteralValue_shouldSucceed() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveTestEntity?secretField=actualValue")
+                .get(SpeedyConstants.URI + "/SensitiveTestEntity?secretField=actualValue")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -68,7 +68,7 @@ class SpeedySensitiveUrlTest {
     @Test
     void sensitiveClassEntity_inheritedFieldInRHS_shouldBeRejected() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveClassEntity?fieldB=$fieldA")
+                .get(SpeedyConstants.URI + "/SensitiveClassEntity?fieldB=$fieldA")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -80,7 +80,7 @@ class SpeedySensitiveUrlTest {
     @Test
     void sensitiveClassEntity_exemptedFieldInRHS_shouldSucceed() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveClassEntity?fieldA=$fieldB")
+                .get(SpeedyConstants.URI + "/SensitiveClassEntity?fieldA=$fieldB")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -91,7 +91,7 @@ class SpeedySensitiveUrlTest {
     @Test
     void sensitiveOnLeft_secretFieldRefToPublicField_shouldSucceed() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveTestEntity?secretField=$publicField")
+                .get(SpeedyConstants.URI + "/SensitiveTestEntity?secretField=$publicField")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)

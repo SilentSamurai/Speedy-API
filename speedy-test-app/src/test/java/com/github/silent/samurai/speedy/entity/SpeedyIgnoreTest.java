@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class SpeedyIgnoreTest {
     @Test
     void entityLevel_ignoredEntity_absentFromGlobalMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -93,7 +93,7 @@ class SpeedyIgnoreTest {
     @Test
     void entityLevel_nonIgnoredEntity_presentInMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -105,7 +105,7 @@ class SpeedyIgnoreTest {
     @Test
     void fieldLevel_hiddenFieldAbsentFromMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -118,7 +118,7 @@ class SpeedyIgnoreTest {
     @Test
     void fieldLevel_intFieldAbsentFromMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -131,7 +131,7 @@ class SpeedyIgnoreTest {
     @Test
     void fieldLevel_visibleFieldPresentInMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -143,7 +143,7 @@ class SpeedyIgnoreTest {
 
     @Test
     void fieldLevel_getWithHiddenFieldFilterReturns400() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/EntityWithIgnoredField?hiddenField='test'")
+        mvc.perform(get(SpeedyConstants.URI + "/EntityWithIgnoredField?hiddenField='test'")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -156,7 +156,7 @@ class SpeedyIgnoreTest {
         ArrayNode select = body.putArray("$select");
         select.add("visibleField");
 
-        mvc.perform(post(SpeedyConstant.URI + "/EntityWithIgnoredField/" + SpeedyEndpoint.QUERY.suffix())
+        mvc.perform(post(SpeedyConstants.URI + "/EntityWithIgnoredField/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -165,7 +165,7 @@ class SpeedyIgnoreTest {
 
     @Test
     void fieldLevel_getVisibleFieldFilterReturns200() throws Exception {
-        mvc.perform(get(SpeedyConstant.URI + "/EntityWithIgnoredField?visibleField='test'")
+        mvc.perform(get(SpeedyConstants.URI + "/EntityWithIgnoredField?visibleField='test'")
                         .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -174,7 +174,7 @@ class SpeedyIgnoreTest {
     @Test
     void fieldLevel_associationToIgnoredEntity_absentFromMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -187,7 +187,7 @@ class SpeedyIgnoreTest {
     @Test
     void oneToMany_collectionAbsentFromMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)
@@ -200,7 +200,7 @@ class SpeedyIgnoreTest {
     @Test
     void manyToOne_associationPresentInMetadata() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mvc.perform(getRequest)

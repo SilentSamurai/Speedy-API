@@ -53,6 +53,20 @@
             <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-yaml-io</artifactId>
+            <version>${project.parent.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-xml-io</artifactId>
+            <version>${project.parent.version}</version>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>

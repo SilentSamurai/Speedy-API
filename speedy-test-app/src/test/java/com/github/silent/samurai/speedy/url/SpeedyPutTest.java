@@ -4,7 +4,7 @@ import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import jakarta.persistence.EntityManagerFactory;
@@ -68,7 +68,7 @@ public class SpeedyPutTest {
 
         assertNotNull(category.getId());
 
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.patch(SpeedyConstant.URI + "/Category/" + SpeedyEndpoint.UPDATE.suffix())
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.patch(SpeedyConstants.URI + "/Category/" + SpeedyEndpoint.UPDATE.suffix())
                 .content(CommonUtil.json().createObjectNode()
                         .put("id", String.valueOf(category.getId()))
                         .put("name", "generated-category-update-modified")
@@ -115,7 +115,7 @@ public class SpeedyPutTest {
 
     @Test
     void incompleteKey() throws Exception {
-        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstant.URI + "/Category(name='not-there')")
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders.put(SpeedyConstants.URI + "/Category(name='not-there')")
                 .content("{'name':'generated-cat'}")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 

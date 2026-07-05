@@ -50,6 +50,24 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-yaml-io</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>speedy-xml-io</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
             <type>test-jar</type>
@@ -99,6 +117,14 @@
             <artifactId>mysql-connector-j</artifactId>
             <version>9.2.0</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Validates the generated OpenAPI document against the OpenAPI 3.0 spec in tests. -->
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser</artifactId>
+            <version>2.1.6</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

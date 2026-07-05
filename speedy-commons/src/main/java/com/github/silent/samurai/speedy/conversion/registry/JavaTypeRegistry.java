@@ -162,8 +162,8 @@ public class JavaTypeRegistry extends ConversionRegistry<Class<?>> {
                 bd -> new SpeedyInt(bd.longValue()));
 
         r.register(BigInteger.class, ValueType.FLOAT,
-                sv -> BigInteger.valueOf(((SpeedyDouble) sv).getValue().longValue()),
-                bi -> new SpeedyDouble(bi.doubleValue()));
+                sv -> new BigDecimal(((SpeedyDouble) sv).getValue()).toBigInteger(),
+                bi -> new SpeedyDouble(new BigDecimal(bi).doubleValue()));
 
         r.register(LocalDate.class,
                 sv -> ((SpeedyDate) sv).asDate(),

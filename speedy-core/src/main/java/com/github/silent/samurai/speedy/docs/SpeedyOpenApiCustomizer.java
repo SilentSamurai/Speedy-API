@@ -3,6 +3,10 @@ package com.github.silent.samurai.speedy.docs;
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -91,22 +95,22 @@ public class SpeedyOpenApiCustomizer {
 
             createSchemas(entityMetadata, openApi);
 
-            String basePath = String.format("%s/%s", SpeedyConstant.URI, entityMetadata.getName());
+            String basePath = String.format("%s/%s", SpeedyConstants.URI, entityMetadata.getName());
             openApi.path(basePath, basePathItem);
 
-            String querypath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.QUERY.suffix());
+            String querypath = String.format("%s/%s/%s", SpeedyConstants.URI, entityMetadata.getName(), SpeedyEndpoint.QUERY.suffix());
             openApi.path(querypath, queryPathItem);
 
             openApi.path(getIdentifierPath(entityMetadata), identifierPathItem);
 
             if (!entityMetadata.isReadOnly()) {
-                String createPath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.CREATE.suffix());
+                String createPath = String.format("%s/%s/%s", SpeedyConstants.URI, entityMetadata.getName(), SpeedyEndpoint.CREATE.suffix());
                 openApi.path(createPath, createPathItem);
 
-                String updatePath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.UPDATE.suffix());
+                String updatePath = String.format("%s/%s/%s", SpeedyConstants.URI, entityMetadata.getName(), SpeedyEndpoint.UPDATE.suffix());
                 openApi.path(updatePath, updatePathItem);
 
-                String deletePath = String.format("%s/%s/%s", SpeedyConstant.URI, entityMetadata.getName(), SpeedyEndpoint.DELETE.suffix());
+                String deletePath = String.format("%s/%s/%s", SpeedyConstants.URI, entityMetadata.getName(), SpeedyEndpoint.DELETE.suffix());
                 openApi.path(deletePath, deletePathItem);
             }
 
@@ -260,7 +264,7 @@ public class SpeedyOpenApiCustomizer {
 
     private String getIdentifierPath(EntityMetadata entityMetadata) {
         StringBuilder sb = new StringBuilder();
-        sb.append(SpeedyConstant.URI).append("/").append(entityMetadata.getName());
+        sb.append(SpeedyConstants.URI).append("/").append(entityMetadata.getName());
 //        sb.append("(");
 //        Iterator<KeyFieldMetadata> iterator = entityMetadata.getKeyFields().iterator();
 //        while (iterator.hasNext()) {

@@ -6,10 +6,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.interfaces.StructureReader;
+import com.github.silent.samurai.speedy.interfaces.request.StructureReader;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyRequestReader;
 import com.github.silent.samurai.speedy.models.*;
 
 import java.io.IOException;
@@ -41,7 +42,7 @@ public class JsonStructureReader implements StructureReader {
 
     /// Opens a streaming JSON reader over the raw request body — the
     /// {@code byte[] -> StructureReader} factory the provider hands to the shared request
-    /// parser (a {@link com.github.silent.samurai.speedy.interfaces.SpeedyRequestReader}). The
+    /// parser (a {@link SpeedyRequestReader}). The
     /// read-side mirror of {@code JsonResponseWriter} being handed to the serializer.
     public static JsonStructureReader over(byte[] rawBody) throws SpeedyHttpException {
         try {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
+import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ class SpeedySensitiveTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldB", "$fieldA");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -48,7 +48,7 @@ class SpeedySensitiveTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldA", "$fieldB");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -62,7 +62,7 @@ class SpeedySensitiveTest {
         ObjectNode where = body.putObject("$where");
         where.put("fieldA", "some-value");
 
-        mockMvc.perform(post(SpeedyConstant.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
+        mockMvc.perform(post(SpeedyConstants.URI + "/SensitiveClassEntity/" + SpeedyEndpoint.QUERY.suffix())
                         .content(mapper.writeValueAsString(body))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -72,7 +72,7 @@ class SpeedySensitiveTest {
     @Test
     void classLevelSensitive_metadataShowsBothFields() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + SpeedyEndpoint.METADATA.path())
+                .get(SpeedyConstants.URI + SpeedyEndpoint.METADATA.path())
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mockMvc.perform(getRequest)
@@ -85,7 +85,7 @@ class SpeedySensitiveTest {
     @Test
     void classLevelSensitive_GET_inheritedFieldRef_shouldBeRejected() throws Exception {
         MockHttpServletRequestBuilder getRequest = MockMvcRequestBuilders
-                .get(SpeedyConstant.URI + "/SensitiveClassEntity?fieldB=$fieldA")
+                .get(SpeedyConstants.URI + "/SensitiveClassEntity?fieldB=$fieldA")
                 .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 
         mockMvc.perform(getRequest)

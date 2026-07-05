@@ -3,8 +3,8 @@ package com.github.silent.samurai.speedy.metadata;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.ValueType;
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
 import com.github.silent.samurai.speedy.validation.rules.FieldRule;
 import lombok.Getter;
@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 
 @Getter
-@Setter
 public class FieldMetadataImpl implements FieldMetadata {
     private final ColumnType columnType;
     private final ValueType valueType;
@@ -38,8 +37,11 @@ public class FieldMetadataImpl implements FieldMetadata {
     private final DynamicEnum dynamicEnum;
     private final List<FieldRule> validations;
 
+    @Setter
     private EntityMetadata entityMetadata;
+    @Setter
     private EntityMetadata associationMetadata;
+    @Setter
     private FieldMetadata associatedFieldMetadata;
 
     public FieldMetadataImpl(ColumnType columnType,

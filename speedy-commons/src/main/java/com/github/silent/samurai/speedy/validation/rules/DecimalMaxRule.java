@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.validation.rules;
 
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 import java.math.BigDecimal;
@@ -24,7 +24,7 @@ public class DecimalMaxRule implements FieldRule {
         if (val == null || val.isEmpty()) return;
         if (!val.isNumber()) return;
 
-        BigDecimal num = val.isDouble() ? BigDecimal.valueOf(val.asDouble()) : BigDecimal.valueOf(val.asLong());
+        BigDecimal num = val.isDouble() ? BigDecimal.valueOf(val.asDouble()) : BigDecimal.valueOf(val.asInt());
         int cmp = num.compareTo(max);
         boolean valid = inclusive ? cmp <= 0 : cmp < 0;
         if (!valid) {

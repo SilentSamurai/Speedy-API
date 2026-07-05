@@ -1,7 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces.query;
 
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.SpeedyBody;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
 
 import java.util.List;
 import java.util.Set;

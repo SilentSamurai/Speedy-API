@@ -4,7 +4,7 @@ import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
-import com.github.silent.samurai.speedy.interfaces.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import lombok.Getter;
 
 import java.util.*;
@@ -77,7 +77,9 @@ public class EntityBuilder {
     }
 
     public FieldBuilder field(String fieldName) {
-        assert !fieldName.isBlank();
+        if (fieldName == null || fieldName.isBlank()) {
+            throw new IllegalArgumentException("Field name cannot be null or blank");
+        }
         FieldBuilder fieldBuilder = new FieldBuilder(this, fieldName);
         this.fieldMap.put(fieldName, fieldBuilder);
         return fieldBuilder;
@@ -96,7 +98,9 @@ public class EntityBuilder {
     }
 
     public KeyFieldBuilder keyField(String fieldName) {
-        assert !fieldName.isBlank();
+        if (fieldName == null || fieldName.isBlank()) {
+            throw new IllegalArgumentException("Key field name cannot be null or blank");
+        }
         KeyFieldBuilder fieldBuilder = new KeyFieldBuilder(this, fieldName);
         this.fieldMap.put(fieldName, fieldBuilder);
         return fieldBuilder;

@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.models;
 
-import com.github.silent.samurai.speedy.interfaces.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -43,7 +43,7 @@ public class ExpansionPathTracker {
         if (requestedExpansions == null) {
             throw new IllegalArgumentException("Requested expansions cannot be null");
         }
-        this.requestedExpansions = requestedExpansions;
+        this.requestedExpansions = Set.copyOf(requestedExpansions);
     }
 
     /// Pushes an entity onto the current processing path (top of stack).

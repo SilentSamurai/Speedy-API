@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.utils;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyControllerAdvice;
 import com.github.silent.samurai.speedy.annotations.SpeedyExceptionHandler;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,8 +128,9 @@ public class AdviceExceptionMapper {
             }
         } catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
             Throwable cause = (e instanceof InvocationTargetException) ? e.getCause() : e;
-            LOGGER.warn("Failed to invoke exception handler {}", handler.method.getName(), cause);
-            return null;
+            LOGGER.error("Failed to invoke exception handler {}", handler.method.getName(), cause);
+            throw new SpeedyHttpRuntimeException(500,
+                    "Exception handler '" + handler.method.getName() + "' failed", cause);
         }
     }
 

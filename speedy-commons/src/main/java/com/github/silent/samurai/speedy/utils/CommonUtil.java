@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.silent.samurai.speedy.exceptions.ConversionException;
-import com.github.silent.samurai.speedy.interfaces.SpeedyConstant;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 
 import java.util.ArrayList;
@@ -41,8 +40,9 @@ public class CommonUtil {
         int start = 0;
         boolean inQuotes = false;
         for (int current = 0; current < input.length(); current++) {
-            if (input.charAt(current) == '\"') inQuotes = !inQuotes; // toggle state
-            else if (input.charAt(current) == ',' && !inQuotes) {
+            char c = input.charAt(current);
+            if (c == '\"') inQuotes = !inQuotes; // toggle state
+            else if (matches.indexOf(c) >= 0 && !inQuotes) {
                 tokens.add(input.substring(start, current));
                 start = current + 1;
             }
@@ -112,6 +112,11 @@ public class CommonUtil {
         return switch (value.getValueType()) {
             case INT, ENUM_ORD -> {
                 Long ordinal = value.asInt();
+                if (ordinal == null) {
+                    throw new ConversionException(
+                            "Cannot convert NULL ordinal to enum %s".formatted(enumClass.getSimpleName())
+                    );
+                }
                 var constants = enumClass.getEnumConstants();
                 if (ordinal < 0 || ordinal >= constants.length) {
                     throw new ConversionException(
