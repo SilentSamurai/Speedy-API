@@ -12,6 +12,7 @@ import com.github.silent.samurai.speedy.models.*;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 /// Format-agnostic {@link IResponseSerializerV2}: owns the envelope composition for every
@@ -21,12 +22,30 @@ import java.time.LocalDateTime;
 /// writer; a new output format implements that sink and reuses all the logic here.
 public class DefaultResponseSerializer implements IResponseSerializerV2 {
 
+    /// The negotiated media type (e.g. {@code application/json}) — the format identity,
+    /// returned by {@link #getContentType()}.
     private final String contentType;
+    /// The same type with an explicit {@code ;charset=UTF-8}, used only for the wire
+    /// {@code Content-Type} header (see {@link #withUtf8Charset}).
+    private final String wireContentType;
     private final SpeedyResponseWriter writer;
 
     public DefaultResponseSerializer(String contentType, SpeedyResponseWriter writer) {
         this.contentType = contentType;
+        this.wireContentType = withUtf8Charset(contentType);
         this.writer = writer;
+    }
+
+    /// Speedy always writes UTF-8 bytes, so the response {@code Content-Type} header declares the
+    /// charset explicitly instead of relying on servlet-container defaults (which only some
+    /// media types, e.g. {@code application/json}, receive for free). Idempotent: a content
+    /// type that already names a charset is returned unchanged. This is a wire-encoding detail
+    /// only — {@link #getContentType()} still reports the bare negotiated media type.
+    private static String withUtf8Charset(String contentType) {
+        if (contentType == null || contentType.toLowerCase().contains("charset=")) {
+            return contentType;
+        }
+        return contentType + ";charset=" + StandardCharsets.UTF_8.name();
     }
 
     @Override
@@ -58,7 +77,7 @@ public class DefaultResponseSerializer implements IResponseSerializerV2 {
         }
         w.endObject();
 
-        w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
+        w.finish(httpResponse, response.getStatus(), response.getHeaders(), wireContentType);
     }
 
     @Override
@@ -73,7 +92,7 @@ public class DefaultResponseSerializer implements IResponseSerializerV2 {
             w.writeInt(count.longValue());
         }
         w.endObject();
-        w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
+        w.finish(httpResponse, response.getStatus(), response.getHeaders(), wireContentType);
     }
 
     @Override
@@ -114,7 +133,7 @@ public class DefaultResponseSerializer implements IResponseSerializerV2 {
         w.writeInt(response.getPageIndex());
         w.endObject();
 
-        w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
+        w.finish(httpResponse, response.getStatus(), response.getHeaders(), wireContentType);
     }
 
     @Override
@@ -129,14 +148,14 @@ public class DefaultResponseSerializer implements IResponseSerializerV2 {
         w.field("timestamp");
         w.writeText(LocalDateTime.now().toString());
         w.endObject();
-        w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
+        w.finish(httpResponse, response.getStatus(), response.getHeaders(), wireContentType);
     }
 
     @Override
     public void writeMetadata(SpeedyMetadataResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
         SpeedyResponseWriter w = writer;
         writeMetaModel(response.getMetaModel(), w);
-        w.finish(httpResponse, response.getStatus(), response.getHeaders(), contentType);
+        w.finish(httpResponse, response.getStatus(), response.getHeaders(), wireContentType);
     }
 
     private void writeEntityKeys(SpeedyEntity entity, SpeedyResponseWriter w) throws SpeedyHttpException {
