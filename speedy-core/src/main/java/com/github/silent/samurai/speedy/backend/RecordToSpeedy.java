@@ -25,7 +25,7 @@ import java.util.Set;
 /// {@code com.github.silent.samurai.speedy.serialization.StructureToSpeedy}.
 ///
 /// The flat row is freshly built by the backend per record and used nowhere else, so enrichment is
-/// done **in place** and the same instance is returned — no parallel tree is allocated. Purely
+/// done **in place**, and the same instance is returned — no parallel tree is allocated. Purely
 /// structural: it reads already-decoded {@link SpeedyValue}s and navigates foreign keys via
 /// {@link RowReader#selectByFk}; value decoding lives in the backend port, so this walker holds no
 /// {@code TypeConverter}. Extracted from the former jOOQ {@code JooqSqlToSpeedy} with no behavioural change.

@@ -5,9 +5,12 @@ import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
+import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
 
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public interface QueryProcessor {
 
@@ -22,6 +25,19 @@ public interface QueryProcessor {
     }
 
     boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException;
+
+    /// Returns the subset of {@code keys} that already exist in the database.
+    /// Default implementation probes each key individually; backends should override
+    /// with a single batched query (e.g. {@code SELECT key FROM ... WHERE key IN (...)}).
+    default Set<SpeedyEntityKey> findExistingKeys(List<SpeedyEntityKey> keys) throws SpeedyHttpException {
+        Set<SpeedyEntityKey> existing = new HashSet<>();
+        for (SpeedyEntityKey key : keys) {
+            if (exists(key)) {
+                existing.add(key);
+            }
+        }
+        return existing;
+    }
 
     List<SpeedyEntity> create(List<SpeedyEntity> entities) throws SpeedyHttpException;
 

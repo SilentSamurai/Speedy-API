@@ -80,8 +80,8 @@ public interface SpeedyEngine {
     // --- Per-type body parsers ---
     // Each parses the raw body with the parser chosen by selectBodyParser into the SpeedyBody
     // subtype for one request type, stores it in ctx for the matching operation handler, and
-    // returns it. The factory's single request-type switch routes each write op to its parser.
-    // GET_LIST / METADATA carry no body, so they have no parser here.
+    // returns it. The factory's single request-type switch routes each writing op to its parser.
+    // GET_LIST / METADATA carry nobody, so they have no parser here.
 
     SpeedyBody parseQueryBody(SpeedyContext ctx) throws SpeedyHttpException;
 

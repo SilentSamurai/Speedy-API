@@ -57,22 +57,16 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
 
         if (keys.isEmpty()) {
             context.put(SpeedyResponse.class,
-                    SpeedyEntityResponse.builder()
-                            .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
-                            .payload(List.of())
-                            .pageIndex(0)
-                            .fieldPredicate(KeyFieldMetadata.class::isInstance)
-                            .status(200)
-                            .build()
-            );
+                    ResponseBuilders.emptyKeyOnlyResponse(entityMetadata));
             return;
         }
 
         try {
-            queryProcessor.runInTransaction(() -> {
-                try {
+            queryProcessor.runInTransaction(TransactionRunner.wrap(() -> {
+                    // Batch existence check: one query instead of N
+                    java.util.Set<SpeedyEntityKey> existingKeys = queryProcessor.findExistingKeys(keys);
                     for (SpeedyEntityKey key : keys) {
-                        if (!queryProcessor.exists(key)) {
+                        if (!existingKeys.contains(key)) {
                             throw new NotFoundException("entity not found: " + key);
                         }
                         context.get(ValidationProcessor.class).validateDeleteRequestEntity(entityMetadata, key);
@@ -87,35 +81,13 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
                     }
 
                     context.put(SpeedyResponse.class,
-                            SpeedyEntityResponse.builder()
-                                    .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
-                                    .payload(deleted)
-                                    .pageIndex(0)
-                                    .fieldPredicate(KeyFieldMetadata.class::isInstance)
-                                    .status(200)
-                                    .build()
-                    );
-                } catch (Exception ex) {
-                    if (ex instanceof SpeedyHttpRuntimeException re) throw re;
-                    if (ex instanceof RuntimeException re) throw re;
-                    if (ex instanceof SpeedyHttpException she) {
-                        throw new SpeedyHttpRuntimeException(she.getStatus(), she);
-                    }
-                    throw new SpeedyHttpRuntimeException(500, ex);
-                }
-            });
+                            ResponseBuilders.keyOnlyResponse(entityMetadata, deleted));
+            }));
 
             log.info("BATCH delete committed: entity={}, count={}", entityLabel, totalCount);
         } catch (Exception e) {
-            Throwable cause = e.getCause() != null ? e.getCause() : e;
             log.info("BATCH delete rolled back: entity={}, count={}", entityLabel, totalCount);
-            if (cause instanceof SpeedyHttpException she) {
-                throw she;
-            }
-            if (cause instanceof SpeedyHttpRuntimeException sre) {
-                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
-            }
-            throw new InternalServerError("Batch delete failed", e);
+            throw TransactionRunner.unwrap("Batch delete", e);
         }
     }
 
@@ -132,8 +104,7 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
         for (int i = 0; i < keys.size(); i++) {
             SpeedyEntityKey key = keys.get(i);
             try {
-                queryProcessor.runInTransaction(() -> {
-                    try {
+                queryProcessor.runInTransaction(TransactionRunner.wrap(() -> {
                         if (!queryProcessor.exists(key)) {
                             throw new NotFoundException("entity not found: " + key);
                         }
@@ -147,17 +118,9 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
                             eventProcessor.triggerEvent(SpeedyEventType.POST_DELETE, entityMetadata, singleResult.get(0));
                             succeeded.add(singleResult.get(0));
                         }
-                    } catch (Exception ex) {
-                        if (ex instanceof SpeedyHttpRuntimeException re) throw re;
-                        if (ex instanceof RuntimeException re) throw re;
-                        if (ex instanceof SpeedyHttpException she) {
-                            throw new SpeedyHttpRuntimeException(she.getStatus(), she);
-                        }
-                        throw new SpeedyHttpRuntimeException(500, ex);
-                    }
-                });
+                }));
             } catch (Exception e) {
-                Throwable cause = e.getCause() != null ? e.getCause() : e;
+                Throwable cause = TransactionRunner.extractCause(e);
                 if (cause instanceof SpeedyHttpException she) {
                     failed.add(SpeedyPartialFailure.builder()
                             .index(i).status(she.getStatus())
@@ -186,14 +149,7 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
 
         if (failed.isEmpty()) {
             context.put(SpeedyResponse.class,
-                    SpeedyEntityResponse.builder()
-                            .entityMetadata(context.get(SpeedyUriContext.class).getParsedQuery().getFrom())
-                            .payload(succeeded)
-                            .pageIndex(0)
-                            .fieldPredicate(KeyFieldMetadata.class::isInstance)
-                            .status(200)
-                            .build()
-            );
+                    ResponseBuilders.keyOnlyResponse(entityMetadata, succeeded));
         } else if (keys.size() == 1) {
             SpeedyPartialFailure failure = failed.get(0);
             throw new SpeedyHttpException(failure.getStatus(), failure.getMessage(), failure.getCause());

@@ -79,7 +79,7 @@ public class SpeedyUriContext {
         }
     }
 
-    public SpeedyQuery process() throws Exception {
+    public SpeedyQuery process() throws SpeedyHttpException {
 
         String sanitizedURI = URLDecoder.decode(requestURI, StandardCharsets.UTF_8);
         if (sanitizedURI.length() > maxQueryStringLength) {
@@ -281,7 +281,7 @@ public class SpeedyUriContext {
         }
     }
 
-    private void addToOrderList(String queryName, boolean isDesc) throws Exception {
+    private void addToOrderList(String queryName, boolean isDesc) throws SpeedyHttpException {
         MultiValueMap<String, String> queryParams = queryParameters;
         if (queryParams.containsKey(queryName)) {
             List<String> values = queryParams.remove(queryName);

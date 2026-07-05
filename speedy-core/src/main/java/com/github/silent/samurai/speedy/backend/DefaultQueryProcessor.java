@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 
 /// Format-agnostic {@link QueryProcessor}: owns CRUD orchestration (query execution, the
-/// create/delete refetch-by-primary-key loops, update, exists, transaction handling, and native
+/// creation/delete refetch-by-primary-key loops, update, exists, transaction handling, and native
 /// exception mapping) while delegating every backend-specific operation to a {@link SpeedyBackend}
 /// port. The persistence-side mirror of
 /// {@code com.github.silent.samurai.speedy.serialization.DefaultResponseSerializer}: the only
@@ -79,6 +80,24 @@ public class DefaultQueryProcessor implements QueryProcessor {
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
             return backend.existsByKey(entityKey);
+        } catch (Exception e) {
+            throw wrap("Invalid Request", e);
+        }
+    }
+
+    @Override
+    public Set<SpeedyEntityKey> findExistingKeys(List<SpeedyEntityKey> keys) throws SpeedyHttpException {
+        if (keys.isEmpty()) {
+            return Set.of();
+        }
+        try {
+            List<SpeedyEntity> rows = backend.selectByKeys(keys);
+            Set<SpeedyEntityKey> existing = new HashSet<>(rows.size());
+            for (SpeedyEntity row : rows) {
+                existing.add(SpeedyEntityUtil.toEntityKey(
+                        recordToSpeedy.fromRow(row, keys.get(0).getMetadata(), Set.of())));
+            }
+            return existing;
         } catch (Exception e) {
             throw wrap("Invalid Request", e);
         }

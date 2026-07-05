@@ -63,41 +63,20 @@ public class UpdateHandler implements com.github.silent.samurai.speedy.interface
 
         try {
             SpeedyEntity[] result = new SpeedyEntity[1];
-            queryProcessor.runInTransaction(() -> {
-                try {
+            queryProcessor.runInTransaction(TransactionRunner.wrap(() -> {
                     eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
                     context.get(ValidationProcessor.class).validateUpdateRequestEntity(entityMetadata, entity);
                     result[0] = queryProcessor.update(pk, entity);
                     // POST event carries the persisted state (generated keys, DB defaults, untouched
                     // columns), not the partial request payload — consistent with POST_INSERT.
                     eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, result[0]);
-                } catch (Exception ex) {
-                    if (ex instanceof SpeedyHttpRuntimeException re) throw re;
-                    if (ex instanceof RuntimeException re) throw re;
-                    if (ex instanceof SpeedyHttpException she) {
-                        throw new SpeedyHttpRuntimeException(she.getStatus(), she);
-                    }
-                    throw new SpeedyHttpRuntimeException(500, ex);
-                }
-            });
+            }));
 
             log.info("Update committed: entity={}, mode={}, pk={}", entityLabel, mode, pk);
             return result[0];
         } catch (Exception e) {
             log.info("Update rolled back: entity={}, mode={}, pk={}", entityLabel, mode, pk);
-            if (e instanceof SpeedyHttpException she) {
-                throw she;
-            }
-            if (e instanceof SpeedyHttpRuntimeException sre) {
-                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
-            }
-            if (e.getCause() instanceof SpeedyHttpException she) {
-                throw she;
-            }
-            if (e.getCause() instanceof SpeedyHttpRuntimeException sre) {
-                throw new SpeedyHttpException(sre.getStatus(), sre.getMessage(), sre);
-            }
-            throw new InternalServerError("Update failed", e);
+            throw TransactionRunner.unwrap("Update", e);
         }
     }
 }

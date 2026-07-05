@@ -3,6 +3,8 @@ package com.github.silent.samurai.speedy.events;
 import com.github.silent.samurai.speedy.annotations.SpeedyEvent;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyEventHandler;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
@@ -92,7 +94,7 @@ public class EventProcessor {
         }
     }
 
-    public void triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws Exception {
+    public void triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
         if (isEventPresent(eventType, entityMetadata)) {
             boolean writeBack = isPreEvent(eventType);
             MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
@@ -104,7 +106,7 @@ public class EventProcessor {
 
     /// PRE-events may mutate the entity (their edits are persisted), so handler changes are written
     /// back. POST-events are read-only side effects fired on the already-persisted entity — writing
-    /// back would corrupt it (e.g. re-encoding an enum field to text), so it is skipped.
+    /// back would corrupt it (e.g., re-encoding an enum field to text), so it is skipped.
     private static boolean isPreEvent(SpeedyEventType eventType) {
         return switch (eventType) {
             case PRE_INSERT, PRE_UPDATE, PRE_DELETE -> true;
@@ -129,7 +131,7 @@ public class EventProcessor {
             this.ioClass = ioClass;
         }
 
-        private Object invokeEventHandler(SpeedyEntity entity, SpeedyToJava ser, JavaToSpeedy deser, boolean writeBack) throws Exception {
+        private Object invokeEventHandler(SpeedyEntity entity, SpeedyToJava ser, JavaToSpeedy deser, boolean writeBack) throws SpeedyHttpException {
             try {
                 if (ioClass.isAssignableFrom(SpeedyEntity.class)) {
                     methodHandle.invoke(instance, entity);
@@ -141,10 +143,16 @@ public class EventProcessor {
                     }
                 }
             } catch (Throwable t) {
-                if (t instanceof Exception e) {
-                    throw e;
+                if (t instanceof SpeedyHttpException she) {
+                    throw she;
                 }
-                throw new RuntimeException(t);
+                if (t instanceof SpeedyHttpRuntimeException re) {
+                    throw re;
+                }
+                if (t instanceof Exception e) {
+                    throw new SpeedyHttpRuntimeException(500, e);
+                }
+                throw new SpeedyHttpRuntimeException(500, new RuntimeException(t));
             }
             return entity;
         }

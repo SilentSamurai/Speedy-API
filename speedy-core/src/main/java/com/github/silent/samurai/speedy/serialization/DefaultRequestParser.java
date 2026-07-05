@@ -54,6 +54,7 @@ public class DefaultRequestParser implements IRequestBodyParser {
     public SpeedyCreateBody parseCreate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
                                         QueryProcessor queryProcessor) throws SpeedyHttpException {
         List<SpeedyEntity> entities = new LinkedList<>();
+        List<SpeedyEntityKey> keysToCheck = new LinkedList<>();
         try (StructureReader r = reader.readDocument(rawBody)) {
             if (r.begin() != Kind.ARRAY) {
                 throw new BadRequestException("no content to process");
@@ -64,11 +65,17 @@ public class DefaultRequestParser implements IRequestBodyParser {
                     throw new BadRequestException("in-valid content");
                 }
                 SpeedyEntity parsed = builder.fromEntity(entity, r);
-                if (builder.isKeyComplete(entity, parsed)
-                        && queryProcessor.exists(builder.toKey(entity, parsed))) {
-                    throw new BadRequestException("Entity already present.");
+                if (builder.isKeyComplete(entity, parsed)) {
+                    keysToCheck.add(builder.toKey(entity, parsed));
                 }
                 entities.add(parsed);
+            }
+        }
+        // Batch existence check: one query instead of N
+        if (!keysToCheck.isEmpty()) {
+            java.util.Set<SpeedyEntityKey> existing = queryProcessor.findExistingKeys(keysToCheck);
+            if (!existing.isEmpty()) {
+                throw new BadRequestException("Entity already present.");
             }
         }
         return SpeedyCreateBody.builder()
