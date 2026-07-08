@@ -87,6 +87,10 @@ public class SpeedyTest {
         return new TestUpdateBuilder(entity);
     }
 
+    public TestReplaceBuilder replace(String entity) {
+        return new TestReplaceBuilder(entity);
+    }
+
     public TestDeleteBuilder delete(String entity) {
         return new TestDeleteBuilder(entity);
     }
@@ -267,6 +271,41 @@ public class SpeedyTest {
                 throw new RuntimeException("Failed to serialize", e);
             }
             return SpeedyTest.this.execute(url, "PATCH", jsonBody);
+        }
+    }
+
+    /** Full-replace (HTTP PUT) counterpart of {@link TestUpdateBuilder}. */
+    public class TestReplaceBuilder {
+        private final String entity;
+        private final ObjectNode body;
+        private final ObjectNode pkNode;
+
+        TestReplaceBuilder(String entity) {
+            this.entity = entity;
+            this.body = mapper.createObjectNode();
+            this.pkNode = mapper.createObjectNode();
+        }
+
+        public TestReplaceBuilder key(String field, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
+            return this;
+        }
+
+        public TestReplaceBuilder field(String name, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(body, name, value);
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.updatePath(entity);
+            body.setAll(pkNode);
+            String jsonBody;
+            try {
+                jsonBody = mapper.writeValueAsString(body);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize", e);
+            }
+            return SpeedyTest.this.execute(url, "PUT", jsonBody);
         }
     }
 

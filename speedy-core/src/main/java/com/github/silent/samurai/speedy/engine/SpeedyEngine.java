@@ -103,6 +103,10 @@ public interface SpeedyEngine {
 
     SpeedyResponse update(SpeedyContext ctx) throws SpeedyHttpException;
 
+    /// Full-replace (PUT) counterpart of {@link #update}. Runs the same update permission
+    /// and body, but enforces required fields and resets omitted nullable fields to null.
+    SpeedyResponse replace(SpeedyContext ctx) throws SpeedyHttpException;
+
     SpeedyResponse delete(SpeedyContext ctx) throws SpeedyHttpException;
 
     SpeedyResponse metadata(SpeedyContext ctx) throws SpeedyHttpException;

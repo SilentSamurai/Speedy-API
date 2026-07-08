@@ -72,6 +72,8 @@ class OpenApiSpecGenerationTest {
                 .andExpect(jsonPath("$.paths['/speedy/v1/Category'].get").exists())
                 .andExpect(jsonPath("$.paths['/speedy/v1/Category/$query'].post").exists())
                 .andExpect(jsonPath("$.paths['/speedy/v1/Category/$create'].post").exists())
+                // $update exposes both PATCH (partial update) and PUT (full replace) — see issue #125
+                .andExpect(jsonPath("$.paths['/speedy/v1/Category/$update'].patch").exists())
                 .andExpect(jsonPath("$.paths['/speedy/v1/Category/$update'].put").exists())
                 .andExpect(jsonPath("$.paths['/speedy/v1/Category/$delete'].delete").exists());
     }

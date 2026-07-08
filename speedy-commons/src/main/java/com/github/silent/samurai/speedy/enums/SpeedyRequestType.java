@@ -15,8 +15,13 @@ public enum SpeedyRequestType {
     /// POST /{Entity}/$create — bulk create from JSON array.
     CREATE,
 
-    /// PUT/PATCH /{Entity}/$update — update single entity by PK.
+    /// PATCH /{Entity}/$update — partial update of a single entity by PK
+    /// (only supplied fields are written).
     UPDATE,
+
+    /// PUT /{Entity}/$update — full replace of a single entity by PK
+    /// (required fields enforced, omitted nullable fields reset to null).
+    REPLACE,
 
     /// DELETE /{Entity}/$delete — bulk delete by PK array.
     DELETE,

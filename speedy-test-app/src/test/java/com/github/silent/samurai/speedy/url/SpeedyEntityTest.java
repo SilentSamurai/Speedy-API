@@ -28,7 +28,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
@@ -345,10 +344,11 @@ class SpeedyEntityTest {
     void crudCurrency() {
         CurrencyApi currencyApi = new CurrencyApi(defaultClient);
         CreateCurrencyRequest createCurrencyRequest = new CreateCurrencyRequest();
+        // createdAt is @Generated(ALWAYS) (DB-managed, non-insertable), so it is not part of
+        // the create request schema and must not be sent by the client.
         createCurrencyRequest.currencyAbbr("CED")
                 .currencyName("Core Demo Currency")
                 .currencySymbol("yhd")
-                .createdAt(LocalDateTime.now().toString())
                 .country("Earth");
 
         BulkCreateCurrencyResponse bulkCreateCurrency200Response = currencyApi

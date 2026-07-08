@@ -43,6 +43,15 @@ public interface QueryProcessor {
 
     SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException;
 
+    /// Full-replace (PUT) counterpart of {@link #update}: the entity is the complete
+    /// representation of the row, so omitted nullable non-key columns are reset to null.
+    /// Default throws; {@code DefaultQueryProcessor} provides the real implementation.
+    default SpeedyEntity replace(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
+        throw new UnsupportedOperationException(
+                "replace not supported by this QueryProcessor"
+        );
+    }
+
     List<SpeedyEntity> delete(List<SpeedyEntityKey> entityKeys) throws SpeedyHttpException;
 
     default void runInTransaction(Runnable block) {

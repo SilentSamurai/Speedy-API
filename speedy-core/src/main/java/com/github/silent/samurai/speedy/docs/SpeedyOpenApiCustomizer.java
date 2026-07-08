@@ -85,6 +85,9 @@ public class SpeedyOpenApiCustomizer {
             PathItem deletePathItem = new PathItem();
 
             postOperation(entityMetadata, createPathItem);
+            // The $update endpoint exposes both verbs: PATCH for partial update and PUT for
+            // full replace (see issue #125). They share the same request/response schemas.
+            patchOperation(entityMetadata, updatePathItem);
             putOperation(entityMetadata, updatePathItem);
             deleteOperation(entityMetadata, deletePathItem);
 
@@ -202,17 +205,18 @@ public class SpeedyOpenApiCustomizer {
         pathItem.delete(operation);
     }
 
-    private void putOperation(EntityMetadata entityMetadata, PathItem identifierPathItem) {
+    /// PATCH — partial update: only the supplied fields are written; omitted fields are left
+    /// unchanged. Keeps the {@code Update{Entity}} operationId so generated {@code update{Entity}}
+    /// clients retain their (partial) behaviour.
+    private void patchOperation(EntityMetadata entityMetadata, PathItem identifierPathItem) {
         Operation operation = new Operation();
         operation.operationId("Update" + entityMetadata.getName());
-        operation.summary("Update a(n) " + entityMetadata.getName());
+        operation.summary("Partially update a(n) " + entityMetadata.getName());
         operation.tags(List.of(entityMetadata.getName()));
-
-//        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
 
         operation.requestBody(OASGenerator.getJsonBody(
                 OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
-        ).description("Fields needed for update"));
+        ).description("Fields to update (partial)"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
                 OASGenerator.getSchemaName("Update{0}Response", entityMetadata),
@@ -220,6 +224,30 @@ public class SpeedyOpenApiCustomizer {
                         OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
                 )
         ).description("successful update."));
+        operation.responses(apiResponses);
+        identifierPathItem.patch(operation);
+    }
+
+    /// PUT — full replace: the payload is the complete representation. Required fields are
+    /// enforced and omitted nullable fields are reset to null. Exposed as {@code Replace{Entity}}.
+    private void putOperation(EntityMetadata entityMetadata, PathItem identifierPathItem) {
+        Operation operation = new Operation();
+        operation.operationId("Replace" + entityMetadata.getName());
+        operation.summary("Replace a(n) " + entityMetadata.getName());
+        operation.tags(List.of(entityMetadata.getName()));
+
+//        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
+
+        operation.requestBody(OASGenerator.getJsonBody(
+                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
+        ).description("Complete representation of the resource"));
+        ApiResponses apiResponses = new ApiResponses();
+        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("Update{0}Response", entityMetadata),
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+                )
+        ).description("successful replace."));
         operation.responses(apiResponses);
         identifierPathItem.put(operation);
     }

@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.request.IRequestBodyParser;
@@ -93,8 +94,14 @@ public class DefaultRequestParser implements IRequestBodyParser {
             }
             SpeedyEntity parsed = builder.fromEntity(entity, r);
             SpeedyEntityKey pk = builder.toKey(entity, parsed);
-            if (!builder.isKeyComplete(entity, parsed) || !queryProcessor.exists(pk)) {
-                throw new BadRequestException("Entity not present.");
+            // Distinguish a malformed request (incomplete primary key -> 400) from a
+            // well-formed request whose target row is absent (-> 404). Shared by both PATCH
+            // (UPDATE) and PUT (REPLACE), which parse the same body shape.
+            if (!builder.isKeyComplete(entity, parsed)) {
+                throw new BadRequestException("Primary key incomplete");
+            }
+            if (!queryProcessor.exists(pk)) {
+                throw new NotFoundException("Entity not found.");
             }
             return SpeedyUpdateBody.builder()
                     .entity(parsed)

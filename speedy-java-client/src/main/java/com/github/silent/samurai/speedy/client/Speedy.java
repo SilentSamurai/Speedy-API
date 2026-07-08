@@ -84,10 +84,17 @@ public class Speedy {
     }
 
     /**
-     * Creates an update-builder for the given entity.
+     * Creates an update-builder for the given entity (HTTP PATCH, partial update).
      */
     public UpdateBuilder update(String entity) {
         return new UpdateBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates a replace-builder for the given entity (HTTP PUT, full replace).
+     */
+    public ReplaceBuilder replace(String entity) {
+        return new ReplaceBuilder(entity, paths, this::send, mapper, parser, format);
     }
 
     /**

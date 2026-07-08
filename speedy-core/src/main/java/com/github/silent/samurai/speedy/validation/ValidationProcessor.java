@@ -173,6 +173,18 @@ public class ValidationProcessor {
         }
     }
 
+    /// Validation for a full-replace (PUT). The payload is the complete representation, so the
+    /// default path enforces required fields like create. A custom {@code @SpeedyValidator}
+    /// registered for {@code UPDATE} also guards PUT (reuses {@link #updateValidationMethods}).
+    public void validateReplaceRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
+        if (updateValidationMethods.containsKey(entityMetadata.getName())) {
+            Pair<ISpeedyCustomValidation, MethodHandle> pair = updateValidationMethods.get(entityMetadata.getName());
+            invokeValidationMethod(pair, entity);
+        } else {
+            defaultFieldValidator.validateReplace(entityMetadata, entity);
+        }
+    }
+
     public void validateDeleteRequestEntity(EntityMetadata entityMetadata, SpeedyEntityKey entityKey) throws SpeedyHttpException {
         if (deleteValidationMethods.containsKey(entityMetadata.getName())) {
             Pair<ISpeedyCustomValidation, MethodHandle> pair = deleteValidationMethods.get(entityMetadata.getName());

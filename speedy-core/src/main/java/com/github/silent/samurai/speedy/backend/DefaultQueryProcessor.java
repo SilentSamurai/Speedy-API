@@ -147,17 +147,36 @@ public class DefaultQueryProcessor implements QueryProcessor {
     @Override
     public SpeedyEntity update(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
         try {
+            // PATCH: only the supplied non-key fields are written; omitted fields are stripped.
             speedyToRecord.toUpdateColumns(entity);
-            backend.update(pk, entity);
-
-            List<SpeedyEntity> rows = backend.selectByKeys(List.of(pk));
-            if (rows.isEmpty()) {
-                throw new NotFoundException("Entity not found for PK: " + pk);
-            }
-            return recordToSpeedy.fromRow(rows.get(0), entity.getMetadata(), Set.of());
+            return writeAndRefetch(pk, entity);
         } catch (Exception e) {
             throw wrap("Invalid Request", e);
         }
+    }
+
+    @Override
+    public SpeedyEntity replace(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
+        try {
+            // PUT: full replace — omitted nullable non-key columns are reset to null.
+            speedyToRecord.toReplaceColumns(entity);
+            return writeAndRefetch(pk, entity);
+        } catch (Exception e) {
+            throw wrap("Invalid Request", e);
+        }
+    }
+
+    /// Writes the already-flattened entity by primary key and refetches the persisted row.
+    /// Shared by {@link #update} (PATCH) and {@link #replace} (PUT); the only difference between
+    /// them is which flatten (partial vs full-replace) runs before this.
+    private SpeedyEntity writeAndRefetch(SpeedyEntityKey pk, SpeedyEntity entity) throws SpeedyHttpException {
+        backend.update(pk, entity);
+
+        List<SpeedyEntity> rows = backend.selectByKeys(List.of(pk));
+        if (rows.isEmpty()) {
+            throw new NotFoundException("Entity not found for PK: " + pk);
+        }
+        return recordToSpeedy.fromRow(rows.get(0), entity.getMetadata(), Set.of());
     }
 
     @Override
