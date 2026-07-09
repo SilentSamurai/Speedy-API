@@ -131,6 +131,36 @@ public class SpeedyCompositeKeyPatchTest {
                 .andExpect(status().isBadRequest());
     }
 
+    /// The composite key in the body is only ever used to locate the row (the SQL WHERE
+    /// clause) — it is never written back into the SET clause. Regression test for issue #115:
+    /// sending a key that resolves to a *different* existing row must update that row's
+    /// non-key fields only, and must leave the original row's key and fields untouched — there
+    /// is no way for a $update body to "change" a row's key, since the same key value is used
+    /// both to find the row and (if it were writable) to set it.
+    @Test
+    void patch_keyIdentifiesRowOnly_originalRowUntouchedByOtherKeysUpdate() throws Exception {
+        createOrder("3", "1", 50.0, 5.0);
+        createOrder("3", "2", 75.0, 7.5);
+
+        ObjectNode body = keyBody("3", "2");
+        body.put("discount", 99.0);
+
+        mvc.perform(MockMvcRequestBuilders.patch(UPDATE_URL)
+                        .content(body.toString())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(status().isOk());
+
+        Order untouched = reload("3", "1");
+        assertEquals("3", untouched.getProductId());
+        assertEquals("1", untouched.getSupplierId());
+        assertEquals(5.0, untouched.getDiscount(), "row not addressed by the request must be unaffected");
+
+        Order updated = reload("3", "2");
+        assertEquals("3", updated.getProductId(), "key columns are never part of the SET clause");
+        assertEquals("2", updated.getSupplierId(), "key columns are never part of the SET clause");
+        assertEquals(99.0, updated.getDiscount());
+    }
+
     /* -------------------------------------------------------------------- */
     /* Helpers                                                              */
     /* -------------------------------------------------------------------- */
