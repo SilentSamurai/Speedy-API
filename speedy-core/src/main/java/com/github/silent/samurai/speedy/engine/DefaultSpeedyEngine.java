@@ -48,6 +48,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
     private final List<Handler> queryChain;
     private final List<Handler> createChain;
     private final List<Handler> updateChain;
+    private final List<Handler> replaceChain;
     private final List<Handler> deleteChain;
     private final List<Handler> metadataChain;
     private static final int MAX_QUERY_PROCESSOR_CACHE_SIZE = 100;
@@ -147,6 +148,13 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
                 new UpdateHandler(),
+                new TailHandler()
+        );
+        // PUT full-replace reuses the update-level permission; only the handler differs.
+        replaceChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.UPDATE),
+                new ReplaceHandler(),
                 new TailHandler()
         );
         deleteChain = List.of(
@@ -267,6 +275,12 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
     @Override
     public SpeedyResponse update(SpeedyContext ctx) throws SpeedyHttpException {
         run(updateChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public SpeedyResponse replace(SpeedyContext ctx) throws SpeedyHttpException {
+        run(replaceChain, ctx);
         return ctx.get(SpeedyResponse.class);
     }
 

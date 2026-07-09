@@ -11,7 +11,7 @@ import org.springframework.http.HttpMethod;
 /// Determines the request operation type from HTTP method and URI action suffix.
 ///
 /// Reads the action suffix (resolved by SpeedyUriContext) and HTTP method to
-/// classify the request as GET_LIST, QUERY, CREATE, UPDATE, or DELETE. Sets
+/// classify the request as GET_LIST, QUERY, CREATE, UPDATE, REPLACE, or DELETE. Sets
 /// SpeedyRequestType on the context for consumption by SpeedyFactory's
 /// dispatch switch.
 ///
@@ -41,7 +41,11 @@ public class OperationResolverHandler implements com.github.silent.samurai.speed
             } else {
                 throw new BadRequestException("not a valid request");
             }
-        } else if (method.equals(HttpMethod.PUT) || method.equals(HttpMethod.PATCH)) {
+        } else if (method.equals(HttpMethod.PUT)) {
+            // PUT = full replace; PATCH = partial update. They diverge in validation
+            // (required-field enforcement) and column flatten (null-out of omitted fields).
+            requestType = SpeedyRequestType.REPLACE;
+        } else if (method.equals(HttpMethod.PATCH)) {
             requestType = SpeedyRequestType.UPDATE;
         } else if (method.equals(HttpMethod.DELETE)) {
             requestType = SpeedyRequestType.DELETE;

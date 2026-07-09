@@ -53,14 +53,15 @@ class SpeedyActionTest {
 
     @Test
     void virtualEntity_putUpdate_shouldBeBlocked() {
-        // The update body parser validates the body structure before the permission
-        // check runs; this malformed body is rejected as 400 by the parser. A valid
-        // body would reach the permission gate and return 403.
+        // The update body parser checks existence before the permission gate runs. The key
+        // "any-id" matches no row, so the request is rejected as 404 (not found) — an
+        // incomplete key would be 400, and a valid, existing key would reach the permission
+        // gate and return 403.
         client.update("VirtualEntity")
                 .key("id", "any-id")
                 .field("name", "test")
                 .execute()
-                .expectBadRequest();
+                .expectNotFound();
     }
 
     @Test

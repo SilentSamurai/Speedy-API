@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.entity;
 
+import com.github.silent.samurai.speedy.annotations.SpeedyBulk;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.util.Set;
         @Index(name = "categories_name_key", columnList = "name", unique = true)
 })
 @Entity
+@SpeedyBulk(true)
 public class Category {
 
     @Id

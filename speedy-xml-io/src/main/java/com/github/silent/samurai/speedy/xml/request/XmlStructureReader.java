@@ -1,28 +1,47 @@
 package com.github.silent.samurai.speedy.xml.request;
 
-import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.request.StructureReader;
-import com.github.silent.samurai.speedy.models.*;
+import com.github.silent.samurai.speedy.models.SpeedyNull;
+import com.github.silent.samurai.speedy.xml.request.SpeedyValueDecoder;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import static com.github.silent.samurai.speedy.utils.ValueTypeUtil.*;
-
+/// XML {@link StructureReader}. XML has no native arrays and no streaming array/object markers,
+/// so — unlike JSON/YAML — the whole body is parsed once into an immutable element tree and the
+/// token protocol is served by walking it with an explicit frame stack. Since the document is
+/// fully materialised there is no streaming to preserve; the tree keeps navigation to one
+/// {@link #kindOf} inference and one {@link #advanceEntry} descent rule instead of a hand-rolled
+/// index/depth cursor.
+///
+/// ## Array shapes
+/// XML expresses a "list" three ways, all handled by {@link #kindOf}:
+/// - **sibling form** — repeated same-name children (`<tag>a</tag><tag>b</tag>`); grouping by
+///   name yields one value whose group size is > 1.
+/// - **wrapper form** — a single container element whose children are all the same name
+///   (`<tags><item>a</item><item>b</item></tags>`).
+/// - **root form** — the document element wrapping repeated structural children
+///   (`<root><entity>…</entity><entity>…</entity></root>`).
+///
+/// Single-item wrapper/sibling arrays are otherwise indistinguishable from a plain object, so two
+/// hints disambiguate: the reserved item element names `entity`/`item` (the wire markers the
+/// client emits for array items — see the client {@code XmlFormat}) and, for entity fields, the
+/// {@link FieldMetadata#isCollection()} flag carried in from {@link #nextField}.
 public class XmlStructureReader implements StructureReader {
 
     private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newFactory();
@@ -32,543 +51,296 @@ public class XmlStructureReader implements StructureReader {
         XML_INPUT_FACTORY.setProperty(XMLInputFactory.SUPPORT_DTD, false);
     }
 
-    private final List<Event> events;
-    private final int[] depths;
-    private int pos;
-    private int rootDepth;
-    private int arrayWrapperPos = -1;
-    private int arrayItemDepth = -1;
-    private int lastReturnedKeyPos = -1;
-    private int lastReturnedFieldPos = -1;
-
-    private static final class Event {
-        final EventType type;
-        final String name;
-        final String text;
-
-        Event(EventType type, String name, String text) {
-            this.type = type;
-            this.name = name;
-            this.text = text;
+    /// An element of the parsed tree. {@code text} is the element's direct character content,
+    /// stripped once at build time; text inside child elements belongs to those children.
+    /// Attributes are ignored (parity with the streaming JSON/YAML readers, which have none).
+    private record XmlElement(String name, String text, List<XmlElement> children) {
+        boolean hasChildren() {
+            return !children.isEmpty();
         }
     }
 
-    private enum EventType { START_ELEMENT, END_ELEMENT, TEXT, END_DOCUMENT }
+    private final XmlElement root;
+    private final Deque<Frame> stack = new ArrayDeque<>();
 
+    /// The current unconsumed value token, or {@code null}. A single-element list is one value
+    /// (object / scalar / null / wrapper-array); a multi-element list is a sibling-form array.
+    private List<XmlElement> pending;
+    private boolean pendingIsRoot;
+    private boolean pendingCollectionHint;
+
+    private sealed interface Frame permits ObjectFrame, ArrayFrame {
+    }
+
+    private record ObjectFrame(Iterator<Map.Entry<String, List<XmlElement>>> fields) implements Frame {
+    }
+
+    private record ArrayFrame(Iterator<XmlElement> items) implements Frame {
+    }
+
+    private XmlStructureReader(XmlElement root) {
+        this.root = root;
+    }
+
+    /// Parses the whole body into an element tree — the {@code byte[] -> StructureReader} factory
+    /// the provider hands to the shared request parser.
     public static XmlStructureReader over(byte[] rawBody) throws SpeedyHttpException {
-        List<Event> events = new ArrayList<>();
-        StringBuilder textBuf = new StringBuilder();
+        Deque<Builder> builders = new ArrayDeque<>();
+        XmlElement root = null;
         try {
             XMLStreamReader r = XML_INPUT_FACTORY.createXMLStreamReader(new ByteArrayInputStream(rawBody));
             while (r.hasNext()) {
-                int et = r.next();
-                switch (et) {
-                    case XMLStreamReader.START_ELEMENT:
-                        flushText(textBuf, events);
-                        events.add(new Event(EventType.START_ELEMENT, r.getLocalName(), null));
-                        break;
-                    case XMLStreamReader.END_ELEMENT:
-                        flushText(textBuf, events);
-                        events.add(new Event(EventType.END_ELEMENT, r.getLocalName(), null));
-                        break;
-                    case XMLStreamReader.CHARACTERS:
-                    case XMLStreamReader.CDATA:
-                    case XMLStreamReader.SPACE:
-                        textBuf.append(r.getText());
-                        break;
-                    case XMLStreamReader.END_DOCUMENT:
-                        flushText(textBuf, events);
-                        events.add(new Event(EventType.END_DOCUMENT, null, null));
-                        break;
+                switch (r.next()) {
+                    case XMLStreamConstants.START_ELEMENT -> builders.push(new Builder(r.getLocalName()));
+                    case XMLStreamConstants.CHARACTERS, XMLStreamConstants.CDATA, XMLStreamConstants.SPACE -> {
+                        if (!builders.isEmpty()) {
+                            builders.peek().text.append(r.getText());
+                        }
+                    }
+                    case XMLStreamConstants.END_ELEMENT -> {
+                        Builder done = builders.pop();
+                        XmlElement element = new XmlElement(done.name, done.text.toString().strip(), done.children);
+                        if (builders.isEmpty()) {
+                            root = element; // the document element
+                        } else {
+                            builders.peek().children.add(element);
+                        }
+                    }
+                    default -> {
+                        // comments, processing instructions, whitespace, the XML declaration — ignored
+                    }
                 }
             }
-            flushText(textBuf, events);
+            r.close();
         } catch (XMLStreamException e) {
             throw new BadRequestException("Invalid XML body", e);
         }
-        return new XmlStructureReader(events);
+        return new XmlStructureReader(root);
     }
 
-    private static void flushText(StringBuilder buf, List<Event> events) {
-        if (buf.length() > 0) {
-            events.add(new Event(EventType.TEXT, null, buf.toString()));
-            buf.setLength(0);
+    private static final class Builder {
+        final String name;
+        final StringBuilder text = new StringBuilder();
+        final List<XmlElement> children = new ArrayList<>();
+
+        Builder(String name) {
+            this.name = name;
         }
-    }
-
-    private XmlStructureReader(List<Event> events) {
-        this.events = events;
-        this.depths = computeDepths(events);
-        this.pos = 0;
-    }
-
-    private static int[] computeDepths(List<Event> events) {
-        int[] d = new int[events.size()];
-        int depth = 0;
-        for (int i = 0; i < events.size(); i++) {
-            Event e = events.get(i);
-            if (e.type == EventType.START_ELEMENT) {
-                depth++;
-            }
-            d[i] = depth;
-            if (e.type == EventType.END_ELEMENT) {
-                depth--;
-            }
-        }
-        return d;
     }
 
     @Override
     public Kind begin() throws SpeedyHttpException {
-        pos = 0;
-        lastReturnedKeyPos = -1;
-        lastReturnedFieldPos = -1;
-        arrayWrapperPos = -1;
-        arrayItemDepth = -1;
-        while (pos < events.size() && events.get(pos).type != EventType.START_ELEMENT) {
-            pos++;
-        }
-        if (pos >= events.size()) {
+        stack.clear();
+        clearPending();
+        if (root == null) {
             return null;
         }
-        rootDepth = depths[pos];
-        String firstChildName = null;
-        boolean allSame = true;
-        int childCount = 0;
-        boolean hasStructuralChildren = false;
-        int p = pos + 1;
-        while (p < events.size()) {
-            Event e = events.get(p);
-            if (e.type == EventType.END_ELEMENT && depths[p] == rootDepth) {
-                break;
-            }
-            if (e.type == EventType.START_ELEMENT && depths[p] == rootDepth + 1) {
-                if (firstChildName == null) {
-                    firstChildName = e.name;
-                    childCount = 1;
-                    // check if this first child contains nested elements
-                    int cp = p + 1;
-                    while (cp < events.size()) {
-                        Event ce = events.get(cp);
-                        if (ce.type == EventType.END_ELEMENT && depths[cp] == depths[p]) {
-                            break;
-                        }
-                        if (ce.type == EventType.START_ELEMENT && depths[cp] == depths[p] + 1) {
-                            hasStructuralChildren = true;
-                            break;
-                        }
-                        cp++;
-                    }
-                } else if (firstChildName.equals(e.name)) {
-                    childCount++;
-                } else {
-                    allSame = false;
-                    break;
-                }
-            }
-            p++;
-        }
-        if (childCount > 0 && allSame && hasStructuralChildren) {
-            arrayWrapperPos = pos;
-            return Kind.ARRAY;
-        }
-        return Kind.OBJECT;
+        pending = List.of(root);
+        pendingIsRoot = true;
+        return kindOf(pending, true, false);
     }
 
     @Override
     public Kind currentKind() throws SpeedyHttpException {
-        if (pos >= events.size()) {
-            return null;
-        }
-        Event e = events.get(pos);
-        if (e.type != EventType.START_ELEMENT) {
+        if (pending == null) {
             throw new BadRequestException("Invalid XML structure");
         }
-
-        int currentPos = pos;
-        int elementDepth = depths[currentPos];
-        String elementName = e.name;
-
-        boolean hasText = false;
-        boolean hasChildren = false;
-        String firstChildName = null;
-        int childCount = 0;
-
-        int p = currentPos + 1;
-        while (p < events.size()) {
-            Event ev = events.get(p);
-            int d = depths[p];
-            if (ev.type == EventType.END_ELEMENT && d == elementDepth && ev.name.equals(elementName)) {
-                break;
-            }
-            if (ev.type == EventType.TEXT && d == elementDepth) {
-                if (!ev.text.strip().isEmpty()) {
-                    hasText = true;
-                }
-            } else if (ev.type == EventType.START_ELEMENT && d == elementDepth + 1) {
-                hasChildren = true;
-                String name = ev.name;
-                if (firstChildName == null) {
-                    firstChildName = name;
-                    childCount = 1;
-                } else if (firstChildName.equals(name)) {
-                    childCount++;
-                }
-            }
-            p++;
-        }
-
-        if (childCount > 1) {
-            arrayWrapperPos = currentPos;
-            return Kind.ARRAY;
-        }
-
-        int afterEnd = p + 1;
-        while (afterEnd < events.size()) {
-            Event after = events.get(afterEnd);
-            if (after.type == EventType.START_ELEMENT && depths[afterEnd] == elementDepth
-                    && after.name.equals(elementName)) {
-                return Kind.ARRAY;
-            }
-            if (after.type == EventType.END_ELEMENT && depths[afterEnd] < elementDepth) {
-                break;
-            }
-            afterEnd++;
-        }
-
-        if (!hasText && !hasChildren) {
-            return Kind.NULL;
-        }
-        if (hasText && !hasChildren) {
-            return Kind.VALUE;
-        }
-        return Kind.OBJECT;
+        return kindOf(pending, pendingIsRoot, pendingCollectionHint);
     }
 
     @Override
     public FieldMetadata nextField(EntityMetadata entityMetadata) throws SpeedyHttpException {
-        // --- Container entry detection ---
-        // A prior call may have left pos sitting on the START_ELEMENT of a container
-        // that hasn't been entered yet: the root element, an array item positioned by
-        // nextElement(), or a nested field returned by a previous nextField() call that
-        // the caller wants to walk into (rather than consume via readField/skipValue).
-        // In all of those cases we must descend into it instead of treating it as a sibling.
-        Event cur = events.get(pos);
-        boolean shouldEnter = cur.type == EventType.START_ELEMENT
-                && (depths[pos] == rootDepth || pos == lastReturnedFieldPos);
-        int containerDepth = shouldEnter ? depths[pos] : depths[pos] - 1;
-
-        if (shouldEnter) {
-            pos++;
-        }
-        while (pos < events.size()) {
-            Event e = events.get(pos);
-            if (e.type == EventType.END_ELEMENT && depths[pos] == containerDepth) {
-                pos++;
-                lastReturnedFieldPos = -1;
-                return null;
+        Map.Entry<String, List<XmlElement>> entry;
+        while ((entry = advanceEntry()) != null) {
+            if (entityMetadata.has(entry.getKey())) {
+                FieldMetadata field = entityMetadata.field(entry.getKey());
+                pending = entry.getValue();
+                pendingIsRoot = false;
+                pendingCollectionHint = field.isCollection();
+                return field;
             }
-            if (e.type == EventType.END_DOCUMENT) {
-                return null;
-            }
-            if (e.type == EventType.START_ELEMENT && depths[pos] == containerDepth + 1) {
-                if (entityMetadata.has(e.name)) {
-                    lastReturnedFieldPos = pos;
-                    return entityMetadata.field(e.name);
-                }
-                skipCurrentSubtree();
-                continue;
-            }
-            pos++;
+            // Unknown to the metadata — a tree has no token to skip; simply don't visit it.
         }
         return null;
     }
 
     @Override
     public String nextKey() throws SpeedyHttpException {
-        // --- Container entry detection ---
-        // When the caller receives a key from nextKey() and then calls nextKey()
-        // again without consuming the element (no readField/skipValue etc.),
-        // pos hasn't changed and we must enter that element as a new container.
-        if (lastReturnedKeyPos >= 0 && pos == lastReturnedKeyPos
-                && events.get(pos).type == EventType.START_ELEMENT) {
-            int containerDepth = depths[pos];
-            pos++; // advance past the container element's START_ELEMENT
-            while (pos < events.size()) {
-                Event e = events.get(pos);
-                if (e.type == EventType.END_ELEMENT && depths[pos] == containerDepth) {
-                    pos++;
-                    break; // empty or scalar container — fall through to sibling iteration
-                }
-                if (e.type == EventType.START_ELEMENT && depths[pos] == containerDepth + 1) {
-                    lastReturnedKeyPos = pos;
-                    return e.name;
-                }
-                if (e.type == EventType.END_DOCUMENT) {
-                    return null;
-                }
-                pos++;
-            }
-            // Scalar/empty — continue to normal sibling iteration at the parent level
+        Map.Entry<String, List<XmlElement>> entry = advanceEntry();
+        if (entry == null) {
+            return null;
         }
-
-        // --- Normal sibling iteration ---
-        Event cur = events.get(pos);
-        boolean atRoot = cur.type == EventType.START_ELEMENT && depths[pos] == rootDepth;
-        int containerDepth = atRoot ? rootDepth : depths[pos] - 1;
-
-        if (atRoot) {
-            pos++;
-        }
-
-        while (pos < events.size()) {
-            Event e = events.get(pos);
-            if (e.type == EventType.END_ELEMENT && depths[pos] == containerDepth) {
-                pos++;
-                lastReturnedKeyPos = -1;
-                return null;
-            }
-            if (e.type == EventType.END_DOCUMENT) {
-                return null;
-            }
-            if (e.type == EventType.START_ELEMENT) {
-                if (depths[pos] == containerDepth + 1) {
-                    String name = e.name;
-                    lastReturnedKeyPos = pos;
-                    return name;
-                }
-                if (depths[pos] > containerDepth + 1) {
-                    skipCurrentSubtree();
-                    continue;
-                }
-            }
-            pos++;
-        }
-        return null;
+        pending = entry.getValue();
+        pendingIsRoot = false;
+        pendingCollectionHint = false;
+        return entry.getKey();
     }
 
     @Override
     public Kind nextElement() throws SpeedyHttpException {
-        lastReturnedKeyPos = -1;
-        if (pos == arrayWrapperPos) {
-            arrayWrapperPos = -1;
-            pos++;
-            while (pos < events.size() && events.get(pos).type != EventType.START_ELEMENT) {
-                pos++;
+        if (pending != null) {
+            if (kindOf(pending, pendingIsRoot, pendingCollectionHint) == Kind.ARRAY) {
+                List<XmlElement> items = pending.size() > 1 ? pending : pending.get(0).children();
+                clearPending();
+                stack.push(new ArrayFrame(items.iterator()));
+            } else {
+                clearPending(); // a leftover peeked scalar (e.g. a $select/$expand entry) — drop it
             }
-            if (pos >= events.size()) {
-                return null;
-            }
-            arrayItemDepth = depths[pos];
-            lastReturnedFieldPos = pos;
-            return Kind.OBJECT;
         }
-
-        if (pos < events.size() && events.get(pos).type == EventType.START_ELEMENT
-                && depths[pos] == arrayItemDepth) {
-            lastReturnedFieldPos = pos;
-            return Kind.OBJECT;
+        // Moving to the next element abandons the current one: unwind any object frames opened
+        // while walking it, back to the enclosing array frame.
+        while (!stack.isEmpty() && !(stack.peek() instanceof ArrayFrame)) {
+            stack.pop();
         }
-
-        while (pos < events.size()) {
-            Event e = events.get(pos);
-            if (e.type == EventType.START_ELEMENT && depths[pos] == arrayItemDepth) {
-                lastReturnedFieldPos = pos;
-                return Kind.OBJECT;
-            }
-            if (e.type == EventType.END_ELEMENT && depths[pos] < arrayItemDepth) {
-                return null;
-            }
-            pos++;
+        if (!(stack.peek() instanceof ArrayFrame frame)) {
+            return null;
         }
-        return null;
+        if (!frame.items().hasNext()) {
+            stack.pop();
+            return null;
+        }
+        pending = List.of(frame.items().next());
+        pendingIsRoot = false;
+        pendingCollectionHint = false;
+        return kindOf(pending, false, false);
     }
 
     @Override
     public SpeedyValue readField(FieldMetadata field) throws SpeedyHttpException {
-        int elementDepth = depths[pos];
-        String elementName = events.get(pos).name;
-
-        StringBuilder textContent = new StringBuilder();
-        pos++;
-        while (pos < events.size()) {
-            Event e = events.get(pos);
-            if (e.type == EventType.TEXT && depths[pos] == elementDepth) {
-                textContent.append(e.text);
-            }
-            if (e.type == EventType.END_ELEMENT && depths[pos] == elementDepth && e.name.equals(elementName)) {
-                break;
-            }
-            if (e.type == EventType.START_ELEMENT) {
-                skipToEndElement(depths[pos], e.name);
-                continue;
-            }
-            pos++;
-        }
-
-        String raw = textContent.toString().strip();
+        String raw = pending == null || pending.isEmpty() ? "" : pending.get(0).text();
+        clearPending();
         if (raw.isEmpty()) {
             return SpeedyNull.SPEEDY_NULL;
         }
-
-        ValueType type = field.getValueType();
-        return switch (type) {
-            case ENUM -> new SpeedyEnum(raw, field);
-            case ENUM_ORD -> {
-                try {
-                    yield new SpeedyEnum(Long.parseLong(raw), field);
-                } catch (NumberFormatException ex) {
-                    throw new BadRequestException("expected number for ordinal enum field " + field.getOutputPropertyName());
-                }
-            }
-            case DATE -> {
-                if (!isDateFormatValid(raw)) {
-                    throw new BadRequestException(String.format("Date value must be a string with ISO_DATE(%s) format",
-                            LocalDate.now().format(DateTimeFormatter.ISO_DATE)));
-                }
-                yield new SpeedyDate(LocalDate.parse(raw, DateTimeFormatter.ISO_DATE));
-            }
-            case TIME -> {
-                if (!isTimeFormatValid(raw)) {
-                    throw new BadRequestException(String.format("Time value must be a string with ISO_TIME(%s) format",
-                            LocalTime.now().format(DateTimeFormatter.ISO_TIME)));
-                }
-                yield new SpeedyTime(LocalTime.parse(raw, DateTimeFormatter.ISO_TIME));
-            }
-            case DATE_TIME -> {
-                if (!isDateTimeFormatValid(raw)) {
-                    throw new BadRequestException(String.format("DateTime value must be a string with ISO_DATE_TIME(%s) format",
-                            LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME)));
-                }
-                yield new SpeedyDateTime(LocalDateTime.parse(raw, DateTimeFormatter.ISO_DATE_TIME));
-            }
-            case ZONED_DATE_TIME -> {
-                if (!isZonedDateTimeValid(raw)) {
-                    throw new BadRequestException(String.format("ZonedDateTime value must be a string with ISO_ZONED_DATE_TIME(%s) format",
-                            ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)));
-                }
-                yield new SpeedyZonedDateTime(ZonedDateTime.parse(raw, DateTimeFormatter.ISO_OFFSET_DATE_TIME));
-            }
-            case BOOL -> {
-                String lower = raw.toLowerCase();
-                yield new SpeedyBoolean("true".equals(lower) || "1".equals(lower));
-            }
-            case TEXT -> new SpeedyText(raw);
-            case INT -> {
-                try {
-                    yield new SpeedyInt(Long.parseLong(raw));
-                } catch (NumberFormatException ex) {
-                    throw new BadRequestException(String.format(
-                            "Not able to parse field %s with value type %s",
-                            field.getOutputPropertyName(), field.getColumnType()));
-                }
-            }
-            case FLOAT -> {
-                try {
-                    yield new SpeedyDouble(Double.parseDouble(raw));
-                } catch (NumberFormatException ex) {
-                    throw new BadRequestException(String.format(
-                            "Not able to parse field %s with value type %s",
-                            field.getOutputPropertyName(), field.getColumnType()));
-                }
-            }
-            case NULL -> SpeedyNull.SPEEDY_NULL;
-            case OBJECT, COLLECTION -> throw new BadRequestException(String.format(
-                    "Not able to parse field %s with value type %s",
-                    field.getOutputPropertyName(), field.getColumnType()));
-        };
+        return SpeedyValueDecoder.fromString(field, raw);
     }
 
     @Override
     public String textValue() throws SpeedyHttpException {
-        if (pos >= events.size()) {
+        if (pending == null || pending.size() != 1) {
             return null;
         }
-        int elementDepth = depths[pos];
-        int p = pos + 1;
-        StringBuilder sb = new StringBuilder();
-        while (p < events.size()) {
-            Event e = events.get(p);
-            if (e.type == EventType.END_ELEMENT && depths[p] == elementDepth) {
-                break;
-            }
-            if (e.type == EventType.TEXT && depths[p] == elementDepth) {
-                sb.append(e.text);
-            }
-            if (e.type == EventType.START_ELEMENT) {
-                break;
-            }
-            p++;
+        XmlElement element = pending.get(0);
+        if (element.hasChildren()) {
+            return null;
         }
-        String result = sb.toString().strip();
-        return result.isEmpty() ? null : result;
+        return element.text().isEmpty() ? null : element.text();
     }
 
     @Override
     public int intValue() throws SpeedyHttpException {
-        String val = textValue();
-        if (val == null) {
+        String value = textValue();
+        if (value == null) {
             throw new BadRequestException("expected integer value");
         }
         try {
-            return Integer.parseInt(val);
+            return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            throw new BadRequestException("expected integer value, got: " + val);
+            throw new BadRequestException("expected integer value, got: " + value);
         }
     }
 
     @Override
     public boolean boolValue() throws SpeedyHttpException {
-        String val = textValue();
-        if (val == null) {
+        String value = textValue();
+        if (value == null) {
             throw new BadRequestException("expected boolean value");
         }
-        return "true".equalsIgnoreCase(val) || "1".equals(val);
+        return "true".equalsIgnoreCase(value) || "1".equals(value);
     }
 
     @Override
     public boolean isBoolValue() throws SpeedyHttpException {
-        String val = textValue();
-        if (val == null) {
+        String value = textValue();
+        if (value == null) {
             return false;
         }
-        String lower = val.toLowerCase();
-        return "true".equals(lower) || "false".equals(lower) || "1".equals(val) || "0".equals(val);
+        String lower = value.toLowerCase();
+        return "true".equals(lower) || "false".equals(lower) || "1".equals(value) || "0".equals(value);
     }
 
     @Override
     public void skipValue() throws SpeedyHttpException {
-        if (pos >= events.size()) {
-            return;
-        }
-        skipCurrentSubtree();
+        clearPending();
     }
 
     @Override
     public void close() {
     }
 
-    private void skipCurrentSubtree() {
-        int elementDepth = depths[pos];
-        String elementName = events.get(pos).name;
-        pos++;
-        while (pos < events.size()) {
-            Event e = events.get(pos);
-            if (e.type == EventType.END_ELEMENT && depths[pos] == elementDepth && e.name.equals(elementName)) {
-                pos++;
-                return;
+    /// Pulls the next object entry, first resolving any unconsumed {@link #pending} value:
+    /// an object (or the document root) is descended into — this is how the walker walks into an
+    /// association / condition object it was just handed — while any other leftover value is
+    /// dropped. Returns {@code null} at the end of the current object, popping its frame so the
+    /// parent object resumes on the following call.
+    private Map.Entry<String, List<XmlElement>> advanceEntry() throws SpeedyHttpException {
+        if (pending != null) {
+            boolean descend = pendingIsRoot || kindOf(pending, pendingIsRoot, pendingCollectionHint) == Kind.OBJECT;
+            if (descend && pending.size() == 1) {
+                stack.push(new ObjectFrame(grouped(pending.get(0)).entrySet().iterator()));
             }
-            pos++;
+            clearPending();
         }
+        if (!(stack.peek() instanceof ObjectFrame frame)) {
+            return null;
+        }
+        if (frame.fields().hasNext()) {
+            return frame.fields().next();
+        }
+        stack.pop();
+        return null;
     }
 
-    private void skipToEndElement(int targetDepth, String targetName) {
-        while (pos < events.size()) {
-            Event e = events.get(pos);
-            pos++;
-            if (e.type == EventType.END_ELEMENT && depths[pos - 1] == targetDepth && e.name.equals(targetName)) {
-                return;
+    /// Classifies a value token. A group of more than one element is a sibling-form array; a
+    /// single childless element is a scalar (or null when empty). A single element with children
+    /// is an array when its children are a uniform list — repeated, or marked as array items by
+    /// name or by the collection hint — and an object otherwise. The document root keeps the
+    /// original name-agnostic rule (uniform structural children ⇒ array) so a non-{@code entity}
+    /// create body still parses as an array.
+    private static Kind kindOf(List<XmlElement> group, boolean isRoot, boolean collectionHint) {
+        if (group.size() > 1) {
+            return Kind.ARRAY;
+        }
+        XmlElement element = group.get(0);
+        if (!element.hasChildren()) {
+            return element.text().isEmpty() ? Kind.NULL : Kind.VALUE;
+        }
+        List<XmlElement> children = element.children();
+        if (!allSameName(children)) {
+            return Kind.OBJECT;
+        }
+        if (isRoot) {
+            return children.get(0).hasChildren() ? Kind.ARRAY : Kind.OBJECT;
+        }
+        boolean isArray = children.size() > 1 || isArrayItemName(children.get(0).name()) || collectionHint;
+        return isArray ? Kind.ARRAY : Kind.OBJECT;
+    }
+
+    private static boolean allSameName(List<XmlElement> children) {
+        String first = children.get(0).name();
+        for (XmlElement child : children) {
+            if (!first.equals(child.name())) {
+                return false;
             }
         }
+        return true;
+    }
+
+    private static boolean isArrayItemName(String name) {
+        return "entity".equals(name) || "item".equals(name);
+    }
+
+    private static Map<String, List<XmlElement>> grouped(XmlElement element) {
+        Map<String, List<XmlElement>> groups = new LinkedHashMap<>();
+        for (XmlElement child : element.children()) {
+            groups.computeIfAbsent(child.name(), k -> new ArrayList<>()).add(child);
+        }
+        return groups;
+    }
+
+    private void clearPending() {
+        pending = null;
+        pendingIsRoot = false;
+        pendingCollectionHint = false;
     }
 }

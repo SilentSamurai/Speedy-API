@@ -81,4 +81,11 @@ public interface EntityMetadata {
     default TransactionMode getTransactionMode() {
         return TransactionMode.PER_ENTITY;
     }
+
+    // Whether multi-element (bulk) create/delete requests are accepted for this
+    // entity. Disabled by default; enabled via @SpeedyBulk(true). When false, a
+    // request body with more than one entity/key is rejected with 400.
+    default boolean isBulkAllowed() {
+        return false;
+    }
 }

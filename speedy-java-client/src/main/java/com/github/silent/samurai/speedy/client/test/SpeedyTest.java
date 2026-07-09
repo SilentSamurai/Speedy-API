@@ -79,12 +79,28 @@ public class SpeedyTest {
         return new TestBulkCreateBuilder(entity).items(entities).execute();
     }
 
+    /**
+     * Sends a bare JSON object (not wrapped in an array) to {@code $create} — the
+     * single-entity shorthand accepted by the server.
+     */
+    public SpeedyTestResult createOne(String entity, ObjectNode body) {
+        try {
+            return execute(paths.createPath(entity), "POST", mapper.writeValueAsString(body));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize createOne body", e);
+        }
+    }
+
     public TestGetBuilder get(String entity) {
         return new TestGetBuilder(entity);
     }
 
     public TestUpdateBuilder update(String entity) {
         return new TestUpdateBuilder(entity);
+    }
+
+    public TestReplaceBuilder replace(String entity) {
+        return new TestReplaceBuilder(entity);
     }
 
     public TestDeleteBuilder delete(String entity) {
@@ -97,6 +113,18 @@ public class SpeedyTest {
 
     public SpeedyTestResult deleteMany(String entity, List<ObjectNode> pks) {
         return new TestBulkDeleteBuilder(entity).items(pks).execute();
+    }
+
+    /**
+     * Sends a bare JSON object (not wrapped in an array) to {@code $delete} — the
+     * single-key shorthand accepted by the server.
+     */
+    public SpeedyTestResult deleteOne(String entity, ObjectNode pk) {
+        try {
+            return execute(paths.deletePath(entity), "DELETE", mapper.writeValueAsString(pk));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize deleteOne body", e);
+        }
     }
 
     public TestQueryBuilder query(String entity) {
@@ -267,6 +295,41 @@ public class SpeedyTest {
                 throw new RuntimeException("Failed to serialize", e);
             }
             return SpeedyTest.this.execute(url, "PATCH", jsonBody);
+        }
+    }
+
+    /** Full-replace (HTTP PUT) counterpart of {@link TestUpdateBuilder}. */
+    public class TestReplaceBuilder {
+        private final String entity;
+        private final ObjectNode body;
+        private final ObjectNode pkNode;
+
+        TestReplaceBuilder(String entity) {
+            this.entity = entity;
+            this.body = mapper.createObjectNode();
+            this.pkNode = mapper.createObjectNode();
+        }
+
+        public TestReplaceBuilder key(String field, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
+            return this;
+        }
+
+        public TestReplaceBuilder field(String name, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(body, name, value);
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.updatePath(entity);
+            body.setAll(pkNode);
+            String jsonBody;
+            try {
+                jsonBody = mapper.writeValueAsString(body);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize", e);
+            }
+            return SpeedyTest.this.execute(url, "PUT", jsonBody);
         }
     }
 

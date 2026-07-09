@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+
 /**
  * {@link SpeedyTransport} implementation that wraps Spring's {@link MockMvc}
  * for integration testing without starting a real HTTP server.
@@ -43,7 +45,7 @@ public class MockMvcTransport implements SpeedyTransport {
             MockHttpServletRequestBuilder builder = buildRequest(request);
             ResultActions actions = mockMvc.perform(builder);
             this.lastResultActions = actions;
-            MockHttpServletResponse response = actions.andReturn().getResponse();
+            MockHttpServletResponse response = actions.andDo(print()).andReturn().getResponse();
 
             Map<String, List<String>> headers = new HashMap<>();
             for (String name : response.getHeaderNames()) {

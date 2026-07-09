@@ -37,6 +37,9 @@ public class FileProcessor {
             TransactionMode mode = TransactionMode.valueOf(jsonEntity.transactionMode.toUpperCase());
             eb.transactionMode(mode);
         }
+        if (jsonEntity.bulkAllowed != null) {
+            eb.bulkAllowed(jsonEntity.bulkAllowed);
+        }
 
         for (JsonField jsonField : jsonEntity.fields) {
             processFieldMetadata(jsonField, eb);

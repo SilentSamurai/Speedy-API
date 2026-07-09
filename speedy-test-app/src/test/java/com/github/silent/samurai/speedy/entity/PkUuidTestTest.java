@@ -149,6 +149,45 @@ class PkUuidTestTest {
         assertEquals("updated-name", updated.get().getName());
     }
 
+    /// Regression test for issue #115: the "id" in a PATCH body is only ever used to locate
+    /// the row (SQL WHERE clause) and is never written into the SET clause — there is no way
+    /// to "change" an entity's PK via $update, since the same id value is used both to find
+    /// the row and (if it were writable) to set it. Sending a body whose id resolves to a
+    /// *different* existing row updates that row's non-key fields only, leaving the row the
+    /// caller actually meant to touch completely untouched.
+    @Test
+    void update_keyIdentifiesRowOnly_originalRowUntouchedByOtherKeysUpdate() throws Exception {
+        PkUuidTest first = new PkUuidTest();
+        first.setName("first");
+        first.setDescription("desc-first");
+        pkUuidTestRepository.save(first);
+
+        PkUuidTest second = new PkUuidTest();
+        second.setName("second");
+        second.setDescription("desc-second");
+        pkUuidTestRepository.save(second);
+
+        MockHttpServletRequestBuilder updateRequest = MockMvcRequestBuilders
+                .patch(SpeedyConstants.URI + "/PkUuidTest/" + SpeedyEndpoint.UPDATE.suffix())
+                .content(CommonUtil.json().createObjectNode()
+                        .put("id", second.getId().toString())
+                        .put("name", "updated-second")
+                        .toPrettyString())
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+        mvc.perform(updateRequest)
+                .andExpect(status().isOk());
+
+        Optional<PkUuidTest> untouched = pkUuidTestRepository.findById(first.getId());
+        assertTrue(untouched.isPresent());
+        assertEquals("first", untouched.get().getName(), "row not addressed by the request must be unaffected");
+
+        Optional<PkUuidTest> updated = pkUuidTestRepository.findById(second.getId());
+        assertTrue(updated.isPresent());
+        assertEquals(second.getId(), updated.get().getId(), "key column is never part of the SET clause");
+        assertEquals("updated-second", updated.get().getName());
+    }
+
     /// Tests deleting a PkUuidTest entity identified by its UUID primary key
     /// via the DELETE `/speedy/v1/PkUuidTest/$delete` endpoint.
     /// Verifies the entity count decreases by one after the delete operation.

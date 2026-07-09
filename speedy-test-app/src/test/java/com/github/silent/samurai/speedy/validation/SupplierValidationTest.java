@@ -59,6 +59,21 @@ class SupplierValidationTest {
     }
 
     @Test
+    void createWithoutAltPhoneNo_shouldFailFromDefaultValidator() {
+        // altPhoneNo is a required column (nullable=false) but is NOT checked by the
+        // custom validateSupplier validator. Because a custom validator now augments
+        // (rather than replaces) DefaultFieldValidator, the required-field check must
+        // still fire at the validation layer with a 400 — issue #124.
+        String uniquePhone = uniquePhone();
+        client.create("Supplier")
+                .field("name", "Test Supplier " + System.nanoTime())
+                .field("phoneNo", uniquePhone)
+                .execute()
+                .expectBadRequest()
+                .expectJsonPath("$.message", containsString("altPhoneNo"));
+    }
+
+    @Test
     void createValid_shouldSucceed() {
         String uniquePhone = uniquePhone();
         String supplierName = "Valid Supplier " + System.nanoTime();

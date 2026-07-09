@@ -65,6 +65,33 @@ class MetadataBuilderTest {
         Assertions.assertFalse(md.isDeleteAllowed());
     }
 
+    /**
+     * Bulk create/delete is disabled by default (no @SpeedyBulk annotation).
+     */
+    @Test
+    void bulkAllowed_defaultsFalse() throws NotFoundException {
+        EntityBuilder entity = MetadataBuilder.builder().entity("DefaultBulk");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("name", "NAME", ColumnType.VARCHAR);
+
+        EntityMetadata md = entity.build();
+        Assertions.assertFalse(md.isBulkAllowed(), "bulk must be disabled by default");
+    }
+
+    /**
+     * @SpeedyBulk(true) — modelled by EntityBuilder.bulkAllowed(true) — enables bulk.
+     */
+    @Test
+    void bulkAllowed_explicitTrue() throws NotFoundException {
+        EntityBuilder entity = MetadataBuilder.builder().entity("WithBulk");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("name", "NAME", ColumnType.VARCHAR);
+        entity.bulkAllowed(true);
+
+        EntityMetadata md = entity.build();
+        Assertions.assertTrue(md.isBulkAllowed(), "bulkAllowed(true) must enable bulk");
+    }
+
     @Test
     void create() throws NotFoundException {
 

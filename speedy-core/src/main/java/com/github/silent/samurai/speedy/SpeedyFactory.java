@@ -166,6 +166,7 @@ public class SpeedyFactory {
                 case QUERY    -> { engine.parseQueryBody(ctx);  yield engine.query(ctx); }
                 case CREATE   -> { engine.parseCreateBody(ctx); yield engine.create(ctx); }
                 case UPDATE   -> { engine.parseUpdateBody(ctx); yield engine.update(ctx); }
+                case REPLACE  -> { engine.parseUpdateBody(ctx); yield engine.replace(ctx); }
                 case DELETE   -> { engine.parseDeleteBody(ctx); yield engine.delete(ctx); }
                 case METADATA -> engine.metadata(ctx);
             };

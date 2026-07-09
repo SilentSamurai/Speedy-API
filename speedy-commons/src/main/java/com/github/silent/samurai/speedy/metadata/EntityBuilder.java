@@ -19,6 +19,7 @@ public class EntityBuilder {
     private String dbTableName;
     private boolean isSensitive = false;
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
+    private boolean bulkAllowed = false;
 
     public Iterable<FieldBuilder> fields() {
         return fieldMap.values();
@@ -66,6 +67,11 @@ public class EntityBuilder {
 
     public EntityBuilder transactionMode(TransactionMode transactionMode) {
         this.transactionMode = transactionMode;
+        return this;
+    }
+
+    public EntityBuilder bulkAllowed(boolean bulkAllowed) {
+        this.bulkAllowed = bulkAllowed;
         return this;
     }
 
@@ -131,6 +137,7 @@ public class EntityBuilder {
 
         EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, isSensitive, actionTypes, fieldMetadataMap);
         entityMetadata.setTransactionMode(transactionMode);
+        entityMetadata.setBulkAllowed(bulkAllowed);
 
         for (FieldMetadata fieldMetadata : fieldMetadataMap.values()) {
             FieldMetadataImpl fieldMetadataImpl = (FieldMetadataImpl) fieldMetadata;

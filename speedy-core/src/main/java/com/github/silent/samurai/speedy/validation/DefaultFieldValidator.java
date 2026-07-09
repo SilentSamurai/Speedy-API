@@ -66,6 +66,13 @@ public class DefaultFieldValidator {
         validate(entityMetadata, entity, false);
     }
 
+    /// Full-replace (PUT) validation: the payload is the complete representation, so required
+    /// fields are enforced exactly like create ({@code enforceRequired = true}).
+    public void validateReplace(EntityMetadata entityMetadata, SpeedyEntity entity)
+            throws BadRequestException {
+        validate(entityMetadata, entity, true);
+    }
+
     /* ---------------------------------------------------------------------- */
     /* Internal helpers                                                       */
     /* ---------------------------------------------------------------------- */

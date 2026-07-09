@@ -341,4 +341,122 @@ class XmlStructureReaderTest {
 
         assertNull(reader.nextField(entity));
     }
+
+    @Test
+    void scalarArrayWrapperForm() throws Exception {
+        String xml = "<root><tags><item>a</item><item>b</item></tags></root>";
+        XmlStructureReader reader = XmlStructureReader.over(xml.getBytes(StandardCharsets.UTF_8));
+        reader.begin();
+
+        assertEquals("tags", reader.nextKey());
+        assertEquals(StructureReader.Kind.ARRAY, reader.currentKind());
+        assertEquals(StructureReader.Kind.VALUE, reader.nextElement());
+        assertEquals("a", reader.textValue());
+        assertEquals(StructureReader.Kind.VALUE, reader.nextElement());
+        assertEquals("b", reader.textValue());
+        assertNull(reader.nextElement());
+    }
+
+    @Test
+    void scalarArrayWrapperSingleItem() throws Exception {
+        String xml = "<root><in><item>a</item></in></root>";
+        XmlStructureReader reader = XmlStructureReader.over(xml.getBytes(StandardCharsets.UTF_8));
+        reader.begin();
+
+        assertEquals("in", reader.nextKey());
+        assertEquals(StructureReader.Kind.ARRAY, reader.currentKind());
+        assertEquals(StructureReader.Kind.VALUE, reader.nextElement());
+        assertEquals("a", reader.textValue());
+        assertNull(reader.nextElement());
+    }
+
+    @Test
+    void scalarArraySiblingForm() throws Exception {
+        String xml = "<root><tag>a</tag><tag>b</tag></root>";
+        XmlStructureReader reader = XmlStructureReader.over(xml.getBytes(StandardCharsets.UTF_8));
+        reader.begin();
+
+        assertEquals("tag", reader.nextKey());
+        assertEquals(StructureReader.Kind.ARRAY, reader.currentKind());
+        assertEquals(StructureReader.Kind.VALUE, reader.nextElement());
+        assertEquals("a", reader.textValue());
+        assertEquals(StructureReader.Kind.VALUE, reader.nextElement());
+        assertEquals("b", reader.textValue());
+        assertNull(reader.nextElement());
+        assertNull(reader.nextKey());
+    }
+
+    @Test
+    void singleItemNestedCollectionMarker() throws Exception {
+        FieldMetadata itemsField = mock(FieldMetadata.class);
+        when(itemsField.isCollection()).thenReturn(true);
+        EntityMetadata parent = mock(EntityMetadata.class);
+        when(parent.has("items")).thenReturn(true);
+        when(parent.field("items")).thenReturn(itemsField);
+
+        FieldMetadata fField = mock(FieldMetadata.class);
+        when(fField.getValueType()).thenReturn(ValueType.INT);
+        EntityMetadata itemEntity = mock(EntityMetadata.class);
+        when(itemEntity.has("f")).thenReturn(true);
+        when(itemEntity.field("f")).thenReturn(fField);
+
+        String xml = "<root><items><entity><f>1</f></entity></items></root>";
+        XmlStructureReader reader = XmlStructureReader.over(xml.getBytes(StandardCharsets.UTF_8));
+        reader.begin();
+
+        FieldMetadata got = reader.nextField(parent);
+        assertSame(itemsField, got);
+        assertEquals(StructureReader.Kind.ARRAY, reader.currentKind());
+
+        assertEquals(StructureReader.Kind.OBJECT, reader.nextElement());
+        FieldMetadata inner = reader.nextField(itemEntity);
+        assertSame(fField, inner);
+        assertEquals(1, reader.readField(inner).asInt());
+    }
+
+    @Test
+    void singleItemCollectionViaMetadataHint() throws Exception {
+        FieldMetadata tagsField = mock(FieldMetadata.class);
+        when(tagsField.isCollection()).thenReturn(true);
+        EntityMetadata entity = mock(EntityMetadata.class);
+        when(entity.has("tags")).thenReturn(true);
+        when(entity.field("tags")).thenReturn(tagsField);
+
+        // A single item whose element name is NOT a reserved marker: only the collection hint
+        // distinguishes it from a plain nested object.
+        String xml = "<root><tags><widget>a</widget></tags></root>";
+        XmlStructureReader reader = XmlStructureReader.over(xml.getBytes(StandardCharsets.UTF_8));
+        reader.begin();
+
+        FieldMetadata got = reader.nextField(entity);
+        assertSame(tagsField, got);
+        assertEquals(StructureReader.Kind.ARRAY, reader.currentKind());
+    }
+
+    @Test
+    void mixedChildrenIsObject() throws Exception {
+        String xml = "<root><a><b>1</b><c>2</c><b>3</b></a></root>";
+        XmlStructureReader reader = XmlStructureReader.over(xml.getBytes(StandardCharsets.UTF_8));
+        reader.begin();
+
+        assertEquals("a", reader.nextKey());
+        assertEquals(StructureReader.Kind.OBJECT, reader.currentKind());
+        assertEquals("b", reader.nextKey());
+        assertEquals(StructureReader.Kind.ARRAY, reader.currentKind());
+        assertEquals("c", reader.nextKey());
+        assertEquals(StructureReader.Kind.VALUE, reader.currentKind());
+    }
+
+    @Test
+    void singleElementLogicalGroupArray() throws Exception {
+        String xml = "<root><or><entity><name>x</name></entity></or></root>";
+        XmlStructureReader reader = XmlStructureReader.over(xml.getBytes(StandardCharsets.UTF_8));
+        reader.begin();
+
+        assertEquals("or", reader.nextKey());
+        assertEquals(StructureReader.Kind.ARRAY, reader.currentKind());
+        assertEquals(StructureReader.Kind.OBJECT, reader.nextElement());
+        assertEquals("name", reader.nextKey());
+        assertEquals("x", reader.textValue());
+    }
 }
