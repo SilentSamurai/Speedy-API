@@ -83,9 +83,9 @@ public interface EntityMetadata {
     }
 
     // Whether multi-element (bulk) create/delete requests are accepted for this
-    // entity. Enabled by default; disabled via @SpeedyBulk(false). When false, a
+    // entity. Disabled by default; enabled via @SpeedyBulk(true). When false, a
     // request body with more than one entity/key is rejected with 400.
     default boolean isBulkAllowed() {
-        return true;
+        return false;
     }
 }

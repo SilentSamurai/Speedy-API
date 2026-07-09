@@ -20,8 +20,8 @@ public class JsonEntity {
     public String keyType;
     public String transactionMode;
 
-    // Nullable so that an absent key leaves the metadata default (true) intact,
-    // while an explicit `"bulkAllowed": false` disables bulk create/delete.
+    // Nullable so that an absent key leaves the metadata default (false) intact,
+    // while an explicit `"bulkAllowed": true` enables bulk create/delete.
     public Boolean bulkAllowed;
 
 }

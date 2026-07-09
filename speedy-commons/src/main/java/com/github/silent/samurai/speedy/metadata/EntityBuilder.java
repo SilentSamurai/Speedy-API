@@ -19,7 +19,7 @@ public class EntityBuilder {
     private String dbTableName;
     private boolean isSensitive = false;
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
-    private boolean bulkAllowed = true;
+    private boolean bulkAllowed = false;
 
     public Iterable<FieldBuilder> fields() {
         return fieldMap.values();

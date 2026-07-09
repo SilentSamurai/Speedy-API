@@ -24,7 +24,7 @@ public class EntityMetadataImpl implements EntityMetadata {
     @Setter
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     @Setter
-    private boolean bulkAllowed = true;
+    private boolean bulkAllowed = false;
     private Set<ActionType> actionType;
     private Map<String, FieldMetadata> fieldMap;
 

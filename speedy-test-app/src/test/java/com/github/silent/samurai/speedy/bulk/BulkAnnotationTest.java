@@ -20,8 +20,9 @@ import java.util.List;
 ///
 /// {@code BulkDisabledEntity} is annotated {@code @SpeedyBulk(false)}: single-object and
 /// single-element-array create/delete still work, but multi-element arrays are rejected with 400.
-/// A default entity ({@code Supplier}) is used as a regression guard that bulk stays enabled
-/// when the annotation is absent.
+/// {@code Supplier} is annotated {@code @SpeedyBulk(true)} and used as a regression guard that
+/// bulk stays enabled for entities that explicitly opt in. {@code Task} carries no
+/// {@code @SpeedyBulk} annotation and is used to prove bulk is rejected by default.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class BulkAnnotationTest {
@@ -103,10 +104,10 @@ class BulkAnnotationTest {
                 .expectOk();
     }
 
-    // ---- regression: default entity keeps bulk enabled ----
+    // ---- regression: explicitly-enabled entity keeps bulk working ----
 
     @Test
-    void defaultEntity_multiElementCreate_stillWorks() throws Exception {
+    void explicitlyEnabledEntity_multiElementCreate_stillWorks() throws Exception {
         List<ObjectNode> suppliers = new ArrayList<>();
         long ts = System.currentTimeMillis();
         for (int i = 0; i < 2; i++) {
@@ -119,6 +120,22 @@ class BulkAnnotationTest {
 
         client.createMany("Supplier", suppliers)
                 .expectOk();
+    }
+
+    // ---- regression: unannotated entity rejects bulk by default ----
+
+    @Test
+    void unannotatedEntity_multiElementCreate_isRejectedByDefault() throws Exception {
+        List<ObjectNode> tasks = new ArrayList<>();
+        long ts = System.currentTimeMillis();
+        for (int i = 0; i < 2; i++) {
+            ObjectNode t = mapper.createObjectNode();
+            t.put("title", "NoBulkByDefault-" + (ts & 0xFFFFF) + "-" + i);
+            tasks.add(t);
+        }
+
+        client.createMany("Task", tasks)
+                .expectBadRequest();
     }
 
     private String createOneAndGetId(String suffix) throws Exception {

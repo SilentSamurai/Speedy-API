@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.entity;
 
+import com.github.silent.samurai.speedy.annotations.SpeedyBulk;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -16,6 +17,7 @@ import java.time.Instant;
         @Index(name = "suppliers_phone_no_key", columnList = "phone_no", unique = true)
 })
 @Entity
+@SpeedyBulk(true)
 public class Supplier extends AbstractBaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
