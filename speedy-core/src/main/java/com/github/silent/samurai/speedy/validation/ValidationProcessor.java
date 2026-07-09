@@ -15,7 +15,6 @@ import com.github.silent.samurai.speedy.conversion.walker.java.JavaToSpeedy;
 import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,11 +44,17 @@ public class ValidationProcessor {
     ///
     /// @see JavaToSpeedy#updateEntity
     private final JavaToSpeedy deserializer;
-    private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> createValidationMethods = new HashMap<>();
-    private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> updateValidationMethods = new HashMap<>();
-    private final Map<String, Pair<ISpeedyCustomValidation, MethodHandle>> deleteValidationMethods = new HashMap<>();
+    private final Map<String, RegisteredValidator> createValidationMethods = new HashMap<>();
+    private final Map<String, RegisteredValidator> updateValidationMethods = new HashMap<>();
+    private final Map<String, RegisteredValidator> deleteValidationMethods = new HashMap<>();
     private final DefaultFieldValidator defaultFieldValidator;
     private final DefaultQueryValidator defaultQueryValidator;
+
+    /// Holds a captured custom validation method together with the {@code replacesDefault}
+    /// flag from its {@link SpeedyValidator} annotation, so the dispatcher knows whether the
+    /// built-in {@link DefaultFieldValidator} checks should still run alongside it.
+    private record RegisteredValidator(ISpeedyCustomValidation instance, MethodHandle handle, boolean replacesDefault) {
+    }
 
     /// Creates the validation processor with the necessary serialization infrastructure.
     ///
@@ -80,14 +85,15 @@ public class ValidationProcessor {
                         String entityName = annotation.entity();
                         EntityMetadata entityMetadata = this.metaModel.findEntityMetadata(entityName);
                         MethodHandle methodHandle = MethodHandles.lookup().unreflect(declaredMethod);
+                        RegisteredValidator registeredValidator = new RegisteredValidator(instance, methodHandle, annotation.replacesDefault());
                         if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.CREATE)) {
-                            createValidationMethods.put(entityMetadata.getName(), new Pair<>(instance, methodHandle));
+                            createValidationMethods.put(entityMetadata.getName(), registeredValidator);
                         }
                         if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.UPDATE)) {
-                            updateValidationMethods.put(entityMetadata.getName(), new Pair<>(instance, methodHandle));
+                            updateValidationMethods.put(entityMetadata.getName(), registeredValidator);
                         }
                         if (Arrays.stream(annotation.requests()).anyMatch(speedyValidationRequestType -> speedyValidationRequestType == SpeedyValidationRequestType.DELETE)) {
-                            deleteValidationMethods.put(entityMetadata.getName(), new Pair<>(instance, methodHandle));
+                            deleteValidationMethods.put(entityMetadata.getName(), registeredValidator);
                         }
                     }
                 } catch (NotFoundException | IllegalAccessException e) {
@@ -104,9 +110,9 @@ public class ValidationProcessor {
         }
     }
 
-    private void invokeValidationMethod(Pair<ISpeedyCustomValidation, MethodHandle> pair, SpeedyEntity entity) throws SpeedyHttpException {
-        ISpeedyCustomValidation instance = pair.first();
-        MethodHandle methodHandle = pair.second();
+    private void invokeValidationMethod(RegisteredValidator registeredValidator, SpeedyEntity entity) throws SpeedyHttpException {
+        ISpeedyCustomValidation instance = registeredValidator.instance();
+        MethodHandle methodHandle = registeredValidator.handle();
 
         MethodType methodType = methodHandle.type();
         Class<?>[] paramTypes = methodType.parameterArray();
@@ -155,43 +161,49 @@ public class ValidationProcessor {
     }
 
     public void validateCreateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
-        if (createValidationMethods.containsKey(entityMetadata.getName())) {
-            Pair<ISpeedyCustomValidation, MethodHandle> pair = createValidationMethods.get(entityMetadata.getName());
-            invokeValidationMethod(pair, entity);
-        } else {
+        RegisteredValidator custom = createValidationMethods.get(entityMetadata.getName());
+        if (custom == null || !custom.replacesDefault()) {
             defaultFieldValidator.validateCreate(entityMetadata, entity);
+        }
+        if (custom != null) {
+            invokeValidationMethod(custom, entity);
         }
     }
 
     public void validateUpdateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
-        if (updateValidationMethods.containsKey(entityMetadata.getName())) {
-            Pair<ISpeedyCustomValidation, MethodHandle> pair = updateValidationMethods.get(entityMetadata.getName());
-            invokeValidationMethod(pair, entity);
-        } else {
+        RegisteredValidator custom = updateValidationMethods.get(entityMetadata.getName());
+        if (custom == null || !custom.replacesDefault()) {
             // For PATCH/UPDATE only validate supplied fields, required check not enforced
             defaultFieldValidator.validateUpdate(entityMetadata, entity);
+        }
+        if (custom != null) {
+            invokeValidationMethod(custom, entity);
         }
     }
 
     /// Validation for a full-replace (PUT). The payload is the complete representation, so the
-    /// default path enforces required fields like create. A custom {@code @SpeedyValidator}
-    /// registered for {@code UPDATE} also guards PUT (reuses {@link #updateValidationMethods}).
+    /// default path enforces required fields like create. By default the built-in checks run
+    /// first and a custom {@code @SpeedyValidator} then runs on top; a validator registered for
+    /// {@code UPDATE} also guards PUT (reuses {@link #updateValidationMethods}). If that validator
+    /// sets {@code replacesDefault = true}, only the custom validator runs.
     public void validateReplaceRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
-        if (updateValidationMethods.containsKey(entityMetadata.getName())) {
-            Pair<ISpeedyCustomValidation, MethodHandle> pair = updateValidationMethods.get(entityMetadata.getName());
-            invokeValidationMethod(pair, entity);
-        } else {
+        RegisteredValidator custom = updateValidationMethods.get(entityMetadata.getName());
+        if (custom == null || !custom.replacesDefault()) {
             defaultFieldValidator.validateReplace(entityMetadata, entity);
+        }
+        if (custom != null) {
+            invokeValidationMethod(custom, entity);
         }
     }
 
     public void validateDeleteRequestEntity(EntityMetadata entityMetadata, SpeedyEntityKey entityKey) throws SpeedyHttpException {
-        if (deleteValidationMethods.containsKey(entityMetadata.getName())) {
-            Pair<ISpeedyCustomValidation, MethodHandle> pair = deleteValidationMethods.get(entityMetadata.getName());
-            invokeValidationMethod(pair, entityKey);
-        } else {
+        RegisteredValidator custom = deleteValidationMethods.get(entityMetadata.getName());
+        if (custom == null || !custom.replacesDefault()) {
             // For delete requests, only validate the entity key fields
             defaultFieldValidator.validateEntityKey(entityMetadata, entityKey);
+        }
+        if (custom != null) {
+            invokeValidationMethod(custom, entityKey);
         }
     }
 

@@ -186,8 +186,10 @@ public boolean validateCategory(Category category) {
 - Return `boolean` — `false` throws `BadRequestException`
 - Or throw `SpeedyHttpException` directly for custom error responses
 - Validators can accept `SpeedyEntity` or typed Java entity (auto-converted)
-- If no custom validator is registered, `DefaultFieldValidator` runs (checks nullability, required fields, field-level
-  rules from annotations)
+- `DefaultFieldValidator` (checks nullability, required fields, field-level rules from annotations) runs by default;
+  a custom validator runs **in addition** to it (default first, then custom)
+- Set `@SpeedyValidator(..., replacesDefault = true)` to skip `DefaultFieldValidator` and let the custom validator take
+  full ownership of that entity + request type
 
 Register via: `registry.registerValidator(myValidator);`
 

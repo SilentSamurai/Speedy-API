@@ -80,7 +80,9 @@ HTTP 400  –  salary must be > 0
 
 If you need more complex logic you can register a class implementing
 `ISpeedyCustomValidation` and annotate its methods with `@SpeedyValidator`.
-Custom validators run **in addition** to the built-in field rules.
+By default custom validators run **in addition** to the built-in field rules:
+the default checks (required fields, type/association/collection/enum) run
+**first**, then your validator runs on top.
 
 ```java
 @Component
@@ -92,6 +94,25 @@ public class PersonValidation implements ISpeedyCustomValidation {
     }
 }
 ```
+
+### Taking full ownership with `replacesDefault`
+
+If a validator should completely replace the built-in checks for an entity and
+request type — for example when your custom logic already covers required-field
+and type validation — set `replacesDefault = true`. The default field rules are
+then skipped and only your validator runs.
+
+```java
+@SpeedyValidator(entity = "Category", requests = CREATE, replacesDefault = true)
+public boolean validateCategory(Category category) {
+    // This validator is now solely responsible for Category CREATE validation.
+    return category.getName() != null && !category.getName().isEmpty();
+}
+```
+
+> ⚠️ With `replacesDefault = true` the built-in required-field / type checks no
+> longer run for that entity + request type, so your validator must enforce
+> everything you need. Leave it `false` (the default) to keep the safety net.
 
 See `docs/put-operation.md` for more information on custom validators.
 

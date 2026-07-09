@@ -10,23 +10,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpeedyValidation implements ISpeedyCustomValidation {
 
-    @SpeedyValidator(entity = "Category", requests = SpeedyValidationRequestType.CREATE)
+    // Category takes full ownership of its validation (replacesDefault = true): the built-in
+    // DefaultFieldValidator checks are skipped and only these custom validators run.
+    @SpeedyValidator(entity = "Category", requests = SpeedyValidationRequestType.CREATE, replacesDefault = true)
     public boolean validateCategoryCreate(Category category) {
         return category.getName() != null && !category.getName().isEmpty();
     }
 
-    @SpeedyValidator(entity = "Category", requests = SpeedyValidationRequestType.UPDATE)
+    @SpeedyValidator(entity = "Category", requests = SpeedyValidationRequestType.UPDATE, replacesDefault = true)
     public boolean validateCategoryUpdate(Category category) {
         // During update, if name field is supplied, it must not be empty
         return category.getName() == null || !category.getName().isEmpty();
     }
 
-    @SpeedyValidator(entity = "Category", requests = SpeedyValidationRequestType.DELETE)
+    @SpeedyValidator(entity = "Category", requests = SpeedyValidationRequestType.DELETE, replacesDefault = true)
     public boolean validateCategoryDelete(Category category) {
         return category.getId() != null && !category.getId().isEmpty();
     }
 
 
+    // Supplier and Product use the default (augment) mode: the built-in DefaultFieldValidator
+    // checks run first, then these custom business rules run on top.
     @SpeedyValidator(entity = "Supplier", requests = SpeedyValidationRequestType.CREATE)
     public boolean validateSupplier(Supplier supplier) {
         return supplier.getName() != null && !supplier.getName().isEmpty()
