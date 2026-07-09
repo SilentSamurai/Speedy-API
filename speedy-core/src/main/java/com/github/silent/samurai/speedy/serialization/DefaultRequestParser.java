@@ -57,20 +57,27 @@ public class DefaultRequestParser implements IRequestBodyParser {
         List<SpeedyEntity> entities = new LinkedList<>();
         List<SpeedyEntityKey> keysToCheck = new LinkedList<>();
         try (StructureReader r = reader.readDocument(rawBody)) {
-            if (r.begin() != Kind.ARRAY) {
+            // Accept either a bare JSON object (single entity shorthand) or an
+            // array of objects (one or more entities); anything else is rejected.
+            Kind rootKind = r.begin();
+            if (rootKind == Kind.ARRAY) {
+                Kind elementKind;
+                while ((elementKind = r.nextElement()) != null) {
+                    if (elementKind != Kind.OBJECT) {
+                        throw new BadRequestException("in-valid content");
+                    }
+                    addParsedEntity(r, entity, entities, keysToCheck);
+                }
+            } else if (rootKind == Kind.OBJECT) {
+                addParsedEntity(r, entity, entities, keysToCheck);
+            } else {
                 throw new BadRequestException("no content to process");
             }
-            Kind elementKind;
-            while ((elementKind = r.nextElement()) != null) {
-                if (elementKind != Kind.OBJECT) {
-                    throw new BadRequestException("in-valid content");
-                }
-                SpeedyEntity parsed = builder.fromEntity(entity, r);
-                if (builder.isKeyComplete(entity, parsed)) {
-                    keysToCheck.add(builder.toKey(entity, parsed));
-                }
-                entities.add(parsed);
-            }
+        }
+        // Reject multi-element (bulk) requests for entities that opted out via @SpeedyBulk(false).
+        // Placed before the existence check so a disabled-bulk request fails fast.
+        if (entities.size() > 1 && !entity.isBulkAllowed()) {
+            throw new BadRequestException("Bulk create is disabled for entity '" + entity.getName() + "'");
         }
         // Batch existence check: one query instead of N
         if (!keysToCheck.isEmpty()) {
@@ -115,24 +122,51 @@ public class DefaultRequestParser implements IRequestBodyParser {
                                         QueryProcessor queryProcessor) throws SpeedyHttpException {
         List<SpeedyEntityKey> keys = new LinkedList<>();
         try (StructureReader r = reader.readDocument(rawBody)) {
-            if (r.begin() != Kind.ARRAY) {
+            // Symmetric with parseCreate: accept a bare JSON object (single key
+            // shorthand) or an array of key objects.
+            Kind rootKind = r.begin();
+            if (rootKind == Kind.ARRAY) {
+                Kind elementKind;
+                while ((elementKind = r.nextElement()) != null) {
+                    if (elementKind != Kind.OBJECT) {
+                        throw new BadRequestException("in-valid request body");
+                    }
+                    keys.add(parseOneKey(r, entity));
+                }
+            } else if (rootKind == Kind.OBJECT) {
+                keys.add(parseOneKey(r, entity));
+            } else {
                 throw new BadRequestException("in-valid request");
             }
-            Kind elementKind;
-            while ((elementKind = r.nextElement()) != null) {
-                if (elementKind != Kind.OBJECT) {
-                    throw new BadRequestException("in-valid request body");
-                }
-                SpeedyEntity parsed = builder.fromEntity(entity, r);
-                if (!builder.isKeyComplete(entity, parsed)) {
-                    throw new BadRequestException("Primary Key Incomplete ");
-                }
-                keys.add(builder.toKey(entity, parsed));
-            }
+        }
+        // Reject multi-element (bulk) requests for entities that opted out via @SpeedyBulk(false).
+        if (keys.size() > 1 && !entity.isBulkAllowed()) {
+            throw new BadRequestException("Bulk delete is disabled for entity '" + entity.getName() + "'");
         }
         return SpeedyDeleteBody.builder()
                 .keys(keys)
                 .mode(mode)
                 .build();
+    }
+
+    /// Parses one entity from the reader's current object token, appending it to {@code entities}
+    /// and — when its primary key is fully present — its key to {@code keysToCheck}.
+    private void addParsedEntity(StructureReader r, EntityMetadata entity,
+                                 List<SpeedyEntity> entities, List<SpeedyEntityKey> keysToCheck)
+            throws SpeedyHttpException {
+        SpeedyEntity parsed = builder.fromEntity(entity, r);
+        if (builder.isKeyComplete(entity, parsed)) {
+            keysToCheck.add(builder.toKey(entity, parsed));
+        }
+        entities.add(parsed);
+    }
+
+    /// Parses one key object from the reader's current object token, requiring a complete primary key.
+    private SpeedyEntityKey parseOneKey(StructureReader r, EntityMetadata entity) throws SpeedyHttpException {
+        SpeedyEntity parsed = builder.fromEntity(entity, r);
+        if (!builder.isKeyComplete(entity, parsed)) {
+            throw new BadRequestException("Primary Key Incomplete ");
+        }
+        return builder.toKey(entity, parsed);
     }
 }

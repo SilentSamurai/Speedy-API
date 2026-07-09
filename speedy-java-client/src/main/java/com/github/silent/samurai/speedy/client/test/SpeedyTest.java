@@ -79,6 +79,18 @@ public class SpeedyTest {
         return new TestBulkCreateBuilder(entity).items(entities).execute();
     }
 
+    /**
+     * Sends a bare JSON object (not wrapped in an array) to {@code $create} — the
+     * single-entity shorthand accepted by the server.
+     */
+    public SpeedyTestResult createOne(String entity, ObjectNode body) {
+        try {
+            return execute(paths.createPath(entity), "POST", mapper.writeValueAsString(body));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize createOne body", e);
+        }
+    }
+
     public TestGetBuilder get(String entity) {
         return new TestGetBuilder(entity);
     }
@@ -101,6 +113,18 @@ public class SpeedyTest {
 
     public SpeedyTestResult deleteMany(String entity, List<ObjectNode> pks) {
         return new TestBulkDeleteBuilder(entity).items(pks).execute();
+    }
+
+    /**
+     * Sends a bare JSON object (not wrapped in an array) to {@code $delete} — the
+     * single-key shorthand accepted by the server.
+     */
+    public SpeedyTestResult deleteOne(String entity, ObjectNode pk) {
+        try {
+            return execute(paths.deletePath(entity), "DELETE", mapper.writeValueAsString(pk));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialize deleteOne body", e);
+        }
     }
 
     public TestQueryBuilder query(String entity) {

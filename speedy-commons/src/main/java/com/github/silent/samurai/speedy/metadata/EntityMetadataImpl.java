@@ -23,6 +23,8 @@ public class EntityMetadataImpl implements EntityMetadata {
     private boolean isSensitive;
     @Setter
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
+    @Setter
+    private boolean bulkAllowed = true;
     private Set<ActionType> actionType;
     private Map<String, FieldMetadata> fieldMap;
 

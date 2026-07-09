@@ -304,13 +304,13 @@
                 }
             }
         },
-        "/speedy/v1/Company" : {
+        "/speedy/v1/ExchangeRate" : {
             "get" : {
                 "tags" : [
-                    "Company"
+                    "ExchangeRate"
                 ],
-                "summary" : "Get a(n) Company",
-                "operationId" : "GetCompany",
+                "summary" : "Get a(n) ExchangeRate",
+                "operationId" : "GetExchangeRate",
                 "parameters" : [
                     {
                         "name" : "id",
@@ -328,13 +328,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "FilteredCompanyResponse",
+                                    "title" : "FilteredExchangeRateResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/Company"
+                                                "$ref" : "#/components/schemas/ExchangeRate"
                                             }
                                         },
                                         "pageSize" : {
@@ -353,13 +353,13 @@
                 }
             }
         },
-        "/speedy/v1/Company/$query" : {
+        "/speedy/v1/ExchangeRate/$query" : {
             "post" : {
                 "tags" : [
-                    "Company"
+                    "ExchangeRate"
                 ],
-                "summary" : "Filter Company",
-                "operationId" : "QueryCompany",
+                "summary" : "Filter ExchangeRate",
+                "operationId" : "QueryExchangeRate",
                 "requestBody" : {
                     "description" : "Fields needed for creation",
                     "content" : {
@@ -376,13 +376,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "FilteredCompanyResponse",
+                                    "title" : "FilteredExchangeRateResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/Company"
+                                                "$ref" : "#/components/schemas/ExchangeRate"
                                             }
                                         },
                                         "pageSize" : {
@@ -401,13 +401,13 @@
                 }
             }
         },
-        "/speedy/v1/Company/$create" : {
+        "/speedy/v1/ExchangeRate/$create" : {
             "post" : {
                 "tags" : [
-                    "Company"
+                    "ExchangeRate"
                 ],
-                "summary" : "Bulk create Company",
-                "operationId" : "BulkCreateCompany",
+                "summary" : "Bulk create ExchangeRate",
+                "operationId" : "BulkCreateExchangeRate",
                 "requestBody" : {
                     "description" : "Fields needed for creation",
                     "content" : {
@@ -415,7 +415,7 @@
                             "schema" : {
                                 "type" : "array",
                                 "items" : {
-                                    "$ref" : "#/components/schemas/CreateCompanyRequest"
+                                    "$ref" : "#/components/schemas/CreateExchangeRateRequest"
                                 }
                             }
                         }
@@ -427,13 +427,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "BulkCreateCompanyResponse",
+                                    "title" : "BulkCreateExchangeRateResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/CompanyKey"
+                                                "$ref" : "#/components/schemas/ExchangeRateKey"
                                             }
                                         },
                                         "pageSize" : {
@@ -452,19 +452,19 @@
                 }
             }
         },
-        "/speedy/v1/Company/$update" : {
+        "/speedy/v1/ExchangeRate/$update" : {
             "put" : {
                 "tags" : [
-                    "Company"
+                    "ExchangeRate"
                 ],
-                "summary" : "Replace a(n) Company",
-                "operationId" : "ReplaceCompany",
+                "summary" : "Replace a(n) ExchangeRate",
+                "operationId" : "ReplaceExchangeRate",
                 "requestBody" : {
                     "description" : "Complete representation of the resource",
                     "content" : {
                         "application/json;charset=UTF-8" : {
                             "schema" : {
-                                "$ref" : "#/components/schemas/UpdateCompanyRequest"
+                                "$ref" : "#/components/schemas/UpdateExchangeRateRequest"
                             }
                         }
                     }
@@ -475,13 +475,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "UpdateCompanyResponse",
+                                    "title" : "UpdateExchangeRateResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/Company"
+                                                "$ref" : "#/components/schemas/ExchangeRate"
                                             }
                                         },
                                         "pageSize" : {
@@ -501,16 +501,16 @@
             },
             "patch" : {
                 "tags" : [
-                    "Company"
+                    "ExchangeRate"
                 ],
-                "summary" : "Partially update a(n) Company",
-                "operationId" : "UpdateCompany",
+                "summary" : "Partially update a(n) ExchangeRate",
+                "operationId" : "UpdateExchangeRate",
                 "requestBody" : {
                     "description" : "Fields to update (partial)",
                     "content" : {
                         "application/json;charset=UTF-8" : {
                             "schema" : {
-                                "$ref" : "#/components/schemas/UpdateCompanyRequest"
+                                "$ref" : "#/components/schemas/UpdateExchangeRateRequest"
                             }
                         }
                     }
@@ -521,13 +521,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "UpdateCompanyResponse",
+                                    "title" : "UpdateExchangeRateResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/Company"
+                                                "$ref" : "#/components/schemas/ExchangeRate"
                                             }
                                         },
                                         "pageSize" : {
@@ -546,13 +546,13 @@
                 }
             }
         },
-        "/speedy/v1/Company/$delete" : {
+        "/speedy/v1/ExchangeRate/$delete" : {
             "delete" : {
                 "tags" : [
-                    "Company"
+                    "ExchangeRate"
                 ],
-                "summary" : "Bulk delete Company",
-                "operationId" : "BulkDeleteCompany",
+                "summary" : "Bulk delete ExchangeRate",
+                "operationId" : "BulkDeleteExchangeRate",
                 "requestBody" : {
                     "description" : "Fields needed for deletion",
                     "content" : {
@@ -560,7 +560,7 @@
                             "schema" : {
                                 "type" : "array",
                                 "items" : {
-                                    "$ref" : "#/components/schemas/CompanyKey"
+                                    "$ref" : "#/components/schemas/ExchangeRateKey"
                                 }
                             }
                         }
@@ -572,13 +572,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "BulkDeleteCompanyResponse",
+                                    "title" : "BulkDeleteExchangeRateResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/CompanyKey"
+                                                "$ref" : "#/components/schemas/ExchangeRateKey"
                                             }
                                         },
                                         "pageSize" : {
@@ -890,13 +890,13 @@
                 }
             }
         },
-        "/speedy/v1/ExchangeRate" : {
+        "/speedy/v1/Company" : {
             "get" : {
                 "tags" : [
-                    "ExchangeRate"
+                    "Company"
                 ],
-                "summary" : "Get a(n) ExchangeRate",
-                "operationId" : "GetExchangeRate",
+                "summary" : "Get a(n) Company",
+                "operationId" : "GetCompany",
                 "parameters" : [
                     {
                         "name" : "id",
@@ -914,13 +914,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "FilteredExchangeRateResponse",
+                                    "title" : "FilteredCompanyResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/ExchangeRate"
+                                                "$ref" : "#/components/schemas/Company"
                                             }
                                         },
                                         "pageSize" : {
@@ -939,13 +939,13 @@
                 }
             }
         },
-        "/speedy/v1/ExchangeRate/$query" : {
+        "/speedy/v1/Company/$query" : {
             "post" : {
                 "tags" : [
-                    "ExchangeRate"
+                    "Company"
                 ],
-                "summary" : "Filter ExchangeRate",
-                "operationId" : "QueryExchangeRate",
+                "summary" : "Filter Company",
+                "operationId" : "QueryCompany",
                 "requestBody" : {
                     "description" : "Fields needed for creation",
                     "content" : {
@@ -962,13 +962,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "FilteredExchangeRateResponse",
+                                    "title" : "FilteredCompanyResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/ExchangeRate"
+                                                "$ref" : "#/components/schemas/Company"
                                             }
                                         },
                                         "pageSize" : {
@@ -987,13 +987,13 @@
                 }
             }
         },
-        "/speedy/v1/ExchangeRate/$create" : {
+        "/speedy/v1/Company/$create" : {
             "post" : {
                 "tags" : [
-                    "ExchangeRate"
+                    "Company"
                 ],
-                "summary" : "Bulk create ExchangeRate",
-                "operationId" : "BulkCreateExchangeRate",
+                "summary" : "Bulk create Company",
+                "operationId" : "BulkCreateCompany",
                 "requestBody" : {
                     "description" : "Fields needed for creation",
                     "content" : {
@@ -1001,7 +1001,7 @@
                             "schema" : {
                                 "type" : "array",
                                 "items" : {
-                                    "$ref" : "#/components/schemas/CreateExchangeRateRequest"
+                                    "$ref" : "#/components/schemas/CreateCompanyRequest"
                                 }
                             }
                         }
@@ -1013,13 +1013,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "BulkCreateExchangeRateResponse",
+                                    "title" : "BulkCreateCompanyResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/ExchangeRateKey"
+                                                "$ref" : "#/components/schemas/CompanyKey"
                                             }
                                         },
                                         "pageSize" : {
@@ -1038,19 +1038,19 @@
                 }
             }
         },
-        "/speedy/v1/ExchangeRate/$update" : {
+        "/speedy/v1/Company/$update" : {
             "put" : {
                 "tags" : [
-                    "ExchangeRate"
+                    "Company"
                 ],
-                "summary" : "Replace a(n) ExchangeRate",
-                "operationId" : "ReplaceExchangeRate",
+                "summary" : "Replace a(n) Company",
+                "operationId" : "ReplaceCompany",
                 "requestBody" : {
                     "description" : "Complete representation of the resource",
                     "content" : {
                         "application/json;charset=UTF-8" : {
                             "schema" : {
-                                "$ref" : "#/components/schemas/UpdateExchangeRateRequest"
+                                "$ref" : "#/components/schemas/UpdateCompanyRequest"
                             }
                         }
                     }
@@ -1061,13 +1061,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "UpdateExchangeRateResponse",
+                                    "title" : "UpdateCompanyResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/ExchangeRate"
+                                                "$ref" : "#/components/schemas/Company"
                                             }
                                         },
                                         "pageSize" : {
@@ -1087,16 +1087,16 @@
             },
             "patch" : {
                 "tags" : [
-                    "ExchangeRate"
+                    "Company"
                 ],
-                "summary" : "Partially update a(n) ExchangeRate",
-                "operationId" : "UpdateExchangeRate",
+                "summary" : "Partially update a(n) Company",
+                "operationId" : "UpdateCompany",
                 "requestBody" : {
                     "description" : "Fields to update (partial)",
                     "content" : {
                         "application/json;charset=UTF-8" : {
                             "schema" : {
-                                "$ref" : "#/components/schemas/UpdateExchangeRateRequest"
+                                "$ref" : "#/components/schemas/UpdateCompanyRequest"
                             }
                         }
                     }
@@ -1107,13 +1107,13 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "UpdateExchangeRateResponse",
+                                    "title" : "UpdateCompanyResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/ExchangeRate"
+                                                "$ref" : "#/components/schemas/Company"
                                             }
                                         },
                                         "pageSize" : {
@@ -1132,13 +1132,13 @@
                 }
             }
         },
-        "/speedy/v1/ExchangeRate/$delete" : {
+        "/speedy/v1/Company/$delete" : {
             "delete" : {
                 "tags" : [
-                    "ExchangeRate"
+                    "Company"
                 ],
-                "summary" : "Bulk delete ExchangeRate",
-                "operationId" : "BulkDeleteExchangeRate",
+                "summary" : "Bulk delete Company",
+                "operationId" : "BulkDeleteCompany",
                 "requestBody" : {
                     "description" : "Fields needed for deletion",
                     "content" : {
@@ -1146,7 +1146,7 @@
                             "schema" : {
                                 "type" : "array",
                                 "items" : {
-                                    "$ref" : "#/components/schemas/ExchangeRateKey"
+                                    "$ref" : "#/components/schemas/CompanyKey"
                                 }
                             }
                         }
@@ -1158,13 +1158,306 @@
                         "content" : {
                             "application/json;charset=UTF-8" : {
                                 "schema" : {
-                                    "title" : "BulkDeleteExchangeRateResponse",
+                                    "title" : "BulkDeleteCompanyResponse",
                                     "type" : "object",
                                     "properties" : {
                                         "payload" : {
                                             "type" : "array",
                                             "items" : {
-                                                "$ref" : "#/components/schemas/ExchangeRateKey"
+                                                "$ref" : "#/components/schemas/CompanyKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Invoice" : {
+            "get" : {
+                "tags" : [
+                    "Invoice"
+                ],
+                "summary" : "Get a(n) Invoice",
+                "operationId" : "GetInvoice",
+                "parameters" : [
+                    {
+                        "name" : "id",
+                        "in" : "query",
+                        "description" : "id field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredInvoiceResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/Invoice"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Invoice/$query" : {
+            "post" : {
+                "tags" : [
+                    "Invoice"
+                ],
+                "summary" : "Filter Invoice",
+                "operationId" : "QueryInvoice",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "example" : "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredInvoiceResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/Invoice"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Invoice/$create" : {
+            "post" : {
+                "tags" : [
+                    "Invoice"
+                ],
+                "summary" : "Bulk create Invoice",
+                "operationId" : "BulkCreateInvoice",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/CreateInvoiceRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful creation.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkCreateInvoiceResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/InvoiceKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Invoice/$update" : {
+            "put" : {
+                "tags" : [
+                    "Invoice"
+                ],
+                "summary" : "Replace a(n) Invoice",
+                "operationId" : "ReplaceInvoice",
+                "requestBody" : {
+                    "description" : "Complete representation of the resource",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateInvoiceRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful replace.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateInvoiceResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/Invoice"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch" : {
+                "tags" : [
+                    "Invoice"
+                ],
+                "summary" : "Partially update a(n) Invoice",
+                "operationId" : "UpdateInvoice",
+                "requestBody" : {
+                    "description" : "Fields to update (partial)",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateInvoiceRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful update.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateInvoiceResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/Invoice"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/Invoice/$delete" : {
+            "delete" : {
+                "tags" : [
+                    "Invoice"
+                ],
+                "summary" : "Bulk delete Invoice",
+                "operationId" : "BulkDeleteInvoice",
+                "requestBody" : {
+                    "description" : "Fields needed for deletion",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/InvoiceKey"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful deletion.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkDeleteInvoiceResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/InvoiceKey"
                                             }
                                         },
                                         "pageSize" : {
@@ -1751,299 +2044,6 @@
                                             "type" : "array",
                                             "items" : {
                                                 "$ref" : "#/components/schemas/CategoryKey"
-                                            }
-                                        },
-                                        "pageSize" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        },
-                                        "pageIndex" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Invoice" : {
-            "get" : {
-                "tags" : [
-                    "Invoice"
-                ],
-                "summary" : "Get a(n) Invoice",
-                "operationId" : "GetInvoice",
-                "parameters" : [
-                    {
-                        "name" : "id",
-                        "in" : "query",
-                        "description" : "id field value.",
-                        "allowEmptyValue" : false,
-                        "schema" : {
-                            "type" : "string"
-                        }
-                    }
-                ],
-                "responses" : {
-                    "200" : {
-                        "description" : "successful fetch.",
-                        "content" : {
-                            "application/json;charset=UTF-8" : {
-                                "schema" : {
-                                    "title" : "FilteredInvoiceResponse",
-                                    "type" : "object",
-                                    "properties" : {
-                                        "payload" : {
-                                            "type" : "array",
-                                            "items" : {
-                                                "$ref" : "#/components/schemas/Invoice"
-                                            }
-                                        },
-                                        "pageSize" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        },
-                                        "pageIndex" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Invoice/$query" : {
-            "post" : {
-                "tags" : [
-                    "Invoice"
-                ],
-                "summary" : "Filter Invoice",
-                "operationId" : "QueryInvoice",
-                "requestBody" : {
-                    "description" : "Fields needed for creation",
-                    "content" : {
-                        "application/json;charset=UTF-8" : {
-                            "schema" : {
-                                "example" : "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
-                            }
-                        }
-                    }
-                },
-                "responses" : {
-                    "200" : {
-                        "description" : "successful fetch.",
-                        "content" : {
-                            "application/json;charset=UTF-8" : {
-                                "schema" : {
-                                    "title" : "FilteredInvoiceResponse",
-                                    "type" : "object",
-                                    "properties" : {
-                                        "payload" : {
-                                            "type" : "array",
-                                            "items" : {
-                                                "$ref" : "#/components/schemas/Invoice"
-                                            }
-                                        },
-                                        "pageSize" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        },
-                                        "pageIndex" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Invoice/$create" : {
-            "post" : {
-                "tags" : [
-                    "Invoice"
-                ],
-                "summary" : "Bulk create Invoice",
-                "operationId" : "BulkCreateInvoice",
-                "requestBody" : {
-                    "description" : "Fields needed for creation",
-                    "content" : {
-                        "application/json;charset=UTF-8" : {
-                            "schema" : {
-                                "type" : "array",
-                                "items" : {
-                                    "$ref" : "#/components/schemas/CreateInvoiceRequest"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses" : {
-                    "200" : {
-                        "description" : "successful creation.",
-                        "content" : {
-                            "application/json;charset=UTF-8" : {
-                                "schema" : {
-                                    "title" : "BulkCreateInvoiceResponse",
-                                    "type" : "object",
-                                    "properties" : {
-                                        "payload" : {
-                                            "type" : "array",
-                                            "items" : {
-                                                "$ref" : "#/components/schemas/InvoiceKey"
-                                            }
-                                        },
-                                        "pageSize" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        },
-                                        "pageIndex" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Invoice/$update" : {
-            "put" : {
-                "tags" : [
-                    "Invoice"
-                ],
-                "summary" : "Replace a(n) Invoice",
-                "operationId" : "ReplaceInvoice",
-                "requestBody" : {
-                    "description" : "Complete representation of the resource",
-                    "content" : {
-                        "application/json;charset=UTF-8" : {
-                            "schema" : {
-                                "$ref" : "#/components/schemas/UpdateInvoiceRequest"
-                            }
-                        }
-                    }
-                },
-                "responses" : {
-                    "200" : {
-                        "description" : "successful replace.",
-                        "content" : {
-                            "application/json;charset=UTF-8" : {
-                                "schema" : {
-                                    "title" : "UpdateInvoiceResponse",
-                                    "type" : "object",
-                                    "properties" : {
-                                        "payload" : {
-                                            "type" : "array",
-                                            "items" : {
-                                                "$ref" : "#/components/schemas/Invoice"
-                                            }
-                                        },
-                                        "pageSize" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        },
-                                        "pageIndex" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch" : {
-                "tags" : [
-                    "Invoice"
-                ],
-                "summary" : "Partially update a(n) Invoice",
-                "operationId" : "UpdateInvoice",
-                "requestBody" : {
-                    "description" : "Fields to update (partial)",
-                    "content" : {
-                        "application/json;charset=UTF-8" : {
-                            "schema" : {
-                                "$ref" : "#/components/schemas/UpdateInvoiceRequest"
-                            }
-                        }
-                    }
-                },
-                "responses" : {
-                    "200" : {
-                        "description" : "successful update.",
-                        "content" : {
-                            "application/json;charset=UTF-8" : {
-                                "schema" : {
-                                    "title" : "UpdateInvoiceResponse",
-                                    "type" : "object",
-                                    "properties" : {
-                                        "payload" : {
-                                            "type" : "array",
-                                            "items" : {
-                                                "$ref" : "#/components/schemas/Invoice"
-                                            }
-                                        },
-                                        "pageSize" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        },
-                                        "pageIndex" : {
-                                            "type" : "integer",
-                                            "format" : "int64"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/speedy/v1/Invoice/$delete" : {
-            "delete" : {
-                "tags" : [
-                    "Invoice"
-                ],
-                "summary" : "Bulk delete Invoice",
-                "operationId" : "BulkDeleteInvoice",
-                "requestBody" : {
-                    "description" : "Fields needed for deletion",
-                    "content" : {
-                        "application/json;charset=UTF-8" : {
-                            "schema" : {
-                                "type" : "array",
-                                "items" : {
-                                    "$ref" : "#/components/schemas/InvoiceKey"
-                                }
-                            }
-                        }
-                    }
-                },
-                "responses" : {
-                    "200" : {
-                        "description" : "successful deletion.",
-                        "content" : {
-                            "application/json;charset=UTF-8" : {
-                                "schema" : {
-                                    "title" : "BulkDeleteInvoiceResponse",
-                                    "type" : "object",
-                                    "properties" : {
-                                        "payload" : {
-                                            "type" : "array",
-                                            "items" : {
-                                                "$ref" : "#/components/schemas/InvoiceKey"
                                             }
                                         },
                                         "pageSize" : {
@@ -4096,6 +4096,299 @@
                                             "type" : "array",
                                             "items" : {
                                                 "$ref" : "#/components/schemas/JsonPropertyEntityKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/BulkDisabledEntity" : {
+            "get" : {
+                "tags" : [
+                    "BulkDisabledEntity"
+                ],
+                "summary" : "Get a(n) BulkDisabledEntity",
+                "operationId" : "GetBulkDisabledEntity",
+                "parameters" : [
+                    {
+                        "name" : "id",
+                        "in" : "query",
+                        "description" : "id field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredBulkDisabledEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/BulkDisabledEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/BulkDisabledEntity/$query" : {
+            "post" : {
+                "tags" : [
+                    "BulkDisabledEntity"
+                ],
+                "summary" : "Filter BulkDisabledEntity",
+                "operationId" : "QueryBulkDisabledEntity",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "example" : "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredBulkDisabledEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/BulkDisabledEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/BulkDisabledEntity/$create" : {
+            "post" : {
+                "tags" : [
+                    "BulkDisabledEntity"
+                ],
+                "summary" : "Bulk create BulkDisabledEntity",
+                "operationId" : "BulkCreateBulkDisabledEntity",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/CreateBulkDisabledEntityRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful creation.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkCreateBulkDisabledEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/BulkDisabledEntityKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/BulkDisabledEntity/$update" : {
+            "put" : {
+                "tags" : [
+                    "BulkDisabledEntity"
+                ],
+                "summary" : "Replace a(n) BulkDisabledEntity",
+                "operationId" : "ReplaceBulkDisabledEntity",
+                "requestBody" : {
+                    "description" : "Complete representation of the resource",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateBulkDisabledEntityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful replace.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateBulkDisabledEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/BulkDisabledEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch" : {
+                "tags" : [
+                    "BulkDisabledEntity"
+                ],
+                "summary" : "Partially update a(n) BulkDisabledEntity",
+                "operationId" : "UpdateBulkDisabledEntity",
+                "requestBody" : {
+                    "description" : "Fields to update (partial)",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateBulkDisabledEntityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful update.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateBulkDisabledEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/BulkDisabledEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/BulkDisabledEntity/$delete" : {
+            "delete" : {
+                "tags" : [
+                    "BulkDisabledEntity"
+                ],
+                "summary" : "Bulk delete BulkDisabledEntity",
+                "operationId" : "BulkDeleteBulkDisabledEntity",
+                "requestBody" : {
+                    "description" : "Fields needed for deletion",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/BulkDisabledEntityKey"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful deletion.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkDeleteBulkDisabledEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/BulkDisabledEntityKey"
                                             }
                                         },
                                         "pageSize" : {
@@ -6858,6 +7151,308 @@
                 }
             }
         },
+        "/speedy/v1/PriceHistory" : {
+            "get" : {
+                "tags" : [
+                    "PriceHistory"
+                ],
+                "summary" : "Get a(n) PriceHistory",
+                "operationId" : "GetPriceHistory",
+                "parameters" : [
+                    {
+                        "name" : "effectiveAt",
+                        "in" : "query",
+                        "description" : "effectiveAt field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    },
+                    {
+                        "name" : "productId",
+                        "in" : "query",
+                        "description" : "productId field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredPriceHistoryResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/PriceHistory"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/PriceHistory/$query" : {
+            "post" : {
+                "tags" : [
+                    "PriceHistory"
+                ],
+                "summary" : "Filter PriceHistory",
+                "operationId" : "QueryPriceHistory",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "example" : "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredPriceHistoryResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/PriceHistory"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/PriceHistory/$create" : {
+            "post" : {
+                "tags" : [
+                    "PriceHistory"
+                ],
+                "summary" : "Bulk create PriceHistory",
+                "operationId" : "BulkCreatePriceHistory",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/CreatePriceHistoryRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful creation.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkCreatePriceHistoryResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/PriceHistoryKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/PriceHistory/$update" : {
+            "put" : {
+                "tags" : [
+                    "PriceHistory"
+                ],
+                "summary" : "Replace a(n) PriceHistory",
+                "operationId" : "ReplacePriceHistory",
+                "requestBody" : {
+                    "description" : "Complete representation of the resource",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdatePriceHistoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful replace.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdatePriceHistoryResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/PriceHistory"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch" : {
+                "tags" : [
+                    "PriceHistory"
+                ],
+                "summary" : "Partially update a(n) PriceHistory",
+                "operationId" : "UpdatePriceHistory",
+                "requestBody" : {
+                    "description" : "Fields to update (partial)",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdatePriceHistoryRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful update.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdatePriceHistoryResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/PriceHistory"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/PriceHistory/$delete" : {
+            "delete" : {
+                "tags" : [
+                    "PriceHistory"
+                ],
+                "summary" : "Bulk delete PriceHistory",
+                "operationId" : "BulkDeletePriceHistory",
+                "requestBody" : {
+                    "description" : "Fields needed for deletion",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/PriceHistoryKey"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful deletion.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkDeletePriceHistoryResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/PriceHistoryKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/speedy/v1/ManyToManyEntityA" : {
             "get" : {
                 "tags" : [
@@ -7737,6 +8332,620 @@
                 }
             }
         },
+        "/speedy/v1/SensorReading" : {
+            "get" : {
+                "tags" : [
+                    "SensorReading"
+                ],
+                "summary" : "Get a(n) SensorReading",
+                "operationId" : "GetSensorReading",
+                "parameters" : [
+                    {
+                        "name" : "sensorId",
+                        "in" : "query",
+                        "description" : "sensorId field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    },
+                    {
+                        "name" : "recordedAt",
+                        "in" : "query",
+                        "description" : "recordedAt field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredSensorReadingResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/SensorReading"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/SensorReading/$query" : {
+            "post" : {
+                "tags" : [
+                    "SensorReading"
+                ],
+                "summary" : "Filter SensorReading",
+                "operationId" : "QuerySensorReading",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "example" : "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredSensorReadingResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/SensorReading"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/SensorReading/$create" : {
+            "post" : {
+                "tags" : [
+                    "SensorReading"
+                ],
+                "summary" : "Bulk create SensorReading",
+                "operationId" : "BulkCreateSensorReading",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/CreateSensorReadingRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful creation.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkCreateSensorReadingResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/SensorReadingKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/SensorReading/$update" : {
+            "put" : {
+                "tags" : [
+                    "SensorReading"
+                ],
+                "summary" : "Replace a(n) SensorReading",
+                "operationId" : "ReplaceSensorReading",
+                "requestBody" : {
+                    "description" : "Complete representation of the resource",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateSensorReadingRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful replace.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateSensorReadingResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/SensorReading"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch" : {
+                "tags" : [
+                    "SensorReading"
+                ],
+                "summary" : "Partially update a(n) SensorReading",
+                "operationId" : "UpdateSensorReading",
+                "requestBody" : {
+                    "description" : "Fields to update (partial)",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateSensorReadingRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful update.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateSensorReadingResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/SensorReading"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/SensorReading/$delete" : {
+            "delete" : {
+                "tags" : [
+                    "SensorReading"
+                ],
+                "summary" : "Bulk delete SensorReading",
+                "operationId" : "BulkDeleteSensorReading",
+                "requestBody" : {
+                    "description" : "Fields needed for deletion",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/SensorReadingKey"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful deletion.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkDeleteSensorReadingResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/SensorReadingKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/TypedCompositeKeyEntity" : {
+            "get" : {
+                "tags" : [
+                    "TypedCompositeKeyEntity"
+                ],
+                "summary" : "Get a(n) TypedCompositeKeyEntity",
+                "operationId" : "GetTypedCompositeKeyEntity",
+                "parameters" : [
+                    {
+                        "name" : "effectiveDate",
+                        "in" : "query",
+                        "description" : "effectiveDate field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    },
+                    {
+                        "name" : "code",
+                        "in" : "query",
+                        "description" : "code field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "string"
+                        }
+                    },
+                    {
+                        "name" : "numId",
+                        "in" : "query",
+                        "description" : "numId field value.",
+                        "allowEmptyValue" : false,
+                        "schema" : {
+                            "type" : "integer",
+                            "format" : "int64"
+                        }
+                    }
+                ],
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredTypedCompositeKeyEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/TypedCompositeKeyEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/TypedCompositeKeyEntity/$query" : {
+            "post" : {
+                "tags" : [
+                    "TypedCompositeKeyEntity"
+                ],
+                "summary" : "Filter TypedCompositeKeyEntity",
+                "operationId" : "QueryTypedCompositeKeyEntity",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "example" : "{\n    \"$from\": \"Resource\",\n    \"$where\": {\n        \"id\": \"abcd-efgh\",\n        \"cost\": {\n            \"$eq\": \"0\",\n            \"$ne\": \"0\",\n            \"$lt\": \"0\",\n            \"$gt\": \"0\",\n            \"$matches\": \"cat*\",\n            \"$in\": [\n                0,\n                2,\n                1\n            ],\n            \"$nin\": [\n                0,\n                1\n            ]\n        },\n        \"$and\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ],\n        \"$or\": [\n            {\n                \"id\": \"1\"\n            },\n            {\n                \"desc\": \"desc1\"\n            }\n        ]\n    },\n    \"$orderBy\": {\n        \"id\": \"ASC\"\n    },\n    \"$expand\": [\n        \"relation\"\n    ],\n    \"$page\": {\n        \"$index\": 0,\n        \"$size\": 100\n    }\n}"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful fetch.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "FilteredTypedCompositeKeyEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/TypedCompositeKeyEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/TypedCompositeKeyEntity/$create" : {
+            "post" : {
+                "tags" : [
+                    "TypedCompositeKeyEntity"
+                ],
+                "summary" : "Bulk create TypedCompositeKeyEntity",
+                "operationId" : "BulkCreateTypedCompositeKeyEntity",
+                "requestBody" : {
+                    "description" : "Fields needed for creation",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/CreateTypedCompositeKeyEntityRequest"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful creation.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkCreateTypedCompositeKeyEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/TypedCompositeKeyEntityKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/TypedCompositeKeyEntity/$update" : {
+            "put" : {
+                "tags" : [
+                    "TypedCompositeKeyEntity"
+                ],
+                "summary" : "Replace a(n) TypedCompositeKeyEntity",
+                "operationId" : "ReplaceTypedCompositeKeyEntity",
+                "requestBody" : {
+                    "description" : "Complete representation of the resource",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateTypedCompositeKeyEntityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful replace.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateTypedCompositeKeyEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/TypedCompositeKeyEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch" : {
+                "tags" : [
+                    "TypedCompositeKeyEntity"
+                ],
+                "summary" : "Partially update a(n) TypedCompositeKeyEntity",
+                "operationId" : "UpdateTypedCompositeKeyEntity",
+                "requestBody" : {
+                    "description" : "Fields to update (partial)",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "$ref" : "#/components/schemas/UpdateTypedCompositeKeyEntityRequest"
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful update.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "UpdateTypedCompositeKeyEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/TypedCompositeKeyEntity"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/speedy/v1/TypedCompositeKeyEntity/$delete" : {
+            "delete" : {
+                "tags" : [
+                    "TypedCompositeKeyEntity"
+                ],
+                "summary" : "Bulk delete TypedCompositeKeyEntity",
+                "operationId" : "BulkDeleteTypedCompositeKeyEntity",
+                "requestBody" : {
+                    "description" : "Fields needed for deletion",
+                    "content" : {
+                        "application/json;charset=UTF-8" : {
+                            "schema" : {
+                                "type" : "array",
+                                "items" : {
+                                    "$ref" : "#/components/schemas/TypedCompositeKeyEntityKey"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses" : {
+                    "200" : {
+                        "description" : "successful deletion.",
+                        "content" : {
+                            "application/json;charset=UTF-8" : {
+                                "schema" : {
+                                    "title" : "BulkDeleteTypedCompositeKeyEntityResponse",
+                                    "type" : "object",
+                                    "properties" : {
+                                        "payload" : {
+                                            "type" : "array",
+                                            "items" : {
+                                                "$ref" : "#/components/schemas/TypedCompositeKeyEntityKey"
+                                            }
+                                        },
+                                        "pageSize" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        },
+                                        "pageIndex" : {
+                                            "type" : "integer",
+                                            "format" : "int64"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/speedy/v1/FkNullEntity" : {
             "get" : {
                 "tags" : [
@@ -8329,10 +9538,6 @@
             "ValueTestEntity" : {
                 "type" : "object",
                 "properties" : {
-                    "doubleValue" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
                     "localDate" : {
                         "type" : "string"
                     },
@@ -8353,6 +9558,10 @@
                     },
                     "zonedDateTime" : {
                         "type" : "string"
+                    },
+                    "doubleValue" : {
+                        "type" : "number",
+                        "format" : "double"
                     }
                 }
             },
@@ -8370,10 +9579,6 @@
             "CreateValueTestEntityRequest" : {
                 "type" : "object",
                 "properties" : {
-                    "doubleValue" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
                     "localDate" : {
                         "type" : "string"
                     },
@@ -8391,6 +9596,10 @@
                     },
                     "zonedDateTime" : {
                         "type" : "string"
+                    },
+                    "doubleValue" : {
+                        "type" : "number",
+                        "format" : "double"
                     }
                 }
             },
@@ -8400,10 +9609,6 @@
                 ],
                 "type" : "object",
                 "properties" : {
-                    "doubleValue" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
                     "localDate" : {
                         "type" : "string"
                     },
@@ -8424,246 +9629,10 @@
                     },
                     "zonedDateTime" : {
                         "type" : "string"
-                    }
-                }
-            },
-            "Company" : {
-                "type" : "object",
-                "properties" : {
-                    "updatedAt" : {
-                        "type" : "string"
                     },
-                    "deletedAt" : {
-                        "type" : "string"
-                    },
-                    "detailsTop" : {
-                        "type" : "string"
-                    },
-                    "status" : {
-                        "type" : "string"
-                    },
-                    "defaultGenerator" : {
-                        "type" : "integer",
-                        "format" : "int64"
-                    },
-                    "extra" : {
-                        "type" : "string"
-                    },
-                    "id" : {
-                        "type" : "string"
-                    },
-                    "createdAt" : {
-                        "type" : "string"
-                    },
-                    "email" : {
-                        "type" : "string"
-                    },
-                    "name" : {
-                        "type" : "string"
-                    },
-                    "currency" : {
-                        "type" : "string"
-                    },
-                    "address" : {
-                        "type" : "string"
-                    },
-                    "invoiceNo" : {
-                        "type" : "integer",
-                        "format" : "int64"
-                    },
-                    "phone" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "CompanyKey" : {
-                "required" : [
-                    "id"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "id" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "CreateCompanyRequest" : {
-                "required" : [
-                    "status",
-                    "name",
-                    "currency",
-                    "address",
-                    "phone"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "updatedAt" : {
-                        "type" : "string"
-                    },
-                    "deletedAt" : {
-                        "type" : "string"
-                    },
-                    "detailsTop" : {
-                        "type" : "string"
-                    },
-                    "status" : {
-                        "type" : "string"
-                    },
-                    "defaultGenerator" : {
-                        "type" : "integer",
-                        "format" : "int64"
-                    },
-                    "extra" : {
-                        "type" : "string"
-                    },
-                    "createdAt" : {
-                        "type" : "string"
-                    },
-                    "email" : {
-                        "type" : "string"
-                    },
-                    "name" : {
-                        "type" : "string"
-                    },
-                    "currency" : {
-                        "type" : "string"
-                    },
-                    "address" : {
-                        "type" : "string"
-                    },
-                    "invoiceNo" : {
-                        "type" : "integer",
-                        "format" : "int64"
-                    },
-                    "phone" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "UpdateCompanyRequest" : {
-                "required" : [
-                    "status",
-                    "id",
-                    "name",
-                    "currency",
-                    "address",
-                    "phone"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "updatedAt" : {
-                        "type" : "string"
-                    },
-                    "deletedAt" : {
-                        "type" : "string"
-                    },
-                    "detailsTop" : {
-                        "type" : "string"
-                    },
-                    "status" : {
-                        "type" : "string"
-                    },
-                    "defaultGenerator" : {
-                        "type" : "integer",
-                        "format" : "int64"
-                    },
-                    "extra" : {
-                        "type" : "string"
-                    },
-                    "id" : {
-                        "type" : "string"
-                    },
-                    "createdAt" : {
-                        "type" : "string"
-                    },
-                    "email" : {
-                        "type" : "string"
-                    },
-                    "name" : {
-                        "type" : "string"
-                    },
-                    "currency" : {
-                        "type" : "string"
-                    },
-                    "address" : {
-                        "type" : "string"
-                    },
-                    "invoiceNo" : {
-                        "type" : "integer",
-                        "format" : "int64"
-                    },
-                    "phone" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "Task" : {
-                "type" : "object",
-                "properties" : {
-                    "title" : {
-                        "type" : "string"
-                    },
-                    "priority" : {
-                        "type" : "string"
-                    },
-                    "id" : {
-                        "type" : "string"
-                    },
-                    "difficulty" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "TaskKey" : {
-                "required" : [
-                    "id"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "id" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "CreateTaskRequest" : {
-                "required" : [
-                    "title",
-                    "priority",
-                    "difficulty"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "title" : {
-                        "type" : "string"
-                    },
-                    "priority" : {
-                        "type" : "string"
-                    },
-                    "difficulty" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "UpdateTaskRequest" : {
-                "required" : [
-                    "title",
-                    "priority",
-                    "id",
-                    "difficulty"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "title" : {
-                        "type" : "string"
-                    },
-                    "priority" : {
-                        "type" : "string"
-                    },
-                    "id" : {
-                        "type" : "string"
-                    },
-                    "difficulty" : {
-                        "type" : "string"
+                    "doubleValue" : {
+                        "type" : "number",
+                        "format" : "double"
                     }
                 }
             },
@@ -8754,6 +9723,406 @@
                     },
                     "foreignCurrency" : {
                         "$ref" : "#/components/schemas/CurrencyKey"
+                    }
+                }
+            },
+            "Task" : {
+                "type" : "object",
+                "properties" : {
+                    "title" : {
+                        "type" : "string"
+                    },
+                    "priority" : {
+                        "type" : "string"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    },
+                    "difficulty" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "TaskKey" : {
+                "required" : [
+                    "id"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "id" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CreateTaskRequest" : {
+                "required" : [
+                    "title",
+                    "priority",
+                    "difficulty"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "title" : {
+                        "type" : "string"
+                    },
+                    "priority" : {
+                        "type" : "string"
+                    },
+                    "difficulty" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "UpdateTaskRequest" : {
+                "required" : [
+                    "title",
+                    "priority",
+                    "id",
+                    "difficulty"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "title" : {
+                        "type" : "string"
+                    },
+                    "priority" : {
+                        "type" : "string"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    },
+                    "difficulty" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "Company" : {
+                "type" : "object",
+                "properties" : {
+                    "deletedAt" : {
+                        "type" : "string"
+                    },
+                    "detailsTop" : {
+                        "type" : "string"
+                    },
+                    "status" : {
+                        "type" : "string"
+                    },
+                    "defaultGenerator" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "extra" : {
+                        "type" : "string"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    },
+                    "createdAt" : {
+                        "type" : "string"
+                    },
+                    "email" : {
+                        "type" : "string"
+                    },
+                    "name" : {
+                        "type" : "string"
+                    },
+                    "currency" : {
+                        "type" : "string"
+                    },
+                    "address" : {
+                        "type" : "string"
+                    },
+                    "invoiceNo" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "phone" : {
+                        "type" : "string"
+                    },
+                    "updatedAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CompanyKey" : {
+                "required" : [
+                    "id"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "id" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CreateCompanyRequest" : {
+                "required" : [
+                    "status",
+                    "name",
+                    "currency",
+                    "address",
+                    "phone"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "deletedAt" : {
+                        "type" : "string"
+                    },
+                    "detailsTop" : {
+                        "type" : "string"
+                    },
+                    "status" : {
+                        "type" : "string"
+                    },
+                    "defaultGenerator" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "extra" : {
+                        "type" : "string"
+                    },
+                    "createdAt" : {
+                        "type" : "string"
+                    },
+                    "email" : {
+                        "type" : "string"
+                    },
+                    "name" : {
+                        "type" : "string"
+                    },
+                    "currency" : {
+                        "type" : "string"
+                    },
+                    "address" : {
+                        "type" : "string"
+                    },
+                    "invoiceNo" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "phone" : {
+                        "type" : "string"
+                    },
+                    "updatedAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "UpdateCompanyRequest" : {
+                "required" : [
+                    "status",
+                    "id",
+                    "name",
+                    "currency",
+                    "address",
+                    "phone"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "deletedAt" : {
+                        "type" : "string"
+                    },
+                    "detailsTop" : {
+                        "type" : "string"
+                    },
+                    "status" : {
+                        "type" : "string"
+                    },
+                    "defaultGenerator" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "extra" : {
+                        "type" : "string"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    },
+                    "createdAt" : {
+                        "type" : "string"
+                    },
+                    "email" : {
+                        "type" : "string"
+                    },
+                    "name" : {
+                        "type" : "string"
+                    },
+                    "currency" : {
+                        "type" : "string"
+                    },
+                    "address" : {
+                        "type" : "string"
+                    },
+                    "invoiceNo" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "phone" : {
+                        "type" : "string"
+                    },
+                    "updatedAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "Invoice" : {
+                "type" : "object",
+                "properties" : {
+                    "notes" : {
+                        "type" : "string"
+                    },
+                    "createdBy" : {
+                        "type" : "string"
+                    },
+                    "customer" : {
+                        "$ref" : "#/components/schemas/Customer"
+                    },
+                    "adjustment" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    },
+                    "dueAmount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "modifiedAt" : {
+                        "type" : "string"
+                    },
+                    "invoiceDate" : {
+                        "type" : "string"
+                    },
+                    "paid" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "createdAt" : {
+                        "type" : "string"
+                    },
+                    "discount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "modifiedBy" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "InvoiceKey" : {
+                "required" : [
+                    "id"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "id" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CreateInvoiceRequest" : {
+                "required" : [
+                    "customer",
+                    "adjustment",
+                    "dueAmount",
+                    "invoiceDate",
+                    "paid",
+                    "discount"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "notes" : {
+                        "type" : "string"
+                    },
+                    "createdBy" : {
+                        "type" : "string"
+                    },
+                    "customer" : {
+                        "$ref" : "#/components/schemas/CustomerKey"
+                    },
+                    "adjustment" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "dueAmount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "modifiedAt" : {
+                        "type" : "string"
+                    },
+                    "invoiceDate" : {
+                        "type" : "string"
+                    },
+                    "paid" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "createdAt" : {
+                        "type" : "string"
+                    },
+                    "discount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "modifiedBy" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "UpdateInvoiceRequest" : {
+                "required" : [
+                    "customer",
+                    "adjustment",
+                    "id",
+                    "dueAmount",
+                    "invoiceDate",
+                    "paid",
+                    "discount"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "notes" : {
+                        "type" : "string"
+                    },
+                    "createdBy" : {
+                        "type" : "string"
+                    },
+                    "customer" : {
+                        "$ref" : "#/components/schemas/CustomerKey"
+                    },
+                    "adjustment" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    },
+                    "dueAmount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "modifiedAt" : {
+                        "type" : "string"
+                    },
+                    "invoiceDate" : {
+                        "type" : "string"
+                    },
+                    "paid" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "createdAt" : {
+                        "type" : "string"
+                    },
+                    "discount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "modifiedBy" : {
+                        "type" : "string"
                     }
                 }
             },
@@ -8913,166 +10282,6 @@
                     },
                     "name" : {
                         "type" : "string"
-                    }
-                }
-            },
-            "Invoice" : {
-                "type" : "object",
-                "properties" : {
-                    "modifiedBy" : {
-                        "type" : "string"
-                    },
-                    "notes" : {
-                        "type" : "string"
-                    },
-                    "createdBy" : {
-                        "type" : "string"
-                    },
-                    "customer" : {
-                        "$ref" : "#/components/schemas/Customer"
-                    },
-                    "adjustment" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "id" : {
-                        "type" : "string"
-                    },
-                    "dueAmount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "modifiedAt" : {
-                        "type" : "string"
-                    },
-                    "invoiceDate" : {
-                        "type" : "string"
-                    },
-                    "paid" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "createdAt" : {
-                        "type" : "string"
-                    },
-                    "discount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    }
-                }
-            },
-            "InvoiceKey" : {
-                "required" : [
-                    "id"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "id" : {
-                        "type" : "string"
-                    }
-                }
-            },
-            "CreateInvoiceRequest" : {
-                "required" : [
-                    "customer",
-                    "adjustment",
-                    "dueAmount",
-                    "invoiceDate",
-                    "paid",
-                    "discount"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "modifiedBy" : {
-                        "type" : "string"
-                    },
-                    "notes" : {
-                        "type" : "string"
-                    },
-                    "createdBy" : {
-                        "type" : "string"
-                    },
-                    "customer" : {
-                        "$ref" : "#/components/schemas/CustomerKey"
-                    },
-                    "adjustment" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "dueAmount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "modifiedAt" : {
-                        "type" : "string"
-                    },
-                    "invoiceDate" : {
-                        "type" : "string"
-                    },
-                    "paid" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "createdAt" : {
-                        "type" : "string"
-                    },
-                    "discount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    }
-                }
-            },
-            "UpdateInvoiceRequest" : {
-                "required" : [
-                    "customer",
-                    "adjustment",
-                    "id",
-                    "dueAmount",
-                    "invoiceDate",
-                    "paid",
-                    "discount"
-                ],
-                "type" : "object",
-                "properties" : {
-                    "modifiedBy" : {
-                        "type" : "string"
-                    },
-                    "notes" : {
-                        "type" : "string"
-                    },
-                    "createdBy" : {
-                        "type" : "string"
-                    },
-                    "customer" : {
-                        "$ref" : "#/components/schemas/CustomerKey"
-                    },
-                    "adjustment" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "id" : {
-                        "type" : "string"
-                    },
-                    "dueAmount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "modifiedAt" : {
-                        "type" : "string"
-                    },
-                    "invoiceDate" : {
-                        "type" : "string"
-                    },
-                    "paid" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
-                    "createdAt" : {
-                        "type" : "string"
-                    },
-                    "discount" : {
-                        "type" : "number",
-                        "format" : "double"
                     }
                 }
             },
@@ -9511,6 +10720,54 @@
                     }
                 }
             },
+            "BulkDisabledEntity" : {
+                "type" : "object",
+                "properties" : {
+                    "name" : {
+                        "type" : "string"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "BulkDisabledEntityKey" : {
+                "required" : [
+                    "id"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "id" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CreateBulkDisabledEntityRequest" : {
+                "required" : [
+                    "name"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "name" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "UpdateBulkDisabledEntityRequest" : {
+                "required" : [
+                    "name",
+                    "id"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "name" : {
+                        "type" : "string"
+                    },
+                    "id" : {
+                        "type" : "string"
+                    }
+                }
+            },
             "VirtualEntity" : {
                 "type" : "object",
                 "properties" : {
@@ -9686,9 +10943,6 @@
             "Currency" : {
                 "type" : "object",
                 "properties" : {
-                    "country" : {
-                        "type" : "string"
-                    },
                     "createdAt" : {
                         "type" : "string"
                     },
@@ -9702,6 +10956,9 @@
                         "type" : "string"
                     },
                     "currencySymbol" : {
+                        "type" : "string"
+                    },
+                    "country" : {
                         "type" : "string"
                     }
                 }
@@ -9725,9 +10982,6 @@
                 ],
                 "type" : "object",
                 "properties" : {
-                    "country" : {
-                        "type" : "string"
-                    },
                     "currencyAbbr" : {
                         "type" : "string"
                     },
@@ -9735,6 +10989,9 @@
                         "type" : "string"
                     },
                     "currencySymbol" : {
+                        "type" : "string"
+                    },
+                    "country" : {
                         "type" : "string"
                     }
                 }
@@ -9748,9 +11005,6 @@
                 ],
                 "type" : "object",
                 "properties" : {
-                    "country" : {
-                        "type" : "string"
-                    },
                     "id" : {
                         "type" : "string"
                     },
@@ -9761,6 +11015,9 @@
                         "type" : "string"
                     },
                     "currencySymbol" : {
+                        "type" : "string"
+                    },
+                    "country" : {
                         "type" : "string"
                     }
                 }
@@ -9927,9 +11184,6 @@
             "Order" : {
                 "type" : "object",
                 "properties" : {
-                    "supplierId" : {
-                        "type" : "string"
-                    },
                     "supplier" : {
                         "$ref" : "#/components/schemas/Supplier"
                     },
@@ -9949,34 +11203,34 @@
                     },
                     "product" : {
                         "$ref" : "#/components/schemas/Product"
+                    },
+                    "supplierId" : {
+                        "type" : "string"
                     }
                 }
             },
             "OrderKey" : {
                 "required" : [
-                    "supplierId",
-                    "productId"
+                    "productId",
+                    "supplierId"
                 ],
                 "type" : "object",
                 "properties" : {
-                    "supplierId" : {
+                    "productId" : {
                         "type" : "string"
                     },
-                    "productId" : {
+                    "supplierId" : {
                         "type" : "string"
                     }
                 }
             },
             "CreateOrderRequest" : {
                 "required" : [
-                    "supplierId",
-                    "productId"
+                    "productId",
+                    "supplierId"
                 ],
                 "type" : "object",
                 "properties" : {
-                    "supplierId" : {
-                        "type" : "string"
-                    },
                     "price" : {
                         "type" : "number",
                         "format" : "double"
@@ -9989,20 +11243,20 @@
                         "format" : "double"
                     },
                     "productId" : {
+                        "type" : "string"
+                    },
+                    "supplierId" : {
                         "type" : "string"
                     }
                 }
             },
             "UpdateOrderRequest" : {
                 "required" : [
-                    "supplierId",
-                    "productId"
+                    "productId",
+                    "supplierId"
                 ],
                 "type" : "object",
                 "properties" : {
-                    "supplierId" : {
-                        "type" : "string"
-                    },
                     "price" : {
                         "type" : "number",
                         "format" : "double"
@@ -10015,6 +11269,9 @@
                         "format" : "double"
                     },
                     "productId" : {
+                        "type" : "string"
+                    },
+                    "supplierId" : {
                         "type" : "string"
                     }
                 }
@@ -10022,10 +11279,6 @@
             "Procurement" : {
                 "type" : "object",
                 "properties" : {
-                    "amount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
                     "createdBy" : {
                         "type" : "string"
                     },
@@ -10053,6 +11306,10 @@
                     },
                     "createdAt" : {
                         "type" : "string"
+                    },
+                    "amount" : {
+                        "type" : "number",
+                        "format" : "double"
                     }
                 }
             },
@@ -10069,18 +11326,14 @@
             },
             "CreateProcurementRequest" : {
                 "required" : [
-                    "amount",
                     "supplier",
                     "purchaseDate",
                     "product",
-                    "dueAmount"
+                    "dueAmount",
+                    "amount"
                 ],
                 "type" : "object",
                 "properties" : {
-                    "amount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
                     "createdBy" : {
                         "type" : "string"
                     },
@@ -10105,24 +11358,24 @@
                     },
                     "createdAt" : {
                         "type" : "string"
+                    },
+                    "amount" : {
+                        "type" : "number",
+                        "format" : "double"
                     }
                 }
             },
             "UpdateProcurementRequest" : {
                 "required" : [
-                    "amount",
                     "id",
                     "supplier",
                     "purchaseDate",
                     "product",
-                    "dueAmount"
+                    "dueAmount",
+                    "amount"
                 ],
                 "type" : "object",
                 "properties" : {
-                    "amount" : {
-                        "type" : "number",
-                        "format" : "double"
-                    },
                     "createdBy" : {
                         "type" : "string"
                     },
@@ -10150,6 +11403,10 @@
                     },
                     "createdAt" : {
                         "type" : "string"
+                    },
+                    "amount" : {
+                        "type" : "number",
+                        "format" : "double"
                     }
                 }
             },
@@ -10278,6 +11535,86 @@
                     }
                 }
             },
+            "PriceHistory" : {
+                "type" : "object",
+                "properties" : {
+                    "price" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "productId" : {
+                        "type" : "string"
+                    },
+                    "note" : {
+                        "type" : "string"
+                    },
+                    "product" : {
+                        "$ref" : "#/components/schemas/Product"
+                    },
+                    "effectiveAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "PriceHistoryKey" : {
+                "required" : [
+                    "productId",
+                    "effectiveAt"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "productId" : {
+                        "type" : "string"
+                    },
+                    "effectiveAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CreatePriceHistoryRequest" : {
+                "required" : [
+                    "productId",
+                    "effectiveAt"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "price" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "productId" : {
+                        "type" : "string"
+                    },
+                    "note" : {
+                        "type" : "string"
+                    },
+                    "effectiveAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "UpdatePriceHistoryRequest" : {
+                "required" : [
+                    "productId",
+                    "effectiveAt"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "price" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "productId" : {
+                        "type" : "string"
+                    },
+                    "note" : {
+                        "type" : "string"
+                    },
+                    "effectiveAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
             "ManyToManyEntityA" : {
                 "type" : "object",
                 "properties" : {
@@ -10345,9 +11682,6 @@
             "AnnotatedPerson" : {
                 "type" : "object",
                 "properties" : {
-                    "isoDate" : {
-                        "type" : "string"
-                    },
                     "precisionVal" : {
                         "type" : "number",
                         "format" : "double"
@@ -10399,6 +11733,9 @@
                     "salary" : {
                         "type" : "number",
                         "format" : "double"
+                    },
+                    "isoDate" : {
+                        "type" : "string"
                     }
                 }
             },
@@ -10428,9 +11765,6 @@
                 ],
                 "type" : "object",
                 "properties" : {
-                    "isoDate" : {
-                        "type" : "string"
-                    },
                     "precisionVal" : {
                         "type" : "number",
                         "format" : "double"
@@ -10479,6 +11813,9 @@
                     "salary" : {
                         "type" : "number",
                         "format" : "double"
+                    },
+                    "isoDate" : {
+                        "type" : "string"
                     }
                 }
             },
@@ -10498,9 +11835,6 @@
                 ],
                 "type" : "object",
                 "properties" : {
-                    "isoDate" : {
-                        "type" : "string"
-                    },
                     "precisionVal" : {
                         "type" : "number",
                         "format" : "double"
@@ -10552,6 +11886,203 @@
                     "salary" : {
                         "type" : "number",
                         "format" : "double"
+                    },
+                    "isoDate" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "SensorReading" : {
+                "type" : "object",
+                "properties" : {
+                    "sensorId" : {
+                        "type" : "string"
+                    },
+                    "label" : {
+                        "type" : "string"
+                    },
+                    "temperature" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "recordedAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "SensorReadingKey" : {
+                "required" : [
+                    "sensorId",
+                    "recordedAt"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "sensorId" : {
+                        "type" : "string"
+                    },
+                    "recordedAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CreateSensorReadingRequest" : {
+                "required" : [
+                    "sensorId",
+                    "recordedAt"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "sensorId" : {
+                        "type" : "string"
+                    },
+                    "label" : {
+                        "type" : "string"
+                    },
+                    "temperature" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "recordedAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "UpdateSensorReadingRequest" : {
+                "required" : [
+                    "sensorId",
+                    "recordedAt"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "sensorId" : {
+                        "type" : "string"
+                    },
+                    "label" : {
+                        "type" : "string"
+                    },
+                    "temperature" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "recordedAt" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "TypedCompositeKeyEntity" : {
+                "type" : "object",
+                "properties" : {
+                    "amount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "numId" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "code" : {
+                        "type" : "string"
+                    },
+                    "active" : {
+                        "type" : "boolean"
+                    },
+                    "effectiveDate" : {
+                        "type" : "string"
+                    },
+                    "quantity" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "description" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "TypedCompositeKeyEntityKey" : {
+                "required" : [
+                    "numId",
+                    "code",
+                    "effectiveDate"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "numId" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "code" : {
+                        "type" : "string"
+                    },
+                    "effectiveDate" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "CreateTypedCompositeKeyEntityRequest" : {
+                "required" : [
+                    "numId",
+                    "code",
+                    "effectiveDate"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "amount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "numId" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "code" : {
+                        "type" : "string"
+                    },
+                    "active" : {
+                        "type" : "boolean"
+                    },
+                    "effectiveDate" : {
+                        "type" : "string"
+                    },
+                    "quantity" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "description" : {
+                        "type" : "string"
+                    }
+                }
+            },
+            "UpdateTypedCompositeKeyEntityRequest" : {
+                "required" : [
+                    "numId",
+                    "code",
+                    "effectiveDate"
+                ],
+                "type" : "object",
+                "properties" : {
+                    "amount" : {
+                        "type" : "number",
+                        "format" : "double"
+                    },
+                    "numId" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "code" : {
+                        "type" : "string"
+                    },
+                    "active" : {
+                        "type" : "boolean"
+                    },
+                    "effectiveDate" : {
+                        "type" : "string"
+                    },
+                    "quantity" : {
+                        "type" : "integer",
+                        "format" : "int64"
+                    },
+                    "description" : {
+                        "type" : "string"
                     }
                 }
             },
