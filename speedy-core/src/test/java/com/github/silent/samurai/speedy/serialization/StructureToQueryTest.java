@@ -222,6 +222,102 @@ class StructureToQueryTest {
     }
 
     @Test
+    void query_with_field_level_or_group() throws Exception {
+        String json = """
+                {
+                    "$from": "Product",
+                    "$where": {
+                        "cost": {
+                            "$or": [
+                                { "$eq": 10 },
+                                { "$eq": 20 }
+                            ]
+                        }
+                    }
+                }
+                """;
+
+        SpeedyQuery query = build(productMetadata, json);
+
+        BooleanCondition where = query.getWhere();
+        assertEquals(1, where.getConditions().size());
+
+        BooleanCondition costOr = (BooleanCondition) where.getConditions().get(0);
+        assertEquals(ConditionOperator.OR, costOr.getOperator());
+        assertEquals(2, costOr.getConditions().size());
+
+        BinaryCondition first = (BinaryCondition) costOr.getConditions().get(0);
+        assertEquals(ConditionOperator.EQ, first.getOperator());
+        assertEquals("cost", first.getField().getFieldMetadata().getOutputPropertyName());
+
+        BinaryCondition second = (BinaryCondition) costOr.getConditions().get(1);
+        assertEquals(ConditionOperator.EQ, second.getOperator());
+        assertEquals("cost", second.getField().getFieldMetadata().getOutputPropertyName());
+    }
+
+    @Test
+    void query_with_field_level_or_alongside_other_fields() throws Exception {
+        String json = """
+                {
+                    "$from": "Product",
+                    "$where": {
+                        "name": { "$or": [ { "$eq": null }, { "$eq": "widget" } ] },
+                        "category": "tools"
+                    }
+                }
+                """;
+
+        SpeedyQuery query = build(productMetadata, json);
+
+        BooleanCondition where = query.getWhere();
+        assertEquals(2, where.getConditions().size());
+
+        BooleanCondition nameOr = (BooleanCondition) where.getConditions().get(0);
+        assertEquals(ConditionOperator.OR, nameOr.getOperator());
+        assertEquals(2, nameOr.getConditions().size());
+        BinaryCondition isNullBranch = (BinaryCondition) nameOr.getConditions().get(0);
+        assertEquals(ConditionOperator.EQ, isNullBranch.getOperator());
+        assertEquals("name", isNullBranch.getField().getFieldMetadata().getOutputPropertyName());
+
+        BinaryCondition categoryCondition = (BinaryCondition) where.getConditions().get(1);
+        assertEquals(ConditionOperator.EQ, categoryCondition.getOperator());
+        assertEquals("category", categoryCondition.getField().getFieldMetadata().getOutputPropertyName());
+    }
+
+    @Test
+    void query_with_field_level_or_not_sole_key_throws() throws Exception {
+        String json = """
+                {
+                    "$from": "Product",
+                    "$where": {
+                        "cost": {
+                            "$or": [ { "$eq": 10 }, { "$eq": 20 } ],
+                            "$gt": 5
+                        }
+                    }
+                }
+                """;
+
+        assertThrows(BadRequestException.class, () -> build(productMetadata, json));
+    }
+
+    @Test
+    void query_with_field_level_or_non_array_value_throws() throws Exception {
+        String json = """
+                {
+                    "$from": "Product",
+                    "$where": {
+                        "cost": {
+                            "$or": { "$eq": 10 }
+                        }
+                    }
+                }
+                """;
+
+        assertThrows(BadRequestException.class, () -> build(productMetadata, json));
+    }
+
+    @Test
     void query_with_invalid_field_reference() throws Exception {
         String json = """
                 {

@@ -375,6 +375,51 @@ SpeedyQuery query = SpeedyQuery.from("users")
     .build();
 ```
 
+### Field-Level Logical Operators
+
+`and()`/`or()` can also be nested *inside* a single `condition(...)`, combining several
+operators on the same field without repeating it as a separate top-level condition. This is
+the concise way to express patterns like "field matches a value OR is null":
+
+```java
+// Find products whose category is unset (nullable FK) or matches a specific category
+SpeedyQuery query = SpeedyQuery.from("products")
+    .where(
+        condition("categoryId", or(eq(null), eq("electronics")))
+    )
+    .build();
+```
+
+This generates:
+
+```json
+{
+  "$where": {
+    "categoryId": {
+      "$or": [
+        { "$eq": null },
+        { "$eq": "electronics" }
+      ]
+    }
+  }
+}
+```
+
+It composes with ordinary top-level conditions and with `$and` the same way:
+
+```java
+SpeedyQuery query = SpeedyQuery.from("products")
+    .where(
+        condition("categoryId", or(eq(null), eq("electronics"))),
+        condition("active", eq(true))
+    )
+    .build();
+```
+
+As with top-level `$and`/`$or`, the logical key must be the only key inside the field's
+condition object — combine additional operators as further array entries instead of mixing
+a logical key with a plain operator key.
+
 ## Real-World Examples
 
 ### User Search

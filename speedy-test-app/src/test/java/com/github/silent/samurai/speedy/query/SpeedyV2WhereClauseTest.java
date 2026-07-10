@@ -733,6 +733,49 @@ public class SpeedyV2WhereClauseTest {
 
     /*
        {
+           "from": "PkUuidTest",
+           "where": {
+                "description": {
+                    "$or": [
+                        { "$eq": null },
+                        { "$eq": "Description for UUID test 1" }
+                    ]
+                }
+           }
+       }
+       */
+    @Test
+    void testQuery15b_fieldLevelOrNullOrValue() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("$from", "PkUuidTest");
+        ArrayNode orNode = body.putObject("$where")
+                .putObject("description")
+                .putArray("$or");
+        orNode.addObject().putNull("$eq");
+        orNode.addObject().put("$eq", "Description for UUID test 1");
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/PkUuidTest/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(body))
+                .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+
+        mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]", Matchers.hasSize(2)))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].description")
+                        .value(Matchers.everyItem(
+                                Matchers.anyOf(
+                                        Matchers.is(IsNull.nullValue()),
+                                        Matchers.equalTo("Description for UUID test 1")
+                                )
+                        )))
+                .andReturn();
+    }
+
+    /*
+       {
            "from": "Procurement",
            "where": {
                 "modifiedAt": null
