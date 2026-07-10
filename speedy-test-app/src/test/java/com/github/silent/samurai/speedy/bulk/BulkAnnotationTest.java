@@ -104,6 +104,70 @@ class BulkAnnotationTest {
                 .expectOk();
     }
 
+    // ---- update ----
+
+    @Test
+    void multiElementUpdate_isRejected() throws Exception {
+        String id1 = createOneAndGetId("updA");
+        String id2 = createOneAndGetId("updB");
+
+        client.updateMany("BulkDisabledEntity", List.of(
+                        renameNode(id1, "upd-a"),
+                        renameNode(id2, "upd-b")))
+                .expectBadRequest();
+    }
+
+    @Test
+    void singleElementArrayUpdate_works() throws Exception {
+        String id = createOneAndGetId("updArr");
+
+        client.updateMany("BulkDisabledEntity", List.of(renameNode(id, "upd-single")))
+                .expectOk();
+    }
+
+    @Test
+    void bareObjectUpdate_works() throws Exception {
+        String id = createOneAndGetId("updObj");
+
+        client.update("BulkDisabledEntity")
+                .key("id", id)
+                .field("name", "Bulk-" + (System.nanoTime() & 0xFFFFFF) + "-upd-bare")
+                .execute()
+                .expectOk();
+    }
+
+    // ---- replace (symmetric with update) ----
+
+    @Test
+    void multiElementReplace_isRejected() throws Exception {
+        String id1 = createOneAndGetId("repA");
+        String id2 = createOneAndGetId("repB");
+
+        client.replaceMany("BulkDisabledEntity", List.of(
+                        renameNode(id1, "rep-a"),
+                        renameNode(id2, "rep-b")))
+                .expectBadRequest();
+    }
+
+    @Test
+    void singleElementArrayReplace_works() throws Exception {
+        String id = createOneAndGetId("repArr");
+
+        client.replaceMany("BulkDisabledEntity", List.of(renameNode(id, "rep-single")))
+                .expectOk();
+    }
+
+    @Test
+    void bareObjectReplace_works() throws Exception {
+        String id = createOneAndGetId("repObj");
+
+        client.replace("BulkDisabledEntity")
+                .key("id", id)
+                .field("name", "Bulk-" + (System.nanoTime() & 0xFFFFFF) + "-rep-bare")
+                .execute()
+                .expectOk();
+    }
+
     // ---- regression: explicitly-enabled entity keeps bulk working ----
 
     @Test
@@ -119,6 +183,23 @@ class BulkAnnotationTest {
         }
 
         client.createMany("Supplier", suppliers)
+                .expectOk();
+    }
+
+    @Test
+    void explicitlyEnabledEntity_multiElementUpdate_stillWorks() throws Exception {
+        long ts = System.currentTimeMillis();
+        String id1 = createSupplierAndGetId(ts, 0);
+        String id2 = createSupplierAndGetId(ts, 1);
+
+        ObjectNode item1 = mapper.createObjectNode();
+        item1.put("id", id1);
+        item1.put("name", "BulkGuardUpdated-" + (ts & 0xFFFFF) + "-0");
+        ObjectNode item2 = mapper.createObjectNode();
+        item2.put("id", id2);
+        item2.put("name", "BulkGuardUpdated-" + (ts & 0xFFFFF) + "-1");
+
+        client.updateMany("Supplier", List.of(item1, item2))
                 .expectOk();
     }
 
@@ -138,9 +219,41 @@ class BulkAnnotationTest {
                 .expectBadRequest();
     }
 
+    @Test
+    void unannotatedEntity_multiElementUpdate_isRejectedByDefault() throws Exception {
+        // Task rows are seeded by x-data.sql (task-0000-...-0001 / -0002); reuse them rather
+        // than creating new ones, since Task carries no @SpeedyBulk annotation.
+        ObjectNode item1 = mapper.createObjectNode();
+        item1.put("id", "task-0000-0000-0000-000000000001");
+        item1.put("title", "NoBulkUpdateByDefault-1");
+        ObjectNode item2 = mapper.createObjectNode();
+        item2.put("id", "task-0000-0000-0000-000000000002");
+        item2.put("title", "NoBulkUpdateByDefault-2");
+
+        client.updateMany("Task", List.of(item1, item2))
+                .expectBadRequest();
+    }
+
     private String createOneAndGetId(String suffix) throws Exception {
         SpeedyTestResult result = client.createOne("BulkDisabledEntity", bulkDisabledNode(suffix))
                 .expectOk();
+        return CommonUtil.json().readTree(result.responseBody())
+                .get("payload").get(0).get("id").asText();
+    }
+
+    private ObjectNode renameNode(String id, String suffix) {
+        ObjectNode n = mapper.createObjectNode();
+        n.put("id", id);
+        n.put("name", "Bulk-" + (System.nanoTime() & 0xFFFFFF) + "-" + suffix);
+        return n;
+    }
+
+    private String createSupplierAndGetId(long ts, int index) throws Exception {
+        ObjectNode s = mapper.createObjectNode();
+        s.put("name", "BulkGuardUpd-" + (ts & 0xFFFFF) + "-" + index);
+        s.put("phoneNo", "u1-" + (ts & 0xFFF) + "-" + index);
+        s.put("altPhoneNo", "u2-" + (ts & 0xFFF) + "-" + index);
+        SpeedyTestResult result = client.createOne("Supplier", s).expectOk();
         return CommonUtil.json().readTree(result.responseBody())
                 .get("payload").get(0).get("id").asText();
     }

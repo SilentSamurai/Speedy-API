@@ -35,9 +35,9 @@ public interface IRequestBodyParser {
     SpeedyCreateBody parseCreate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
                                  QueryProcessor queryProcessor) throws SpeedyHttpException;
 
-    /// Parses a $update JSON object body into entity fields and primary key,
-    /// wrapped in a SpeedyUpdateBody.
-    SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity,
+    /// Parses a $update JSON body (a bare object, or an array for bulk update) into a list
+    /// of (entity, primary key) pairs, wrapped in a SpeedyUpdateBody.
+    SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
                                  QueryProcessor queryProcessor) throws SpeedyHttpException;
 
     /// Parses a $delete JSON array body into a list of SpeedyEntityKey instances,

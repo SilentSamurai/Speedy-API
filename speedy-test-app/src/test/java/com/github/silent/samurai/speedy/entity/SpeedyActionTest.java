@@ -53,15 +53,16 @@ class SpeedyActionTest {
 
     @Test
     void virtualEntity_putUpdate_shouldBeBlocked() {
-        // The update body parser checks existence before the permission gate runs. The key
-        // "any-id" matches no row, so the request is rejected as 404 (not found) — an
-        // incomplete key would be 400, and a valid, existing key would reach the permission
-        // gate and return 403.
+        // The permission gate runs before the (now per-item, handler-level) existence check —
+        // same ordering as create/delete — so a permission-blocked update is rejected as 403
+        // regardless of whether "any-id" matches a row, without leaking row-existence info to
+        // an unauthorized caller.
         client.update("VirtualEntity")
                 .key("id", "any-id")
                 .field("name", "test")
                 .execute()
-                .expectNotFound();
+                .expectStatus(403)
+                .expectJsonPath("$.message", containsString("not allowed for VirtualEntity"));
     }
 
     @Test

@@ -106,6 +106,21 @@ class OpenApiSpecGenerationTest {
                         .value("#/components/schemas/CreateCategoryRequest"));
     }
 
+    /// $update accepts an array for bulk update (issue #97), for both PATCH (partial update)
+    /// and PUT (full replace) — mirrors createRequestBodyIsAnArrayOfCreateRequestSchema.
+    @Test
+    void updateRequestBodyIsAnArrayOfUpdateRequestSchema() throws Exception {
+        whenGetApiDocs()
+                .andExpect(jsonPath("$.paths['/speedy/v1/Category/$update'].patch.requestBody.content['" + JSON + "'].schema.type")
+                        .value("array"))
+                .andExpect(jsonPath("$.paths['/speedy/v1/Category/$update'].patch.requestBody.content['" + JSON + "'].schema.items['$ref']")
+                        .value("#/components/schemas/UpdateCategoryRequest"))
+                .andExpect(jsonPath("$.paths['/speedy/v1/Category/$update'].put.requestBody.content['" + JSON + "'].schema.type")
+                        .value("array"))
+                .andExpect(jsonPath("$.paths['/speedy/v1/Category/$update'].put.requestBody.content['" + JSON + "'].schema.items['$ref']")
+                        .value("#/components/schemas/UpdateCategoryRequest"));
+    }
+
     @Test
     void responsesAreWrappedInThePagedPayloadEnvelope() throws Exception {
         String schema = "$.paths['/speedy/v1/Category'].get.responses['200'].content['" + JSON + "'].schema";

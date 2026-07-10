@@ -42,28 +42,28 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-jooq-query-processor</artifactId>
+            <artifactId>speedy-qp-jooq</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-json-io</artifactId>
+            <artifactId>speedy-io-json</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-yaml-io</artifactId>
+            <artifactId>speedy-io-yaml</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-xml-io</artifactId>
+            <artifactId>speedy-io-xml</artifactId>
             <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>

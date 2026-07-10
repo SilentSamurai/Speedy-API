@@ -207,7 +207,9 @@ public class SpeedyOpenApiCustomizer {
 
     /// PATCH — partial update: only the supplied fields are written; omitted fields are left
     /// unchanged. Keeps the {@code Update{Entity}} operationId so generated {@code update{Entity}}
-    /// clients retain their (partial) behaviour.
+    /// clients retain their (partial) behaviour. Accepts a bare object (single-entity shorthand,
+    /// server-side only) or an array (bulk update); the schema is always a plain array, matching
+    /// {@link #postOperation}/{@link #deleteOperation} (never {@code oneOf} — see issue #97).
     private void patchOperation(EntityMetadata entityMetadata, PathItem identifierPathItem) {
         Operation operation = new Operation();
         operation.operationId("Update" + entityMetadata.getName());
@@ -215,7 +217,9 @@ public class SpeedyOpenApiCustomizer {
         operation.tags(List.of(entityMetadata.getName()));
 
         operation.requestBody(OASGenerator.getJsonBody(
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
+                )
         ).description("Fields to update (partial)"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
@@ -230,6 +234,9 @@ public class SpeedyOpenApiCustomizer {
 
     /// PUT — full replace: the payload is the complete representation. Required fields are
     /// enforced and omitted nullable fields are reset to null. Exposed as {@code Replace{Entity}}.
+    /// Accepts a bare object (single-entity shorthand, server-side only) or an array (bulk
+    /// replace); the schema is always a plain array, matching {@link #postOperation}/
+    /// {@link #deleteOperation} (never {@code oneOf} — see issue #97).
     private void putOperation(EntityMetadata entityMetadata, PathItem identifierPathItem) {
         Operation operation = new Operation();
         operation.operationId("Replace" + entityMetadata.getName());
@@ -239,7 +246,9 @@ public class SpeedyOpenApiCustomizer {
 //        OASGenerator.addPrimaryKeyParameter(operation, entityMetadata);
 
         operation.requestBody(OASGenerator.getJsonBody(
-                OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.UPDATE_REQUEST_NAME, entityMetadata))
+                )
         ).description("Complete representation of the resource"));
         ApiResponses apiResponses = new ApiResponses();
         apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(

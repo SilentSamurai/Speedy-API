@@ -144,6 +144,38 @@ public class Speedy {
     }
 
     /**
+     * Creates a bulk-update builder for the given entity (HTTP PATCH, partial update per item).
+     */
+    public BulkUpdateBuilder updateMany(String entity) {
+        return new BulkUpdateBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Bulk update multiple entities (provided as ObjectNode list, each with its key and fields to update).
+     */
+    public SpeedyResult updateMany(String entity, List<ObjectNode> items) {
+        return new BulkUpdateBuilder(entity, paths, this::send, mapper, parser, format)
+                .items(items)
+                .execute();
+    }
+
+    /**
+     * Creates a bulk-replace builder for the given entity (HTTP PUT, full replace per item).
+     */
+    public BulkReplaceBuilder replaceMany(String entity) {
+        return new BulkReplaceBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Bulk replace multiple entities (provided as ObjectNode list, each the complete representation).
+     */
+    public SpeedyResult replaceMany(String entity, List<ObjectNode> items) {
+        return new BulkReplaceBuilder(entity, paths, this::send, mapper, parser, format)
+                .items(items)
+                .execute();
+    }
+
+    /**
      * Fetches the API metadata.
      */
     public JsonNode metadata() {

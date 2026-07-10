@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>speedy-client</artifactId>
-    <name>speedy-java-client</name>
+    <name>speedy-client</name>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.github.silent.samurai.speedy.annotations.SpeedyBulk;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "orders")
 @Entity
 @IdClass(OrderId.class)
+@SpeedyBulk(true)
 public class Order implements Serializable {
 
     @Id

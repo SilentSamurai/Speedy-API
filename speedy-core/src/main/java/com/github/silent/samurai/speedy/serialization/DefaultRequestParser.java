@@ -2,7 +2,6 @@ package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.request.IRequestBodyParser;
@@ -93,28 +92,52 @@ public class DefaultRequestParser implements IRequestBodyParser {
     }
 
     @Override
-    public SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity,
+    public SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
                                         QueryProcessor queryProcessor) throws SpeedyHttpException {
+        List<SpeedyUpdateBody.Item> items = new LinkedList<>();
         try (StructureReader r = reader.readDocument(rawBody)) {
-            if (r.begin() != Kind.OBJECT) {
+            // Accept either a bare JSON object (single-item shorthand) or an array of
+            // objects (one or more items), symmetric with parseCreate/parseDelete.
+            Kind rootKind = r.begin();
+            if (rootKind == Kind.ARRAY) {
+                Kind elementKind;
+                while ((elementKind = r.nextElement()) != null) {
+                    if (elementKind != Kind.OBJECT) {
+                        throw new BadRequestException("in-valid content");
+                    }
+                    items.add(parseOneUpdateItem(r, entity));
+                }
+            } else if (rootKind == Kind.OBJECT) {
+                items.add(parseOneUpdateItem(r, entity));
+            } else {
                 throw new BadRequestException("no content to process");
             }
-            SpeedyEntity parsed = builder.fromEntity(entity, r);
-            SpeedyEntityKey pk = builder.toKey(entity, parsed);
-            // Distinguish a malformed request (incomplete primary key -> 400) from a
-            // well-formed request whose target row is absent (-> 404). Shared by both PATCH
-            // (UPDATE) and PUT (REPLACE), which parse the same body shape.
-            if (!builder.isKeyComplete(entity, parsed)) {
-                throw new BadRequestException("Primary key incomplete");
-            }
-            if (!queryProcessor.exists(pk)) {
-                throw new NotFoundException("Entity not found.");
-            }
-            return SpeedyUpdateBody.builder()
-                    .entity(parsed)
-                    .pk(pk)
-                    .build();
         }
+        // Reject multi-element (bulk) requests for entities that opted out via @SpeedyBulk(false).
+        if (items.size() > 1 && !entity.isBulkAllowed()) {
+            throw new BadRequestException("Bulk update is disabled for entity '" + entity.getName() + "'");
+        }
+        return SpeedyUpdateBody.builder()
+                .items(items)
+                .mode(mode)
+                .build();
+    }
+
+    /// Parses one update item (fields + primary key) from the reader's current object token.
+    /// Distinguishes a malformed request (incomplete primary key -> 400) from a well-formed
+    /// request whose target row is absent, which is checked later, per-item, by the handler
+    /// (-> 404). Shared by both PATCH (UPDATE) and PUT (REPLACE), which parse the same body shape.
+    private SpeedyUpdateBody.Item parseOneUpdateItem(StructureReader r, EntityMetadata entity)
+            throws SpeedyHttpException {
+        SpeedyEntity parsed = builder.fromEntity(entity, r);
+        if (!builder.isKeyComplete(entity, parsed)) {
+            throw new BadRequestException("Primary key incomplete");
+        }
+        SpeedyEntityKey pk = builder.toKey(entity, parsed);
+        return SpeedyUpdateBody.Item.builder()
+                .entity(parsed)
+                .pk(pk)
+                .build();
     }
 
     @Override

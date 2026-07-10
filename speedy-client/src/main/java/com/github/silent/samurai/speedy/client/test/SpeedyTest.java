@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Test facade for MockMvc-based integration testing. Same builder API as
@@ -115,6 +116,22 @@ public class SpeedyTest {
         return new TestBulkDeleteBuilder(entity).items(pks).execute();
     }
 
+    public TestBulkUpdateBuilder updateMany(String entity) {
+        return new TestBulkUpdateBuilder(entity);
+    }
+
+    public SpeedyTestResult updateMany(String entity, List<ObjectNode> items) {
+        return new TestBulkUpdateBuilder(entity).items(items).execute();
+    }
+
+    public TestBulkReplaceBuilder replaceMany(String entity) {
+        return new TestBulkReplaceBuilder(entity);
+    }
+
+    public SpeedyTestResult replaceMany(String entity, List<ObjectNode> items) {
+        return new TestBulkReplaceBuilder(entity).items(items).execute();
+    }
+
     /**
      * Sends a bare JSON object (not wrapped in an array) to {@code $delete} — the
      * single-key shorthand accepted by the server.
@@ -161,6 +178,13 @@ public class SpeedyTest {
         public TestCreateBuilder field(String name, Object value) {
             com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(body, name, value);
             return this;
+        }
+
+        /**
+         * Builds the JSON request body without executing.
+         */
+        public ObjectNode build() {
+            return body;
         }
 
         public SpeedyTestResult execute() {
@@ -285,6 +309,14 @@ public class SpeedyTest {
             return this;
         }
 
+        /**
+         * Builds the JSON request body (key + fields merged) without executing.
+         */
+        public ObjectNode build() {
+            body.setAll(pkNode);
+            return body;
+        }
+
         public SpeedyTestResult execute() {
             String url = paths.updatePath(entity);
             body.setAll(pkNode);
@@ -320,6 +352,14 @@ public class SpeedyTest {
             return this;
         }
 
+        /**
+         * Builds the JSON request body (key + fields merged) without executing.
+         */
+        public ObjectNode build() {
+            body.setAll(pkNode);
+            return body;
+        }
+
         public SpeedyTestResult execute() {
             String url = paths.updatePath(entity);
             body.setAll(pkNode);
@@ -345,6 +385,13 @@ public class SpeedyTest {
         public TestDeleteBuilder key(String field, Object value) {
             com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
             return this;
+        }
+
+        /**
+         * Builds the JSON primary-key body without executing.
+         */
+        public ObjectNode build() {
+            return pkNode;
         }
 
         public SpeedyTestResult execute() {
@@ -438,9 +485,34 @@ public class SpeedyTest {
         }
     }
 
+    /**
+     * Builds one bulk-item body via key/field chaining, with no entity/URL context of its own —
+     * used by {@code item(...)} on each {@code TestBulk*Builder} to append one array element
+     * without the caller having to construct an {@link ObjectNode} by hand.
+     */
+    public class TestItemBuilder {
+        private final ObjectNode body = mapper.createObjectNode();
+        private final ObjectNode pkNode = mapper.createObjectNode();
+
+        public TestItemBuilder key(String field, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
+            return this;
+        }
+
+        public TestItemBuilder field(String name, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(body, name, value);
+            return this;
+        }
+
+        ObjectNode build() {
+            body.setAll(pkNode);
+            return body;
+        }
+    }
+
     public class TestBulkCreateBuilder {
         private final String entity;
-        private List<ObjectNode> items;
+        private List<ObjectNode> items = new ArrayList<>();
         private String transactionMode;
 
         TestBulkCreateBuilder(String entity) {
@@ -449,6 +521,16 @@ public class SpeedyTest {
 
         public TestBulkCreateBuilder items(List<ObjectNode> items) {
             this.items = items;
+            return this;
+        }
+
+        /**
+         * Appends one item, built via key/field chaining, to the bulk request.
+         */
+        public TestBulkCreateBuilder item(Consumer<TestItemBuilder> itemSpec) {
+            TestItemBuilder item = new TestItemBuilder();
+            itemSpec.accept(item);
+            items.add(item.build());
             return this;
         }
 
@@ -474,7 +556,7 @@ public class SpeedyTest {
 
     public class TestBulkDeleteBuilder {
         private final String entity;
-        private List<ObjectNode> items;
+        private List<ObjectNode> items = new ArrayList<>();
         private String transactionMode;
 
         TestBulkDeleteBuilder(String entity) {
@@ -483,6 +565,16 @@ public class SpeedyTest {
 
         public TestBulkDeleteBuilder items(List<ObjectNode> items) {
             this.items = items;
+            return this;
+        }
+
+        /**
+         * Appends one key, built via key chaining, to the bulk request.
+         */
+        public TestBulkDeleteBuilder item(Consumer<TestItemBuilder> itemSpec) {
+            TestItemBuilder item = new TestItemBuilder();
+            itemSpec.accept(item);
+            items.add(item.build());
             return this;
         }
 
@@ -502,6 +594,94 @@ public class SpeedyTest {
                 return SpeedyTest.this.execute(url, "DELETE", mapper.writeValueAsString(array));
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize deleteMany body", e);
+            }
+        }
+    }
+
+    public class TestBulkUpdateBuilder {
+        private final String entity;
+        private List<ObjectNode> items = new ArrayList<>();
+        private String transactionMode;
+
+        TestBulkUpdateBuilder(String entity) {
+            this.entity = entity;
+        }
+
+        public TestBulkUpdateBuilder items(List<ObjectNode> items) {
+            this.items = items;
+            return this;
+        }
+
+        /**
+         * Appends one item, built via key/field chaining, to the bulk request.
+         */
+        public TestBulkUpdateBuilder item(Consumer<TestItemBuilder> itemSpec) {
+            TestItemBuilder item = new TestItemBuilder();
+            itemSpec.accept(item);
+            items.add(item.build());
+            return this;
+        }
+
+        public TestBulkUpdateBuilder transaction(String mode) {
+            this.transactionMode = mode;
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.updatePath(entity);
+            if (transactionMode != null && !transactionMode.isEmpty()) {
+                url += "?$transaction=" + transactionMode;
+            }
+            ArrayNode array = mapper.createArrayNode();
+            items.forEach(array::add);
+            try {
+                return SpeedyTest.this.execute(url, "PATCH", mapper.writeValueAsString(array));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize updateMany body", e);
+            }
+        }
+    }
+
+    public class TestBulkReplaceBuilder {
+        private final String entity;
+        private List<ObjectNode> items = new ArrayList<>();
+        private String transactionMode;
+
+        TestBulkReplaceBuilder(String entity) {
+            this.entity = entity;
+        }
+
+        public TestBulkReplaceBuilder items(List<ObjectNode> items) {
+            this.items = items;
+            return this;
+        }
+
+        /**
+         * Appends one item, built via key/field chaining, to the bulk request.
+         */
+        public TestBulkReplaceBuilder item(Consumer<TestItemBuilder> itemSpec) {
+            TestItemBuilder item = new TestItemBuilder();
+            itemSpec.accept(item);
+            items.add(item.build());
+            return this;
+        }
+
+        public TestBulkReplaceBuilder transaction(String mode) {
+            this.transactionMode = mode;
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.updatePath(entity);
+            if (transactionMode != null && !transactionMode.isEmpty()) {
+                url += "?$transaction=" + transactionMode;
+            }
+            ArrayNode array = mapper.createArrayNode();
+            items.forEach(array::add);
+            try {
+                return SpeedyTest.this.execute(url, "PUT", mapper.writeValueAsString(array));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize replaceMany body", e);
             }
         }
     }

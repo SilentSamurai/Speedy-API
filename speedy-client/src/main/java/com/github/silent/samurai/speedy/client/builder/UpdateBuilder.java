@@ -72,10 +72,13 @@ public class UpdateBuilder {
     }
 
     /**
-     * Builds the JSON request body without executing.
+     * Builds the JSON request body (key + fields merged) without executing.
      */
     public ObjectNode build() {
-        return body.deepCopy();
+        if (!pkNode.isEmpty()) {
+            body.setAll(pkNode);
+        }
+        return body;
     }
 
     /**

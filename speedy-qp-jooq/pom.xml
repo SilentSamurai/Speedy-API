@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>speedy-qp-jooq</artifactId>
-    <name>speedy-jooq-query-processor</name>
+    <name>speedy-qp-jooq</name>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -30,14 +30,14 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-java-client</artifactId>
+            <artifactId>speedy-client</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-json-io</artifactId>
+            <artifactId>speedy-io-json</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
