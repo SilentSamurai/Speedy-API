@@ -16,4 +16,6 @@ public interface CategoryRepository extends CrudRepository<Category, String> {
 
     @Query("select c from Category c order by c.name asc")
     List<Category> findAllSorted();
+
+    List<Category> findAllByNameStartingWithOrderByNameAsc(String prefix);
 }

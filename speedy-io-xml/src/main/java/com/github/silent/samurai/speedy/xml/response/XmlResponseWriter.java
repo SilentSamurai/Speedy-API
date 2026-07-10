@@ -57,6 +57,7 @@ public class XmlResponseWriter implements SpeedyResponseWriter {
 
     @Override
     public void startObject() throws SpeedyHttpException {
+        ensureCurrentContextOpened();
         String tag;
         if (pendingFieldName != null) {
             tag = pendingFieldName;

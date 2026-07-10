@@ -1,14 +1,17 @@
 package com.github.silent.samurai.speedy.query;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
+import com.github.silent.samurai.speedy.client.test.SpeedyTest;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
+import net.bytebuddy.utility.RandomString;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.condition;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.matches;
 import static org.hamcrest.Matchers.contains;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -80,8 +85,18 @@ public class SpeedyV2OrderByTest {
 
     @Test
     void check_order_by_with_actual_names() throws Exception {
-        // Get actual categories from repository and sort them
-        List<Category> categories = categoryRepository.findAllSorted();
+        // Create a batch of categories scoped to this test run, so the assertions
+        // below don't depend on how many Category rows other tests have left behind.
+        String prefix = "ordby-" + RandomString.make(8) + "-";
+        List<String> suffixes = List.of("c", "a", "e", "b", "d");
+
+        ObjectMapper json = new ObjectMapper();
+        List<ObjectNode> items = suffixes.stream()
+                .map(suffix -> json.createObjectNode().put("name", prefix + suffix))
+                .toList();
+        SpeedyTest.mockMvc(mvc).createMany("Category", items);
+
+        List<Category> categories = categoryRepository.findAllByNameStartingWithOrderByNameAsc(prefix);
         List<String> expectedNames = categories.stream()
                 .map(Category::getName)
                 .toList();
@@ -89,8 +104,9 @@ public class SpeedyV2OrderByTest {
         Collections.reverse(reverseName);
 
         JsonNode body = SpeedyQuery.from("Category")
+                .where(condition("name", matches(prefix + "*")))
                 .orderByAsc("name")
-                .pageSize(50)
+                .pageSize(suffixes.size())
                 .prettyPrint()
                 .build();
 
