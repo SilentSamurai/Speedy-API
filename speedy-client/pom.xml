@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>speedy-java-client</artifactId>
+    <artifactId>speedy-client</artifactId>
     <name>speedy-java-client</name>
 
     <properties>

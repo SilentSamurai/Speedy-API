@@ -9,8 +9,8 @@
         <version>3.1.4</version>
     </parent>
 
-    <artifactId>speedy-jooq-query-processor</artifactId>
-    <name>speedy-jooq-query-processor</name>
+    <artifactId>speedy-io-xml</artifactId>
+    <name>speedy-xml-io</name>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -33,27 +33,6 @@
             <artifactId>speedy-java-client</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-json-io</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-
-
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq</artifactId>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jooq</groupId>
-            <artifactId>jooq-meta</artifactId>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.persistence</groupId>

@@ -9,8 +9,8 @@
         <version>3.1.4</version>
     </parent>
 
-    <artifactId>speedy-yaml-io</artifactId>
-    <name>speedy-yaml-io</name>
+    <artifactId>speedy-io-json</artifactId>
+    <name>speedy-json-io</name>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -21,8 +21,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-yaml</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
 
         <dependency>
