@@ -37,12 +37,12 @@
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-jooq-query-processor</artifactId>
+            <artifactId>speedy-qp-jooq</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-java-client</artifactId>
+            <artifactId>speedy-client</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <!--        <dependency>-->

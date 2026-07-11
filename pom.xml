@@ -37,13 +37,13 @@
         <module>speedy-test-app</module>
         <module>antlr-parser</module>
         <module>speedy-commons</module>
-        <module>speedy-jpa-metamodel-processor</module>
-        <module>speedy-java-client</module>
-        <module>speedy-static-metamodel-processor</module>
-        <module>speedy-jooq-query-processor</module>
-        <module>speedy-json-io</module>
-        <module>speedy-yaml-io</module>
-        <module>speedy-xml-io</module>
+        <module>speedy-mp-jpa</module>
+        <module>speedy-client</module>
+        <module>speedy-mp-json</module>
+        <module>speedy-qp-jooq</module>
+        <module>speedy-io-json</module>
+        <module>speedy-io-yaml</module>
+        <module>speedy-io-xml</module>
         <module>jacoco-aggregate</module>
     </modules>
 

@@ -443,14 +443,14 @@ Content-Type: application/json
 {
     "$where": {
         "$or": [
-            "$and":[
+            { "$and": [
                 { "id": "1" },
                 { "desc": "desc1" }
-            ]
-            "$and":[
-                { "id": "1" },
-                { "desc": "desc1" }
-            ]
+            ] },
+            { "$and": [
+                { "id": "2" },
+                { "desc": "desc2" }
+            ] }
         ]
     }
 }
@@ -462,6 +462,34 @@ Content-Type: application/json
 |----------|------------------------------------|---------------------------------------------------------|
 | $and     | Logical AND (All conditions match) | `{ "$and": [{ "role": "admin" }, { "active": true }] }` |
 | $or      | Logical OR (Any condition matches) | `{ "$or": [{ "role": "admin" }, { "role": "user" }] }`  |
+
+#### Field-Level Logical Operators
+
+`$or`/`$and` can also be nested inside a single field's predicate, so only that field
+needs repeating instead of the whole condition object — useful for patterns like "field
+matches a value OR is null":
+
+```http
+POST /speedy/v1/User/$query  
+Accept: application/json  
+Content-Type: application/json  
+
+{
+    "$where": {
+        "desc": {
+            "$or": [
+                { "$eq": null },
+                { "$eq": "desc1" }
+            ]
+        },
+        "active": true
+    }
+}
+```
+
+As with the top-level form, `$or`/`$and` must be the only key inside the field's
+predicate object — combine additional operators as further entries in the array instead
+of mixing a logical key with a plain operator key.
 
 ### Paging Query
 

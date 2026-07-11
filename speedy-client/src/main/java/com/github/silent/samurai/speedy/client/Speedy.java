@@ -1,0 +1,275 @@
+package com.github.silent.samurai.speedy.client;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.silent.samurai.speedy.client.builder.*;
+import com.github.silent.samurai.speedy.client.exception.SpeedyConnectionException;
+import com.github.silent.samurai.speedy.client.format.JsonFormat;
+import com.github.silent.samurai.speedy.client.format.SpeedyFormat;
+import com.github.silent.samurai.speedy.client.internal.PathBuilder;
+import com.github.silent.samurai.speedy.client.internal.ResponseParser;
+import com.github.silent.samurai.speedy.client.transport.JdkHttpTransport;
+import com.github.silent.samurai.speedy.client.transport.SpeedyRawResponse;
+import com.github.silent.samurai.speedy.client.transport.SpeedyRequest;
+import com.github.silent.samurai.speedy.client.transport.SpeedyTransport;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+/**
+ * Main entry point for the Speedy API production client.
+ *
+ * <p>Configured once via {@link #builder()} or {@link #connect(String)},
+ * reused for all API calls. Returns fluent builders for CRUD and query operations.
+ *
+ * <pre>{@code
+ * // Connect and create in under 10 lines
+ * Speedy speedy = Speedy.connect("http://localhost:8080");
+ * speedy.create("User").field("name", "Alice").field("email", "alice@example.com").execute();
+ * User u = speedy.get("User").key("id", 1).execute().first(User.class);
+ * speedy.update("User").key("id", 1).field("name", "Bob").execute();
+ * speedy.delete("User").key("id", 1).execute();
+ * }</pre>
+ */
+public class Speedy {
+
+    private final SpeedyTransport transport;
+    private final List<SpeedyInterceptor> interceptors;
+    private final ObjectMapper mapper;
+    private final PathBuilder paths;
+    private final ResponseParser parser;
+    private final SpeedyFormat format;
+
+    private Speedy(String baseUrl, String apiPath, SpeedyTransport transport,
+                   List<SpeedyInterceptor> interceptors, ObjectMapper mapper, SpeedyFormat format) {
+        this.transport = transport;
+        this.interceptors = interceptors != null ? interceptors : Collections.emptyList();
+        this.mapper = mapper;
+        this.format = format;
+        this.paths = new PathBuilder(baseUrl, apiPath);
+        this.parser = new ResponseParser(mapper, format);
+    }
+
+    /**
+     * Quick-connect with defaults (JdkHttpTransport, default ObjectMapper).
+     */
+    public static Speedy connect(String baseUrl) {
+        return builder().baseUrl(baseUrl).build();
+    }
+
+    /**
+     * Returns a new {@link Builder} for configuring a {@code Speedy} instance.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Creates a create-builder for the given entity.
+     */
+    public CreateBuilder create(String entity) {
+        return new CreateBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates a get-builder for the given entity.
+     */
+    public GetBuilder get(String entity) {
+        return new GetBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates an update-builder for the given entity (HTTP PATCH, partial update).
+     */
+    public UpdateBuilder update(String entity) {
+        return new UpdateBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates a replace-builder for the given entity (HTTP PUT, full replace).
+     */
+    public ReplaceBuilder replace(String entity) {
+        return new ReplaceBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates a delete-builder for the given entity.
+     */
+    public DeleteBuilder delete(String entity) {
+        return new DeleteBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates a query-builder for the given entity.
+     */
+    public QueryBuilder query(String entity) {
+        return new QueryBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates a bulk-create builder for the given entity.
+     */
+    public BulkCreateBuilder createMany(String entity) {
+        return new BulkCreateBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Bulk create multiple entities (provided as ObjectNode list).
+     */
+    public SpeedyResult createMany(String entity, List<ObjectNode> entities) {
+        return new BulkCreateBuilder(entity, paths, this::send, mapper, parser, format)
+                .items(entities)
+                .execute();
+    }
+
+    /**
+     * Creates a bulk-delete builder for the given entity.
+     */
+    public BulkDeleteBuilder deleteMany(String entity) {
+        return new BulkDeleteBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Bulk delete entities by primary key array.
+     */
+    public SpeedyResult deleteMany(String entity, List<ObjectNode> pks) {
+        return new BulkDeleteBuilder(entity, paths, this::send, mapper, parser, format)
+                .items(pks)
+                .execute();
+    }
+
+    /**
+     * Creates a bulk-update builder for the given entity (HTTP PATCH, partial update per item).
+     */
+    public BulkUpdateBuilder updateMany(String entity) {
+        return new BulkUpdateBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Bulk update multiple entities (provided as ObjectNode list, each with its key and fields to update).
+     */
+    public SpeedyResult updateMany(String entity, List<ObjectNode> items) {
+        return new BulkUpdateBuilder(entity, paths, this::send, mapper, parser, format)
+                .items(items)
+                .execute();
+    }
+
+    /**
+     * Creates a bulk-replace builder for the given entity (HTTP PUT, full replace per item).
+     */
+    public BulkReplaceBuilder replaceMany(String entity) {
+        return new BulkReplaceBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Bulk replace multiple entities (provided as ObjectNode list, each the complete representation).
+     */
+    public SpeedyResult replaceMany(String entity, List<ObjectNode> items) {
+        return new BulkReplaceBuilder(entity, paths, this::send, mapper, parser, format)
+                .items(items)
+                .execute();
+    }
+
+    /**
+     * Fetches the API metadata.
+     */
+    public JsonNode metadata() {
+        String url = paths.metadataPath();
+        // Metadata is always fetched as JSON regardless of the configured wire format.
+        SpeedyRequest request = new SpeedyRequest("GET", url,
+                Collections.singletonMap("Accept", List.of(JsonFormat.CONTENT_TYPE)), null);
+        try {
+            SpeedyRawResponse response = send(request);
+            if (!response.is2xx()) {
+                throw parser.parseError(response);
+            }
+            String body = response.body();
+            if (body == null || body.isEmpty()) {
+                return mapper.createObjectNode();
+            }
+            return mapper.readTree(body);
+        } catch (IOException e) {
+            throw new SpeedyConnectionException("Metadata request failed: " + e.getMessage(), e);
+        }
+    }
+
+    SpeedyRawResponse send(SpeedyRequest request) throws IOException {
+        SpeedyRequest current = request;
+        for (SpeedyInterceptor interceptor : interceptors) {
+            current = interceptor.intercept(current);
+        }
+        return transport.send(current);
+    }
+
+    /**
+     * Fluent builder for constructing {@link Speedy} instances.
+     */
+    public static class Builder {
+        private final List<SpeedyInterceptor> interceptors = new ArrayList<>();
+        private String baseUrl;
+        private String apiPath = "/speedy/v1/";
+        private SpeedyTransport transport;
+        private ObjectMapper objectMapper;
+        private SpeedyFormat format;
+
+        public Builder baseUrl(String baseUrl) {
+            this.baseUrl = baseUrl;
+            return this;
+        }
+
+        public Builder apiPath(String apiPath) {
+            this.apiPath = apiPath;
+            return this;
+        }
+
+        public Builder transport(SpeedyTransport transport) {
+            this.transport = transport;
+            return this;
+        }
+
+        public Builder interceptor(SpeedyInterceptor interceptor) {
+            this.interceptors.add(interceptor);
+            return this;
+        }
+
+        public Builder objectMapper(ObjectMapper objectMapper) {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        /**
+         * Sets the wire format for all requests from this client
+         * (e.g. {@code new YamlFormat()}, {@code new XmlFormat()}).
+         * Defaults to JSON.
+         */
+        public Builder format(SpeedyFormat format) {
+            this.format = format;
+            return this;
+        }
+
+        public Speedy build() {
+            if (baseUrl == null || baseUrl.isEmpty()) {
+                throw new IllegalStateException("baseUrl is required");
+            }
+            if (transport == null) {
+                transport = new JdkHttpTransport();
+            }
+            if (objectMapper == null) {
+                objectMapper = new ObjectMapper();
+                objectMapper.registerModule(new JavaTimeModule());
+                objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                objectMapper.configure(
+                        com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            }
+            if (format == null) {
+                format = new JsonFormat(objectMapper);
+            }
+            return new Speedy(baseUrl, apiPath, transport, interceptors, objectMapper, format);
+        }
+    }
+}

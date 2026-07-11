@@ -69,4 +69,17 @@ public final class ResponseBuilders {
     public static SpeedyEntityResponse emptyKeyOnlyResponse(EntityMetadata entityMetadata) {
         return keyOnlyResponse(entityMetadata, List.of());
     }
+
+    /// Builds a full-entity success response (for single or bulk update/replace) — unlike
+    /// {@link #keyOnlyResponse}, no field predicate is applied, so every serializable field of
+    /// the saved rows is emitted, preserving the single-update "returns the resource" contract.
+    public static SpeedyEntityResponse updatedEntitiesResponse(EntityMetadata entityMetadata,
+                                                                List<SpeedyEntity> saved) {
+        return SpeedyEntityResponse.builder()
+                .entityMetadata(entityMetadata)
+                .payload(saved)
+                .pageIndex(0)
+                .status(200)
+                .build();
+    }
 }

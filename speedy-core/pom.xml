@@ -59,7 +59,7 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-java-client</artifactId>
+            <artifactId>speedy-client</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>

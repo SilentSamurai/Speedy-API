@@ -11,6 +11,7 @@ import com.github.silent.samurai.speedy.interfaces.request.StructureReader;
 import com.github.silent.samurai.speedy.interfaces.request.StructureReader.Kind;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
+import com.github.silent.samurai.speedy.interfaces.query.Condition;
 import com.github.silent.samurai.speedy.interfaces.query.Expression;
 import com.github.silent.samurai.speedy.interfaces.query.Identifier;
 import com.github.silent.samurai.speedy.interfaces.query.Literal;
@@ -85,23 +86,31 @@ public class StructureToQuery {
         if (first == null) {
             return new BooleanConditionImpl(ConditionOperator.AND);
         }
-        if ("$or".equals(first) || "or".equals(first)) {
-            return parseLogicalGroup(ConditionOperator.OR, cf, r);
-        }
-        if ("$and".equals(first) || "and".equals(first)) {
-            return parseLogicalGroup(ConditionOperator.AND, cf, r);
+        if (isLogicalKey(first)) {
+            return parseLogicalGroup(isOrKey(first) ? ConditionOperator.OR : ConditionOperator.AND, cf, r);
         }
         BooleanCondition and = new BooleanConditionImpl(ConditionOperator.AND);
         and.addSubCondition(captureBinary(first, cf, r));
         String fieldName;
         while ((fieldName = r.nextKey()) != null) {
-            if ("$or".equals(fieldName) || "$and".equals(fieldName)
-                    || "or".equals(fieldName) || "and".equals(fieldName)) {
+            if (isLogicalKey(fieldName)) {
                 throw new BadRequestException("$or/$and must be the only key of a condition object");
             }
             and.addSubCondition(captureBinary(fieldName, cf, r));
         }
         return and;
+    }
+
+    private static boolean isOrKey(String key) {
+        return "$or".equals(key) || "or".equals(key);
+    }
+
+    private static boolean isAndKey(String key) {
+        return "$and".equals(key) || "and".equals(key);
+    }
+
+    private static boolean isLogicalKey(String key) {
+        return isOrKey(key) || isAndKey(key);
     }
 
     /// Parses the value of a {@code $or}/{@code $and} key — an array of condition objects
@@ -140,16 +149,17 @@ public class StructureToQuery {
         return and;
     }
 
-    /// Builds a single binary condition for {@code fieldName} from the current value token: a
-    /// scalar shorthand ({@code $isnull}/{@code $isnotnull} or an {@code EQ}), or an operator
-    /// object ({@code {"$gt": …}}). Port of the legacy {@code captureSingleBinaryQuery}.
-    private BinaryCondition captureBinary(String fieldName, ConditionFactory cf, StructureReader r)
+    /// Builds a condition for {@code fieldName} from the current value token: a scalar
+    /// shorthand ({@code $isnull}/{@code $isnotnull} or an {@code EQ}), or an operator object
+    /// ({@code {"$gt": …}} or {@code {"$or": [...]}}). Port of the legacy
+    /// {@code captureSingleBinaryQuery}, extended to allow a field-scoped logical group.
+    private Condition captureBinary(String fieldName, ConditionFactory cf, StructureReader r)
             throws SpeedyHttpException {
         QueryField queryField = cf.createQueryField(fieldName);
         FieldMetadata metadata = queryField.getMetadataForParsing();
         Kind kind = r.currentKind();
         if (kind == Kind.OBJECT) {
-            return captureOperatorCondition(queryField, metadata, cf, r);
+            return captureFieldCondition(queryField, metadata, cf, r);
         }
         if (kind == Kind.ARRAY) {
             throw new BadRequestException("Invalid query");
@@ -167,15 +177,63 @@ public class StructureToQuery {
         return cf.createBiCondition(queryField, ConditionOperator.EQ, expression);
     }
 
-    private BinaryCondition captureOperatorCondition(QueryField queryField, FieldMetadata metadata,
-                                                     ConditionFactory cf, StructureReader r) throws SpeedyHttpException {
-        String operatorSymbol = r.nextKey();
-        if (operatorSymbol == null) {
+    /// Reads a field's predicate object (the cursor is positioned on its opening token, no key
+    /// read yet). A sole {@code $or}/{@code $and} key groups nested predicates for the same
+    /// field with that operator (see {@link #captureFieldLogicalGroup}); otherwise the object's
+    /// single key is read as an operator (see {@link #captureOperatorValue}) — a second key in
+    /// that case is rejected, mirroring the top-level {@code $or}/{@code $and} exclusivity rule.
+    private Condition captureFieldCondition(QueryField queryField, FieldMetadata metadata,
+                                             ConditionFactory cf, StructureReader r) throws SpeedyHttpException {
+        String firstKey = r.nextKey();
+        if (firstKey == null) {
             throw new BadRequestException("Invalid query");
         }
+        if (isLogicalKey(firstKey)) {
+            Condition group = captureFieldLogicalGroup(
+                    isOrKey(firstKey) ? ConditionOperator.OR : ConditionOperator.AND, queryField, metadata, cf, r);
+            if (r.nextKey() != null) {
+                throw new BadRequestException("$or/$and must be the only key of a condition object");
+            }
+            return group;
+        }
+        BinaryCondition condition = captureOperatorValue(firstKey, queryField, metadata, cf, r);
+        // Multiple operators on the same field are not supported — reject explicitly
+        // instead of silently dropping all but the first.
+        if (r.nextKey() != null) {
+            throw new BadRequestException(
+                    "Field '" + queryField.getMetadataForParsing().getOutputPropertyName()
+                            + "' has multiple operators in a single condition object; combine them with $and instead");
+        }
+        return condition;
+    }
+
+    /// Parses the value of a field-level {@code $or}/{@code $and} key — an array of nested
+    /// predicate objects for the same field, combined with {@code op}. Elements may themselves
+    /// be logical groups, so {@code $or}/{@code $and} can nest arbitrarily while staying pinned
+    /// to {@code queryField}.
+    private BooleanCondition captureFieldLogicalGroup(ConditionOperator op, QueryField queryField,
+                                                       FieldMetadata metadata, ConditionFactory cf, StructureReader r)
+            throws SpeedyHttpException {
+        if (r.currentKind() != Kind.ARRAY) {
+            throw new BadRequestException("Invalid query");
+        }
+        BooleanCondition result = new BooleanConditionImpl(op);
+        Kind elem;
+        while ((elem = r.nextElement()) != null) {
+            if (elem != Kind.OBJECT) {
+                throw new BadRequestException("Invalid query");
+            }
+            result.addSubCondition(captureFieldCondition(queryField, metadata, cf, r));
+        }
+        return result;
+    }
+
+    /// Builds a single binary condition from an already-read operator symbol and the value
+    /// token that follows it.
+    private BinaryCondition captureOperatorValue(String operatorSymbol, QueryField queryField, FieldMetadata metadata,
+                                                  ConditionFactory cf, StructureReader r) throws SpeedyHttpException {
         ConditionOperator operator = ConditionOperator.fromSymbol(operatorSymbol);
         Kind valueKind = r.currentKind();
-        BinaryCondition condition;
         if (operator.doesAcceptMultipleValues() && valueKind == Kind.ARRAY) {
             List<SpeedyValue> values = new LinkedList<>();
             Kind elem;
@@ -186,26 +244,18 @@ public class StructureToQuery {
                     r.skipValue();
                 }
             }
-            condition = cf.createBiCondition(queryField, operator, new Literal(new SpeedyCollection(values)));
+            return cf.createBiCondition(queryField, operator, new Literal(new SpeedyCollection(values)));
         } else if (operator == ConditionOperator.ISNULL || operator == ConditionOperator.ISNOTNULL) {
             if (!r.isBoolValue()) {
                 throw new BadRequestException("$" + operator.name().toLowerCase() + " only accepts a boolean value");
             }
-            condition = cf.createBiCondition(queryField, operator, new Literal(new SpeedyBoolean(r.boolValue())));
+            return cf.createBiCondition(queryField, operator, new Literal(new SpeedyBoolean(r.boolValue())));
         } else if (valueKind == Kind.VALUE || valueKind == Kind.NULL) {
             Expression expression = buildExpression(metadata, cf, r);
-            condition = cf.createBiCondition(queryField, operator, expression);
+            return cf.createBiCondition(queryField, operator, expression);
         } else {
             throw new BadRequestException("Invalid query");
         }
-        // Multiple operators on the same field are not supported — reject explicitly
-        // instead of silently dropping all but the first.
-        if (r.nextKey() != null) {
-            throw new BadRequestException(
-                    "Field '" + queryField.getMetadataForParsing().getOutputPropertyName()
-                            + "' has multiple operators in a single condition object; combine them with $and instead");
-        }
-        return condition;
     }
 
     /// A {@code $field}-prefixed string is a field reference ({@link Identifier}); anything else

@@ -148,7 +148,7 @@ class SpeedyV2OperatorErrorsTest {
 
     /// --- Gap 36: $eq / $ne / $lt / $gt / $lte / $gte with OBJECT/COLLECTION ---
     ///
-    /// The query parser at StructureToQuery.captureOperatorCondition rejects operator values
+    /// The query parser at StructureToQuery.captureOperatorValue rejects operator values
     /// that are objects or arrays when the operator expects a scalar value (the value token is
     /// neither VALUE nor NULL), returning "Invalid query" before the JooqQueryBuilder predicate
     /// methods are reached.

@@ -29,9 +29,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /// CRUD driven through the production {@link Speedy} client (via {@link MockMvcTransport}) once
-/// per wire format: create (single + bulk), get (by key + query), update, delete (single + bulk).
-/// Proves the same endpoints behave identically across every wire format from the client's
-/// perspective, not just the server's.
+/// per wire format: create (single + bulk), get (by key + query), update/replace (single + bulk),
+/// delete (single + bulk). Proves the same endpoints behave identically across every wire format
+/// from the client's perspective, not just the server's.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
 class SpeedyIoCrudTest {
@@ -118,6 +118,79 @@ class SpeedyIoCrudTest {
         speedy.update("Category").key("id", id).field("name", newName).execute();
 
         assertEquals(newName, categoryRepository.findById(id).orElseThrow().getName());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("formats")
+    void updateBulk(SpeedyFormat format) {
+        Speedy speedy = client(format);
+        String a = "io-updb-" + RandomString.make(8);
+        String b = "io-updb-" + RandomString.make(8);
+        String newA = "io-updb-" + RandomString.make(8);
+        String newB = "io-updb-" + RandomString.make(8);
+
+        ObjectMapper json = new ObjectMapper();
+        SpeedyResult created = speedy.createMany("Category")
+                .items(List.of(
+                        json.createObjectNode().put("name", a),
+                        json.createObjectNode().put("name", b)))
+                .execute();
+
+        ObjectNode itemA = json.createObjectNode();
+        itemA.put("id", created.raw().get(0).get("id").asText());
+        itemA.put("name", newA);
+        ObjectNode itemB = json.createObjectNode();
+        itemB.put("id", created.raw().get(1).get("id").asText());
+        itemB.put("name", newB);
+
+        SpeedyResult updated = speedy.updateMany("Category", List.of(itemA, itemB));
+
+        assertEquals(2, updated.size());
+        assertTrue(categoryRepository.findByName(newA).isPresent());
+        assertTrue(categoryRepository.findByName(newB).isPresent());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("formats")
+    void replaceSingle(SpeedyFormat format) {
+        Speedy speedy = client(format);
+        String name = "io-rep-" + RandomString.make(8);
+        String newName = "io-rep-" + RandomString.make(8);
+        String id = speedy.create("Category").field("name", name).execute().firstRaw().get("id").asText();
+
+        speedy.replace("Category").key("id", id).field("name", newName).execute();
+
+        assertEquals(newName, categoryRepository.findById(id).orElseThrow().getName());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("formats")
+    void replaceBulk(SpeedyFormat format) {
+        Speedy speedy = client(format);
+        String a = "io-repb-" + RandomString.make(8);
+        String b = "io-repb-" + RandomString.make(8);
+        String newA = "io-repb-" + RandomString.make(8);
+        String newB = "io-repb-" + RandomString.make(8);
+
+        ObjectMapper json = new ObjectMapper();
+        SpeedyResult created = speedy.createMany("Category")
+                .items(List.of(
+                        json.createObjectNode().put("name", a),
+                        json.createObjectNode().put("name", b)))
+                .execute();
+
+        ObjectNode itemA = json.createObjectNode();
+        itemA.put("id", created.raw().get(0).get("id").asText());
+        itemA.put("name", newA);
+        ObjectNode itemB = json.createObjectNode();
+        itemB.put("id", created.raw().get(1).get("id").asText());
+        itemB.put("name", newB);
+
+        SpeedyResult replaced = speedy.replaceMany("Category", List.of(itemA, itemB));
+
+        assertEquals(2, replaced.size());
+        assertTrue(categoryRepository.findByName(newA).isPresent());
+        assertTrue(categoryRepository.findByName(newB).isPresent());
     }
 
     @ParameterizedTest(name = "{0}")
