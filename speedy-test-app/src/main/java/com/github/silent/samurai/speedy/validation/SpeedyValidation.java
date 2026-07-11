@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.annotations.SpeedyValidator;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.entity.Supplier;
 import com.github.silent.samurai.speedy.enums.SpeedyValidationRequestType;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyCustomValidation;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,12 @@ public class SpeedyValidation implements ISpeedyCustomValidation {
     // DefaultFieldValidator checks are skipped and only these custom validators run.
     @SpeedyValidator(entity = "Category", requests = SpeedyValidationRequestType.CREATE, replacesDefault = true)
     public boolean validateCategoryCreate(Category category) {
+        if ("validator-http-runtime-trigger".equalsIgnoreCase(category.getName())) {
+            throw new SpeedyHttpRuntimeException(422, "Category validator rejected this request");
+        }
+        if ("validator-runtime-trigger".equalsIgnoreCase(category.getName())) {
+            throw new IllegalStateException("Simulated validator failure");
+        }
         return category.getName() != null && !category.getName().isEmpty();
     }
 

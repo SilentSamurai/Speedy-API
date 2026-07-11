@@ -25,6 +25,7 @@ public class EntityEvents implements ISpeedyEventHandler {
     public static final ConcurrentHashMap<String, Boolean> POST_INSERT_CATEGORIES = new ConcurrentHashMap<>();
     public static final AtomicBoolean throwOnNextCurrencyInsert = new AtomicBoolean(false);
     public static final AtomicBoolean throwOnNextCurrencyDelete = new AtomicBoolean(false);
+    public static final AtomicBoolean throwOnNextCategoryDelete = new AtomicBoolean(false);
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityEvents.class);
     public static volatile boolean POST_UPDATE_FIRED = false;
     @Autowired
@@ -43,6 +44,21 @@ public class EntityEvents implements ISpeedyEventHandler {
         LOGGER.info("Category Post Insert Event");
         String id = category.get("id").asText();
         POST_INSERT_CATEGORIES.put(id, true);
+    }
+
+    @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.PRE_UPDATE})
+    public void categoryPreUpdateEvent(SpeedyEntity category) throws Exception {
+        if (category.has(category.getMetadata().field("name"))
+                && "generic-update-error-trigger".equalsIgnoreCase(category.get("name").asText())) {
+            throw new RuntimeException("Simulated unexpected update error");
+        }
+    }
+
+    @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.PRE_DELETE})
+    public void categoryPreDeleteEvent(SpeedyEntity category) {
+        if (throwOnNextCategoryDelete.getAndSet(false)) {
+            throw new RuntimeException("Simulated unexpected delete error");
+        }
     }
 
     @SpeedyEvent(value = "User", eventType = {SpeedyEventType.PRE_INSERT})
