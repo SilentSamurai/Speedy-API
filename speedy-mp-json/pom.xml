@@ -6,8 +6,8 @@
         <artifactId>speedy-api-parent</artifactId>
         <version>3.1.4</version>
     </parent>
-    <artifactId>speedy-static-metamodel-processor</artifactId>
-    <name>speedy-static-metamodel-processor</name>
+    <artifactId>speedy-mp-json</artifactId>
+    <name>speedy-mp-json</name>
     <dependencies>
         <dependency>
             <groupId>com.github.silentsamurai</groupId>

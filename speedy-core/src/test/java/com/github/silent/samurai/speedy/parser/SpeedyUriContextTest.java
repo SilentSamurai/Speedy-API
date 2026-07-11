@@ -440,12 +440,12 @@ class SpeedyUriContextTest {
 
         Optional<OrderBy> nameOrder = speedyQuery.getOrderByList()
                 .stream()
-                .filter(orderBy -> orderBy.getFieldMetadata().equals(nameField) && orderBy.getOperator() == OrderByOperator.ASC)
+                .filter(orderBy -> orderBy.getField().getFieldMetadata().equals(nameField) && orderBy.getOperator() == OrderByOperator.ASC)
                 .findAny();
 
         Optional<OrderBy> idOrder = speedyQuery.getOrderByList()
                 .stream()
-                .filter(orderBy -> orderBy.getFieldMetadata().equals(idField) && orderBy.getOperator() == OrderByOperator.ASC)
+                .filter(orderBy -> orderBy.getField().getFieldMetadata().equals(idField) && orderBy.getOperator() == OrderByOperator.ASC)
                 .findAny();
 
         assertTrue(nameOrder.isPresent());
@@ -466,12 +466,12 @@ class SpeedyUriContextTest {
 
         Optional<OrderBy> nameOrder = speedyQuery.getOrderByList()
                 .stream()
-                .filter(orderBy -> orderBy.getFieldMetadata().equals(nameField) && orderBy.getOperator() == OrderByOperator.ASC)
+                .filter(orderBy -> orderBy.getField().getFieldMetadata().equals(nameField) && orderBy.getOperator() == OrderByOperator.ASC)
                 .findAny();
 
         Optional<OrderBy> idOrder = speedyQuery.getOrderByList()
                 .stream()
-                .filter(orderBy -> orderBy.getFieldMetadata().equals(idField) && orderBy.getOperator() == OrderByOperator.ASC)
+                .filter(orderBy -> orderBy.getField().getFieldMetadata().equals(idField) && orderBy.getOperator() == OrderByOperator.ASC)
                 .findAny();
 
         assertTrue(nameOrder.isPresent());
@@ -492,12 +492,12 @@ class SpeedyUriContextTest {
 
         Optional<OrderBy> nameOrder = speedyQuery.getOrderByList()
                 .stream()
-                .filter(orderBy -> orderBy.getFieldMetadata().equals(nameField) && orderBy.getOperator() == OrderByOperator.DESC)
+                .filter(orderBy -> orderBy.getField().getFieldMetadata().equals(nameField) && orderBy.getOperator() == OrderByOperator.DESC)
                 .findAny();
 
         Optional<OrderBy> idOrder = speedyQuery.getOrderByList()
                 .stream()
-                .filter(orderBy -> orderBy.getFieldMetadata().equals(idField) && orderBy.getOperator() == OrderByOperator.DESC)
+                .filter(orderBy -> orderBy.getField().getFieldMetadata().equals(idField) && orderBy.getOperator() == OrderByOperator.DESC)
                 .findAny();
 
         assertTrue(nameOrder.isPresent());

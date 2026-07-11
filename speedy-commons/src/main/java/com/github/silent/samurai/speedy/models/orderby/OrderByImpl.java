@@ -1,27 +1,27 @@
 package com.github.silent.samurai.speedy.models.orderby;
 
 import com.github.silent.samurai.speedy.enums.OrderByOperator;
-import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import lombok.Getter;
 
 @Getter
 public class OrderByImpl implements OrderBy {
 
 
-    private final FieldMetadata fieldMetadata;
+    private final QueryField field;
     private final OrderByOperator operator;
 
-    public OrderByImpl(FieldMetadata fieldMetadata, OrderByOperator operator) {
-        this.fieldMetadata = fieldMetadata;
+    public OrderByImpl(QueryField field, OrderByOperator operator) {
+        this.field = field;
         this.operator = operator;
     }
 
-    public static OrderByImpl desc(FieldMetadata fieldMetadata) {
-        return new OrderByImpl(fieldMetadata, OrderByOperator.DESC);
+    public static OrderByImpl desc(QueryField field) {
+        return new OrderByImpl(field, OrderByOperator.DESC);
     }
 
-    public static OrderByImpl asc(FieldMetadata fieldMetadata) {
-        return new OrderByImpl(fieldMetadata, OrderByOperator.ASC);
+    public static OrderByImpl asc(QueryField field) {
+        return new OrderByImpl(field, OrderByOperator.ASC);
     }
 }

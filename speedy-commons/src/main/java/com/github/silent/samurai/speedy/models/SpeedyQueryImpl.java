@@ -3,11 +3,11 @@ package com.github.silent.samurai.speedy.models;
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
-import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
+import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
 import com.github.silent.samurai.speedy.models.orderby.OrderByImpl;
@@ -44,16 +44,16 @@ public class SpeedyQueryImpl implements SpeedyQuery {
         this.conditionFactory = new ConditionFactory(from);
     }
 
-    public OrderBy orderByDesc(String field) throws NotFoundException {
-        FieldMetadata fieldMetadata = this.from.getField(field);
-        OrderByImpl desc = OrderByImpl.desc(fieldMetadata);
+    public OrderBy orderByDesc(String field) throws SpeedyHttpException {
+        QueryField queryField = this.conditionFactory.createQueryField(field);
+        OrderByImpl desc = OrderByImpl.desc(queryField);
         orderByList.add(desc);
         return desc;
     }
 
-    public OrderBy orderByAsc(String field) throws NotFoundException {
-        FieldMetadata fieldMetadata = this.from.getField(field);
-        OrderByImpl asc = OrderByImpl.asc(fieldMetadata);
+    public OrderBy orderByAsc(String field) throws SpeedyHttpException {
+        QueryField queryField = this.conditionFactory.createQueryField(field);
+        OrderByImpl asc = OrderByImpl.asc(queryField);
         orderByList.add(asc);
         return asc;
     }

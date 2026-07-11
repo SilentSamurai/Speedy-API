@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.query;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.TestApplication;
 import com.github.silent.samurai.speedy.client.SpeedyQuery;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
@@ -14,12 +15,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -124,5 +130,49 @@ class SpeedyV2ForgeinKeyWhereClauseTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier.id").exists())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].supplier.id").value(Matchers.hasItem("2")))
                 .andReturn();
+    }
+
+    @Test
+    void order_by_associated_field() throws Exception {
+
+        MockHttpServletRequestBuilder mockHttpServletRequest = MockMvcRequestBuilders.post(SpeedyConstants.URI + "/Procurement/" + SpeedyEndpoint.QUERY.suffix())
+                .content(CommonUtil.json().writeValueAsString(
+                        SpeedyQuery
+                                .from("Procurement")
+                                .expand("Product")
+                                .orderByAsc("product.name")
+                                .pageSize(100)
+                                .prettyPrint()
+                                .build()
+                ))
+                .contentType(MediaType.APPLICATION_JSON_VALUE);
+
+        MvcResult result = mvc.perform(mockHttpServletRequest)
+                .andExpect(status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").exists())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*]",
+                        Matchers.hasSize(Matchers.greaterThanOrEqualTo(2))))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.payload[*].product.name").exists())
+                .andReturn();
+
+        JsonNode response = CommonUtil.json().readTree(result.getResponse().getContentAsString());
+        List<String> productNames = new ArrayList<>();
+        for (JsonNode node : response.get("payload")) {
+            JsonNode product = node.get("product");
+            // LEFT JOIN keeps rows whose FK is null; they carry no product name to order on.
+            if (product == null || product.isNull()) {
+                continue;
+            }
+            productNames.add(product.get("name").asText());
+        }
+
+        // Server must return rows already ordered by product.name ascending.
+        for (int i = 1; i < productNames.size(); i++) {
+            assertTrue(productNames.get(i - 1).compareTo(productNames.get(i)) <= 0,
+                    "payload not sorted ascending by product.name: '"
+                            + productNames.get(i - 1) + "' precedes '" + productNames.get(i) + "'");
+        }
     }
 }

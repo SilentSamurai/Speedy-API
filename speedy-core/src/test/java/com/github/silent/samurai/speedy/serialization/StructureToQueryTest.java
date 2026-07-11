@@ -109,7 +109,7 @@ class StructureToQueryTest {
 
         assertNotNull(query);
         Set<String> collect = query.getOrderByList().stream()
-                .map(by -> by.getFieldMetadata().getOutputPropertyName())
+                .map(by -> by.getField().getFieldMetadata().getOutputPropertyName())
                 .collect(Collectors.toSet());
         assertTrue(collect.contains("id"));
         assertTrue(collect.contains("name"));

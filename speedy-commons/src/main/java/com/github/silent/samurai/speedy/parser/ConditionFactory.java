@@ -62,6 +62,13 @@ public class ConditionFactory {
         if (!fieldMetadata.isAssociation()) {
             throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
         }
+        if (fieldMetadata.isCollection()) {
+            // A to-many association can only be reached through a row-multiplying join, which would
+            // duplicate result rows and corrupt pagination (and has no single FK column to join on),
+            // so filtering/ordering on collection-association paths is not supported.
+            throw new BadRequestException("association path is a to-many collection and cannot be used in a field path: "
+                    + fieldMetadata.getOutputPropertyName());
+        }
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
         return new AssociatedField(fieldMetadata, associatedFieldMetadata);

@@ -330,8 +330,7 @@ public class JooqQueryBuilder {
 
     void captureOrderBy() {
         for (OrderBy orderBy : speedyQuery.getOrderByList()) {
-            FieldMetadata fieldMetadata = orderBy.getFieldMetadata();
-            Field<Object> field = JooqUtil.getColumn(fieldMetadata, dialect);
+            Field<Object> field = getPath(orderBy.getField());
             OrderByOperator operator = orderBy.getOperator();
             if (operator == OrderByOperator.ASC) {
                 query.orderBy(field.asc());
