@@ -105,6 +105,20 @@ public class Speedy {
     }
 
     /**
+     * Creates a restore-builder for the given entity (un-deletes a soft-deleted row).
+     */
+    public RestoreBuilder restore(String entity) {
+        return new RestoreBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
+     * Creates a purge-builder for the given entity (permanent hard delete, bypassing soft delete).
+     */
+    public PurgeBuilder purge(String entity) {
+        return new PurgeBuilder(entity, paths, this::send, mapper, parser, format);
+    }
+
+    /**
      * Creates a query-builder for the given entity.
      */
     public QueryBuilder query(String entity) {

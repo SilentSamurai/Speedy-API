@@ -40,6 +40,11 @@ public class FileProcessor {
         if (jsonEntity.bulkAllowed != null) {
             eb.bulkAllowed(jsonEntity.bulkAllowed);
         }
+        if (jsonEntity.softDeleteField != null) {
+            eb.softDelete(jsonEntity.softDeleteField,
+                    Boolean.TRUE.equals(jsonEntity.allowViewDeleted),
+                    Boolean.TRUE.equals(jsonEntity.allowHardDelete));
+        }
 
         for (JsonField jsonField : jsonEntity.fields) {
             processFieldMetadata(jsonField, eb);

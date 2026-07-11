@@ -44,4 +44,8 @@ delete multiple resource
 }
 ```
 
+> **Soft delete:** entities annotated with `@SpeedySoftDelete` mark rows as deleted instead of
+> removing them, hide them from reads by default, and add `$restore` / `$purge` endpoints. See
+> [Soft Delete](soft-delete.md).
+
 <hr>

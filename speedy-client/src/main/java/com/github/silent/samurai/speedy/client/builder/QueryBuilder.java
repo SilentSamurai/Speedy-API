@@ -171,6 +171,30 @@ public class QueryBuilder {
     }
 
     /**
+     * Controls how soft-deleted rows are treated: {@code "exclude"} (default), {@code "include"}
+     * (live + deleted), or {@code "only"} (recycle-bin view). {@code include}/{@code only} require
+     * the entity to allow viewing deleted rows.
+     */
+    public QueryBuilder deleted(String mode) {
+        body.put("$deleted", mode);
+        return this;
+    }
+
+    /**
+     * Includes soft-deleted rows alongside live ones ({@code $deleted=include}).
+     */
+    public QueryBuilder includeDeleted() {
+        return deleted("include");
+    }
+
+    /**
+     * Returns only soft-deleted rows ({@code $deleted=only}) — a recycle-bin view.
+     */
+    public QueryBuilder onlyDeleted() {
+        return deleted("only");
+    }
+
+    /**
      * Builds the JSON query body without executing.
      */
     public JsonNode build() {

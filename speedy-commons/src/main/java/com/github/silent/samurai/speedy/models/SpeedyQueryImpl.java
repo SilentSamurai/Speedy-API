@@ -1,12 +1,14 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
+import com.github.silent.samurai.speedy.enums.DeletedFilter;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
+import com.github.silent.samurai.speedy.interfaces.query.Condition;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
@@ -36,6 +38,7 @@ public class SpeedyQueryImpl implements SpeedyQuery {
     private Set<String> expand = new LinkedHashSet<>();
     private Set<String> select = new LinkedHashSet<>();
     private boolean countRequest = false;
+    private DeletedFilter deleted = DeletedFilter.EXCLUDE;
     private String responseFormat;
     private int maxPageSize = 1000;
 
@@ -82,6 +85,18 @@ public class SpeedyQueryImpl implements SpeedyQuery {
 
     public void addFormat(String format) {
         this.responseFormat = format;
+    }
+
+    @Override
+    public void restrictWith(Condition condition) {
+        // Always wrap in a fresh AND so the added condition is ANDed with the caller's $where,
+        // even when that $where is a top-level OR group (which must not absorb this restriction).
+        BooleanConditionImpl wrapper = new BooleanConditionImpl(ConditionOperator.AND);
+        wrapper.addSubCondition(condition);
+        if (this.where != null && !this.where.getConditions().isEmpty()) {
+            wrapper.addSubCondition(this.where);
+        }
+        this.where = wrapper;
     }
 
 

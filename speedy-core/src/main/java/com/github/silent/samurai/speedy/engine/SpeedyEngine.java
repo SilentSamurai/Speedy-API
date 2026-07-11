@@ -109,6 +109,12 @@ public interface SpeedyEngine {
 
     SpeedyResponse delete(SpeedyContext ctx) throws SpeedyHttpException;
 
+    /// Restore (un-delete) soft-deleted rows by primary key. Reuses the delete body (a PK array).
+    SpeedyResponse restore(SpeedyContext ctx) throws SpeedyHttpException;
+
+    /// Permanently (hard) delete rows by primary key, bypassing soft delete. Reuses the delete body.
+    SpeedyResponse purge(SpeedyContext ctx) throws SpeedyHttpException;
+
     SpeedyResponse metadata(SpeedyContext ctx) throws SpeedyHttpException;
 
     /// Selects the response serializer from the Accept header. Stored in ctx AND returned

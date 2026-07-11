@@ -1,7 +1,10 @@
 package com.github.silent.samurai.speedy.validation;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
+import com.github.silent.samurai.speedy.enums.DeletedFilter;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.ForbiddenException;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
@@ -65,7 +68,16 @@ public class DefaultQueryValidator {
         this.maxExpandCount = maxExpandCount;
     }
 
-    public void validateQuery(SpeedyQuery query) throws BadRequestException {
+    public void validateQuery(SpeedyQuery query) throws SpeedyHttpException {
+        // Secure by default: viewing soft-deleted rows ($deleted=include|only) is rejected unless
+        // the entity explicitly opts in via @SpeedySoftDelete(allowViewDeleted = true). A null
+        // filter means the default (EXCLUDE), so no gate applies.
+        DeletedFilter deleted = query.getDeleted();
+        if (deleted != null && deleted != DeletedFilter.EXCLUDE && !query.getFrom().isViewDeletedAllowed()) {
+            throw new ForbiddenException(
+                    "Viewing soft-deleted rows is not allowed for entity '" + query.getFrom().getName() + "'");
+        }
+
         List<String> errors = new ArrayList<>();
 
         BooleanCondition where = query.getWhere();

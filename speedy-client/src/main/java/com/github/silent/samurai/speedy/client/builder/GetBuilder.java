@@ -40,6 +40,7 @@ public class GetBuilder {
     private final SpeedyFormat format;
     private Integer pageSize;
     private Integer pageNo;
+    private String deleted;
 
     public GetBuilder(String entity, PathBuilder paths, RequestSender sender,
                       ObjectMapper mapper, ResponseParser parser) {
@@ -99,6 +100,30 @@ public class GetBuilder {
     }
 
     /**
+     * Controls how soft-deleted rows are treated: {@code "exclude"} (default), {@code "include"}
+     * (live + deleted), or {@code "only"} (recycle-bin view). {@code include}/{@code only} require
+     * the entity to allow viewing deleted rows.
+     */
+    public GetBuilder deleted(String mode) {
+        this.deleted = mode;
+        return this;
+    }
+
+    /**
+     * Includes soft-deleted rows alongside live ones ({@code $deleted=include}).
+     */
+    public GetBuilder includeDeleted() {
+        return deleted("include");
+    }
+
+    /**
+     * Returns only soft-deleted rows ({@code $deleted=only}) — a recycle-bin view.
+     */
+    public GetBuilder onlyDeleted() {
+        return deleted("only");
+    }
+
+    /**
      * Executes the get request and returns the result.
      *
      * @return SpeedyResult containing the matched entity(s)
@@ -148,6 +173,11 @@ public class GetBuilder {
         if (!expandRelations.isEmpty()) {
             if (!sb.isEmpty()) sb.append("&");
             sb.append("$expand=").append(String.join(",", expandRelations));
+        }
+
+        if (deleted != null) {
+            if (!sb.isEmpty()) sb.append("&");
+            sb.append("$deleted=").append(deleted);
         }
 
         return sb.toString();

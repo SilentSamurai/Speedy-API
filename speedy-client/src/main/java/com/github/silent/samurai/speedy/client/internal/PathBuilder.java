@@ -41,6 +41,14 @@ public class PathBuilder {
         return entityPath(entity) + SpeedyEndpoint.DELETE.path();
     }
 
+    public String restorePath(String entity) {
+        return entityPath(entity) + SpeedyEndpoint.RESTORE.path();
+    }
+
+    public String purgePath(String entity) {
+        return entityPath(entity) + SpeedyEndpoint.PURGE.path();
+    }
+
     public String queryPath(String entity) {
         return entityPath(entity) + SpeedyEndpoint.QUERY.path();
     }

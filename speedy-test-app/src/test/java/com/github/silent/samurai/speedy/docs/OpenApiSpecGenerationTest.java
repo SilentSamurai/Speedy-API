@@ -79,6 +79,31 @@ class OpenApiSpecGenerationTest {
     }
 
     @Test
+    void softDeleteEntityExposesRestoreAndPurgePaths() throws Exception {
+        // User is soft-delete enabled with allowViewDeleted + allowHardDelete.
+        whenGetApiDocs()
+                .andExpect(jsonPath("$.paths['/speedy/v1/User/$restore'].post").exists())
+                .andExpect(jsonPath("$.paths['/speedy/v1/User/$purge'].post").exists());
+    }
+
+    @Test
+    void hardDeleteEntityOmitsRestoreAndPurgePaths() throws Exception {
+        // Category is a plain hard-delete entity: no soft-delete lifecycle endpoints.
+        whenGetApiDocs()
+                .andExpect(jsonPath("$.paths['/speedy/v1/Category/$restore']").doesNotExist())
+                .andExpect(jsonPath("$.paths['/speedy/v1/Category/$purge']").doesNotExist());
+    }
+
+    @Test
+    void softDeleteEntityWithoutHardDeleteOmitsPurgePath() throws Exception {
+        // SoftDeleteRestrictedEntity is soft-delete enabled but does not allow hard delete:
+        // $restore is exposed, $purge is not.
+        whenGetApiDocs()
+                .andExpect(jsonPath("$.paths['/speedy/v1/SoftDeleteRestrictedEntity/$restore'].post").exists())
+                .andExpect(jsonPath("$.paths['/speedy/v1/SoftDeleteRestrictedEntity/$purge']").doesNotExist());
+    }
+
+    @Test
     void readOnlyEntityOmitsWritePaths() throws Exception {
         whenGetApiDocs()
                 // read endpoints are still generated

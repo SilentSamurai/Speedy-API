@@ -50,6 +50,8 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
     private final List<Handler> updateChain;
     private final List<Handler> replaceChain;
     private final List<Handler> deleteChain;
+    private final List<Handler> restoreChain;
+    private final List<Handler> purgeChain;
     private final List<Handler> metadataChain;
     private static final int MAX_QUERY_PROCESSOR_CACHE_SIZE = 100;
     private final java.util.Map<DataSource, QueryProcessor> queryProcessorCache =
@@ -161,6 +163,21 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.DELETE),
                 new DeleteHandler(),
+                new TailHandler()
+        );
+        // Restore and purge are delete-family lifecycle ops; both reuse the DELETE permission gate
+        // and the delete body (a PK array). Endpoint-specific gating (soft-delete enabled, hard-delete
+        // allowed) lives in the handlers.
+        restoreChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.DELETE),
+                new RestoreHandler(),
+                new TailHandler()
+        );
+        purgeChain = List.of(
+                new HeadHandler(),
+                new PermissionCheckHandler(PermissionType.DELETE),
+                new PurgeHandler(),
                 new TailHandler()
         );
 
@@ -287,6 +304,18 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
     @Override
     public SpeedyResponse delete(SpeedyContext ctx) throws SpeedyHttpException {
         run(deleteChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public SpeedyResponse restore(SpeedyContext ctx) throws SpeedyHttpException {
+        run(restoreChain, ctx);
+        return ctx.get(SpeedyResponse.class);
+    }
+
+    @Override
+    public SpeedyResponse purge(SpeedyContext ctx) throws SpeedyHttpException {
+        run(purgeChain, ctx);
         return ctx.get(SpeedyResponse.class);
     }
 

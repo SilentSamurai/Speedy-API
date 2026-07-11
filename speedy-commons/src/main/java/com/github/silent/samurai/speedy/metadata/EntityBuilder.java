@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.metadata;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
+import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import lombok.Getter;
@@ -20,6 +21,13 @@ public class EntityBuilder {
     private boolean isSensitive = false;
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     private boolean bulkAllowed = false;
+    private String softDeleteFieldName = null;
+    private boolean viewDeletedAllowed = false;
+    private boolean hardDeleteAllowed = false;
+
+    /// Value types a soft-delete marker field may use: a boolean flag or a temporal timestamp.
+    private static final Set<ValueType> SOFT_DELETE_TYPES =
+            Set.of(ValueType.BOOL, ValueType.DATE, ValueType.DATE_TIME, ValueType.ZONED_DATE_TIME);
 
     public Iterable<FieldBuilder> fields() {
         return fieldMap.values();
@@ -72,6 +80,15 @@ public class EntityBuilder {
 
     public EntityBuilder bulkAllowed(boolean bulkAllowed) {
         this.bulkAllowed = bulkAllowed;
+        return this;
+    }
+
+    /// Marks {@code fieldName} as this entity's soft-delete marker (see {@code @SpeedySoftDelete}).
+    /// The field is resolved and type-checked in {@link #build()}, once all fields are known.
+    public EntityBuilder softDelete(String fieldName, boolean allowViewDeleted, boolean allowHardDelete) {
+        this.softDeleteFieldName = fieldName;
+        this.viewDeletedAllowed = allowViewDeleted;
+        this.hardDeleteAllowed = allowHardDelete;
         return this;
     }
 
@@ -138,6 +155,22 @@ public class EntityBuilder {
         EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, isSensitive, actionTypes, fieldMetadataMap);
         entityMetadata.setTransactionMode(transactionMode);
         entityMetadata.setBulkAllowed(bulkAllowed);
+
+        if (softDeleteFieldName != null) {
+            FieldMetadata softDeleteField = fieldMetadataMap.get(softDeleteFieldName);
+            if (softDeleteField == null) {
+                throw new NotFoundException(String.format(
+                        "Soft-delete field '%s' not found in entity %s", softDeleteFieldName, name));
+            }
+            if (!SOFT_DELETE_TYPES.contains(softDeleteField.getValueType())) {
+                throw new IllegalStateException(String.format(
+                        "Soft-delete field '%s' on entity %s must be a boolean or temporal type, but is %s",
+                        softDeleteFieldName, name, softDeleteField.getValueType()));
+            }
+            entityMetadata.setSoftDeleteField(softDeleteField);
+            entityMetadata.setViewDeletedAllowed(viewDeletedAllowed);
+            entityMetadata.setHardDeleteAllowed(hardDeleteAllowed);
+        }
 
         for (FieldMetadata fieldMetadata : fieldMetadataMap.values()) {
             FieldMetadataImpl fieldMetadataImpl = (FieldMetadataImpl) fieldMetadata;

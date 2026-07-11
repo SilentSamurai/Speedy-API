@@ -88,4 +88,25 @@ public interface EntityMetadata {
     default boolean isBulkAllowed() {
         return false;
     }
+
+    // The soft-delete marker field (set via @SpeedySoftDelete), or null when the
+    // entity uses hard delete. When non-null, $delete sets this field instead of
+    // removing the row, and soft-deleted rows are hidden from reads by default.
+    default FieldMetadata getSoftDeleteField() {
+        return null;
+    }
+
+    default boolean isSoftDeleteEnabled() {
+        return getSoftDeleteField() != null;
+    }
+
+    // Whether $deleted=include|only read requests are permitted (secure by default: off).
+    default boolean isViewDeletedAllowed() {
+        return false;
+    }
+
+    // Whether the $purge permanent hard-delete endpoint is permitted (secure by default: off).
+    default boolean isHardDeleteAllowed() {
+        return false;
+    }
 }

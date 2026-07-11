@@ -5,6 +5,8 @@ public enum SpeedyEndpoint {
     CREATE("$create"),
     UPDATE("$update"),
     DELETE("$delete"),
+    RESTORE("$restore"),
+    PURGE("$purge"),
     METADATA("$metadata");
 
     private final String suffix;

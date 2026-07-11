@@ -24,4 +24,12 @@ public class JsonEntity {
     // while an explicit `"bulkAllowed": true` enables bulk create/delete.
     public Boolean bulkAllowed;
 
+    // Names the soft-delete marker field. When set, $delete soft-deletes instead of
+    // removing the row; absent leaves the entity on hard delete.
+    public String softDeleteField;
+
+    // Gate flags for soft delete (default false / secure by default when absent).
+    public Boolean allowViewDeleted;
+    public Boolean allowHardDelete;
+
 }

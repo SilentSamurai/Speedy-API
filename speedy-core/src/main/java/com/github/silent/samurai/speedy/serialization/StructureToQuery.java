@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
+import com.github.silent.samurai.speedy.enums.DeletedFilter;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
@@ -71,6 +72,13 @@ public class StructureToQuery {
                 case "$orderBy", "orderBy" -> buildOrderBy(query, r);
                 case "$page", "page" -> buildPaging(query, r);
                 case "$expand", "expand" -> buildExpand(query, r);
+                case "$deleted", "deleted" -> {
+                    String value = r.textValue();
+                    if (value == null) {
+                        throw new BadRequestException("$deleted must be a string (exclude, include, or only)");
+                    }
+                    query.setDeleted(DeletedFilter.fromString(value));
+                }
                 default -> r.skipValue();
             }
         }

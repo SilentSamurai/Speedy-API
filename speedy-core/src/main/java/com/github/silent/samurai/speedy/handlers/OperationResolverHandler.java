@@ -38,6 +38,10 @@ public class OperationResolverHandler implements com.github.silent.samurai.speed
                 requestType = SpeedyRequestType.QUERY;
             } else if (SpeedyEndpoint.CREATE == endpoint) {
                 requestType = SpeedyRequestType.CREATE;
+            } else if (SpeedyEndpoint.RESTORE == endpoint) {
+                requestType = SpeedyRequestType.RESTORE;
+            } else if (SpeedyEndpoint.PURGE == endpoint) {
+                requestType = SpeedyRequestType.PURGE;
             } else {
                 throw new BadRequestException("not a valid request");
             }

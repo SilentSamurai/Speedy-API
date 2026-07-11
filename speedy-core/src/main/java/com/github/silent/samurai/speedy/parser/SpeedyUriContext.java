@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
+import com.github.silent.samurai.speedy.enums.DeletedFilter;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
@@ -110,8 +111,18 @@ public class SpeedyUriContext {
 
         capturePageInfo(uriComponents);
         captureSelectParams(uriComponents);
+        captureDeletedParam(uriComponents);
 
         return this.speedyQuery;
+    }
+
+    private void captureDeletedParam(UriComponents uriComponents) throws SpeedyHttpException {
+        if (uriComponents.getQueryParams().containsKey("$deleted")) {
+            String $deleted = uriComponents.getQueryParams().getFirst("$deleted");
+            if ($deleted != null) {
+                speedyQuery.setDeleted(DeletedFilter.fromString($deleted.replaceAll("['\" ]", "")));
+            }
+        }
     }
 
     private void capturePageInfo(UriComponents uriComponents) throws SpeedyHttpException {

@@ -92,6 +92,81 @@ class MetadataBuilderTest {
         Assertions.assertTrue(md.isBulkAllowed(), "bulkAllowed(true) must enable bulk");
     }
 
+    /**
+     * Soft delete is off by default (no @SpeedySoftDelete).
+     */
+    @Test
+    void softDelete_defaultsDisabled() throws NotFoundException {
+        EntityBuilder entity = MetadataBuilder.builder().entity("NoSoftDelete");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("name", "NAME", ColumnType.VARCHAR);
+
+        EntityMetadata md = entity.build();
+        Assertions.assertFalse(md.isSoftDeleteEnabled(), "soft delete must be off by default");
+        Assertions.assertNull(md.getSoftDeleteField());
+        Assertions.assertFalse(md.isViewDeletedAllowed());
+        Assertions.assertFalse(md.isHardDeleteAllowed());
+    }
+
+    /**
+     * A valid temporal marker field enables soft delete and surfaces the gate flags.
+     */
+    @Test
+    void softDelete_temporalField_enabled() throws NotFoundException {
+        EntityBuilder entity = MetadataBuilder.builder().entity("SoftTemporal");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("deletedAt", "DELETED_AT", ColumnType.TIMESTAMP);
+        entity.softDelete("deletedAt", true, true);
+
+        EntityMetadata md = entity.build();
+        Assertions.assertTrue(md.isSoftDeleteEnabled());
+        Assertions.assertEquals("deletedAt", md.getSoftDeleteField().getOutputPropertyName());
+        Assertions.assertTrue(md.isViewDeletedAllowed());
+        Assertions.assertTrue(md.isHardDeleteAllowed());
+    }
+
+    /**
+     * A boolean marker field is also valid; gate flags default to false when not opted in.
+     */
+    @Test
+    void softDelete_booleanField_enabled() throws NotFoundException {
+        EntityBuilder entity = MetadataBuilder.builder().entity("SoftBool");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("isDeleted", "IS_DELETED", ColumnType.BOOLEAN);
+        entity.softDelete("isDeleted", false, false);
+
+        EntityMetadata md = entity.build();
+        Assertions.assertTrue(md.isSoftDeleteEnabled());
+        Assertions.assertFalse(md.isViewDeletedAllowed());
+        Assertions.assertFalse(md.isHardDeleteAllowed());
+    }
+
+    /**
+     * Naming a marker field that does not exist fails fast at build time.
+     */
+    @Test
+    void softDelete_missingField_throwsNotFound() {
+        EntityBuilder entity = MetadataBuilder.builder().entity("SoftMissing");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("name", "NAME", ColumnType.VARCHAR);
+        entity.softDelete("deletedAt", false, false);
+
+        Assertions.assertThrows(NotFoundException.class, entity::build);
+    }
+
+    /**
+     * A marker field of an unsupported type (e.g. text) is rejected at build time.
+     */
+    @Test
+    void softDelete_wrongType_throwsIllegalState() {
+        EntityBuilder entity = MetadataBuilder.builder().entity("SoftWrongType");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("deletedAt", "DELETED_AT", ColumnType.VARCHAR);
+        entity.softDelete("deletedAt", false, false);
+
+        Assertions.assertThrows(IllegalStateException.class, entity::build);
+    }
+
     @Test
     void create() throws NotFoundException {
 

@@ -9,7 +9,6 @@ import com.jayway.jsonpath.DocumentContext;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -109,11 +108,12 @@ class UserEventTest {
     }
 
     @Test
-    @Disabled
     void testUserPreDeleteEvent() {
+        // Distinct phone from testUserPreInsertEvent (1234567890): soft delete keeps the row, so
+        // its phone stays in the unique index and must not collide with another test's user.
         SpeedyTestResult createResponse = speedyClient.create("User")
                 .field("name", "Test User")
-                .field("phoneNo", "1234567890")
+                .field("phoneNo", "7778889990")
                 .field("email", "test3@example.com")
                 .field("type", "regular")
                 .execute()

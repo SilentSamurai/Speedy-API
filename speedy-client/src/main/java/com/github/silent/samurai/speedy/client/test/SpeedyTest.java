@@ -108,6 +108,14 @@ public class SpeedyTest {
         return new TestDeleteBuilder(entity);
     }
 
+    public TestRestoreBuilder restore(String entity) {
+        return new TestRestoreBuilder(entity);
+    }
+
+    public TestPurgeBuilder purge(String entity) {
+        return new TestPurgeBuilder(entity);
+    }
+
     public TestBulkDeleteBuilder deleteMany(String entity) {
         return new TestBulkDeleteBuilder(entity);
     }
@@ -208,6 +216,7 @@ public class SpeedyTest {
         private final List<String> expandRelations;
         private Integer pageSize;
         private Integer pageNo;
+        private String deleted;
 
         TestGetBuilder(String entity) {
             this.entity = entity;
@@ -243,6 +252,19 @@ public class SpeedyTest {
                 expandRelations.add(relation);
             }
             return this;
+        }
+
+        public TestGetBuilder deleted(String mode) {
+            this.deleted = mode;
+            return this;
+        }
+
+        public TestGetBuilder includeDeleted() {
+            return deleted("include");
+        }
+
+        public TestGetBuilder onlyDeleted() {
+            return deleted("only");
         }
 
         public SpeedyTestResult execute() {
@@ -282,6 +304,11 @@ public class SpeedyTest {
             if (!expandRelations.isEmpty()) {
                 if (sb.length() > 0) sb.append("&");
                 sb.append("$expand=").append(String.join(",", expandRelations));
+            }
+
+            if (deleted != null) {
+                if (sb.length() > 0) sb.append("&");
+                sb.append("$deleted=").append(deleted);
             }
 
             return sb.toString();
@@ -408,6 +435,62 @@ public class SpeedyTest {
         }
     }
 
+    public class TestRestoreBuilder {
+        private final String entity;
+        private final ObjectNode pkNode;
+
+        TestRestoreBuilder(String entity) {
+            this.entity = entity;
+            this.pkNode = mapper.createObjectNode();
+        }
+
+        public TestRestoreBuilder key(String field, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.restorePath(entity);
+            ArrayNode array = mapper.createArrayNode();
+            array.add(pkNode);
+            String jsonBody;
+            try {
+                jsonBody = mapper.writeValueAsString(array);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize", e);
+            }
+            return SpeedyTest.this.execute(url, "POST", jsonBody);
+        }
+    }
+
+    public class TestPurgeBuilder {
+        private final String entity;
+        private final ObjectNode pkNode;
+
+        TestPurgeBuilder(String entity) {
+            this.entity = entity;
+            this.pkNode = mapper.createObjectNode();
+        }
+
+        public TestPurgeBuilder key(String field, Object value) {
+            com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
+            return this;
+        }
+
+        public SpeedyTestResult execute() {
+            String url = paths.purgePath(entity);
+            ArrayNode array = mapper.createArrayNode();
+            array.add(pkNode);
+            String jsonBody;
+            try {
+                jsonBody = mapper.writeValueAsString(array);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize", e);
+            }
+            return SpeedyTest.this.execute(url, "POST", jsonBody);
+        }
+    }
+
     public class TestQueryBuilder {
         private final String entity;
         private final ObjectNode body;
@@ -471,6 +554,19 @@ public class SpeedyTest {
             for (String r : relations) a.add(r);
             body.set("$expand", a);
             return this;
+        }
+
+        public TestQueryBuilder deleted(String mode) {
+            body.put("$deleted", mode);
+            return this;
+        }
+
+        public TestQueryBuilder includeDeleted() {
+            return deleted("include");
+        }
+
+        public TestQueryBuilder onlyDeleted() {
+            return deleted("only");
         }
 
         public SpeedyTestResult execute() {

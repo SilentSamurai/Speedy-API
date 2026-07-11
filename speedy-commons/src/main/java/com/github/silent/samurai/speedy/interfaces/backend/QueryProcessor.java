@@ -54,6 +54,23 @@ public interface QueryProcessor {
 
     List<SpeedyEntity> delete(List<SpeedyEntityKey> entityKeys) throws SpeedyHttpException;
 
+    /// Restores (un-deletes) soft-deleted rows by clearing their soft-delete marker. Each key must
+    /// identify a currently soft-deleted row. Returns the restored (now live) rows.
+    /// Default throws; {@code DefaultQueryProcessor} provides the real implementation.
+    default List<SpeedyEntity> restore(List<SpeedyEntityKey> entityKeys) throws SpeedyHttpException {
+        throw new UnsupportedOperationException(
+                "restore not supported by this QueryProcessor"
+        );
+    }
+
+    /// Permanently (hard) deletes rows by primary key, bypassing soft delete. Returns the removed
+    /// rows (key-only). Default throws; {@code DefaultQueryProcessor} provides the real implementation.
+    default List<SpeedyEntity> purge(List<SpeedyEntityKey> entityKeys) throws SpeedyHttpException {
+        throw new UnsupportedOperationException(
+                "purge not supported by this QueryProcessor"
+        );
+    }
+
     default void runInTransaction(Runnable block) {
         throw new UnsupportedOperationException(
                 "runInTransaction not supported by this QueryProcessor"

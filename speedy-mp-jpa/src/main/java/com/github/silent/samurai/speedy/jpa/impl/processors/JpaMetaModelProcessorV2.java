@@ -109,6 +109,10 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (bulkAnnotation != null) {
             entity.bulkAllowed(bulkAnnotation.value());
         }
+        SpeedySoftDelete softDelete = entityType.getBindableJavaType().getAnnotation(SpeedySoftDelete.class);
+        if (softDelete != null) {
+            entity.softDelete(softDelete.field(), softDelete.allowViewDeleted(), softDelete.allowHardDelete());
+        }
         // Entity-level @SpeedySensitive sets the default sensitivity for all fields
         SpeedySensitive speedySensitive = entityType.getBindableJavaType().getAnnotation(SpeedySensitive.class);
         if (speedySensitive != null) {

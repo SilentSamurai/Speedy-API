@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyAction;
+import com.github.silent.samurai.speedy.annotations.SpeedySoftDelete;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
         @Index(name = "users_email_key", columnList = "email", unique = true)
 })
 @Entity
+@SpeedySoftDelete(field = "deletedAt", allowViewDeleted = true, allowHardDelete = true)
 public class User extends AbstractBaseEntity {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(User.class);

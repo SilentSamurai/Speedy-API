@@ -26,6 +26,12 @@ public enum SpeedyRequestType {
     /// DELETE /{Entity}/$delete — bulk delete by PK array.
     DELETE,
 
+    /// POST /{Entity}/$restore — restore (un-delete) soft-deleted rows by PK array.
+    RESTORE,
+
+    /// POST /{Entity}/$purge — permanently hard-delete rows by PK array.
+    PURGE,
+
     /// GET / or GET /{Entity} — server/entity metadata description.
     METADATA
 }

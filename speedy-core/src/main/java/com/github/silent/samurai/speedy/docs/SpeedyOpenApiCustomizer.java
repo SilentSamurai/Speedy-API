@@ -83,6 +83,8 @@ public class SpeedyOpenApiCustomizer {
             PathItem createPathItem = new PathItem();
             PathItem updatePathItem = new PathItem();
             PathItem deletePathItem = new PathItem();
+            PathItem restorePathItem = new PathItem();
+            PathItem purgePathItem = new PathItem();
 
             postOperation(entityMetadata, createPathItem);
             // The $update endpoint exposes both verbs: PATCH for partial update and PUT for
@@ -90,6 +92,10 @@ public class SpeedyOpenApiCustomizer {
             patchOperation(entityMetadata, updatePathItem);
             putOperation(entityMetadata, updatePathItem);
             deleteOperation(entityMetadata, deletePathItem);
+            if (entityMetadata.isSoftDeleteEnabled()) {
+                restoreOperation(entityMetadata, restorePathItem);
+                purgeOperation(entityMetadata, purgePathItem);
+            }
 
             getWithPrimaryFields(entityMetadata, identifierPathItem);
 //            getOperation(entityMetadata, queryPathItem);
@@ -115,6 +121,17 @@ public class SpeedyOpenApiCustomizer {
 
                 String deletePath = String.format("%s/%s/%s", SpeedyConstants.URI, entityMetadata.getName(), SpeedyEndpoint.DELETE.suffix());
                 openApi.path(deletePath, deletePathItem);
+
+                // Soft-delete lifecycle endpoints. Restore is available whenever soft delete is
+                // enabled; purge (permanent delete) only when the entity opts into hard delete.
+                if (entityMetadata.isSoftDeleteEnabled()) {
+                    String restorePath = String.format("%s/%s/%s", SpeedyConstants.URI, entityMetadata.getName(), SpeedyEndpoint.RESTORE.suffix());
+                    openApi.path(restorePath, restorePathItem);
+                    if (entityMetadata.isHardDeleteAllowed()) {
+                        String purgePath = String.format("%s/%s/%s", SpeedyConstants.URI, entityMetadata.getName(), SpeedyEndpoint.PURGE.suffix());
+                        openApi.path(purgePath, purgePathItem);
+                    }
+                }
             }
 
         }
@@ -203,6 +220,50 @@ public class SpeedyOpenApiCustomizer {
         ).description("successful deletion."));
         operation.responses(apiResponses);
         pathItem.delete(operation);
+    }
+
+    /// POST $restore — un-deletes soft-deleted rows by primary key. Same PK-array request as delete;
+    /// returns the restored (now live) rows.
+    private void restoreOperation(EntityMetadata entityMetadata, PathItem pathItem) {
+        Operation operation = new Operation();
+        operation.operationId("Restore" + entityMetadata.getName());
+        operation.summary("Restore soft-deleted " + entityMetadata.getName());
+        operation.tags(List.of(entityMetadata.getName()));
+        operation.requestBody(OASGenerator.getJsonBody(OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_KEY, entityMetadata))
+                )
+        ).description("Primary keys of rows to restore"));
+        ApiResponses apiResponses = new ApiResponses();
+        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("Restore{0}Response", entityMetadata),
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_NAME, entityMetadata))
+                )
+        ).description("successful restore."));
+        operation.responses(apiResponses);
+        pathItem.post(operation);
+    }
+
+    /// POST $purge — permanently (hard) deletes rows by primary key, bypassing soft delete. Same
+    /// PK-array request/response as delete.
+    private void purgeOperation(EntityMetadata entityMetadata, PathItem pathItem) {
+        Operation operation = new Operation();
+        operation.operationId("Purge" + entityMetadata.getName());
+        operation.summary("Permanently delete " + entityMetadata.getName());
+        operation.tags(List.of(entityMetadata.getName()));
+        operation.requestBody(OASGenerator.getJsonBody(OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_KEY, entityMetadata))
+                )
+        ).description("Primary keys of rows to permanently delete"));
+        ApiResponses apiResponses = new ApiResponses();
+        apiResponses.addApiResponse("200", OASGenerator.getJsonResponse(
+                OASGenerator.getSchemaName("Purge{0}Response", entityMetadata),
+                OASGenerator.wrapInArray(
+                        OASGenerator.getSchemaRef(OASGenerator.getSchemaName(OASGenerator.ENTITY_KEY, entityMetadata))
+                )
+        ).description("successful purge."));
+        operation.responses(apiResponses);
+        pathItem.post(operation);
     }
 
     /// PATCH — partial update: only the supplied fields are written; omitted fields are left

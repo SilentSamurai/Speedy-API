@@ -213,7 +213,7 @@ public class ValidationProcessor {
      * validation hook for reads ({@code SpeedyValidationRequestType} only models
      * CREATE/UPDATE/DELETE), so this always runs the default query rules.
      */
-    public void validateQueryRequest(SpeedyQuery query) throws BadRequestException {
+    public void validateQueryRequest(SpeedyQuery query) throws SpeedyHttpException {
         defaultQueryValidator.validateQuery(query);
     }
 }

@@ -25,6 +25,12 @@ public class EntityMetadataImpl implements EntityMetadata {
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     @Setter
     private boolean bulkAllowed = false;
+    @Setter
+    private FieldMetadata softDeleteField = null;
+    @Setter
+    private boolean viewDeletedAllowed = false;
+    @Setter
+    private boolean hardDeleteAllowed = false;
     private Set<ActionType> actionType;
     private Map<String, FieldMetadata> fieldMap;
 
