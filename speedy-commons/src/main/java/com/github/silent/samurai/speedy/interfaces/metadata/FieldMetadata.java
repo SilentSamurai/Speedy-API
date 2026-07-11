@@ -2,11 +2,13 @@ package com.github.silent.samurai.speedy.interfaces.metadata;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
+import com.github.silent.samurai.speedy.enums.EtagStrategy;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
 import com.github.silent.samurai.speedy.validation.rules.FieldRule;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FieldMetadata {
 
@@ -76,6 +78,18 @@ public interface FieldMetadata {
      */
     default List<FieldRule> getValidations() {
         return List.of();
+    }
+
+    /**
+     * How Speedy refreshes this field as the entity's conditional-request token, declared via
+     * {@code @SpeedyETag} (or an auto-honored JPA {@code @Version} of a compatible type).
+     * Speedy stamps a fresh value into this field on every create/update/replace and reads it
+     * back to form the {@code ETag}; the client can never set it ({@link #isDeserializable()}
+     * is false). Returns empty for every field that did not opt in — callers on the
+     * conditional-request path must short-circuit on this being empty.
+     */
+    default Optional<EtagStrategy> getEtagStrategy() {
+        return Optional.empty();
     }
 
 }

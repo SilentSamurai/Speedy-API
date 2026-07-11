@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.silent.samurai.speedy.annotations.*;
 import com.github.silent.samurai.speedy.annotations.validation.*;
-import com.github.silent.samurai.speedy.enums.ActionType;
-import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.enums.EnumMode;
+import com.github.silent.samurai.speedy.enums.*;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
@@ -45,8 +43,8 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(JpaMetaModelProcessorV2.class);
     private final Map<Class<?>, EntityType<?>> typeMap = new HashMap<>();
     private MetaModel metaModel;
-    private ISpeedyConfiguration configuration;
-    private EntityManagerFactory entityManagerFactory;
+    private final ISpeedyConfiguration configuration;
+    private final EntityManagerFactory entityManagerFactory;
 
     public JpaMetaModelProcessorV2(ISpeedyConfiguration configuration, EntityManagerFactory entityManagerFactory) {
         this.configuration = configuration;
@@ -151,6 +149,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                                       EntityBuilder entity) {
 
         boolean isId = attribute instanceof SingularAttribute && ((SingularAttribute<?, ?>) attribute).isId();
+        boolean isJpaVersion = attribute instanceof SingularAttribute && ((SingularAttribute<?, ?>) attribute).isVersion();
         Member member = attribute.getJavaMember();
         Field field = findReflectionField(attribute, entityClass);
 
@@ -293,7 +292,44 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.sensitive(entity.isSensitive());
         }
 
+        // @SpeedyETag (or a compatible JPA @Version) makes this field Speedy-managed: stamped
+        // fresh on every create/update/replace, never client-supplied. Applied last so it wins
+        // over whatever insertable/updatable/deserializable an earlier annotation block set.
+        SpeedyETag speedyETag = AnnotationUtils.getAnnotation(field, SpeedyETag.class);
+        if (speedyETag != null) {
+            markEtagManaged(fieldMetadata, speedyETag.strategy());
+        } else if (isJpaVersion) {
+            // Speedy persists via jOOQ, bypassing Hibernate's own version-increment, so a bare
+            // JPA @Version is only auto-managed here when its type fits an implemented strategy
+            // (a temporal column -> TIMESTAMP). A numeric @Version is left as a plain,
+            // Speedy-unmanaged field; annotate it with @SpeedyETag directly to opt in.
+            ValueType candidateType = columnType != null ? columnType.getValueType() : null;
+            boolean isTemporal = candidateType == ValueType.DATE || candidateType == ValueType.TIME
+                    || candidateType == ValueType.DATE_TIME || candidateType == ValueType.ZONED_DATE_TIME;
+            if (isTemporal) {
+                markEtagManaged(fieldMetadata, EtagStrategy.TIMESTAMP);
+            } else {
+                LOGGER.warn("Entity field '{}' is a JPA @Version column of type {} — Speedy only " +
+                                "auto-manages temporal @Version columns as an ETag; annotate it with " +
+                                "@SpeedyETag directly to opt into ETag support for a numeric version.",
+                        outputName, candidateType);
+            }
+        }
+
         return fieldMetadata;
+    }
+
+    private void markEtagManaged(FieldBuilder fieldMetadata, EtagStrategy strategy) {
+        fieldMetadata.etagField(strategy);
+        // Same shape as @Generated/@Formula: the column is computed by the server, not the
+        // client, so it's excluded from the generated Create/Update request schemas
+        // (SpeedyOpenApiCustomizer keys those on isInsertable/isUpdatable, not isDeserializable).
+        // EtagStampHandler still writes it — SpeedyToRecord persists whatever entity.has(field)
+        // finds, regardless of these flags.
+        fieldMetadata.insertable(false);
+        fieldMetadata.updatable(false);
+        fieldMetadata.deserializable(false);
+        fieldMetadata.serializable(true);
     }
 
     // Consolidated validation annotation processing

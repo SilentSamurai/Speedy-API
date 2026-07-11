@@ -35,6 +35,16 @@ public interface EntityMetadata {
 
     Set<FieldMetadata> getAssociatedFields();
 
+    /**
+     * The Speedy-managed conditional-request token field ({@link FieldMetadata#getEtagStrategy()}),
+     * if this entity declared one via {@code @SpeedyETag} (or a compatible JPA {@code @Version}).
+     * Empty for every entity that did not opt in — callers on the conditional-request path must
+     * short-circuit on this being empty rather than doing any extra work.
+     */
+    default Optional<FieldMetadata> getVersionField() {
+        return getAllFields().stream().filter(f -> f.getEtagStrategy().isPresent()).findFirst();
+    }
+
     default Set<FieldMetadata> getAllNonKeyFields() {
         return getAllFields().stream()
                 .filter(fm -> !(fm instanceof KeyFieldMetadata))

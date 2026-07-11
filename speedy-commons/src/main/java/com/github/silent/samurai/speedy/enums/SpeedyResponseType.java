@@ -5,5 +5,6 @@ public enum SpeedyResponseType {
     COUNT,
     BATCH_RESULT,
     ERROR,
-    METADATA
+    METADATA,
+    NOT_MODIFIED
 }

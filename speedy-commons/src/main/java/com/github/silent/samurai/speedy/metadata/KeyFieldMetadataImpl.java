@@ -7,9 +7,9 @@ import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
 import com.github.silent.samurai.speedy.validation.rules.FieldRule;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 public class KeyFieldMetadataImpl extends FieldMetadataImpl implements KeyFieldMetadata {
@@ -55,7 +55,8 @@ public class KeyFieldMetadataImpl extends FieldMetadataImpl implements KeyFieldM
                 storedEnumMode,
                 operationalEnumMode,
                 dynamicEnum,
-                validations);
+                validations,
+                Optional.empty());
         this.shouldGenerateKey = shouldGenerateKey;
     }
 

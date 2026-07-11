@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,21 +19,22 @@ import java.util.stream.Collectors;
 public class EntityMetadataImpl implements EntityMetadata {
 
     boolean hasCompositeKey = false;
-    private String name;
-    private String dbTableName;
-    private boolean isSensitive;
+    private final String name;
+    private final String dbTableName;
+    private final boolean isSensitive;
     @Setter
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     @Setter
     private boolean bulkAllowed = false;
-    private Set<ActionType> actionType;
-    private Map<String, FieldMetadata> fieldMap;
+    private final Set<ActionType> actionType;
+    private final Map<String, FieldMetadata> fieldMap;
 
     private Set<FieldMetadata> allFieldsCache;
     private Set<String> allFieldNamesCache;
     private Set<KeyFieldMetadata> keyFieldsCache;
     private Set<String> keyFieldNamesCache;
     private Set<FieldMetadata> associatedFieldsCache;
+    private Optional<FieldMetadata> versionFieldCache;
 
     EntityMetadataImpl(String name, String dbTableName, boolean hasCompositeKey, boolean isSensitive, Set<ActionType> actionType, Map<String, FieldMetadata> fieldMap) {
         this.name = name;
@@ -60,7 +62,7 @@ public class EntityMetadataImpl implements EntityMetadata {
     public Set<FieldMetadata> getAllFields() {
         if (allFieldsCache == null) {
             allFieldsCache = fieldMap.values().stream()
-                    .map(FieldMetadata.class::cast)
+                    .map(fieldMetadata -> fieldMetadata)
                     .collect(Collectors.toUnmodifiableSet());
         }
         return allFieldsCache;
@@ -117,6 +119,14 @@ public class EntityMetadataImpl implements EntityMetadata {
     @Override
     public TransactionMode getTransactionMode() {
         return transactionMode;
+    }
+
+    @Override
+    public Optional<FieldMetadata> getVersionField() {
+        if (versionFieldCache == null || versionFieldCache.isEmpty()) {
+            versionFieldCache = fieldMap.values().stream().filter(f -> f.getEtagStrategy().isPresent()).findFirst();
+        }
+        return versionFieldCache;
     }
 
     @Override

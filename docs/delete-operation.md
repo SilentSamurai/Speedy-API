@@ -45,3 +45,11 @@ delete multiple resource
 ```
 
 <hr>
+
+#### Optimistic concurrency — `If-Match`
+
+A single-key DELETE on an entity with a `@SpeedyETag` field honors `If-Match`: a stale tag (or a
+missing row) returns `412 Precondition Failed` instead of deleting the row. See
+[Conditional Requests / ETags](conditional-requests.md) for details.
+
+<hr>

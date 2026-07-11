@@ -373,3 +373,11 @@ GET /speedy/v1/User ? $pageSize=5000
 
 Configure the limits by implementing `ISpeedyConfiguration.maxPageSize()` and `ISpeedyConfiguration.defaultPageSize()`
 in your application.
+
+<hr>
+
+#### ETag / `If-None-Match`
+
+A GET that resolves to a single row on an entity with a `@SpeedyETag` field carries an `ETag`
+response header; a matching `If-None-Match` returns `304 Not Modified`. See
+[Conditional Requests / ETags](conditional-requests.md) for the opt-in and full behavior.

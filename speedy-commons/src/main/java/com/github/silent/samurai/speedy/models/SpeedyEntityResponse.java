@@ -1,10 +1,10 @@
 package com.github.silent.samurai.speedy.models;
 
 import com.github.silent.samurai.speedy.enums.SpeedyResponseType;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
-import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -69,5 +69,11 @@ public class SpeedyEntityResponse implements SpeedyResponse {
     @Override
     public Map<String, String> getHeaders() {
         return Collections.unmodifiableMap(headers);
+    }
+
+    /// Adds a response header after construction (e.g. an ETag computed from the saved payload).
+    /// The backing map is mutable; only {@link #getHeaders()} exposes it read-only.
+    public void putHeader(String name, String value) {
+        headers.put(name, value);
     }
 }

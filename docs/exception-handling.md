@@ -11,6 +11,7 @@ When an exception is thrown during request processing, Speedy resolves the HTTP 
 
 1. **Custom advice handlers** — `@SpeedyExceptionHandler` methods (highest priority)
 2. **`SpeedyHttpException`** hierarchy — maps `BadRequestException` (400), `NotFoundException` (404),
+   `PreconditionFailedException` (412, see [Conditional Requests / ETags](conditional-requests.md)),
    `InternalServerError` (500)
 3. **Persistence exceptions** — Hibernate `ConstraintViolationException` / `DataException` → 400
 4. **Jackson `JsonProcessingException`** → 400

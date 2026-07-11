@@ -1,6 +1,8 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.github.silent.samurai.speedy.annotations.SpeedyETag;
+import com.github.silent.samurai.speedy.enums.EtagStrategy;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +40,12 @@ public class PriceHistory implements Serializable {
 
     @Column(name = "note", length = 500)
     private String note;
+
+    /// Speedy-managed conditional-request token (TIMESTAMP strategy), stamped fresh on every
+    /// create/update/replace. Covers the mixed-composite-key + `@SpeedyETag` combination.
+    @SpeedyETag(strategy = EtagStrategy.TIMESTAMP)
+    @Column(name = "last_modified_at")
+    private LocalDateTime lastModifiedAt;
 
     /// Read-only association overlaying the {@code product_id} key column, so the key column is a
     /// genuine foreign key (mirrors {@link Order#getProduct()}). The scalar {@code productId} owns

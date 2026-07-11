@@ -69,6 +69,20 @@ public class SpeedyTestResult {
     }
 
     /**
+     * Asserts HTTP 304 Not Modified (conditional GET whose {@code If-None-Match} matched).
+     */
+    public SpeedyTestResult expectNotModified() {
+        return expectStatus(304);
+    }
+
+    /**
+     * Asserts HTTP 412 Precondition Failed (conditional write whose {@code If-Match} did not match).
+     */
+    public SpeedyTestResult expectPreconditionFailed() {
+        return expectStatus(412);
+    }
+
+    /**
      * Asserts a JSONPath expression using a Hamcrest matcher.
      */
     public SpeedyTestResult expectJsonPath(String expression, org.hamcrest.Matcher<?> matcher) {
@@ -160,6 +174,20 @@ public class SpeedyTestResult {
      */
     public String jsonPath(String expression) {
         return jsonPath(expression, String.class);
+    }
+
+    /**
+     * Returns a response header value, or {@code null} if the header is absent.
+     */
+    public String header(String name) {
+        return resultActions.andReturn().getResponse().getHeader(name);
+    }
+
+    /**
+     * Convenience accessor for the {@code ETag} response header (null when absent).
+     */
+    public String etag() {
+        return header("ETag");
     }
 
     /**

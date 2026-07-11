@@ -5,11 +5,11 @@ import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
-import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
 
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface QueryProcessor {
@@ -25,6 +25,15 @@ public interface QueryProcessor {
     }
 
     boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException;
+
+    /// Fetches the current stored state for a single key, for conditional-request precondition
+    /// checks (comparing a client's If-Match against the row's current ETag). Default throws;
+    /// {@code DefaultQueryProcessor} provides the real implementation.
+    default Optional<SpeedyEntity> fetchByKey(SpeedyEntityKey entityKey) throws SpeedyHttpException {
+        throw new UnsupportedOperationException(
+                "fetchByKey not supported by this QueryProcessor"
+        );
+    }
 
     /// Returns the subset of {@code keys} that already exist in the database.
     /// Default implementation probes each key individually; backends should override

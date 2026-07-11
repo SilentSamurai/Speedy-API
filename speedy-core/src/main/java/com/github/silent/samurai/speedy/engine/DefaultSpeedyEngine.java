@@ -1,40 +1,40 @@
 package com.github.silent.samurai.speedy.engine;
 
+import com.github.silent.samurai.speedy.backend.DefaultQueryProcessor;
+import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.enums.PermissionType;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.handlers.*;
-import com.github.silent.samurai.speedy.interfaces.*;
+import com.github.silent.samurai.speedy.interfaces.Handler;
+import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.request.IRequestBodyParser;
 import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
 import com.github.silent.samurai.speedy.interfaces.response.IResponseSerializerV2;
 import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
-import com.github.silent.samurai.speedy.backend.DefaultQueryProcessor;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
-import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
-import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultSpeedyEngine implements SpeedyEngine {
 
+    private static final int MAX_QUERY_PROCESSOR_CACHE_SIZE = 100;
     private final ISpeedyConfiguration config;
     private final SpeedyDialect dialect;
     private final MetaModel metaModel;
     private final EventProcessor eventProcessor;
     private final ValidationProcessor validationProcessor;
     private final ConversionContext conversionContext;
-
     private final List<Handler> uriChain;
     private final List<Handler> headerChain;
     private final List<Handler> operationChain;
@@ -51,7 +51,6 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
     private final List<Handler> replaceChain;
     private final List<Handler> deleteChain;
     private final List<Handler> metadataChain;
-    private static final int MAX_QUERY_PROCESSOR_CACHE_SIZE = 100;
     private final java.util.Map<DataSource, QueryProcessor> queryProcessorCache =
             java.util.Collections.synchronizedMap(new java.util.LinkedHashMap<>(16, 0.75f, true) {
                 @Override
@@ -130,6 +129,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.READ),
                 new GetHandler(),
+                new ConditionalGetHandler(),
                 new TailHandler()
         );
         queryChain = List.of(
@@ -141,25 +141,34 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         createChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.CREATE),
+                new EtagStampHandler(),
                 new CreateHandler(),
+                new WriteEtagHandler(),
                 new TailHandler()
         );
         updateChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
+                new PreconditionCheckHandler(),
+                new EtagStampHandler(),
                 new UpdateHandler(),
+                new WriteEtagHandler(),
                 new TailHandler()
         );
         // PUT full-replace reuses the update-level permission; only the handler differs.
         replaceChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
+                new PreconditionCheckHandler(),
+                new EtagStampHandler(),
                 new ReplaceHandler(),
+                new WriteEtagHandler(),
                 new TailHandler()
         );
         deleteChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.DELETE),
+                new PreconditionCheckHandler(),
                 new DeleteHandler(),
                 new TailHandler()
         );

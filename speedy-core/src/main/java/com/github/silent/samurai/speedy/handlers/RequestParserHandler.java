@@ -1,12 +1,14 @@
 package com.github.silent.samurai.speedy.handlers;
 
+import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.PayloadTooLargeException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.request.IRequestBodyParser;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
-import com.github.silent.samurai.speedy.context.SpeedyContext;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
+import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,14 +53,7 @@ public class RequestParserHandler implements com.github.silent.samurai.speedy.in
                 context.put(new byte[0]);
             } else if (contentLength == -1) {
                 // Chunked transfer encoding (unknown length). Always bound the read to prevent OOM.
-                long effectiveLimit = maxRequestBodySize > 0 ? maxRequestBodySize : Integer.MAX_VALUE;
-                InputStream is = request.getInputStream();
-                int readLimit = effectiveLimit >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) (effectiveLimit + 1);
-                byte[] bodyBytes = is.readNBytes(readLimit);
-                if (maxRequestBodySize > 0 && bodyBytes.length > maxRequestBodySize) {
-                    throw new PayloadTooLargeException(
-                            "Request body exceeds maximum " + maxRequestBodySize + " bytes");
-                }
+                byte[] bodyBytes = getBodyBytes(request);
                 context.put(bodyBytes);
             } else {
                 // contentLength > 0 — already checked against maxRequestBodySize above
@@ -68,6 +63,19 @@ public class RequestParserHandler implements com.github.silent.samurai.speedy.in
             throw new BadRequestException("Invalid Request", e);
         }
 
+    }
+
+    @NonNull
+    private byte[] getBodyBytes(HttpServletRequest request) throws IOException, PayloadTooLargeException {
+        long effectiveLimit = maxRequestBodySize > 0 ? maxRequestBodySize : Integer.MAX_VALUE;
+        InputStream is = request.getInputStream();
+        int readLimit = effectiveLimit >= Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) (effectiveLimit + 1);
+        byte[] bodyBytes = is.readNBytes(readLimit);
+        if (maxRequestBodySize > 0 && bodyBytes.length > maxRequestBodySize) {
+            throw new PayloadTooLargeException(
+                    "Request body exceeds maximum " + maxRequestBodySize + " bytes");
+        }
+        return bodyBytes;
     }
 
     private Map<String, String> extractHeaders(HttpServletRequest request) {

@@ -1,11 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces.response;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
-import com.github.silent.samurai.speedy.models.SpeedyBatchResponse;
-import com.github.silent.samurai.speedy.models.SpeedyCountResponse;
-import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
-import com.github.silent.samurai.speedy.models.SpeedyErrorResponse;
-import com.github.silent.samurai.speedy.models.SpeedyMetadataResponse;
+import com.github.silent.samurai.speedy.models.*;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface IResponseSerializerV2 {
@@ -40,6 +36,12 @@ public interface IResponseSerializerV2 {
                 break;
             case METADATA:
                 writeMetadata((SpeedyMetadataResponse) response, httpResponse);
+                break;
+            case NOT_MODIFIED:
+                // Bodiless by definition (RFC 7232 §4.1) — commit status + headers directly,
+                // the same way across every format, with no entity/token writer involved.
+                httpResponse.setStatus(response.getStatus());
+                response.getHeaders().forEach(httpResponse::setHeader);
                 break;
         }
     }
