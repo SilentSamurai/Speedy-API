@@ -20,9 +20,9 @@ Published to: Maven Central via Sonatype Central Portal
 
 ```
 speedy-commons          (shared interfaces, models, enums, annotations, exceptions)
-    ├── speedy-jpa-metamodel-processor         (JPA → MetaModel bridge)
+    ├── speedy-mp-jpa         (JPA → MetaModel bridge)
     ├── speedy-java-client      (Java client SDK, MockMvc test support)
-    ├── speedy-static-metamodel-processor      (file-based MetaModel for non-JPA use)
+    ├── speedy-mp-json      (file-based MetaModel for non-JPA use)
     ├── speedy-jooq-query-processor        (jOOQ query execution)
     └── speedy-core             (core engine: handlers, serialization, OpenAPI)
             └── spring-boot-starter-speedy-api  (auto-configuration starter)
@@ -197,7 +197,7 @@ Register via: `registry.registerValidator(myValidator);`
 
 ## MetaModel Implementations
 
-### JPA (speedy-jpa-metamodel-processor)
+### JPA (speedy-mp-jpa)
 
 `JpaMetaModelProcessorV2` reads `EntityManagerFactory` metadata at startup. Supports:
 
@@ -206,7 +206,7 @@ Register via: `registry.registerValidator(myValidator);`
 - Associations (ManyToOne, OneToMany, etc.)
 - Jakarta Validation annotations for field rules
 
-### Static/File-based (speedy-static-metamodel-processor)
+### Static/File-based (speedy-mp-json)
 
 Reads entity metadata from JSON files. Useful for non-JPA data sources.
 
