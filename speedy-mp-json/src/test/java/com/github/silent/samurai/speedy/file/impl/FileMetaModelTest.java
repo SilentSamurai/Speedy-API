@@ -1,7 +1,11 @@
 package com.github.silent.samurai.speedy.file.impl;
 
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
+import com.github.silent.samurai.speedy.file.impl.models.JsonEntity;
+import com.github.silent.samurai.speedy.file.impl.models.JsonField;
+import com.github.silent.samurai.speedy.file.impl.processor.FileProcessor;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
@@ -15,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -109,5 +114,54 @@ class FileMetaModelTest {
         assertEquals(categoryMetadata, categoryField.getAssociationMetadata());
 
 
+    }
+
+    @Test
+    void mapsSelectedBulkOperations() throws Exception {
+        JsonEntity jsonEntity = jsonEntity("JsonSelectedBulk");
+        jsonEntity.bulk = List.of("create", "DELETE");
+
+        MetaModel metaModel = process(jsonEntity);
+        EntityMetadata metadata = metaModel.findEntityMetadata("JsonSelectedBulk");
+
+        assertTrue(metadata.isBulkAllowed(BulkOperation.CREATE));
+        assertFalse(metadata.isBulkAllowed(BulkOperation.UPDATE));
+        assertFalse(metadata.isBulkAllowed(BulkOperation.REPLACE));
+        assertTrue(metadata.isBulkAllowed(BulkOperation.DELETE));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void mapsLegacyBulkAllowedToAllOperations() throws Exception {
+        JsonEntity jsonEntity = jsonEntity("JsonLegacyBulk");
+        jsonEntity.bulkAllowed = true;
+
+        EntityMetadata metadata = process(jsonEntity).findEntityMetadata("JsonLegacyBulk");
+
+        for (BulkOperation operation : List.of(
+                BulkOperation.CREATE, BulkOperation.UPDATE, BulkOperation.REPLACE, BulkOperation.DELETE)) {
+            assertTrue(metadata.isBulkAllowed(operation));
+        }
+    }
+
+    private MetaModel process(JsonEntity jsonEntity) throws Exception {
+        var builder = MetadataBuilder.builder();
+        FileProcessor.processEntityMetadata(jsonEntity, builder);
+        return builder.build();
+    }
+
+    private JsonEntity jsonEntity(String name) {
+        JsonField id = new JsonField();
+        id.name = "id";
+        id.outputProperty = "id";
+        id.dbColumn = "id";
+        id.fieldType = "VARCHAR";
+        id.isKeyField = true;
+
+        JsonEntity entity = new JsonEntity();
+        entity.name = name;
+        entity.dbTable = name.toLowerCase();
+        entity.fields = List.of(id);
+        return entity;
     }
 }

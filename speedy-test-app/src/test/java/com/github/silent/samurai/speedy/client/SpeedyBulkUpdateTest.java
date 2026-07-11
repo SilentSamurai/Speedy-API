@@ -24,8 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /// Bulk-update coverage for issue #97 — {@code $update} (both PATCH and PUT) now accepts an
 /// array of items, mirroring bulk create/delete ({@link SpeedyBulkTest}). {@link Supplier}
-/// ({@code @SpeedyBulk(true)}) is used for the happy-path/mode tests; {@link
-/// com.github.silent.samurai.speedy.entity.Order} (composite key, also {@code @SpeedyBulk(true)})
+/// ({@code @SpeedyBulk}) is used for the happy-path/mode tests; {@link
+/// com.github.silent.samurai.speedy.entity.Order} (composite key, also {@code @SpeedyBulk})
 /// covers the composite-key case. Per-row PATCH-vs-PUT semantics (leave vs. null an omitted
 /// nullable field) are the same ones {@code SpeedyReplaceSemanticsTest} verifies for a single
 /// entity — here we confirm they still hold when several items are written in one request.

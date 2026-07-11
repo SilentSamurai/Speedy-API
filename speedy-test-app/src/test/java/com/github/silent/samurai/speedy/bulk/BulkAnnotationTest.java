@@ -18,9 +18,9 @@ import java.util.List;
 
 /// Integration tests for issue #28 — {@code @SpeedyBulk}.
 ///
-/// {@code BulkDisabledEntity} is annotated {@code @SpeedyBulk(false)}: single-object and
+/// {@code BulkDisabledEntity} is annotated {@code @SpeedyBulk({})}: single-object and
 /// single-element-array create/delete still work, but multi-element arrays are rejected with 400.
-/// {@code Supplier} is annotated {@code @SpeedyBulk(true)} and used as a regression guard that
+/// {@code Supplier} is annotated {@code @SpeedyBulk} and used as a regression guard that
 /// bulk stays enabled for entities that explicitly opt in. {@code Task} carries no
 /// {@code @SpeedyBulk} annotation and is used to prove bulk is rejected by default.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
@@ -203,6 +203,47 @@ class BulkAnnotationTest {
                 .expectOk();
     }
 
+    // ---- selective opt-in: create only ----
+
+    @Test
+    void createOnlyEntity_multiElementCreate_works() throws Exception {
+        client.createMany("BulkCreateOnlyEntity", List.of(
+                        bulkCreateOnlyNode("create-a"),
+                        bulkCreateOnlyNode("create-b")))
+                .expectOk();
+    }
+
+    @Test
+    void createOnlyEntity_multiElementUpdate_isRejected() throws Exception {
+        String id1 = createBulkCreateOnlyAndGetId("update-a");
+        String id2 = createBulkCreateOnlyAndGetId("update-b");
+
+        client.updateMany("BulkCreateOnlyEntity", List.of(
+                        renameNode(id1, "create-only-update-a"),
+                        renameNode(id2, "create-only-update-b")))
+                .expectBadRequest();
+    }
+
+    @Test
+    void createOnlyEntity_multiElementReplace_isRejected() throws Exception {
+        String id1 = createBulkCreateOnlyAndGetId("replace-a");
+        String id2 = createBulkCreateOnlyAndGetId("replace-b");
+
+        client.replaceMany("BulkCreateOnlyEntity", List.of(
+                        renameNode(id1, "create-only-replace-a"),
+                        renameNode(id2, "create-only-replace-b")))
+                .expectBadRequest();
+    }
+
+    @Test
+    void createOnlyEntity_multiElementDelete_isRejected() throws Exception {
+        String id1 = createBulkCreateOnlyAndGetId("delete-a");
+        String id2 = createBulkCreateOnlyAndGetId("delete-b");
+
+        client.deleteMany("BulkCreateOnlyEntity").items(List.of(keyNode(id1), keyNode(id2))).execute()
+                .expectBadRequest();
+    }
+
     // ---- regression: unannotated entity rejects bulk by default ----
 
     @Test
@@ -246,6 +287,25 @@ class BulkAnnotationTest {
         n.put("id", id);
         n.put("name", "Bulk-" + (System.nanoTime() & 0xFFFFFF) + "-" + suffix);
         return n;
+    }
+
+    private ObjectNode bulkCreateOnlyNode(String suffix) {
+        ObjectNode n = mapper.createObjectNode();
+        n.put("name", "CreateOnly-" + (System.nanoTime() & 0xFFFFFF) + "-" + suffix);
+        return n;
+    }
+
+    private String createBulkCreateOnlyAndGetId(String suffix) throws Exception {
+        SpeedyTestResult result = client.createOne("BulkCreateOnlyEntity", bulkCreateOnlyNode(suffix))
+                .expectOk();
+        return CommonUtil.json().readTree(result.responseBody())
+                .get("payload").get(0).get("id").asText();
+    }
+
+    private ObjectNode keyNode(String id) {
+        ObjectNode node = mapper.createObjectNode();
+        node.put("id", id);
+        return node;
     }
 
     private String createSupplierAndGetId(long ts, int index) throws Exception {

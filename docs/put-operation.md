@@ -145,20 +145,32 @@ updates (or replaces) several records at once. Each array element is a full requ
 A single-object body (not wrapped in an array) is still accepted as shorthand for a
 one-item update — this is how the single-record examples above work.
 
-### Bulk opt-out — `@SpeedyBulk`
+### Fine-grained bulk control — `@SpeedyBulk`
 
 By default, entities **reject** a multi-item array (`400 Bad Request`) — a single-element
-array or bare object is always allowed. An entity opts in to multi-item bulk update with:
+array or bare object is always allowed. Use `@SpeedyBulk` to opt into all bulk write operations:
 
 ```java
-
-@SpeedyBulk(true)
+@SpeedyBulk
 public class Supplier { ...
 }
 ```
 
-This is the same annotation, and the same rule, that governs bulk `$create` and bulk
-`$delete`.
+To allow only a subset, specify `BulkOperation` values. `UPDATE` controls `PATCH`; `REPLACE`
+controls `PUT` so the two update modes can be independently enabled.
+
+```java
+@SpeedyBulk({BulkOperation.CREATE, BulkOperation.DELETE})
+public class ImportableSupplier { ...
+}
+
+@SpeedyBulk(BulkOperation.CREATE)
+public class CreateOnlyResource { ...
+}
+```
+
+`BulkOperation.ALL` is equivalent to `@SpeedyBulk`; `@SpeedyBulk({})` explicitly disables bulk.
+The same operation-specific rule governs `$create`, `$update`, and `$delete`.
 
 ### Transaction mode — `$transaction`
 

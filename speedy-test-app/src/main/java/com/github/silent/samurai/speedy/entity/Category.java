@@ -13,7 +13,7 @@ import java.util.Set;
         @Index(name = "categories_name_key", columnList = "name", unique = true)
 })
 @Entity
-@SpeedyBulk(true)
+@SpeedyBulk
 public class Category {
 
     @Id

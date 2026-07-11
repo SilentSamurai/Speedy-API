@@ -1,9 +1,11 @@
 package com.github.silent.samurai.speedy.interfaces.metadata;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
+import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -92,10 +94,17 @@ public interface EntityMetadata {
         return TransactionMode.PER_ENTITY;
     }
 
-    // Whether multi-element (bulk) create/delete requests are accepted for this
-    // entity. Disabled by default; enabled via @SpeedyBulk(true). When false, a
-    // request body with more than one entity/key is rejected with 400.
-    default boolean isBulkAllowed() {
-        return false;
+    // The write operations for which multi-element (bulk) request bodies are accepted,
+    // as declared by @SpeedyBulk. Empty by default (bulk disabled for every operation);
+    // BulkOperation.ALL enables all of them.
+    default Set<BulkOperation> getBulkOperations() {
+        return Collections.emptySet();
+    }
+
+    // Whether multi-element (bulk) request bodies are accepted for the given operation.
+    // A body with more than one element is rejected with 400 unless this returns true.
+    default boolean isBulkAllowed(BulkOperation operation) {
+        Set<BulkOperation> ops = getBulkOperations();
+        return ops.contains(operation) || ops.contains(BulkOperation.ALL);
     }
 }

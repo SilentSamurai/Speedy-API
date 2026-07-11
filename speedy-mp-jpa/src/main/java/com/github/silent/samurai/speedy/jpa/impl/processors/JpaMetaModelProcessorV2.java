@@ -105,7 +105,8 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         }
         SpeedyBulk bulkAnnotation = entityType.getBindableJavaType().getAnnotation(SpeedyBulk.class);
         if (bulkAnnotation != null) {
-            entity.bulkAllowed(bulkAnnotation.value());
+            Arrays.stream(bulkAnnotation.value())
+                    .forEach(entity::addBulkOperation);
         }
         // Entity-level @SpeedySensitive sets the default sensitivity for all fields
         SpeedySensitive speedySensitive = entityType.getBindableJavaType().getAnnotation(SpeedySensitive.class);

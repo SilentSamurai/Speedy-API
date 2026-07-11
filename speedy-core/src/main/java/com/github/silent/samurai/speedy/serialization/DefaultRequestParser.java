@@ -73,11 +73,9 @@ public class DefaultRequestParser implements IRequestBodyParser {
                 throw new BadRequestException("no content to process");
             }
         }
-        // Reject multi-element (bulk) requests for entities that opted out via @SpeedyBulk(false).
-        // Placed before the existence check so a disabled-bulk request fails fast.
-        if (entities.size() > 1 && !entity.isBulkAllowed()) {
-            throw new BadRequestException("Bulk create is disabled for entity '" + entity.getName() + "'");
-        }
+        // Bulk gating (multi-element rejection for entities not opted in via @SpeedyBulk)
+        // is enforced downstream per-operation by BulkCheckHandler in the create/update/
+        // replace/delete chains, so PATCH and PUT can be toggled independently.
         // Batch existence check: one query instead of N
         if (!keysToCheck.isEmpty()) {
             java.util.Set<SpeedyEntityKey> existing = queryProcessor.findExistingKeys(keysToCheck);
@@ -112,10 +110,6 @@ public class DefaultRequestParser implements IRequestBodyParser {
             } else {
                 throw new BadRequestException("no content to process");
             }
-        }
-        // Reject multi-element (bulk) requests for entities that opted out via @SpeedyBulk(false).
-        if (items.size() > 1 && !entity.isBulkAllowed()) {
-            throw new BadRequestException("Bulk update is disabled for entity '" + entity.getName() + "'");
         }
         return SpeedyUpdateBody.builder()
                 .items(items)
@@ -161,10 +155,6 @@ public class DefaultRequestParser implements IRequestBodyParser {
             } else {
                 throw new BadRequestException("in-valid request");
             }
-        }
-        // Reject multi-element (bulk) requests for entities that opted out via @SpeedyBulk(false).
-        if (keys.size() > 1 && !entity.isBulkAllowed()) {
-            throw new BadRequestException("Bulk delete is disabled for entity '" + entity.getName() + "'");
         }
         return SpeedyDeleteBody.builder()
                 .keys(keys)

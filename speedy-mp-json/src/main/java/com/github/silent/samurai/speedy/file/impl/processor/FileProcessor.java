@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.file.impl.processor;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
@@ -37,8 +38,12 @@ public class FileProcessor {
             TransactionMode mode = TransactionMode.valueOf(jsonEntity.transactionMode.toUpperCase());
             eb.transactionMode(mode);
         }
-        if (jsonEntity.bulkAllowed != null) {
-            eb.bulkAllowed(jsonEntity.bulkAllowed);
+        if (jsonEntity.bulk != null) {
+            for (String op : jsonEntity.bulk) {
+                eb.addBulkOperation(BulkOperation.valueOf(op.trim().toUpperCase()));
+            }
+        } else if (Boolean.TRUE.equals(jsonEntity.bulkAllowed)) {
+            eb.addBulkOperation(BulkOperation.ALL);
         }
 
         for (JsonField jsonField : jsonEntity.fields) {

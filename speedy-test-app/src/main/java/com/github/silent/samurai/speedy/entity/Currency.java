@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Table(name = "currencies")
 @Entity
 @SpeedyTransaction(TransactionMode.BATCH)
-@SpeedyBulk(true)
+@SpeedyBulk
 public class Currency extends AbstractBaseEntity {
 
     @NotNull
