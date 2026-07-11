@@ -7,11 +7,7 @@ import com.github.silent.samurai.speedy.models.SpeedyTime;
 import com.github.silent.samurai.speedy.models.SpeedyZonedDateTime;
 import org.junit.jupiter.api.Test;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -112,7 +108,8 @@ class ValidationRulesRegressionTest {
                     "cost",
                     "cost",
                     false, false, true, true, false, false, false, true, true, false, false,
-                    null, null, null, java.util.List.of()
+                    null, null, null, java.util.List.of(),
+                    java.util.Optional.empty()
             );
         }
     }

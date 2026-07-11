@@ -32,7 +32,7 @@
 
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-jpa-metamodel-processor</artifactId>
+            <artifactId>speedy-mp-jpa</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

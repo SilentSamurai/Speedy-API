@@ -11,6 +11,7 @@
 * [POST Operations](post-operation.md)
 * [PUT Operations](put-operation.md)
 * [DELETE Operations](delete-operation.md)
+* [Conditional Requests / ETags](conditional-requests.md)
 * [Speedy Events](speedy-events.md)
 * [Exception Handling](exception-handling.md)
 * [Custom Types](custom-types.md)

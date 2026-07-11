@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>speedy-jpa-metamodel-processor</artifactId>
-    <name>speedy-jpa-metamodel-processor</name>
+    <artifactId>speedy-mp-jpa</artifactId>
+    <name>speedy-mp-jpa</name>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>

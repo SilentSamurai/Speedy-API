@@ -5,12 +5,12 @@ import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.helpers.MetadataUtil;
+import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
+import com.github.silent.samurai.speedy.interfaces.backend.SpeedyBackend;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
-import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.query.QueryResult;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
-import com.github.silent.samurai.speedy.interfaces.backend.SpeedyBackend;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
@@ -18,13 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /// Format-agnostic {@link QueryProcessor}: owns CRUD orchestration (query execution, the
 /// creation/delete refetch-by-primary-key loops, update, exists, transaction handling, and native
@@ -80,6 +74,19 @@ public class DefaultQueryProcessor implements QueryProcessor {
     public boolean exists(SpeedyEntityKey entityKey) throws SpeedyHttpException {
         try {
             return backend.existsByKey(entityKey);
+        } catch (Exception e) {
+            throw wrap("Invalid Request", e);
+        }
+    }
+
+    @Override
+    public Optional<SpeedyEntity> fetchByKey(SpeedyEntityKey entityKey) throws SpeedyHttpException {
+        try {
+            List<SpeedyEntity> rows = backend.selectByKeys(List.of(entityKey));
+            if (rows.isEmpty()) {
+                return Optional.empty();
+            }
+            return Optional.of(recordToSpeedy.fromRow(rows.get(0), entityKey.getMetadata(), Set.of()));
         } catch (Exception e) {
             throw wrap("Invalid Request", e);
         }

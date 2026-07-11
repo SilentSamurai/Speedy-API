@@ -547,6 +547,48 @@ class JooqQueryBuilderTest {
         assertEquals(sqlQuery, json2SqlQuery);
     }
 
+    @Test
+    void order_by_associated_field() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .orderByAsc("a.name")
+                .prettyPrint()
+                .build();
+
+        String expectedSql = """
+                select *
+                from "MULTIPLEFK"
+                  left outer join "PRODUCT" "Product_1"
+                    on "MULTIPLEFK"."A" = "Product_1"."ID"
+                order by "Product_1"."NAME" asc
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expectedSql, json2SqlQuery(jsonQuery));
+    }
+
+    @Test
+    void order_by_reuses_where_join() throws Exception {
+        JsonNode jsonQuery = SpeedyQuery.from()
+                .fromEntity("MultipleFk")
+                .where(
+                        condition("a.id", eq("1"))
+                )
+                .orderByAsc("a.name")
+                .prettyPrint()
+                .build();
+
+        String expectedSql = """
+                select *
+                from "MULTIPLEFK"
+                  left outer join "PRODUCT" "Product_1"
+                    on "MULTIPLEFK"."A" = "Product_1"."ID"
+                where "Product_1"."ID" = '1'
+                order by "Product_1"."NAME" asc
+                offset 0 rows
+                fetch next 10 rows only""";
+        assertEquals(expectedSql, json2SqlQuery(jsonQuery));
+    }
+
     // T012 - User Story 1: $between SQL generation
     @Test
     void where_between() throws Exception {

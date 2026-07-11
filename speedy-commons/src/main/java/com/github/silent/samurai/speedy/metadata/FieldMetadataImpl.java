@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
+import com.github.silent.samurai.speedy.enums.EtagStrategy;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
@@ -12,6 +13,7 @@ import lombok.Setter;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Getter
 public class FieldMetadataImpl implements FieldMetadata {
@@ -36,6 +38,7 @@ public class FieldMetadataImpl implements FieldMetadata {
     private final EnumMode operationalEnumMode;
     private final DynamicEnum dynamicEnum;
     private final List<FieldRule> validations;
+    private final Optional<EtagStrategy> etagStrategy;
 
     @Setter
     private EntityMetadata entityMetadata;
@@ -62,7 +65,8 @@ public class FieldMetadataImpl implements FieldMetadata {
                              EnumMode storedEnumMode,
                              EnumMode operationalEnumMode,
                              DynamicEnum dynamicEnum,
-                             List<FieldRule> validations) {
+                             List<FieldRule> validations,
+                             Optional<EtagStrategy> etagStrategy) {
         this.columnType = columnType;
         this.valueType = valueType;
         this.dbColumnName = dbColumnName;
@@ -82,6 +86,7 @@ public class FieldMetadataImpl implements FieldMetadata {
         this.isSensitive = isSensitive;
         this.validations = validations == null ? List.of() : List.copyOf(validations);
         this.isEnum = isEnum;
+        this.etagStrategy = etagStrategy.isEmpty() ? Optional.empty() : etagStrategy;
     }
 
     @Override

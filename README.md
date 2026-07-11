@@ -38,7 +38,7 @@ Speedy works with Spring Boot 2.1 and above.
 <!-- JPA metamodel processor: builds the Speedy model from your @Entity classes -->
 <dependency>
     <groupId>com.github.silentsamurai</groupId>
-    <artifactId>speedy-jpa-metamodel-processor</artifactId>
+    <artifactId>speedy-mp-jpa</artifactId>
     <version>3.1.4</version>
 </dependency>
 ```
@@ -197,8 +197,8 @@ Speedy is a multi-module Maven project:
 |-------------------------------------|-------------------------------------------------------------------------------------------|
 | `speedy-commons`                    | Shared interfaces, `SpeedyValue` types, query/condition model, annotations, validation    |
 | `speedy-core`                       | Request-processing engine: handler chain, URI/JSON parsing, serialization, `SpeedyApiController` |
-| `speedy-jpa-metamodel-processor`    | Builds the metamodel by scanning JPA `@Entity` classes                                     |
-| `speedy-static-metamodel-processor` | Builds the metamodel from a JSON file                                                      |
+| `speedy-mp-jpa`    | Builds the metamodel by scanning JPA `@Entity` classes                                     |
+| `speedy-mp-json` | Builds the metamodel from a JSON file                                                      |
 | `speedy-jooq-query-processor`       | jOOQ-based SQL generation and query execution                                             |
 | `speedy-json-io`                    | JSON serialization/deserialization support                                                |
 | `spring-boot-starter-speedy-api`    | Spring Boot auto-configuration entry point                                                |

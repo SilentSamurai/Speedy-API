@@ -3,10 +3,10 @@
 Speedy exposes two update verbs on the `$update` endpoint, and they follow standard HTTP
 semantics:
 
-| Verb    | Semantics       | Omitted non-key fields        | Required fields          |
-|---------|-----------------|-------------------------------|--------------------------|
-| `PATCH` | Partial update  | Left **unchanged**            | Not enforced             |
-| `PUT`   | Full replace    | **Reset to null** (if nullable) | **Enforced** (400 if missing) |
+| Verb    | Semantics      | Omitted non-key fields          | Required fields               |
+|---------|----------------|---------------------------------|-------------------------------|
+| `PATCH` | Partial update | Left **unchanged**              | Not enforced                  |
+| `PUT`   | Full replace   | **Reset to null** (if nullable) | **Enforced** (400 if missing) |
 
 Both address a single record by its primary key, which is carried **in the request body**
 alongside the fields to write:
@@ -81,6 +81,14 @@ and `altPhoneNo` (required) must be supplied.
 For both verbs, a request whose primary key is **complete but does not match any row**
 returns `404 Not Found`. An **incomplete** primary key returns `400 Bad Request`.
 
+## Optimistic concurrency — `If-Match`
+
+For a single-item PATCH/PUT on an entity with a `@SpeedyETag` field, an `If-Match` header is
+checked against the row's current `ETag` before the write; a stale tag (or a missing row) returns
+`412 Precondition Failed`, and a successful write returns the **new** `ETag`. See
+[Conditional Requests / ETags](conditional-requests.md) for the opt-in, strategies, and the
+`If-Match: *` / multi-item rules.
+
 ## Bulk Update / Bulk Replace
 
 Both verbs also accept a JSON **array** of items on the same `$update` endpoint — one call
@@ -143,8 +151,10 @@ By default, entities **reject** a multi-item array (`400 Bad Request`) — a sin
 array or bare object is always allowed. An entity opts in to multi-item bulk update with:
 
 ```java
+
 @SpeedyBulk(true)
-public class Supplier { ... }
+public class Supplier { ...
+}
 ```
 
 This is the same annotation, and the same rule, that governs bulk `$create` and bulk
@@ -160,17 +170,19 @@ Bulk update honors the entity's configured transaction mode, overridable per req
 [PATCH] /speedy/v1/Supplier/$update?$transaction=per-entity
 ```
 
-| Mode         | Behavior                                                                                          |
-|--------------|-----------------------------------------------------------------------------------------------------|
+| Mode         | Behavior                                                                                               |
+|--------------|--------------------------------------------------------------------------------------------------------|
 | `batch`      | One shared transaction. Any item failing (validation, missing row, etc.) rolls back the whole request. |
-| `per-entity` | Each item gets its own transaction. Failures are reported per-item without blocking the others.       |
+| `per-entity` | Each item gets its own transaction. Failures are reported per-item without blocking the others.        |
 
 In `per-entity` mode, if some items succeed and others fail, the response is `207 Multi-Status`:
 
 ```json
 {
     "succeeded": [
-        { "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab" }
+        {
+            "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab"
+        }
     ],
     "failed": [
         {

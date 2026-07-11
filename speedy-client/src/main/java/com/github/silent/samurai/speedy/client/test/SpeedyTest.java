@@ -149,10 +149,18 @@ public class SpeedyTest {
     }
 
     SpeedyTestResult execute(String url, String method, String body) {
+        return execute(url, method, body, java.util.Collections.emptyMap());
+    }
+
+    SpeedyTestResult execute(String url, String method, String body, Map<String, String> headers) {
         try {
-            SpeedyRawResponse response = transport.send(
+            com.github.silent.samurai.speedy.client.transport.SpeedyRequest request =
                     new com.github.silent.samurai.speedy.client.transport.SpeedyRequest(
-                            method, url, java.util.Collections.emptyMap(), body));
+                            method, url, java.util.Collections.emptyMap(), body);
+            if (headers != null && !headers.isEmpty()) {
+                request = request.withHeaders(headers);
+            }
+            SpeedyRawResponse response = transport.send(request);
             ResultActions resultActions = transport.getLastResultActions();
             SpeedyResult speedyResult = response.is2xx()
                     ? parser.parseEntityResponse(response)
@@ -206,6 +214,7 @@ public class SpeedyTest {
         private final ObjectNode pkNode;
         private final List<String> selectFields;
         private final List<String> expandRelations;
+        private final Map<String, String> headers = new java.util.LinkedHashMap<>();
         private Integer pageSize;
         private Integer pageNo;
 
@@ -218,6 +227,14 @@ public class SpeedyTest {
 
         public TestGetBuilder key(String field, Object value) {
             com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
+            return this;
+        }
+
+        /**
+         * Sets a request header (e.g. {@code If-None-Match} for a conditional GET).
+         */
+        public TestGetBuilder header(String name, String value) {
+            headers.put(name, value);
             return this;
         }
 
@@ -251,7 +268,7 @@ public class SpeedyTest {
             if (!qs.isEmpty()) {
                 url = url + "?" + qs;
             }
-            return SpeedyTest.this.execute(url, "GET", null);
+            return SpeedyTest.this.execute(url, "GET", null, headers);
         }
 
         private String buildQueryString() {
@@ -292,6 +309,7 @@ public class SpeedyTest {
         private final String entity;
         private final ObjectNode body;
         private final ObjectNode pkNode;
+        private final Map<String, String> headers = new java.util.LinkedHashMap<>();
 
         TestUpdateBuilder(String entity) {
             this.entity = entity;
@@ -306,6 +324,14 @@ public class SpeedyTest {
 
         public TestUpdateBuilder field(String name, Object value) {
             com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(body, name, value);
+            return this;
+        }
+
+        /**
+         * Sets a request header (e.g. {@code If-Match} for an optimistic-concurrency update).
+         */
+        public TestUpdateBuilder header(String name, String value) {
+            headers.put(name, value);
             return this;
         }
 
@@ -326,7 +352,7 @@ public class SpeedyTest {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize", e);
             }
-            return SpeedyTest.this.execute(url, "PATCH", jsonBody);
+            return SpeedyTest.this.execute(url, "PATCH", jsonBody, headers);
         }
     }
 
@@ -376,6 +402,7 @@ public class SpeedyTest {
     public class TestDeleteBuilder {
         private final String entity;
         private final ObjectNode pkNode;
+        private final Map<String, String> headers = new java.util.LinkedHashMap<>();
 
         TestDeleteBuilder(String entity) {
             this.entity = entity;
@@ -384,6 +411,14 @@ public class SpeedyTest {
 
         public TestDeleteBuilder key(String field, Object value) {
             com.github.silent.samurai.speedy.client.internal.FieldUtil.setField(pkNode, field, value);
+            return this;
+        }
+
+        /**
+         * Sets a request header (e.g. {@code If-Match} for an optimistic-concurrency delete).
+         */
+        public TestDeleteBuilder header(String name, String value) {
+            headers.put(name, value);
             return this;
         }
 
@@ -404,7 +439,7 @@ public class SpeedyTest {
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize", e);
             }
-            return SpeedyTest.this.execute(url, "DELETE", jsonBody);
+            return SpeedyTest.this.execute(url, "DELETE", jsonBody, headers);
         }
     }
 
@@ -556,6 +591,7 @@ public class SpeedyTest {
 
     public class TestBulkDeleteBuilder {
         private final String entity;
+        private final Map<String, String> headers = new java.util.LinkedHashMap<>();
         private List<ObjectNode> items = new ArrayList<>();
         private String transactionMode;
 
@@ -578,6 +614,14 @@ public class SpeedyTest {
             return this;
         }
 
+        /**
+         * Sets a request header (e.g. {@code If-Match}, which the server rejects on a multi-item batch).
+         */
+        public TestBulkDeleteBuilder header(String name, String value) {
+            headers.put(name, value);
+            return this;
+        }
+
         public TestBulkDeleteBuilder transaction(String mode) {
             this.transactionMode = mode;
             return this;
@@ -591,7 +635,7 @@ public class SpeedyTest {
             ArrayNode array = mapper.createArrayNode();
             items.forEach(array::add);
             try {
-                return SpeedyTest.this.execute(url, "DELETE", mapper.writeValueAsString(array));
+                return SpeedyTest.this.execute(url, "DELETE", mapper.writeValueAsString(array), headers);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize deleteMany body", e);
             }
@@ -600,6 +644,7 @@ public class SpeedyTest {
 
     public class TestBulkUpdateBuilder {
         private final String entity;
+        private final Map<String, String> headers = new java.util.LinkedHashMap<>();
         private List<ObjectNode> items = new ArrayList<>();
         private String transactionMode;
 
@@ -622,6 +667,14 @@ public class SpeedyTest {
             return this;
         }
 
+        /**
+         * Sets a request header (e.g. {@code If-Match}, which the server rejects on a multi-item batch).
+         */
+        public TestBulkUpdateBuilder header(String name, String value) {
+            headers.put(name, value);
+            return this;
+        }
+
         public TestBulkUpdateBuilder transaction(String mode) {
             this.transactionMode = mode;
             return this;
@@ -635,7 +688,7 @@ public class SpeedyTest {
             ArrayNode array = mapper.createArrayNode();
             items.forEach(array::add);
             try {
-                return SpeedyTest.this.execute(url, "PATCH", mapper.writeValueAsString(array));
+                return SpeedyTest.this.execute(url, "PATCH", mapper.writeValueAsString(array), headers);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to serialize updateMany body", e);
             }

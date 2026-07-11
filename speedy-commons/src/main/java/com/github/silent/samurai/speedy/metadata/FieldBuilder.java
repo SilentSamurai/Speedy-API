@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
+import com.github.silent.samurai.speedy.enums.EtagStrategy;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
@@ -9,6 +10,8 @@ import com.github.silent.samurai.speedy.validation.rules.FieldRule;
 import lombok.Getter;
 
 import java.util.List;
+
+import static java.util.Optional.ofNullable;
 
 @Getter
 public class FieldBuilder {
@@ -38,6 +41,7 @@ public class FieldBuilder {
     EnumMode operationalEnumMode;
     DynamicEnum dynamicEnum;
     List<FieldRule> validations = new java.util.ArrayList<>();
+    EtagStrategy etagStrategy;
 
     public FieldBuilder(EntityBuilder entityBuilder, String name) {
         this.entityBuilder = entityBuilder;
@@ -134,6 +138,18 @@ public class FieldBuilder {
         return this;
     }
 
+    /// Marks this field as the entity's Speedy-managed conditional-request token (from
+    /// {@code @SpeedyETag} or a compatible {@code @Version}). Speedy stamps a fresh value into it
+    /// directly on every create/update/replace (bypassing insertable/updatable, the same way a
+    /// {@code @Generated}/{@code @Formula} column is computed rather than client-supplied) using
+    /// {@code strategy}, so callers should also mark the field not deserializable — a
+    /// client-supplied value must never be trusted — and typically not insertable/updatable
+    /// either, so it's correctly excluded from generated create/update request schemas.
+    public FieldBuilder etagField(EtagStrategy strategy) {
+        this.etagStrategy = strategy;
+        return this;
+    }
+
     public FieldMetadataImpl build() throws NotFoundException {
         if (!isNullable && isDeserializable) {
             required(true);
@@ -160,7 +176,8 @@ public class FieldBuilder {
                 storedEnumMode,
                 operationalEnumMode,
                 dynamicEnum,
-                validations
+                validations,
+                ofNullable(etagStrategy)
         );
         return fmi;
     }
