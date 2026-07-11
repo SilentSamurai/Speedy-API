@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.backend.DefaultQueryProcessor;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.conversion.codec.ConversionContext;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.enums.PermissionType;
 import com.github.silent.samurai.speedy.enums.SpeedyRequestType;
 import com.github.silent.samurai.speedy.events.EventProcessor;
@@ -141,6 +142,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         createChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.CREATE),
+                new BulkCheckHandler(BulkOperation.CREATE),
                 new EtagStampHandler(),
                 new CreateHandler(),
                 new WriteEtagHandler(),
@@ -149,6 +151,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         updateChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
+                new BulkCheckHandler(BulkOperation.UPDATE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
                 new UpdateHandler(),
@@ -156,9 +159,11 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new TailHandler()
         );
         // PUT full-replace reuses the update-level permission; only the handler differs.
+        // Bulk, however, is toggled independently of PATCH via BulkOperation.REPLACE.
         replaceChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
+                new BulkCheckHandler(BulkOperation.REPLACE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
                 new ReplaceHandler(),
@@ -168,6 +173,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         deleteChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.DELETE),
+                new BulkCheckHandler(BulkOperation.DELETE),
                 new PreconditionCheckHandler(),
                 new DeleteHandler(),
                 new TailHandler()

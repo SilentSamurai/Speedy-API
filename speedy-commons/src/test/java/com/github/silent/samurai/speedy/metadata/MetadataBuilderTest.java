@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
+import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
@@ -66,7 +67,7 @@ class MetadataBuilderTest {
     }
 
     /**
-     * Bulk create/delete is disabled by default (no @SpeedyBulk annotation).
+     * Every bulk operation is disabled by default (no @SpeedyBulk annotation).
      */
     @Test
     void bulkAllowed_defaultsFalse() throws NotFoundException {
@@ -75,21 +76,42 @@ class MetadataBuilderTest {
         entity.field("name", "NAME", ColumnType.VARCHAR);
 
         EntityMetadata md = entity.build();
-        Assertions.assertFalse(md.isBulkAllowed(), "bulk must be disabled by default");
+        Assertions.assertFalse(md.isBulkAllowed(BulkOperation.CREATE));
+        Assertions.assertFalse(md.isBulkAllowed(BulkOperation.UPDATE));
+        Assertions.assertFalse(md.isBulkAllowed(BulkOperation.REPLACE));
+        Assertions.assertFalse(md.isBulkAllowed(BulkOperation.DELETE));
     }
 
     /**
-     * @SpeedyBulk(true) — modelled by EntityBuilder.bulkAllowed(true) — enables bulk.
+     * BulkOperation.ALL enables bulk for every write operation.
      */
     @Test
-    void bulkAllowed_explicitTrue() throws NotFoundException {
+    void bulkAllowed_allOperations() throws NotFoundException {
         EntityBuilder entity = MetadataBuilder.builder().entity("WithBulk");
         entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
         entity.field("name", "NAME", ColumnType.VARCHAR);
-        entity.bulkAllowed(true);
+        entity.addBulkOperation(BulkOperation.ALL);
 
         EntityMetadata md = entity.build();
-        Assertions.assertTrue(md.isBulkAllowed(), "bulkAllowed(true) must enable bulk");
+        Assertions.assertTrue(md.isBulkAllowed(BulkOperation.CREATE));
+        Assertions.assertTrue(md.isBulkAllowed(BulkOperation.UPDATE));
+        Assertions.assertTrue(md.isBulkAllowed(BulkOperation.REPLACE));
+        Assertions.assertTrue(md.isBulkAllowed(BulkOperation.DELETE));
+    }
+
+    @Test
+    void bulkAllowed_selectedOperations() throws NotFoundException {
+        EntityBuilder entity = MetadataBuilder.builder().entity("CreateDeleteBulk");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("name", "NAME", ColumnType.VARCHAR);
+        entity.addBulkOperation(BulkOperation.CREATE);
+        entity.addBulkOperation(BulkOperation.DELETE);
+
+        EntityMetadata md = entity.build();
+        Assertions.assertTrue(md.isBulkAllowed(BulkOperation.CREATE));
+        Assertions.assertFalse(md.isBulkAllowed(BulkOperation.UPDATE));
+        Assertions.assertFalse(md.isBulkAllowed(BulkOperation.REPLACE));
+        Assertions.assertTrue(md.isBulkAllowed(BulkOperation.DELETE));
     }
 
     @Test

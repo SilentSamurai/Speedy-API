@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @Table(name = "notes")
 @Entity
-@SpeedyBulk(true)
+@SpeedyBulk
 public class Note extends AbstractBaseEntity {
 
     @Column(name = "title", nullable = false, length = 250)

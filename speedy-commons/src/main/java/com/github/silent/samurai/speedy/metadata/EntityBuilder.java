@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
+import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
@@ -19,7 +20,7 @@ public class EntityBuilder {
     private String dbTableName;
     private boolean isSensitive = false;
     private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
-    private boolean bulkAllowed = false;
+    Set<BulkOperation> bulkOperations = new HashSet<>();
 
     public Iterable<FieldBuilder> fields() {
         return fieldMap.values();
@@ -70,8 +71,8 @@ public class EntityBuilder {
         return this;
     }
 
-    public EntityBuilder bulkAllowed(boolean bulkAllowed) {
-        this.bulkAllowed = bulkAllowed;
+    public EntityBuilder addBulkOperation(BulkOperation bulkOperation) {
+        this.bulkOperations.add(bulkOperation);
         return this;
     }
 
@@ -137,7 +138,7 @@ public class EntityBuilder {
 
         EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, isSensitive, actionTypes, fieldMetadataMap);
         entityMetadata.setTransactionMode(transactionMode);
-        entityMetadata.setBulkAllowed(bulkAllowed);
+        entityMetadata.setBulkOperations(bulkOperations);
 
         for (FieldMetadata fieldMetadata : fieldMetadataMap.values()) {
             FieldMetadataImpl fieldMetadataImpl = (FieldMetadataImpl) fieldMetadata;

@@ -17,7 +17,7 @@ import java.time.Instant;
         @Index(name = "suppliers_phone_no_key", columnList = "phone_no", unique = true)
 })
 @Entity
-@SpeedyBulk(true)
+@SpeedyBulk
 public class Supplier extends AbstractBaseEntity {
     @Column(name = "name", nullable = false)
     private String name;

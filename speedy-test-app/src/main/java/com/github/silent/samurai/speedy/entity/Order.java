@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "orders")
 @Entity
 @IdClass(OrderId.class)
-@SpeedyBulk(true)
+@SpeedyBulk
 public class Order implements Serializable {
 
     @Id
