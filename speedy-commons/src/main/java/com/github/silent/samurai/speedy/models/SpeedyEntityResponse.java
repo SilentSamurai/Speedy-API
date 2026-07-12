@@ -10,7 +10,7 @@ import lombok.Getter;
 
 import java.math.BigInteger;
 import java.util.*;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
 /// Response containing a list of entities with pagination metadata.
 ///
@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 /// executed. Supports field-level filtering via fieldPredicate and
 /// eager-fetching of associations via expands.
 @Getter
-@Builder
+@Builder(toBuilder = true)
 public class SpeedyEntityResponse implements SpeedyResponse {
 
     /// Metadata describing the entity type carried in this response.
@@ -29,10 +29,11 @@ public class SpeedyEntityResponse implements SpeedyResponse {
     /// The list of entity instances returned by the query.
     private final List<? extends SpeedyValue> payload;
 
-    /// Predicate controlling which fields are serialized in the output.
-    /// Defaults to including all fields.
+    /// Predicate controlling which fields are serialized in the output, given the row being
+    /// serialized and the field in question — row-scoped so a policy can differ per row (e.g. a
+    /// field readable on one row but not another). Defaults to including all fields.
     @Builder.Default
-    private final Predicate<FieldMetadata> fieldPredicate = fieldMetadata -> true;
+    private final BiPredicate<SpeedyEntity, FieldMetadata> fieldPredicate = (entity, fieldMetadata) -> true;
 
     /// Zero-based page index of the current result page.
     private final Integer pageIndex;

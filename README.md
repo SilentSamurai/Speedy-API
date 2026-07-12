@@ -114,7 +114,10 @@ public class User {
 
 That's it — `User` is now a live REST resource.
 
-> **Note:** Speedy-API is a library, not a security framework. Authentication and per-user authorization belong to your application (e.g. Spring Security filters in front of `/speedy/v1/**`). `@SpeedyAction` provides *static* per-entity/per-field CRUD gating, not per-user rules.
+> **Note:** Speedy-API does not authenticate callers or validate tokens; keep that in your application (for example,
+> Spring Security filters in front of `/speedy/v1/**`). `@SpeedyAction` provides static CRUD gates, while
+> `ISpeedyConfiguration.policyPerReq()` enables optional request-scoped, per-user authorization. See the
+> [policy guide](docs/policy-authorization.md).
 
 ---
 

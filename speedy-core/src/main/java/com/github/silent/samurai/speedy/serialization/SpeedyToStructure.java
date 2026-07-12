@@ -12,7 +12,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 
 /// Format-agnostic traversal of the Speedy entity tree.
 ///
@@ -27,9 +27,9 @@ import java.util.function.Predicate;
 /// format's own type registry — the walker never sees format-specific value encoding.
 public class SpeedyToStructure {
 
-    private final Predicate<FieldMetadata> fieldPredicate;
+    private final BiPredicate<SpeedyEntity, FieldMetadata> fieldPredicate;
 
-    public SpeedyToStructure(Predicate<FieldMetadata> fieldPredicate) {
+    public SpeedyToStructure(BiPredicate<SpeedyEntity, FieldMetadata> fieldPredicate) {
         this.fieldPredicate = fieldPredicate;
     }
 
@@ -64,7 +64,7 @@ public class SpeedyToStructure {
         pathTracker.pushEntity(entityMetadata);
 
         for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
-            if (!fieldMetadata.isSerializable() || !fieldPredicate.test(fieldMetadata)) continue;
+            if (!fieldMetadata.isSerializable() || !fieldPredicate.test(speedyEntity, fieldMetadata)) continue;
             if (!speedyEntity.has(fieldMetadata)) {
                 w.field(fieldMetadata);
                 w.writeNull();

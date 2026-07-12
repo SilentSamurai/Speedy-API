@@ -109,7 +109,7 @@ public class JooqQueryBuilder {
             Field<Object> value = getPath(identifier.field());
             return path.equal(value);
         } else {
-            throw new BadRequestException("Not Reachable");
+            throw new BadRequestException("Unresolved variable reference in query condition; variable references must be resolved before SQL generation");
         }
     }
 
@@ -133,7 +133,7 @@ public class JooqQueryBuilder {
             Field<Object> value = getPath(identifier.field());
             return path.notEqual(value);
         } else {
-            throw new BadRequestException("Not Reachable");
+            throw new BadRequestException("Unresolved variable reference in query condition; variable references must be resolved before SQL generation");
         }
     }
 
@@ -152,7 +152,7 @@ public class JooqQueryBuilder {
             Field<Object> value = getPath(identifier.field());
             return path.lessThan(value);
         } else {
-            throw new BadRequestException("Not Reachable");
+            throw new BadRequestException("Unresolved variable reference in query condition; variable references must be resolved before SQL generation");
         }
     }
 
@@ -171,7 +171,7 @@ public class JooqQueryBuilder {
             Field<Object> value = getPath(identifier.field());
             return path.greaterThan(value);
         } else {
-            throw new BadRequestException("Not Reachable");
+            throw new BadRequestException("Unresolved variable reference in query condition; variable references must be resolved before SQL generation");
         }
     }
 
@@ -190,7 +190,7 @@ public class JooqQueryBuilder {
             Field<Object> value = getPath(identifier.field());
             return path.lessOrEqual(value);
         } else {
-            throw new BadRequestException("Not Reachable");
+            throw new BadRequestException("Unresolved variable reference in query condition; variable references must be resolved before SQL generation");
         }
     }
 
@@ -209,7 +209,7 @@ public class JooqQueryBuilder {
             Field<Object> value = getPath(identifier.field());
             return path.greaterOrEqual(value);
         } else {
-            throw new BadRequestException("Not Reachable");
+            throw new BadRequestException("Unresolved variable reference in query condition; variable references must be resolved before SQL generation");
         }
     }
 

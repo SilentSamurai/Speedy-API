@@ -1,14 +1,18 @@
 package com.github.silent.samurai.speedy.handlers;
 
+import com.github.silent.samurai.speedy.enums.PermissionType;
 import com.github.silent.samurai.speedy.enums.SpeedyEventType;
 import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.events.EventProcessor;
+import com.github.silent.samurai.speedy.exceptions.ForbiddenException;
+import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
 import com.github.silent.samurai.speedy.interfaces.Handler;
 import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
 import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
@@ -18,12 +22,14 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyPartialFailure;
 import com.github.silent.samurai.speedy.models.SpeedyUpdateBody;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.policy.PolicyEngine;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /// Shared scaffolding for the two by-PK write operations, PATCH ({@link UpdateHandler}) and PUT
@@ -180,13 +186,19 @@ public abstract class AbstractUpdateHandler implements Handler {
         EventProcessor eventProcessor = context.get(EventProcessor.class);
         QueryProcessor queryProcessor = context.get(QueryProcessor.class);
         ValidationProcessor validationProcessor = context.get(ValidationProcessor.class);
+        PolicyEngine engine = context.find(PolicyEngine.class)
+                .orElseThrow(() -> new InternalServerError("Policy engine is required"));
 
         // Distinguish a well-formed request whose target row is absent (404) from a validation
-        // failure (400) by checking existence before validating — mirrors DeleteHandler.
-        boolean exists = existingKeys != null ? existingKeys.contains(pk) : queryProcessor.exists(pk);
-        if (!exists) {
+        // failure (400) by checking existence before validating — mirrors DeleteHandler. When a
+        // policy is active, row-scoped UPDATE conditions (e.g. "only your own records") need the
+        // row itself, not just an existence flag, so fetch it once, inside this transaction
+        // (TOCTOU-safe), and reuse it for both purposes rather than paying for a second round-trip.
+        Optional<SpeedyEntity> existingRow = queryProcessor.fetchByKey(pk);
+        if (existingRow.isEmpty()) {
             throw new NotFoundException("entity not found: " + pk);
         }
+        enforceUpdateFieldPolicy(engine, entityMetadata, entity, existingRow.get());
 
         eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
         validate(validationProcessor, entityMetadata, entity);
@@ -198,5 +210,20 @@ public abstract class AbstractUpdateHandler implements Handler {
         // columns), not the request payload — consistent with POST_INSERT.
         eventProcessor.triggerEvent(SpeedyEventType.POST_UPDATE, entityMetadata, saved);
         return saved;
+    }
+
+    /// Requirements 9/12 + row-level ABAC for UPDATE: a client-supplied field the policy denies —
+    /// evaluated against the row's *current* state, so "only your own records" style conditions
+    /// work — fails the request explicitly.
+    private void enforceUpdateFieldPolicy(PolicyEngine engine, EntityMetadata entityMetadata,
+                                          SpeedyEntity entity, SpeedyEntity existingRow) throws SpeedyHttpException {
+        for (FieldMetadata field : entityMetadata.getAllFields()) {
+            if (!entity.has(field)) {
+                continue;
+            }
+            if (!engine.isFieldAllowed(PermissionType.UPDATE, entityMetadata, field, existingRow)) {
+                throw new ForbiddenException("Field '" + field.getOutputPropertyName() + "' not permitted on update");
+            }
+        }
     }
 }

@@ -20,6 +20,10 @@ import com.github.silent.samurai.speedy.interfaces.response.IResponseSerializerV
 import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
+import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
+import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -129,20 +133,32 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         getChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.READ),
+                new EntityPolicyGateHandler(PermissionType.READ),
+                new QueryFieldPolicyHandler(),
+                new RowVisibilityFilterHandler(),
+                new VariableResolutionHandler(),
                 new GetHandler(),
                 new ConditionalGetHandler(),
+                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         queryChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.READ),
+                new EntityPolicyGateHandler(PermissionType.READ),
+                new QueryFieldPolicyHandler(),
+                new RowVisibilityFilterHandler(),
+                new VariableResolutionHandler(),
                 new QueryHandler(),
+                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         createChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.CREATE),
+                new EntityPolicyGateHandler(PermissionType.CREATE),
                 new BulkCheckHandler(BulkOperation.CREATE),
+                new CreateFieldPolicyHandler(),
                 new EtagStampHandler(),
                 new CreateHandler(),
                 new WriteEtagHandler(),
@@ -151,11 +167,13 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         updateChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
+                new EntityPolicyGateHandler(PermissionType.UPDATE),
                 new BulkCheckHandler(BulkOperation.UPDATE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
                 new UpdateHandler(),
                 new WriteEtagHandler(),
+                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         // PUT full-replace reuses the update-level permission; only the handler differs.
@@ -163,16 +181,19 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         replaceChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
+                new EntityPolicyGateHandler(PermissionType.UPDATE),
                 new BulkCheckHandler(BulkOperation.REPLACE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
                 new ReplaceHandler(),
                 new WriteEtagHandler(),
+                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         deleteChain = List.of(
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.DELETE),
+                new EntityPolicyGateHandler(PermissionType.DELETE),
                 new BulkCheckHandler(BulkOperation.DELETE),
                 new PreconditionCheckHandler(),
                 new DeleteHandler(),
@@ -219,6 +240,12 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
             }
         }
         ctx.put(QueryProcessor.class, qp);
+
+        SpeedyAuthContext authContext = config.authContextPerReq()
+                .orElseGet(() -> new SpeedyAuthContext(
+                        new PolicyDocument(PolicyEffect.ALLOW, List.of()),
+                        java.util.Map.of()));
+        ctx.put(PolicyEngine.class, new PolicyEngine(authContext));
     }
 
     @Override

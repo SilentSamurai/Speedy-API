@@ -51,7 +51,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 /// @see Identifier
 /// @see BinaryCondition
 /// @since 1.0
-public sealed interface Expression permits Literal, Identifier {
+public sealed interface Expression permits Literal, Identifier, VariableRef {
 
 }
 

@@ -5,9 +5,11 @@ import com.github.silent.samurai.speedy.interfaces.backend.SpeedyBackend;
 import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessorFactory;
 import com.github.silent.samurai.speedy.conversion.ext.SpeedyTypeModule;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModelProcessor;
+import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 public interface ISpeedyConfiguration {
@@ -19,6 +21,20 @@ public interface ISpeedyConfiguration {
     DataSource dataSourcePerReq();
 
     SpeedyDialect getDialect();
+
+    /**
+     * Resolves the access-control policy for the current request, mirroring how
+     * {@link #dataSourcePerReq()} resolves the current request's {@link DataSource}: the
+     * implementation is free to read ambient request state (e.g. via a {@code RequestContextHolder}
+     * or similar) and decode a caller's token however it likes — Speedy does not care where the
+     * policy comes from, only that it is scoped to the current caller.
+     * <p>
+     * An empty {@link Optional} (the default) means no policy is configured for this request, in
+     * which case every policy-aware handler is a no-op and Speedy behaves exactly as it does today.
+     */
+    default Optional<SpeedyAuthContext> authContextPerReq() {
+        return Optional.empty();
+    }
 
     default boolean isMetadataEndpointEnabled() {
         return true;

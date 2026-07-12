@@ -12,6 +12,7 @@ import com.github.silent.samurai.speedy.serialization.FieldPredicates;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 /// Shared response builders for read/write handlers.
@@ -25,7 +26,8 @@ public final class ResponseBuilders {
     }
 
     /// Key-only field predicate used by create/delete success responses.
-    public static final Predicate<FieldMetadata> KEY_ONLY = KeyFieldMetadata.class::isInstance;
+    public static final BiPredicate<SpeedyEntity, FieldMetadata> KEY_ONLY =
+            (entity, fieldMetadata) -> fieldMetadata instanceof KeyFieldMetadata;
 
     /// Builds a count-only response (for {@code $select=$count} requests).
     public static SpeedyCountResponse countResponse(BigInteger count) {
@@ -40,7 +42,8 @@ public final class ResponseBuilders {
                                                           List<SpeedyEntity> entities,
                                                           SpeedyQuery speedyQuery,
                                                           QueryResult result) {
-        Predicate<FieldMetadata> fieldPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
+        Predicate<FieldMetadata> selectPredicate = FieldPredicates.buildFieldPredicate(speedyQuery.getSelect());
+        BiPredicate<SpeedyEntity, FieldMetadata> fieldPredicate = (entity, fieldMetadata) -> selectPredicate.test(fieldMetadata);
         return SpeedyEntityResponse.builder()
                 .entityMetadata(entityMetadata)
                 .payload(entities)
