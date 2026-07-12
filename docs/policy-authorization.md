@@ -39,6 +39,29 @@ different caller variables each time.
 > `new SpeedyAuthContext(new PolicyDocument(PolicyEffect.ALLOW, List.of()))` for requests that should retain
 > unrestricted access.
 
+## Fluent Builder
+
+`PolicyBuilder` provides a concise, fail-closed way to construct a request context. `PolicyConditions` supplies
+common row-condition expressions; use `variable("principal.id")` to reference a trusted context variable.
+
+```java
+import static com.github.silent.samurai.speedy.policy.PolicyConditions.fieldEquals;
+import static com.github.silent.samurai.speedy.policy.PolicyConditions.variable;
+
+SpeedyAuthContext context = PolicyBuilder.denyByDefault()
+        .principalId(authentication.getName())
+        .allow("read-own-invoices", PermissionType.READ, "Invoice.*",
+                fieldEquals("ownerId", variable("principal.id")))
+        .allow("update-own-status", PermissionType.UPDATE, "Invoice.status",
+                fieldEquals("ownerId", variable("principal.id")))
+        .build();
+```
+
+Use `fieldIn("status", "DRAFT", "REVIEW")` for `$in` conditions and
+`orFieldEquals("department", "HR", "FINANCE")` for a same-field `$or` condition. The builder also supports
+`variable(name, speedyValue)`, multi-action allow rules, explicit `deny(...)` rules, and `allowByDefault()` when
+an application intentionally needs an allow-by-default document.
+
 ## Policy Format
 
 Create a document with its default effect and ordered rules:
