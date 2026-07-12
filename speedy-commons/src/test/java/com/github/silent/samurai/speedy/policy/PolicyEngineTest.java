@@ -11,12 +11,9 @@ import com.github.silent.samurai.speedy.metadata.EntityBuilder;
 import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyText;
-import com.github.silent.samurai.speedy.policy.condition.ConditionContext;
-import com.github.silent.samurai.speedy.policy.condition.PolicyCondition;
 import com.github.silent.samurai.speedy.policy.condition.QueryCondition;
 import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
-import com.github.silent.samurai.speedy.policy.model.ResourceSelector;
 import com.github.silent.samurai.speedy.policy.model.SpeedyPolicy;
 import org.junit.jupiter.api.Test;
 
@@ -58,11 +55,11 @@ class PolicyEngineTest {
         FieldMetadata name = employee.getField("name");
 
         SpeedyPolicy allowSalary = new SpeedyPolicy("allow-salary", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.salary")), List.of());
+                Set.of(PermissionType.READ), List.of("Employee.salary"), List.of());
         PolicyEngine engine = engineOf(PolicyEffect.DENY, allowSalary);
 
-        assertTrue(engine.isFieldAllowed(PermissionType.READ, employee, salary, null));
-        assertFalse(engine.isFieldAllowed(PermissionType.READ, employee, name, null));
+        assertTrue(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, salary), null) == PolicyEffect.ALLOW);
+        assertFalse(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), null) == PolicyEffect.ALLOW);
     }
 
     @Test
@@ -71,12 +68,12 @@ class PolicyEngineTest {
         FieldMetadata name = employee.getField("name");
 
         SpeedyPolicy allow = new SpeedyPolicy("allow-name", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.*")), List.of());
+                Set.of(PermissionType.READ), List.of("Employee.*"), List.of());
         SpeedyPolicy deny = new SpeedyPolicy("deny-name", PolicyEffect.DENY,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.name")), List.of());
+                Set.of(PermissionType.READ), List.of("Employee.name"), List.of());
 
-        assertFalse(engineOf(PolicyEffect.ALLOW, allow, deny).isFieldAllowed(PermissionType.READ, employee, name, null));
-        assertFalse(engineOf(PolicyEffect.ALLOW, deny, allow).isFieldAllowed(PermissionType.READ, employee, name, null));
+        assertFalse(engineOf(PolicyEffect.ALLOW, allow, deny).isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), null) == PolicyEffect.ALLOW);
+        assertFalse(engineOf(PolicyEffect.ALLOW, deny, allow).isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), null) == PolicyEffect.ALLOW);
     }
 
     @Test
@@ -84,8 +81,8 @@ class PolicyEngineTest {
         EntityMetadata employee = employeeMetadata();
         FieldMetadata name = employee.getField("name");
 
-        assertTrue(engineOf(PolicyEffect.ALLOW).isFieldAllowed(PermissionType.READ, employee, name, null));
-        assertFalse(engineOf(PolicyEffect.DENY).isFieldAllowed(PermissionType.READ, employee, name, null));
+        assertTrue(engineOf(PolicyEffect.ALLOW).isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), null) == PolicyEffect.ALLOW);
+        assertFalse(engineOf(PolicyEffect.DENY).isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), null) == PolicyEffect.ALLOW);
     }
 
     @Test
@@ -95,7 +92,7 @@ class PolicyEngineTest {
         PolicyEngine engine = engineOf(null);
 
         assertEquals(PolicyEffect.DENY, new PolicyDocument(null, List.of()).defaultEffect());
-        assertFalse(engine.isFieldAllowed(PermissionType.READ, employee, name, null));
+        assertFalse(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), null) == PolicyEffect.ALLOW);
     }
 
     @Test
@@ -105,17 +102,17 @@ class PolicyEngineTest {
 
         SpeedyPolicy ownsRecord = new SpeedyPolicy("user-owns-record", PolicyEffect.ALLOW,
                 Set.of(PermissionType.READ, PermissionType.UPDATE),
-                List.of(ResourceSelector.parse("Employee.*")),
+                List.of("Employee.*"),
                 List.of(new QueryCondition(Map.of("ownerId", "${principal.id}"))));
         PolicyEngine engine = engineOf(PolicyEffect.DENY, ownsRecord);
 
         SpeedyEntity ownRow = rowWithOwner(employee, "u1");
         SpeedyEntity otherRow = rowWithOwner(employee, "u2");
 
-        assertTrue(engine.isFieldAllowed(PermissionType.READ, employee, name, ownRow));
-        assertFalse(engine.isFieldAllowed(PermissionType.READ, employee, name, otherRow));
-        assertTrue(engine.isFieldAllowed(PermissionType.UPDATE, employee, name, ownRow));
-        assertFalse(engine.isFieldAllowed(PermissionType.UPDATE, employee, name, otherRow));
+        assertTrue(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), ownRow) == PolicyEffect.ALLOW);
+        assertFalse(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), otherRow) == PolicyEffect.ALLOW);
+        assertTrue(engine.isAuthorized(PermissionType.UPDATE, PolicyTarget.field(employee, name), ownRow) == PolicyEffect.ALLOW);
+        assertFalse(engine.isAuthorized(PermissionType.UPDATE, PolicyTarget.field(employee, name), otherRow) == PolicyEffect.ALLOW);
     }
 
     @Test
@@ -124,12 +121,12 @@ class PolicyEngineTest {
         FieldMetadata name = employee.getField("name");
 
         SpeedyPolicy onlyTeamA = new SpeedyPolicy("only-team-a", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.*")),
+                Set.of(PermissionType.READ), List.of("Employee.*"),
                 List.of(new QueryCondition(Map.of("ownerId", "team-a"))));
         PolicyEngine engine = engineOf(PolicyEffect.DENY, onlyTeamA);
 
-        assertTrue(engine.isFieldAllowed(PermissionType.READ, employee, name, rowWithOwner(employee, "team-a")));
-        assertFalse(engine.isFieldAllowed(PermissionType.READ, employee, name, rowWithOwner(employee, "team-b")));
+        assertTrue(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), rowWithOwner(employee, "team-a")) == PolicyEffect.ALLOW);
+        assertFalse(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), rowWithOwner(employee, "team-b")) == PolicyEffect.ALLOW);
     }
 
     @Test
@@ -139,34 +136,42 @@ class PolicyEngineTest {
         FieldMetadata salary = employee.getField("salary");
 
         SpeedyPolicy ownsRecord = new SpeedyPolicy("user-owns-record", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.*")),
+                Set.of(PermissionType.READ), List.of("Employee.*"),
                 List.of(new QueryCondition(Map.of("ownerId", "${principal.id}"))));
         SpeedyPolicy allowSalaryUnconditional = new SpeedyPolicy("hr-can-read-salaries", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.salary")), List.of());
+                Set.of(PermissionType.READ), List.of("Employee.salary"), List.of());
         PolicyEngine engine = engineOf(PolicyEffect.DENY, ownsRecord, allowSalaryUnconditional);
 
-        assertFalse(engine.isFieldReadableUnconditional(employee, name));
-        assertTrue(engine.isFieldReadableUnconditional(employee, salary));
-    }
-
-    @Test
-    void entityHasAnyReadRule_countsFieldSpecificRules() throws NotFoundException {
-        EntityMetadata employee = employeeMetadata();
-        SpeedyPolicy allowSalary = new SpeedyPolicy("allow-salary", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.salary")), List.of());
-
-        assertTrue(engineOf(PolicyEffect.DENY, allowSalary).entityHasAnyReadRule(employee));
-        assertFalse(engineOf(PolicyEffect.DENY).entityHasAnyReadRule(employee));
+        assertFalse(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), null) == PolicyEffect.ALLOW);
+        assertTrue(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, salary), null) == PolicyEffect.ALLOW);
     }
 
     @Test
     void unconditionalWholeEntityDeny_blocksTheEntityGate() throws NotFoundException {
         EntityMetadata employee = employeeMetadata();
         SpeedyPolicy denyAll = new SpeedyPolicy("deny-employees", PolicyEffect.DENY,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.*")), List.of());
+                Set.of(PermissionType.READ), List.of("Employee.*"), List.of());
 
-        assertTrue(engineOf(PolicyEffect.DENY, denyAll).isEntirelyDenied(PermissionType.READ, employee));
-        assertTrue(engineOf(PolicyEffect.ALLOW, denyAll).isEntirelyDenied(PermissionType.READ, employee));
+        assertTrue(engineOf(PolicyEffect.DENY, denyAll).isAuthorized(PermissionType.READ, PolicyTarget.entity(employee)) == PolicyEffect.DENY);
+        assertTrue(engineOf(PolicyEffect.ALLOW, denyAll).isAuthorized(PermissionType.READ, PolicyTarget.entity(employee)) == PolicyEffect.DENY);
+    }
+
+    @Test
+    void fieldSpecificUnconditionalDeny_doesNotBlockTheEntityGate() throws NotFoundException {
+        EntityMetadata employee = employeeMetadata();
+        SpeedyPolicy denySalaryOnly = new SpeedyPolicy("deny-salary", PolicyEffect.DENY,
+                Set.of(PermissionType.READ), List.of("Employee.salary"), List.of());
+
+        assertFalse(engineOf(PolicyEffect.ALLOW, denySalaryOnly).isAuthorized(PermissionType.READ, PolicyTarget.entity(employee)) == PolicyEffect.DENY);
+    }
+
+    @Test
+    void fieldSpecificAllow_preventsTheEntityGateFromBlocking() throws NotFoundException {
+        EntityMetadata employee = employeeMetadata();
+        SpeedyPolicy allowSalaryOnly = new SpeedyPolicy("allow-salary", PolicyEffect.ALLOW,
+                Set.of(PermissionType.READ), List.of("Employee.salary"), List.of());
+
+        assertFalse(engineOf(PolicyEffect.DENY, allowSalaryOnly).isAuthorized(PermissionType.READ, PolicyTarget.entity(employee)) == PolicyEffect.DENY);
     }
 
     @Test
@@ -177,31 +182,31 @@ class PolicyEngineTest {
 
         SpeedyPolicy hrCanReadSalaries = new SpeedyPolicy("hr-can-read-salaries", PolicyEffect.ALLOW,
                 Set.of(PermissionType.READ),
-                List.of(ResourceSelector.parse("Employee.salary")),
+                List.of("Employee.salary"),
                 List.of());
         SpeedyPolicy userOwnsRecord = new SpeedyPolicy("user-owns-record", PolicyEffect.ALLOW,
                 Set.of(PermissionType.READ, PermissionType.UPDATE),
-                List.of(ResourceSelector.parse("Employee.*")),
+                List.of("Employee.*"),
                 List.of(new QueryCondition(Map.of("ownerId", "${principal.id}"))));
         PolicyEngine engine = engineOf(PolicyEffect.DENY, hrCanReadSalaries, userOwnsRecord);
 
         SpeedyEntity ownRow = rowWithOwner(employee, "u1");
         SpeedyEntity otherRow = rowWithOwner(employee, "u2");
 
-        assertTrue(engine.isFieldAllowed(PermissionType.READ, employee, salary, ownRow));
-        assertTrue(engine.isFieldAllowed(PermissionType.READ, employee, salary, otherRow));
+        assertTrue(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, salary), ownRow) == PolicyEffect.ALLOW);
+        assertTrue(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, salary), otherRow) == PolicyEffect.ALLOW);
 
-        assertTrue(engine.isFieldAllowed(PermissionType.READ, employee, name, ownRow));
-        assertFalse(engine.isFieldAllowed(PermissionType.READ, employee, name, otherRow));
-        assertTrue(engine.isFieldAllowed(PermissionType.UPDATE, employee, name, ownRow));
-        assertFalse(engine.isFieldAllowed(PermissionType.UPDATE, employee, name, otherRow));
+        assertTrue(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), ownRow) == PolicyEffect.ALLOW);
+        assertFalse(engine.isAuthorized(PermissionType.READ, PolicyTarget.field(employee, name), otherRow) == PolicyEffect.ALLOW);
+        assertTrue(engine.isAuthorized(PermissionType.UPDATE, PolicyTarget.field(employee, name), ownRow) == PolicyEffect.ALLOW);
+        assertFalse(engine.isAuthorized(PermissionType.UPDATE, PolicyTarget.field(employee, name), otherRow) == PolicyEffect.ALLOW);
     }
 
     @Test
     void rowVisibilityConditions_unconditionalAllow_injectsNoRestriction() throws NotFoundException {
         EntityMetadata employee = employeeMetadata();
         SpeedyPolicy allowSalaryUnconditional = new SpeedyPolicy("hr-can-read-salaries", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.salary")), List.of());
+                Set.of(PermissionType.READ), List.of("Employee.salary"), List.of());
         PolicyEngine engine = engineOf(PolicyEffect.DENY, allowSalaryUnconditional);
 
         assertTrue(engine.rowVisibilityConditions(employee).isEmpty());
@@ -217,7 +222,7 @@ class PolicyEngineTest {
     void rowVisibilityConditions_conditionalAllow_translatesToFieldEqualsCondition() throws NotFoundException {
         EntityMetadata employee = employeeMetadata();
         SpeedyPolicy ownsRecord = new SpeedyPolicy("user-owns-record", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.*")),
+                Set.of(PermissionType.READ), List.of("Employee.*"),
                 List.of(new QueryCondition(Map.of("ownerId", "${principal.id}"))));
         PolicyEngine engine = engineOf(PolicyEffect.DENY, ownsRecord);
 
@@ -228,25 +233,13 @@ class PolicyEngineTest {
     }
 
     @Test
-    void rowVisibilityConditions_untranslatableCondition_bailsOutToNoRestriction() throws NotFoundException {
+    void rowVisibilityConditions_unresolvableVariable_bailsOutToNoRestriction() throws NotFoundException {
         EntityMetadata employee = employeeMetadata();
-        PolicyCondition neverTranslatable = new PolicyCondition() {
-            @Override
-            public String type() {
-                return "AlwaysTrueButUntranslatable";
-            }
-
-            @Override
-            public boolean isSatisfied(ConditionContext ctx) {
-                return true;
-            }
-        };
         SpeedyPolicy conditional = new SpeedyPolicy("custom-condition", PolicyEffect.ALLOW,
-                Set.of(PermissionType.READ), List.of(ResourceSelector.parse("Employee.*")),
-                List.of(neverTranslatable));
+                Set.of(PermissionType.READ), List.of("Employee.*"),
+                List.of(new QueryCondition(Map.of("ownerId", "${principal.missing}"))));
         PolicyEngine engine = engineOf(PolicyEffect.DENY, conditional);
 
-        assertTrue(engine.isFieldAllowed(PermissionType.READ, employee, employee.getField("name"), rowWithOwner(employee, "anyone")));
         assertTrue(engine.rowVisibilityConditions(employee).isEmpty());
     }
 }

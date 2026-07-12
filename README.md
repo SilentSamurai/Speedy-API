@@ -116,7 +116,8 @@ That's it — `User` is now a live REST resource.
 
 > **Note:** Speedy-API does not authenticate callers or validate tokens; keep that in your application (for example,
 > Spring Security filters in front of `/speedy/v1/**`). `@SpeedyAction` provides static CRUD gates, while
-> `ISpeedyConfiguration.policyPerReq()` enables optional request-scoped, per-user authorization. See the
+> `ISpeedyConfiguration.authContextPerReq()` provides request-scoped, per-user authorization through a
+> `SpeedyAuthContext`. Authorization defaults to deny when no context is returned. See the
 > [policy guide](docs/policy-authorization.md).
 
 ---

@@ -29,8 +29,9 @@ public interface ISpeedyConfiguration {
      * or similar) and decode a caller's token however it likes — Speedy does not care where the
      * policy comes from, only that it is scoped to the current caller.
      * <p>
-     * An empty {@link Optional} (the default) means no policy is configured for this request, in
-     * which case every policy-aware handler is a no-op and Speedy behaves exactly as it does today.
+     * An empty {@link Optional} (the default) is interpreted by the default engine as an empty,
+     * deny-by-default policy document. Return an explicit {@link SpeedyAuthContext} containing a
+     * {@code PolicyEffect.ALLOW} default document for a request that should be unrestricted.
      */
     default Optional<SpeedyAuthContext> authContextPerReq() {
         return Optional.empty();

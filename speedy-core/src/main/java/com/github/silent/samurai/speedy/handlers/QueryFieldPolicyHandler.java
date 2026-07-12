@@ -11,7 +11,10 @@ import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
 import com.github.silent.samurai.speedy.interfaces.query.OrderBy;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.enums.PermissionType;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.PolicyTarget;
+import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.utils.ReadQueryResolver;
 
 import java.util.LinkedHashSet;
@@ -32,7 +35,8 @@ public class QueryFieldPolicyHandler implements Handler {
         }
 
         for (FieldMetadata field : referenced) {
-            if (!engine.isFieldReadableUnconditional(field.getEntityMetadata(), field)) {
+            PolicyTarget target = PolicyTarget.field(field.getEntityMetadata(), field);
+            if (engine.isAuthorized(PermissionType.READ, target, null) != PolicyEffect.ALLOW) {
                 throw new BadRequestException(
                         "Field '" + field.getOutputPropertyName() + "' cannot be used in a filter or sort");
             }

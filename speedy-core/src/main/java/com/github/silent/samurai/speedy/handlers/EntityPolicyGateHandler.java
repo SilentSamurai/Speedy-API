@@ -9,6 +9,8 @@ import com.github.silent.samurai.speedy.interfaces.Handler;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.PolicyTarget;
+import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 
 public class EntityPolicyGateHandler implements Handler {
 
@@ -26,7 +28,7 @@ public class EntityPolicyGateHandler implements Handler {
                 .orElseThrow(() -> new InternalServerError("URI context is required"))
                 .getParsedQuery().getFrom();
 
-        if (engine.isEntirelyDenied(permission, entityMetadata)) {
+        if (engine.isAuthorized(permission, PolicyTarget.entity(entityMetadata)) == PolicyEffect.DENY) {
             throw new ForbiddenException(
                     String.format("%s not allowed for %s", permission.name().toLowerCase(), entityMetadata.getName()));
         }

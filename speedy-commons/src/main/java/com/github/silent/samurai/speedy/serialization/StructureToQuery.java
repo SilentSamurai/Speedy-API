@@ -42,8 +42,22 @@ import java.util.regex.Pattern;
 /// **only** key of its object — a single-key lookahead is therefore enough and no per-object
 /// buffering is needed.
 ///
+/// {@link #parseCondition} exposes just the condition-tree grammar (no {@code $select}/
+/// {@code $orderBy}/{@code $page}/{@code $expand}) so callers with a standalone condition body —
+/// e.g. an ABAC policy's {@code QueryCondition} — get the exact same {@code $or}/{@code $and}/
+/// operator/{@code ${variable}} grammar real request filters use, instead of a second parser.
+///
 /// Stateless and thread-safe; the same instance can serve every request.
 public class StructureToQuery {
+
+    /// Parses a standalone condition body (the reader's root value, not wrapped in a
+    /// {@code $where} key) into a {@link BooleanCondition} against {@code entity}.
+    public BooleanCondition parseCondition(EntityMetadata entity, StructureReader r) throws SpeedyHttpException {
+        if (r.begin() != Kind.OBJECT) {
+            throw new BadRequestException("condition body must be an object");
+        }
+        return parseBoolean(new ConditionFactory(entity), r);
+    }
 
     public SpeedyQuery parse(EntityMetadata entity, StructureReader r,
                              int maxPageSize, int defaultPageSize) throws SpeedyHttpException {

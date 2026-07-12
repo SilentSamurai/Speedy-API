@@ -188,9 +188,11 @@ private LocalDateTime createdAt;
 
 #### Per-Field & Per-User Access Control
 
-For dynamic, request-scoped authorization, implement `ISpeedyConfiguration.policyPerReq()`. It receives no policy
-format constraint: your application resolves its authenticated principal, then returns a `SpeedyPolicy` containing that
-principal and its allow/deny rules. Speedy enforces permitted fields, row conditions, and create/update/delete rules.
+For dynamic, request-scoped authorization, implement `ISpeedyConfiguration.authContextPerReq()`. Resolve the trusted
+caller in your application, then return a `SpeedyAuthContext` containing its `PolicyDocument` and any variables used by
+row conditions. Speedy enforces permitted fields, row conditions, and create/update/delete rules. The default is
+fail-closed: an empty optional becomes an empty deny-by-default policy, so return an explicit allow document for a
+request that should remain unrestricted.
 
 See [Request-Scoped Authorization](policy-authorization.md) for the policy format, a Spring Security integration
 example, and the precise read/query/write behavior.

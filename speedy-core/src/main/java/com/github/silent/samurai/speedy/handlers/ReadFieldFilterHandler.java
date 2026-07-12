@@ -11,6 +11,8 @@ import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityResponse;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.PolicyTarget;
+import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 
 import java.util.function.BiPredicate;
 
@@ -28,7 +30,8 @@ public class ReadFieldFilterHandler implements Handler {
         BiPredicate<SpeedyEntity, FieldMetadata> existing = entityResponse.getFieldPredicate();
         BiPredicate<SpeedyEntity, FieldMetadata> policyVisible = (row, field) ->
                 field instanceof KeyFieldMetadata
-                        || engine.isFieldAllowed(PermissionType.READ, row.getMetadata(), field, row);
+                        || engine.isAuthorized(PermissionType.READ, PolicyTarget.field(row.getMetadata(), field), row)
+                                == PolicyEffect.ALLOW;
 
         context.put(SpeedyResponse.class, entityResponse.toBuilder()
                 .fieldPredicate(existing.and(policyVisible))

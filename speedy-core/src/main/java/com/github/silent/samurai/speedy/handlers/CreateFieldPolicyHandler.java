@@ -13,6 +13,8 @@ import com.github.silent.samurai.speedy.models.SpeedyCreateBody;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.PolicyTarget;
+import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 
 public class CreateFieldPolicyHandler implements Handler {
 
@@ -28,7 +30,8 @@ public class CreateFieldPolicyHandler implements Handler {
                 if (!entity.has(field)) {
                     continue;
                 }
-                if (!engine.isFieldAllowed(PermissionType.CREATE, entityMetadata, field, entity)) {
+                if (engine.isAuthorized(PermissionType.CREATE, PolicyTarget.field(entityMetadata, field), entity)
+                        != PolicyEffect.ALLOW) {
                     throw new ForbiddenException(
                             "Field '" + field.getOutputPropertyName() + "' not permitted on create");
                 }

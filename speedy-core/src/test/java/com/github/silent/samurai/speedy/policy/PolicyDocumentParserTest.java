@@ -1,14 +1,9 @@
 package com.github.silent.samurai.speedy.policy;
 
 import com.github.silent.samurai.speedy.enums.PermissionType;
-import com.github.silent.samurai.speedy.policy.condition.ConditionContext;
-import com.github.silent.samurai.speedy.policy.condition.ConditionSpec;
-import com.github.silent.samurai.speedy.policy.condition.PolicyCondition;
-import com.github.silent.samurai.speedy.policy.condition.PolicyConditionFactory;
 import com.github.silent.samurai.speedy.policy.condition.QueryCondition;
 import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
-import com.github.silent.samurai.speedy.policy.model.ResourceSelector;
 import com.github.silent.samurai.speedy.policy.model.SpeedyPolicy;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +12,6 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PolicyDocumentParserTest {
@@ -45,8 +39,7 @@ class PolicyDocumentParserTest {
             }
             """;
 
-    private final PolicyConditionRegistry registry = new PolicyConditionRegistry();
-    private final PolicyDocumentParser parser = new PolicyDocumentParser(registry);
+    private final PolicyDocumentParser parser = new PolicyDocumentParser();
 
     @Test
     void parsesSampleIssuePolicy() {
@@ -60,7 +53,7 @@ class PolicyDocumentParserTest {
         assertEquals("hr-role-id", hrRule.role());
         assertEquals(PolicyEffect.ALLOW, hrRule.effect());
         assertEquals(Set.of(PermissionType.READ), hrRule.getActions());
-        assertEquals(List.of(ResourceSelector.parse("Employee.salary"), ResourceSelector.parse("Employee.bonus")),
+        assertEquals(List.of("Employee.salary", "Employee.bonus"),
                 hrRule.getResources());
         assertTrue(hrRule.conditions().isEmpty());
 
@@ -68,22 +61,10 @@ class PolicyDocumentParserTest {
         assertEquals("user-owns-record", ownsRule.getName());
         assertEquals("employee-role-id", ownsRule.role());
         assertEquals(Set.of(PermissionType.READ, PermissionType.UPDATE), ownsRule.getActions());
-        assertEquals(List.of(ResourceSelector.parse("Employee")), ownsRule.getResources());
+        assertEquals(List.of("Employee"), ownsRule.getResources());
         assertEquals(1, ownsRule.conditions().size());
 
-        QueryCondition condition = assertInstanceOf(QueryCondition.class, ownsRule.conditions().get(0));
-        assertEquals("QueryCondition", condition.type());
-    }
-
-    @Test
-    void unknownConditionType_isRejectedWithAClearMessage() {
-        String json = """
-                {"defaultEffect":"Deny","policies":{"id":"x","role":"r","effect":"Allow","action":"READ",
-                "subject":"Employee","conditions":{"type":"NoSuchCondition"}}}
-                """;
-
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> parser.parse(json));
-        assertTrue(ex.getMessage().contains("NoSuchCondition"));
+        assertInstanceOf(QueryCondition.class, ownsRule.conditions().get(0));
     }
 
     @Test
@@ -97,40 +78,7 @@ class PolicyDocumentParserTest {
         SpeedyPolicy rule = parser.parse(json).speedyPolicies().get(0);
         assertEquals(Set.of(PermissionType.CREATE, PermissionType.READ, PermissionType.UPDATE, PermissionType.DELETE),
                 rule.getActions());
-        assertEquals(List.of(ResourceSelector.parse("Employee")), rule.getResources());
+        assertEquals(List.of("Employee"), rule.getResources());
         assertEquals(1, rule.conditions().size());
-    }
-
-    @Test
-    void newConditionType_integratesWithoutParserOrEngineChanges() {
-        registry.register(new PolicyConditionFactory() {
-            @Override
-            public String type() {
-                return "AlwaysAllow";
-            }
-
-            @Override
-            public PolicyCondition parse(ConditionSpec spec) {
-                return new PolicyCondition() {
-                    @Override
-                    public String type() {
-                        return "AlwaysAllow";
-                    }
-
-                    @Override
-                    public boolean isSatisfied(ConditionContext ctx) {
-                        return true;
-                    }
-                };
-            }
-        });
-
-        String json = """
-                {"defaultEffect":"Deny","policies":[{"id":"x","role":"r","effect":"Allow","action":"READ",
-                "subject":"Employee","conditions":{"type":"AlwaysAllow"}}]}
-                """;
-
-        PolicyDocument document = parser.parse(json);
-        assertEquals("AlwaysAllow", document.speedyPolicies().get(0).conditions().get(0).type());
     }
 }

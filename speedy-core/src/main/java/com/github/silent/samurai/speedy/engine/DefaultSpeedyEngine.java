@@ -30,6 +30,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 
 public class DefaultSpeedyEngine implements SpeedyEngine {
 
@@ -173,7 +174,6 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new EtagStampHandler(),
                 new UpdateHandler(),
                 new WriteEtagHandler(),
-                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         // PUT full-replace reuses the update-level permission; only the handler differs.
@@ -187,7 +187,6 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new EtagStampHandler(),
                 new ReplaceHandler(),
                 new WriteEtagHandler(),
-                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         deleteChain = List.of(
@@ -243,8 +242,8 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
 
         SpeedyAuthContext authContext = config.authContextPerReq()
                 .orElseGet(() -> new SpeedyAuthContext(
-                        new PolicyDocument(PolicyEffect.ALLOW, List.of()),
-                        java.util.Map.of()));
+                        new PolicyDocument(PolicyEffect.DENY, List.of()),
+                        Map.of()));
         ctx.put(PolicyEngine.class, new PolicyEngine(authContext));
     }
 

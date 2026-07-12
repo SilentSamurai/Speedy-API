@@ -13,6 +13,7 @@ import com.github.silent.samurai.speedy.interfaces.Handler;
 import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
 import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
@@ -23,6 +24,8 @@ import com.github.silent.samurai.speedy.models.SpeedyPartialFailure;
 import com.github.silent.samurai.speedy.models.SpeedyUpdateBody;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.PolicyTarget;
+import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -212,16 +215,18 @@ public abstract class AbstractUpdateHandler implements Handler {
         return saved;
     }
 
-    /// Requirements 9/12 + row-level ABAC for UPDATE: a client-supplied field the policy denies —
-    /// evaluated against the row's *current* state, so "only your own records" style conditions
-    /// work — fails the request explicitly.
+    /// Requirements 9/12 + row-level ABAC for UPDATE: a client-supplied mutable field the policy
+    /// denies — evaluated against the row's *current* state, so "only your own records" style
+    /// conditions work — fails the request explicitly. Key fields identify the target row and are
+    /// never part of the update set, so they are intentionally excluded from this field check.
     private void enforceUpdateFieldPolicy(PolicyEngine engine, EntityMetadata entityMetadata,
                                           SpeedyEntity entity, SpeedyEntity existingRow) throws SpeedyHttpException {
         for (FieldMetadata field : entityMetadata.getAllFields()) {
-            if (!entity.has(field)) {
+            if (field instanceof KeyFieldMetadata || !entity.has(field)) {
                 continue;
             }
-            if (!engine.isFieldAllowed(PermissionType.UPDATE, entityMetadata, field, existingRow)) {
+            if (engine.isAuthorized(PermissionType.UPDATE, PolicyTarget.field(entityMetadata, field), existingRow)
+                    != PolicyEffect.ALLOW) {
                 throw new ForbiddenException("Field '" + field.getOutputPropertyName() + "' not permitted on update");
             }
         }

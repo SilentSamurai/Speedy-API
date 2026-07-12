@@ -18,6 +18,7 @@ import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.PolicyTarget;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import lombok.extern.slf4j.Slf4j;
 
@@ -181,7 +182,7 @@ public class DeleteHandler implements com.github.silent.samurai.speedy.interface
                                         EntityMetadata entityMetadata, SpeedyEntityKey key) throws SpeedyHttpException {
         SpeedyEntity row = queryProcessor.fetchByKey(key)
                 .orElseThrow(() -> new NotFoundException("entity not found: " + key));
-        if (engine.decideEntity(PermissionType.DELETE, entityMetadata, row) == PolicyEffect.DENY) {
+        if (engine.isAuthorized(PermissionType.DELETE, PolicyTarget.entity(entityMetadata), row) == PolicyEffect.DENY) {
             throw new ForbiddenException("delete not allowed for " + entityMetadata.getName());
         }
     }

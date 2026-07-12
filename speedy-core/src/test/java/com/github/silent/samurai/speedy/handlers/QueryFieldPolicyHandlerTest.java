@@ -16,7 +16,6 @@ import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
 import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.policy.model.SpeedyPolicy;
-import com.github.silent.samurai.speedy.policy.model.ResourceSelector;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -79,7 +78,7 @@ class QueryFieldPolicyHandlerTest {
 
     private static PolicyEngine policy(String resource) {
         SpeedyPolicy allow = new SpeedyPolicy("allow", PolicyEffect.ALLOW, Set.of(PermissionType.READ),
-                List.of(ResourceSelector.parse(resource)), List.of());
+                List.of(resource), List.of());
         return new PolicyEngine(new SpeedyAuthContext(
                 new PolicyDocument(PolicyEffect.DENY, List.of(allow)),
                 Map.of("principal.id", new SpeedyText("principal"))));
