@@ -75,6 +75,8 @@ class PolicyIntegrationTest {
         };
     }
 
+    /// A row-scoped read rule is applied before pagination and counting, so every response total
+    /// describes only the products visible to the current principal.
     @Test
     void rowPolicyFiltersResultsBeforePagingAndCounting() throws Exception {
         String principalId = "Description 1";
@@ -103,6 +105,10 @@ class PolicyIntegrationTest {
         assertEquals("Product 1", payload.get(0).path("name").asText());
     }
 
+    /// The caller may read {@code Product.description} for every product, which keeps all products
+    /// in the response. A second rule grants {@code Product.name} only when the product's
+    /// description matches {@code principal.id}; therefore only the caller's product includes
+    /// {@code name}, while every other product is still returned with its public description.
     @Test
     void fieldPolicyOmitsConditionalFieldsWithoutDroppingUnconditionallyReadableRows() throws Exception {
         String principalId = "Description 1";
@@ -116,6 +122,7 @@ class PolicyIntegrationTest {
         MvcResult result = mvc.perform(get(SpeedyConstants.URI + "/Product")
                         .with(withPolicy(authContext))
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.payload.length()").value(7))
                 .andReturn();
@@ -130,6 +137,8 @@ class PolicyIntegrationTest {
         assertTrue(other.has("description"));
     }
 
+    /// A conditionally readable field may be returned for eligible rows but cannot be used as a
+    /// filter, because doing so could reveal data from ineligible rows.
     @Test
     void conditionalReadFieldsCannotBeUsedForFiltering() throws Exception {
         String principalId = "Description 1";
@@ -142,10 +151,13 @@ class PolicyIntegrationTest {
         mvc.perform(get(SpeedyConstants.URI + "/Product?name='Product 1'")
                         .with(withPolicy(authContext))
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Field 'name' cannot be used in a filter or sort"));
     }
 
+    /// A filter that follows an association is authorized against the associated entity's field
+    /// policy, not the policy on the entity named in the request URL.
     @Test
     void associatedFieldsAreCheckedAgainstTheirOwnEntityPolicy() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
@@ -155,10 +167,13 @@ class PolicyIntegrationTest {
         mvc.perform(get(SpeedyConstants.URI + "/Product?category.name='cat-1-1'")
                         .with(withPolicy(authContext))
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Field 'name' cannot be used in a filter or sort"));
     }
 
+    /// An unconditional entity-wide deny rejects the read before it can return either rows or
+    /// pagination totals.
     @Test
     void unconditionalWholeEntityReadDenyIsRejectedBeforeAnyRowsOrCountsAreReturned() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
@@ -168,10 +183,13 @@ class PolicyIntegrationTest {
         mvc.perform(get(SpeedyConstants.URI + "/Product")
                         .with(withPolicy(authContext))
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("read not allowed for Product"));
     }
 
+    /// Create authorization evaluates the submitted field values; a value outside the caller's
+    /// policy scope is rejected before any entity is created.
     @Test
     void createRejectsAFieldThatDoesNotSatisfyItsPolicy() throws Exception {
         String principalId = "allowed-category";
@@ -185,10 +203,13 @@ class PolicyIntegrationTest {
                         .with(withPolicy(authContext))
                         .content("[{\"name\":\"blocked-category\"}]")
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Field 'name' not permitted on create"));
     }
 
+    /// Update and delete rules evaluate the persisted target row, preventing a caller from
+    /// changing or deleting categories outside their name-based ownership scope.
     @Test
     void updateAndDeleteRejectRowsOutsideTheCallersScope() throws Exception {
         String principalId = "cat-1-1";
@@ -205,6 +226,7 @@ class PolicyIntegrationTest {
                         .with(withPolicy(authContext))
                         .content("{\"id\":\"2\",\"name\":\"not-allowed\"}")
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("Field 'name' not permitted on update"));
 
@@ -212,10 +234,13 @@ class PolicyIntegrationTest {
                         .with(withPolicy(authContext))
                         .content("[{\"id\":\"2\"}]")
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("delete not allowed for Category"));
     }
 
+    /// A field-level deny overrides a wildcard allow for that field without rejecting reads of
+    /// the rest of the entity.
     @Test
     void explicitFieldDenyOverridesWildcardAllowWithoutBlockingTheEntityGate() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
@@ -237,6 +262,8 @@ class PolicyIntegrationTest {
         }
     }
 
+    /// Separate conditional allow rules grant visibility independently, so their row conditions
+    /// combine with logical OR.
     @Test
     void multipleAllowRowConditionsAcrossRulesCombineWithOr() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
@@ -258,6 +285,8 @@ class PolicyIntegrationTest {
         productWithDescription(payload, "Description 4");
     }
 
+    /// A single policy condition may contain an explicit {@code $or} expression to grant either
+    /// branch of the row predicate.
     @Test
     void orCombinatorWithinASingleConditionGrantsEitherBranch() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
@@ -277,6 +306,7 @@ class PolicyIntegrationTest {
         rowWithFieldValue(payload, "name", "cat-6-6");
     }
 
+    /// Row visibility conditions support non-equality operators such as {@code $in}.
     @Test
     void nonEqOperatorInIsHonoredByRowVisibilityFiltering() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
@@ -297,6 +327,8 @@ class PolicyIntegrationTest {
         rowWithFieldValue(payload, "name", "cat-3-3");
     }
 
+    /// One rule can grant more than one action: the same caller can read their category and then
+    /// update that persisted category under the same name-based condition.
     @Test
     void singlePolicyRuleGrantsReadAndUpdateIndependently() throws Exception {
         String principalId = OWNER_SCOPED_CATEGORY_NAME;
@@ -322,6 +354,8 @@ class PolicyIntegrationTest {
                 .andExpect(jsonPath("$.payload[0].name").value(OWNER_SCOPED_CATEGORY_NAME + "-renamed"));
     }
 
+    /// Create is all-or-nothing: if any submitted item violates the field condition, no item in
+    /// the bulk request is created.
     @Test
     void bulkCreateFailsTheEntireRequestWhenAnyItemViolatesFieldPolicy() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
@@ -337,6 +371,8 @@ class PolicyIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Field 'name' not permitted on create"));
     }
 
+    /// Per-entity bulk update returns {@code 207 Multi-Status} when the request contains both an
+    /// authorized target row and a row outside the caller's policy scope.
     @Test
     void bulkUpdatePerEntityPartialFailureReturns207() throws Exception {
         String principalId = BULK_OWNER_CATEGORY_NAME;
@@ -361,6 +397,8 @@ class PolicyIntegrationTest {
                 .andExpect(jsonPath("$.failed[0].message").value("Field 'name' not permitted on update"));
     }
 
+    /// Field-level rules are insufficient by themselves: create and update also require a rule
+    /// that grants the corresponding entity-level action.
     @Test
     void entityLevelGateBlocksCreateAndUpdateWhenNoRuleGrantsTheAction() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
