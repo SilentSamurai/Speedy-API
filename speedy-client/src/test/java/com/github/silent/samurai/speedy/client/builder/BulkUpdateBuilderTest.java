@@ -76,19 +76,6 @@ class BulkUpdateBuilderTest {
     }
 
     @Test
-    void transactionModeShouldAppendQueryParam() {
-        AtomicReference<String> capturedUrl = new AtomicReference<>();
-        Speedy speedy = speedyWith(request -> {
-            capturedUrl.set(request.url());
-            return new SpeedyRawResponse(200, Collections.emptyMap(), "{\"payload\":[]}");
-        });
-
-        speedy.updateMany("User").items(List.of(node("1", "Alice"))).transaction("batch").execute();
-
-        assertTrue(capturedUrl.get().contains("$transaction=batch"));
-    }
-
-    @Test
     void executeShouldReturnResult() {
         Speedy speedy = speedyWith(request -> new SpeedyRawResponse(200, Collections.emptyMap(),
                 "{\"payload\":[{\"id\":1,\"name\":\"Updated\"}],\"pageIndex\":0,\"pageSize\":10}"));

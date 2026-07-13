@@ -16,25 +16,38 @@ import com.github.silent.samurai.speedy.policy.PolicyEngine;
 import com.github.silent.samurai.speedy.policy.PolicyTarget;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 
-public class CreateFieldPolicyHandler implements Handler {
+/// Applies to CREATE policy to the entity and to the request's candidate field values.
+///
+/// No persisted row is involved in a creation, so coarse entity authorization and per-field
+/// authorization belong to the same request-policy stage.
+public class CreateRequestPolicyHandler implements Handler {
 
     @Override
     public void process(SpeedyContext context) throws SpeedyHttpException {
         PolicyEngine engine = context.find(PolicyEngine.class)
                 .orElseThrow(() -> new InternalServerError("Policy engine is required"));
-        SpeedyCreateBody body = (SpeedyCreateBody) context.get(SpeedyBody.class);
         EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
 
+        if (engine.isAuthorized(PermissionType.CREATE, PolicyTarget.entity(entityMetadata)) == PolicyEffect.DENY) {
+            throw new ForbiddenException("create not allowed for " + entityMetadata.getName());
+        }
+
+        SpeedyCreateBody body = (SpeedyCreateBody) context.get(SpeedyBody.class);
         for (SpeedyEntity entity : body.getEntities()) {
-            for (FieldMetadata field : entityMetadata.getAllFields()) {
-                if (!entity.has(field)) {
-                    continue;
-                }
-                if (engine.isAuthorized(PermissionType.CREATE, PolicyTarget.field(entityMetadata, field), entity)
-                        != PolicyEffect.ALLOW) {
-                    throw new ForbiddenException(
-                            "Field '" + field.getOutputPropertyName() + "' not permitted on create");
-                }
+            enforceFieldAccess(engine, entityMetadata, entity);
+        }
+    }
+
+    private void enforceFieldAccess(PolicyEngine engine, EntityMetadata entityMetadata, SpeedyEntity entity)
+            throws ForbiddenException {
+        for (FieldMetadata field : entityMetadata.getAllFields()) {
+            if (!entity.has(field)) {
+                continue;
+            }
+            if (engine.isAuthorized(PermissionType.CREATE, PolicyTarget.field(entityMetadata, field), entity)
+                    != PolicyEffect.ALLOW) {
+                throw new ForbiddenException(
+                        "Field '" + field.getOutputPropertyName() + "' not permitted on create");
             }
         }
     }

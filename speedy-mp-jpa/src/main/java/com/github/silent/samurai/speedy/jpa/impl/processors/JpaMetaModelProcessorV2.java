@@ -99,10 +99,6 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             Arrays.stream(annotation.value())
                     .forEach(entity::addActionType);
         }
-        SpeedyTransaction txAnnotation = entityType.getBindableJavaType().getAnnotation(SpeedyTransaction.class);
-        if (txAnnotation != null) {
-            entity.transactionMode(txAnnotation.value());
-        }
         SpeedyBulk bulkAnnotation = entityType.getBindableJavaType().getAnnotation(SpeedyBulk.class);
         if (bulkAnnotation != null) {
             Arrays.stream(bulkAnnotation.value())

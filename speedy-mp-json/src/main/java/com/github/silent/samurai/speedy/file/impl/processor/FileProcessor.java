@@ -3,7 +3,6 @@ package com.github.silent.samurai.speedy.file.impl.processor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.file.impl.models.JsonEntity;
 import com.github.silent.samurai.speedy.file.impl.models.JsonField;
@@ -34,10 +33,6 @@ public class FileProcessor {
         eb.hasCompositeKey(jsonEntity.hasCompositeKey);
         eb.dbTableName(jsonEntity.dbTable);
         eb.sensitive(jsonEntity.sensitive);
-        if (jsonEntity.transactionMode != null && !jsonEntity.transactionMode.isEmpty()) {
-            TransactionMode mode = TransactionMode.valueOf(jsonEntity.transactionMode.toUpperCase());
-            eb.transactionMode(mode);
-        }
         if (jsonEntity.bulk != null) {
             for (String op : jsonEntity.bulk) {
                 eb.addBulkOperation(BulkOperation.valueOf(op.trim().toUpperCase()));

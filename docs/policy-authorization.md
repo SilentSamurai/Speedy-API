@@ -66,10 +66,9 @@ full `$or`/`$and`/`$in`/operator/`${variable}` grammar, e.g.
 needs an allow-by-default document.
 
 **Write-condition guard.** A field an `UPDATE`/`REPLACE`/`DELETE` rule gates on must itself be readable by the caller
-(as `read-invoice-owner` grants above). Otherwise the write's per-row success/failure — most visibly in a bulk
-`207` response — would leak that field's values for rows the caller cannot read. A caller lacking that read grant
-is refused before any row is touched. `CREATE` conditions are exempt: they test only the caller's own submitted
-values, which reveal nothing new.
+(as `read-invoice-owner` grants above). Otherwise the write's success/failure would leak that field's values for
+rows the caller cannot read. A caller lacking that read grant is refused before any row is touched. `CREATE`
+conditions are exempt: they test only the caller's own submitted values, which reveal nothing new.
 
 ## Policy Format
 
@@ -230,9 +229,8 @@ SpeedyPolicy updateOwnCategoryNames = new SpeedyPolicy(
 
 `PATCH /speedy/v1/Category/$update` may include the primary key without granting permission to `Category.id`; the key
 only identifies the row. If that row's current `name` matches `principal.id`, changing `name` is allowed and the
-response is serialized through the normal policy-aware response filter. In `per-entity` bulk mode, a request
-containing one matching row and one non-matching row returns `207 Multi-Status`: the matching update is in `succeeded`
-and the other item is in `failed` with status `403`.
+response is serialized through the normal policy-aware response filter. For a bulk request, every target must pass
+this check before the request enters update execution. One non-matching row rejects the entire request with `403`.
 
 ### Create only selected values
 
@@ -265,11 +263,13 @@ gate as well as field- and row-level checks:
 | Replace | `PUT` must be permitted by both `@SpeedyAction(REPLACE)` and `PermissionType.REPLACE`. Its writable fields are evaluated against the target row's current persisted state, just as for update. `UPDATE`/PATCH permission does not grant replace access. |
 | Delete | The entity must permit `DELETE`; Speedy loads the target row and evaluates its conditions before deleting it. A denied row returns `403 Forbidden`. |
 
-Policy failures follow the normal bulk transaction mode. A denied create field is checked before creation, so the whole
-create request fails. In `batch` mode, a denied update, replace, or delete rolls back the whole request. In `per-entity` mode,
-successful items commit independently; a mix of successes and policy failures returns `207 Multi-Status`, with the
-failed item reporting status `403`. See [PUT Operations](put-operation.md#transaction-mode-transaction) and
-[DELETE Operations](delete-operation.md) for bulk transaction-mode details.
+Policy failures for update and replace are request-wide preflight failures. Every target row is authorized before any
+update event or SQL write begins; one denied item ends the whole request with `403`. A denied create field is likewise
+checked before creation, so the whole create request fails. Writes are all-or-nothing: any validation, authorization, or
+persistence failure rejects the entire request and commits nothing. PATCH and PUT also verify that every target key
+exists before downstream authorization or write handlers run; a missing target ends the request with `404` before any
+update event or SQL write.
+See [PUT Operations](put-operation.md#atomicity) and [DELETE Operations](delete-operation.md) for bulk write details.
 
 ## Security Boundary
 

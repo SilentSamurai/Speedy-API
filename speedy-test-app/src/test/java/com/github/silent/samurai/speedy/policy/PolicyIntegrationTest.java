@@ -2,9 +2,11 @@ package com.github.silent.samurai.speedy.policy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.silent.samurai.speedy.TestApplication;
+import com.github.silent.samurai.speedy.events.EntityEvents;
 import com.github.silent.samurai.speedy.enums.PermissionType;
 import com.github.silent.samurai.speedy.enums.SpeedyEndpoint;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
+import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +42,9 @@ class PolicyIntegrationTest {
 
     @Autowired
     private MockMvc mvc;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     private static String queryUrl(String entity) {
         return operationUrl(entity, SpeedyEndpoint.QUERY);
@@ -214,7 +219,7 @@ class PolicyIntegrationTest {
         SpeedyAuthContext authContext = denyByDefault()
                 .principalId(principalId)
                 // The write conditions below gate on `name`, so `name` must be plainly readable
-                // (see WriteConditionPolicyHandler); grant an unconditional read of it.
+                // (see WriteRequestPolicyHandler); grant an unconditional read of it.
                 .allow("read-category-name", PermissionType.READ, "Category.name")
                 .allow("identify-categories", PermissionType.UPDATE, "Category.id")
                 .allow("change-own-categories", PermissionType.UPDATE, "Category.name",
@@ -429,10 +434,10 @@ class PolicyIntegrationTest {
                 .andExpect(jsonPath("$.message").value("Field 'name' not permitted on create"));
     }
 
-    /// Per-entity bulk update returns {@code 207 Multi-Status} when the request contains both an
-    /// authorized target row and a row outside the caller's policy scope.
+    /// Authorization is request-wide even in per-entity mode: a denied row prevents every item
+    /// from entering the update handler.
     @Test
-    void bulkUpdatePerEntityPartialFailureReturns207() throws Exception {
+    void bulkUpdatePerEntityPolicyFailureRejectsTheEntireRequestBeforeWrites() throws Exception {
         String principalId = BULK_OWNER_CATEGORY_NAME;
         SpeedyAuthContext authContext = denyByDefault()
                 .principalId(principalId)
@@ -443,18 +448,53 @@ class PolicyIntegrationTest {
                 .build();
         String ownedId = createScratchCategory(BULK_OWNER_CATEGORY_NAME);
         String otherId = createScratchCategory(BULK_OTHER_CATEGORY_NAME);
+        int preUpdateEventsBefore = EntityEvents.PRE_UPDATE_CATEGORY_COUNTER.get();
 
         mvc.perform(patch(operationUrl("Category", SpeedyEndpoint.UPDATE))
                         .with(withPolicy(authContext))
                         .content("[{\"id\":\"" + ownedId + "\",\"name\":\"" + BULK_OWNER_CATEGORY_NAME + "-renamed\"},"
                                 + "{\"id\":\"" + otherId + "\",\"name\":\"whatever\"}]")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is(207))
-                .andExpect(jsonPath("$.succeeded.length()").value(1))
-                .andExpect(jsonPath("$.failed.length()").value(1))
-                .andExpect(jsonPath("$.failed[0].index").value(1))
-                .andExpect(jsonPath("$.failed[0].status").value(403))
-                .andExpect(jsonPath("$.failed[0].message").value("Field 'name' not permitted on update"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Field 'name' not permitted on update"));
+
+        assertEquals(preUpdateEventsBefore, EntityEvents.PRE_UPDATE_CATEGORY_COUNTER.get(),
+                "a policy rejection must occur before any PRE_UPDATE event fires");
+        assertEquals(BULK_OWNER_CATEGORY_NAME, categoryRepository.findById(ownedId).orElseThrow().getName());
+        assertEquals(BULK_OTHER_CATEGORY_NAME, categoryRepository.findById(otherId).orElseThrow().getName());
+    }
+
+    /// A BATCH update must authorize every target before beginning the write/event loop. Otherwise
+    /// a later denied row could roll back the database while leaving earlier event side effects
+    /// behind.
+    @Test
+    void batchUpdatePolicyFailureFiresNoEarlierRowEventsOrWrites() throws Exception {
+        String ownerName = "batch-preflight-owner-" + System.nanoTime();
+        String otherName = "batch-preflight-other-" + System.nanoTime();
+        String ownerId = createScratchCategory(ownerName);
+        String otherId = createScratchCategory(otherName);
+        SpeedyAuthContext authContext = denyByDefault()
+                .principalId(ownerName)
+                // The UPDATE condition gates on `name`, so it must be plainly readable too.
+                .allow("read-category-name", PermissionType.READ, "Category.name")
+                .allow("update-own-category", PermissionType.UPDATE, "Category.name",
+                        fieldEquals("name", variable("principal.id")))
+                .build();
+        int preUpdateEventsBefore = EntityEvents.PRE_UPDATE_CATEGORY_COUNTER.get();
+
+        mvc.perform(patch(operationUrl("Category", SpeedyEndpoint.UPDATE))
+                        .queryParam("$transaction", "batch")
+                        .with(withPolicy(authContext))
+                        .content("[{\"id\":\"" + ownerId + "\",\"name\":\"" + ownerName + "-renamed\"},"
+                                + "{\"id\":\"" + otherId + "\",\"name\":\"blocked\"}]")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("Field 'name' not permitted on update"));
+
+        assertEquals(preUpdateEventsBefore, EntityEvents.PRE_UPDATE_CATEGORY_COUNTER.get(),
+                "a batch policy rejection must occur before any PRE_UPDATE event fires");
+        assertEquals(ownerName, categoryRepository.findById(ownerId).orElseThrow().getName());
+        assertEquals(otherName, categoryRepository.findById(otherId).orElseThrow().getName());
     }
 
     /// Field-level rules are insufficient by themselves: create and update also require a rule

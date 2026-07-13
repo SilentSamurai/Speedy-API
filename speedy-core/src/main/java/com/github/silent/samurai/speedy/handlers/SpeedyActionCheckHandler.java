@@ -7,11 +7,11 @@ import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 
-public class PermissionCheckHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
+public class SpeedyActionCheckHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
     private final PermissionType permission;
 
-    public PermissionCheckHandler(PermissionType permission) {
+    public SpeedyActionCheckHandler(PermissionType permission) {
         this.permission = permission;
     }
 

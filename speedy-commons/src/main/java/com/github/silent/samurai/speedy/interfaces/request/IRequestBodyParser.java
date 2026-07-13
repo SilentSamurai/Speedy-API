@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.interfaces.request;
 
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
@@ -32,16 +31,16 @@ public interface IRequestBodyParser {
 
     /// Parses a $create JSON array body into a list of SpeedyEntity instances
     /// wrapped in a SpeedyCreateBody.
-    SpeedyCreateBody parseCreate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
+    SpeedyCreateBody parseCreate(byte[] rawBody, EntityMetadata entity,
                                  QueryProcessor queryProcessor) throws SpeedyHttpException;
 
     /// Parses a $update JSON body (a bare object, or an array for bulk update) into a list
     /// of (entity, primary key) pairs, wrapped in a SpeedyUpdateBody.
-    SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
+    SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity,
                                  QueryProcessor queryProcessor) throws SpeedyHttpException;
 
     /// Parses a $delete JSON array body into a list of SpeedyEntityKey instances,
     /// wrapped in a SpeedyDeleteBody.
-    SpeedyDeleteBody parseDelete(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
+    SpeedyDeleteBody parseDelete(byte[] rawBody, EntityMetadata entity,
                                  QueryProcessor queryProcessor) throws SpeedyHttpException;
 }

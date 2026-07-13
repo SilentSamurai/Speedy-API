@@ -12,8 +12,6 @@ public interface IResponseSerializerV2 {
 
     void writeCount(SpeedyCountResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException;
 
-    void writeBatch(SpeedyBatchResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException;
-
     /// Writes a server-level error document (status + message). Not tied to any entity.
     void writeError(SpeedyErrorResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException;
 
@@ -27,9 +25,6 @@ public interface IResponseSerializerV2 {
                 break;
             case COUNT:
                 writeCount((SpeedyCountResponse) response, httpResponse);
-                break;
-            case BATCH_RESULT:
-                writeBatch((SpeedyBatchResponse) response, httpResponse);
                 break;
             case ERROR:
                 writeError((SpeedyErrorResponse) response, httpResponse);

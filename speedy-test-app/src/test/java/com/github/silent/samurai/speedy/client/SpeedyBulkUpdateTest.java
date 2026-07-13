@@ -135,43 +135,56 @@ class SpeedyBulkUpdateTest {
                 .expectJsonPath("$.payload[0].address", equalTo("Some Address"));
     }
 
-    /// PER_ENTITY mode (Supplier's default): one item targets a non-existent PK, the other is
-    /// valid -> 207 with the valid item committed despite the other's failure.
+    /// Missing targets are rejected by the shared update preflight before any write, so the
+    /// otherwise valid item is not committed (writes are all-or-nothing).
     @Test
-    void perEntityMode_partialFailure_returns207AndCommitsTheValidItem() throws Exception {
+    void missingTarget_failsWholeRequestBeforeAnyWrite() throws Exception {
         Supplier s = createSupplier("PartialUpd", "Addr", "partial@example.com");
 
         client.updateMany("Supplier")
                 .item(i -> i.key("id", s.getId()).field("name", "PartialUpd-renamed"))
                 .item(i -> i.key("id", "non-existent-id-99999").field("name", "ghost-rename"))
-                .transaction("per-entity")
                 .execute()
-                .expectStatus(207)
-                .expectJsonPath("$.succeeded[*]", hasSize(1))
-                .expectJsonPath("$.failed[*]", hasSize(1))
-                .expectJsonPath("$.failed[0].index", equalTo(1))
-                .expectJsonPath("$.failed[0].status", equalTo(404));
+                .expectStatus(404);
 
         Supplier reloaded = reload(s.getId());
-        assertEquals("PartialUpd-renamed", reloaded.getName(), "the valid item must still be committed");
+        assertEquals(s.getName(), reloaded.getName(), "preflight failure must prevent every update");
     }
 
-    /// BATCH mode: one item targets a non-existent PK -> the whole transaction rolls back,
-    /// including the item that would otherwise have succeeded.
+    /// One item targets a non-existent PK -> the whole transaction rolls back, including the
+    /// item that would otherwise have succeeded.
     @Test
-    void batchMode_oneFailure_rollsBackTheWholeBatch() throws Exception {
+    void oneFailure_rollsBackTheWholeRequest() throws Exception {
         Supplier s = createSupplier("BatchUpd", "Addr", "batch@example.com");
         String originalName = s.getName();
 
         client.updateMany("Supplier")
                 .item(i -> i.key("id", s.getId()).field("name", "BatchUpd-shouldNotStick"))
                 .item(i -> i.key("id", "non-existent-id-88888").field("name", "ghost-rename"))
-                .transaction("batch")
                 .execute()
                 .expectStatus(404);
 
         Supplier reloaded = reload(s.getId());
-        assertEquals(originalName, reloaded.getName(), "batch failure must roll back the other item's write too");
+        assertEquals(originalName, reloaded.getName(), "failure must roll back the other item's write too");
+    }
+
+    /// A successful bulk response must retain the request-item order even though all rows are
+    /// preflighted before the writing loop starts.
+    @Test
+    void successResponsePreservesInputOrder() throws Exception {
+        Supplier first = createSupplier("BatchOrderFirst", "Addr One", "first@example.com");
+        Supplier second = createSupplier("BatchOrderSecond", "Addr Two", "second@example.com");
+
+        client.updateMany("Supplier")
+                .item(i -> i.key("id", second.getId()).field("name", "BatchOrder-second-renamed"))
+                .item(i -> i.key("id", first.getId()).field("name", "BatchOrder-first-renamed"))
+                .execute()
+                .expectOk()
+                .expectJsonPath("$.payload[*]", hasSize(2))
+                .expectJsonPath("$.payload[0].id", equalTo(second.getId()))
+                .expectJsonPath("$.payload[0].name", equalTo("BatchOrder-second-renamed"))
+                .expectJsonPath("$.payload[1].id", equalTo(first.getId()))
+                .expectJsonPath("$.payload[1].name", equalTo("BatchOrder-first-renamed"));
     }
 
     @Test

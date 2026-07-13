@@ -3,7 +3,6 @@ package com.github.silent.samurai.speedy.metadata;
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.BulkOperation;
 import com.github.silent.samurai.speedy.enums.ColumnType;
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import lombok.Getter;
@@ -19,7 +18,6 @@ public class EntityBuilder {
     private String name;
     private String dbTableName;
     private boolean isSensitive = false;
-    private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     Set<BulkOperation> bulkOperations = new HashSet<>();
 
     public Iterable<FieldBuilder> fields() {
@@ -63,11 +61,6 @@ public class EntityBuilder {
 
     public EntityBuilder sensitive(boolean isSensitive) {
         this.isSensitive = isSensitive;
-        return this;
-    }
-
-    public EntityBuilder transactionMode(TransactionMode transactionMode) {
-        this.transactionMode = transactionMode;
         return this;
     }
 
@@ -137,7 +130,6 @@ public class EntityBuilder {
         }
 
         EntityMetadataImpl entityMetadata = new EntityMetadataImpl(name, dbTableName, hasCompositeKey, isSensitive, actionTypes, fieldMetadataMap);
-        entityMetadata.setTransactionMode(transactionMode);
         entityMetadata.setBulkOperations(bulkOperations);
 
         for (FieldMetadata fieldMetadata : fieldMetadataMap.values()) {

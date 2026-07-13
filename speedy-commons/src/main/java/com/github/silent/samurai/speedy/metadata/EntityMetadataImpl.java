@@ -2,13 +2,11 @@ package com.github.silent.samurai.speedy.metadata;
 
 import com.github.silent.samurai.speedy.enums.ActionType;
 import com.github.silent.samurai.speedy.enums.BulkOperation;
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Collections;
 import java.util.Map;
@@ -24,8 +22,6 @@ public class EntityMetadataImpl implements EntityMetadata {
     private final String name;
     private final String dbTableName;
     private final boolean isSensitive;
-    @Setter
-    private TransactionMode transactionMode = TransactionMode.PER_ENTITY;
     private Set<BulkOperation> bulkOperations = Collections.emptySet();
     private final Set<ActionType> actionType;
     private final Map<String, FieldMetadata> fieldMap;
@@ -119,11 +115,6 @@ public class EntityMetadataImpl implements EntityMetadata {
 
     public void setBulkOperations(Set<BulkOperation> bulkOperations) {
         this.bulkOperations = bulkOperations == null ? Collections.emptySet() : Set.copyOf(bulkOperations);
-    }
-
-    @Override
-    public TransactionMode getTransactionMode() {
-        return transactionMode;
     }
 
     @Override

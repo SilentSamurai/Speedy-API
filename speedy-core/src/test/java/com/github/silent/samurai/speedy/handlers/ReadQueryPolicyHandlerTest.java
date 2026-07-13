@@ -10,7 +10,6 @@ import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
-import com.github.silent.samurai.speedy.models.SpeedyText;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
 import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
 import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class QueryFieldPolicyHandlerTest {
+class ReadQueryPolicyHandlerTest {
 
     @Test
     void associatedFilterUsesTheAssociatedEntityPolicy() {
@@ -36,9 +35,9 @@ class QueryFieldPolicyHandlerTest {
         when(categoryName.getEntityMetadata()).thenReturn(category);
         when(categoryName.getOutputPropertyName()).thenReturn("name");
 
-        SpeedyContext context = contextFor(categoryName, policy("Product.name"));
+        SpeedyContext context = contextFor(categoryName, policy("Product.*"));
 
-        assertThrows(BadRequestException.class, () -> new QueryFieldPolicyHandler().process(context));
+        assertThrows(BadRequestException.class, () -> new ReadQueryPolicyHandler().process(context));
     }
 
     @Test
@@ -48,9 +47,9 @@ class QueryFieldPolicyHandlerTest {
         when(categoryName.getEntityMetadata()).thenReturn(category);
         when(categoryName.getOutputPropertyName()).thenReturn("name");
 
-        SpeedyContext context = contextFor(categoryName, policy("Category.name"));
+        SpeedyContext context = contextFor(categoryName, policy("Product.*", "Category.name"));
 
-        assertDoesNotThrow(() -> new QueryFieldPolicyHandler().process(context));
+        assertDoesNotThrow(() -> new ReadQueryPolicyHandler().process(context));
     }
 
     private static EntityMetadata metadata(String name) {
@@ -68,6 +67,8 @@ class QueryFieldPolicyHandlerTest {
         BooleanCondition where = mock(BooleanCondition.class);
         when(where.getConditions()).thenReturn(List.of(condition));
         SpeedyQuery query = mock(SpeedyQuery.class);
+        EntityMetadata product = metadata("Product");
+        when(query.getFrom()).thenReturn(product);
         when(query.getWhere()).thenReturn(where);
         when(query.getOrderByList()).thenReturn(List.of());
 
@@ -76,11 +77,13 @@ class QueryFieldPolicyHandlerTest {
                 .put(SpeedyBody.class, query);
     }
 
-    private static PolicyEngine policy(String resource) {
-        SpeedyPolicy allow = new SpeedyPolicy("allow", PolicyEffect.ALLOW, Set.of(PermissionType.READ),
-                resource, List.of());
+    private static PolicyEngine policy(String... resources) {
+        List<SpeedyPolicy> allows = java.util.Arrays.stream(resources)
+                .map(resource -> new SpeedyPolicy("allow-" + resource, PolicyEffect.ALLOW,
+                        Set.of(PermissionType.READ), resource, List.of()))
+                .toList();
         return new PolicyEngine(new SpeedyAuthContext(
-                new PolicyDocument(PolicyEffect.DENY, List.of(allow)),
-                Map.of("principal.id", new SpeedyText("principal"))));
+                new PolicyDocument(PolicyEffect.DENY, allows),
+                Map.of()));
     }
 }

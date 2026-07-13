@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class EntityEvents implements ISpeedyEventHandler {
 
     public static final AtomicInteger POST_DELETE_COUNTER = new AtomicInteger(0);
+    public static final AtomicInteger PRE_UPDATE_CATEGORY_COUNTER = new AtomicInteger(0);
     public static final ConcurrentHashMap<String, Boolean> POST_INSERT_CATEGORIES = new ConcurrentHashMap<>();
     public static final AtomicBoolean throwOnNextCurrencyInsert = new AtomicBoolean(false);
     public static final AtomicBoolean throwOnNextCurrencyDelete = new AtomicBoolean(false);
@@ -48,6 +49,7 @@ public class EntityEvents implements ISpeedyEventHandler {
 
     @SpeedyEvent(value = "Category", eventType = {SpeedyEventType.PRE_UPDATE})
     public void categoryPreUpdateEvent(SpeedyEntity category) throws Exception {
+        PRE_UPDATE_CATEGORY_COUNTER.incrementAndGet();
         if (category.has(category.getMetadata().field("name"))
                 && "generic-update-error-trigger".equalsIgnoreCase(category.get("name").asText())) {
             throw new RuntimeException("Simulated unexpected update error");

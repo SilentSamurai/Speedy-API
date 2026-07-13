@@ -18,7 +18,6 @@ public class JsonEntity {
 
     public String dbTable;
     public String keyType;
-    public String transactionMode;
 
     // The write operations that accept bulk (multi-element) bodies, e.g. ["CREATE","DELETE"]
     // or ["ALL"]. Values are BulkOperation names (case-insensitive). Absent/empty leaves the

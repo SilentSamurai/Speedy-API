@@ -96,47 +96,6 @@ public class DefaultResponseSerializer implements IResponseSerializerV2 {
     }
 
     @Override
-    public void writeBatch(SpeedyBatchResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
-        SpeedyResponseWriter w = writer;
-        w.startObject();
-
-        w.field("succeeded");
-        w.startArray();
-        for (SpeedyEntity entity : response.getSucceeded()) {
-            writeEntityKeys(entity, w);
-        }
-        w.endArray();
-
-        w.field("failed");
-        w.startArray();
-        for (SpeedyPartialFailure failure : response.getFailed()) {
-            w.startObject();
-            w.field("index");
-            w.writeInt(failure.getIndex());
-            w.field("status");
-            w.writeInt(failure.getStatus());
-            w.field("message");
-            w.writeText(failure.getMessage());
-            w.field("timestamp");
-            w.writeText(failure.getTimestamp());
-            w.field("inputPk");
-            if (failure.getInputPk() != null) {
-                writeEntityKeys(failure.getInputPk(), w);
-            } else {
-                w.writeNull();
-            }
-            w.endObject();
-        }
-        w.endArray();
-
-        w.field("pageIndex");
-        w.writeInt(response.getPageIndex());
-        w.endObject();
-
-        w.finish(httpResponse, response.getStatus(), response.getHeaders(), wireContentType);
-    }
-
-    @Override
     public void writeError(SpeedyErrorResponse response, HttpServletResponse httpResponse) throws SpeedyHttpException {
         SpeedyResponseWriter w = writer;
         w.reset(); // discard any partial document if a prior write failed mid-stream

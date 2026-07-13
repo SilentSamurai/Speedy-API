@@ -133,46 +133,47 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
 
         getChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.READ),
-                new EntityPolicyGateHandler(PermissionType.READ),
-                new QueryFieldPolicyHandler(),
-                new RowVisibilityFilterHandler(),
-                new VariableResolutionHandler(),
-                new GetHandler(),
+                new SpeedyActionCheckHandler(PermissionType.READ),
+                new ReadQueryPolicyHandler(),
+                new RequestValidationHandler(SpeedyRequestType.GET_LIST),
+                new GetHandler(),   
                 new ConditionalGetHandler(),
                 new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         queryChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.READ),
-                new EntityPolicyGateHandler(PermissionType.READ),
-                new QueryFieldPolicyHandler(),
-                new RowVisibilityFilterHandler(),
-                new VariableResolutionHandler(),
+                new SpeedyActionCheckHandler(PermissionType.READ),
+                new ReadQueryPolicyHandler(),
+                new RequestValidationHandler(SpeedyRequestType.QUERY),
                 new QueryHandler(),
                 new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         createChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.CREATE),
-                new EntityPolicyGateHandler(PermissionType.CREATE),
-                new BulkCheckHandler(BulkOperation.CREATE),
-                new CreateFieldPolicyHandler(),
+                new SpeedyActionCheckHandler(PermissionType.CREATE),
+                new CreateRequestPolicyHandler(),
+                new IsBulkEnableCheckHandler(BulkOperation.CREATE),
+                // missing handler for checking if key exists in db
                 new EtagStampHandler(),
+                new CreatePreEventHandler(),
+                new RequestValidationHandler(SpeedyRequestType.CREATE),
                 new CreateHandler(),
                 new WriteEtagHandler(),
                 new TailHandler()
         );
         updateChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.UPDATE),
-                new EntityPolicyGateHandler(PermissionType.UPDATE),
-                new WriteConditionPolicyHandler(PermissionType.UPDATE),
-                new BulkCheckHandler(BulkOperation.UPDATE),
+                new SpeedyActionCheckHandler(PermissionType.UPDATE),
+                new WriteRequestPolicyHandler(PermissionType.UPDATE),
+                new IsBulkEnableCheckHandler(BulkOperation.UPDATE),
+                new ExistsInDbCheckHandler(),
+                new UpdateAuthorizationPreflight(PermissionType.UPDATE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
+                new UpdatePreEventHandler(),
+                new RequestValidationHandler(SpeedyRequestType.UPDATE),
                 new UpdateHandler(),
                 new WriteEtagHandler(),
                 new TailHandler()
@@ -181,23 +182,29 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         // via BulkOperation.REPLACE.
         replaceChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.REPLACE),
-                new EntityPolicyGateHandler(PermissionType.REPLACE),
-                new WriteConditionPolicyHandler(PermissionType.REPLACE),
-                new BulkCheckHandler(BulkOperation.REPLACE),
+                new SpeedyActionCheckHandler(PermissionType.REPLACE),
+                new WriteRequestPolicyHandler(PermissionType.REPLACE),
+                new IsBulkEnableCheckHandler(BulkOperation.REPLACE),
+                new ExistsInDbCheckHandler(), // all checks need to be performed b4 we touch db
+                new UpdateAuthorizationPreflight(PermissionType.REPLACE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
+                new UpdatePreEventHandler(),
+                new RequestValidationHandler(SpeedyRequestType.REPLACE),
                 new ReplaceHandler(),
                 new WriteEtagHandler(),
                 new TailHandler()
         );
         deleteChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.DELETE),
-                new EntityPolicyGateHandler(PermissionType.DELETE),
-                new WriteConditionPolicyHandler(PermissionType.DELETE),
-                new BulkCheckHandler(BulkOperation.DELETE),
+                new SpeedyActionCheckHandler(PermissionType.DELETE),
+                new WriteRequestPolicyHandler(PermissionType.DELETE),
+                new IsBulkEnableCheckHandler(BulkOperation.DELETE),
+                new ExistsInDbCheckHandler(),
+                new DeleteRowPolicyPreflightHandler(),
                 new PreconditionCheckHandler(),
+                new RequestValidationHandler(SpeedyRequestType.DELETE),
+                new DeletePreEventHandler(),
                 new DeleteHandler(),
                 new TailHandler()
         );

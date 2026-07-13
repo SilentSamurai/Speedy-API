@@ -154,7 +154,7 @@ public class PolicyEngine {
     /// The entity fields any {@code action} rule (ALLOW or DENY) tests in a row condition for
     /// {@code entity}. A write whose outcome turns on one of these fields leaks information about
     /// it through success/failure — most sharply in per-item bulk responses — so the caller must be
-    /// able to read the field plainly; {@code WriteConditionPolicyHandler} enforces that using this
+    /// able to read the field plainly; {@code WriteRequestPolicyHandler} enforces that using this
     /// list. Depends only on the policy document, never on a row, so the check it drives is constant
     /// per caller and cannot itself become an oracle.
     public Set<FieldMetadata> writeConditionFields(EntityMetadata entity, PermissionType action)

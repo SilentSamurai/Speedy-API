@@ -20,7 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 /// ```
 /// 1. newContext        -> SpeedyContext          get the request into ctx
 ///    prepare(ctx)       (void)                    setup: store QueryProcessor in ctx
-/// 2. parseUri          -> SpeedyUriContext       parse the URI (also puts TransactionMode in ctx)
+/// 2. parseUri          -> SpeedyUriContext       parse the URI
 /// 3. parseHeaders      -> SpeedyHeaders          parse method + headers + raw body bytes
 ///    resolveOperation  -> SpeedyRequestType      classify op from URI + HTTP method
 /// 4. selectSerializer  -> IResponseSerializerV2  } negotiate output + input format
@@ -61,8 +61,7 @@ public interface SpeedyEngine {
 
     void prepare(SpeedyContext ctx) throws SpeedyHttpException;
 
-    /// Parses the request URI into a {@link SpeedyUriContext} (also puts {@code TransactionMode}
-    /// in ctx). Stored in ctx AND returned.
+    /// Parses the request URI into a {@link SpeedyUriContext}. Stored in ctx AND returned.
     SpeedyUriContext parseUri(SpeedyContext ctx) throws SpeedyHttpException;
 
     /// Parses the HTTP method, request headers, and raw body bytes. Returns the parsed

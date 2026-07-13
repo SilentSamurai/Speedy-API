@@ -92,6 +92,25 @@ class DraftPublishWorkflowPolicyTest {
                 .andExpect(jsonPath("$.message").value("delete not allowed for Article"));
     }
 
+    @Test
+    void conditionalDeletePolicyRunsBeforeStaleIfMatchCheck() throws Exception {
+        String noteId = createScratchNote("restricted note");
+        SpeedyAuthContext authContext = denyByDefault()
+                .allow("read-notes", PermissionType.READ, "Note.*")
+                .allow("delete-unrestricted-notes", PermissionType.DELETE, "Note.*",
+                        fieldEquals("title", "deletable"))
+                .build();
+
+        mvc.perform(delete(operationUrl("Note", SpeedyEndpoint.DELETE))
+                        .with(withPolicy(authContext))
+                        .header("If-Match", "W/\"stale-token\"")
+                        .content("[{\"id\":\"" + noteId + "\"}]")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("delete not allowed for Note"));
+    }
+
     /// Editing a draft is allowed, and that includes moving it forward into PUBLISHED — the
     /// condition is checked against the row's state *before* this write is applied, so a still-
     /// draft row satisfies it even though the submitted value moves it out of DRAFT.
@@ -136,6 +155,20 @@ class DraftPublishWorkflowPolicyTest {
         MvcResult result = mvc.perform(post(operationUrl("Article", SpeedyEndpoint.CREATE))
                         .with(withPolicy(authContext))
                         .content("[{\"title\":\"" + title + "\",\"status\":\"" + status + "\"}]")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+        return responseBody(result).path("payload").get(0).path("id").asText();
+    }
+
+    private String createScratchNote(String title) throws Exception {
+        SpeedyAuthContext authContext = denyByDefault()
+                .allow("scratch-create-note", PermissionType.CREATE, "Note.*")
+                .build();
+
+        MvcResult result = mvc.perform(post(operationUrl("Note", SpeedyEndpoint.CREATE))
+                        .with(withPolicy(authContext))
+                        .content("[{\"title\":\"" + title + "\"}]")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn();
