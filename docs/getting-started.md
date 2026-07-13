@@ -170,9 +170,9 @@ public class SecurityConfig {
 Replace `oauth2ResourceServer` with any authentication mechanism your application uses (basic auth, JWT, OAuth2, API
 keys, etc.).
 
-#### `@SpeedyAction` — Static CRUD Gating
+#### `@SpeedyAction` — Static Operation Gating
 
-The `@SpeedyAction` annotation provides **static** per-entity and per-field CRUD gating enforced by `PermissionCheckHandler`:
+The `@SpeedyAction` annotation provides **static** per-entity and per-field operation gating enforced by `PermissionCheckHandler`:
 
 ```java
 
@@ -183,7 +183,8 @@ private LocalDateTime createdAt;
 
 - **Entity-level**: Place `@SpeedyAction` on the entity class to gate the entire entity.
 - **Field-level**: Place it on a field to override or restrict access to that field.
-- `ActionType.READ`, `CREATE`, `UPDATE`, `DELETE`, `ALL` control which HTTP verbs are allowed.
+- `ActionType.READ`, `CREATE`, `UPDATE`, `REPLACE`, `DELETE`, `ALL` control which HTTP verbs are allowed. `UPDATE`
+  controls `PATCH`; `REPLACE` controls `PUT`.
 - This is a **static** check (the same rule for all users).
 
 #### Per-Field & Per-User Access Control

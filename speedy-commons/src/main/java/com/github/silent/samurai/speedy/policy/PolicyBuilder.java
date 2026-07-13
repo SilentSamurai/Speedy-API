@@ -55,18 +55,22 @@ public final class PolicyBuilder {
     }
 
     /// Adds an allow rule for one action and subject selector, subject to all supplied conditions.
+    ///
+    /// <p>For READ, conditions only gate row visibility, and only take effect when {@code subject}
+    /// is whole-entity ({@code "Entity"} / {@code "Entity.*"}); a field-specific {@code subject}
+    /// (e.g. {@code "Entity.field"}) makes field-level READ visibility unconditional regardless of
+    /// any conditions supplied here. For CREATE/UPDATE/REPLACE, conditions are honored for field-specific
+    /// subjects too, since they validate a write rather than gate read visibility.</p>
     public PolicyBuilder allow(String id, PermissionType action, String subject, QueryCondition... conditions) {
         return allow(id, action, subject, List.of(conditions));
     }
 
     /// Adds an allow rule for one action and subject selector, subject to all supplied conditions.
+    ///
+    /// <p>See {@link #allow(String, PermissionType, String, QueryCondition...)} for how READ
+    /// treats field-specific vs. whole-entity subjects differently.</p>
     public PolicyBuilder allow(String id, PermissionType action, String subject, List<QueryCondition> conditions) {
         return addRule(id, PolicyEffect.ALLOW, Set.of(action), subject, conditions);
-    }
-
-    /// Adds an allow rule for multiple actions and one subject selector, subject to all supplied conditions.
-    public PolicyBuilder allow(String id, Set<PermissionType> actions, String subject, QueryCondition... conditions) {
-        return addRule(id, PolicyEffect.ALLOW, actions, subject, List.of(conditions));
     }
 
     /// Adds an unconditional deny rule for one action and subject selector.
@@ -92,7 +96,7 @@ public final class PolicyBuilder {
 
     private PolicyBuilder addRule(String id, PolicyEffect effect, Set<PermissionType> actions,
                                   String subject, List<QueryCondition> conditions) {
-        rules.add(new SpeedyPolicy(id, effect, actions, List.of(subject), conditions));
+        rules.add(new SpeedyPolicy(id, effect, actions, subject, conditions));
         return this;
     }
 }

@@ -170,7 +170,7 @@ public class CreateOnlyResource { ...
 ```
 
 `BulkOperation.ALL` is equivalent to `@SpeedyBulk`; `@SpeedyBulk({})` explicitly disables bulk.
-The same operation-specific rule governs `$create`, `$update`, and `$delete`.
+The same operation-specific rule governs `$create`, `$update` (PATCH and PUT), and `$delete`.
 
 ### Transaction mode — `$transaction`
 

@@ -39,7 +39,7 @@ jacoco-aggregate        (code coverage aggregation)
 These interfaces define the contract that all implementations must follow:
 
 - `MetaModel` — registry of all entity metadata; lookup by entity name
-- `EntityMetadata` — describes one entity: fields, keys, associations, allowed actions (READ/CREATE/UPDATE/DELETE/ALL)
+- `EntityMetadata` — describes one entity: fields, keys, associations, allowed actions (READ/CREATE/UPDATE/REPLACE/DELETE/ALL)
 - `FieldMetadata` — describes one field: column type, value type, nullability, associations, enum config, validation
   rules
 - `KeyFieldMetadata` — extends FieldMetadata for primary key fields
@@ -56,7 +56,7 @@ These interfaces define the contract that all implementations must follow:
 
 | Annotation         | Target       | Purpose                                                              |
 |--------------------|--------------|----------------------------------------------------------------------|
-| `@SpeedyAction`    | Entity class | Restrict allowed CRUD operations (READ, CREATE, UPDATE, DELETE, ALL) |
+| `@SpeedyAction`    | Entity class | Restrict allowed operations (READ, CREATE, UPDATE, REPLACE, DELETE, ALL) |
 | `@SpeedyIgnore`    | Entity/Field | Exclude from MetaModel                                               |
 | `@SpeedyType`      | Field        | Override the inferred ColumnType                                     |
 | `@SpeedyEvent`     | Method       | Register lifecycle event handler (PRE/POST INSERT/UPDATE/DELETE)     |

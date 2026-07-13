@@ -4,13 +4,17 @@ import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.query.BinaryCondition;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
 import com.github.silent.samurai.speedy.serialization.MapStructureReader;
 import com.github.silent.samurai.speedy.serialization.StructureToQuery;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /// A row-level ABAC condition: a raw {@code Map} spec parsed lazily, on first use against the
 /// entity it's evaluated for, by {@link StructureToQuery} — the same {@code $or}/{@code $and}/
@@ -53,6 +57,26 @@ public class QueryCondition {
             return Optional.of(condition);
         } catch (SpeedyHttpException e) {
             return Optional.empty();
+        }
+    }
+
+    /// The entity fields this condition compares against — the left-hand column of every leaf
+    /// predicate, ignoring the value operands (literals or {@code ${variable}} references). Used to
+    /// enforce that a field cannot silently gate a write the caller can't otherwise read (see
+    /// {@code PolicyEngine#writeConditionFields}).
+    public Set<FieldMetadata> referencedFields(EntityMetadata entityMetadata) throws SpeedyHttpException {
+        Set<FieldMetadata> fields = new LinkedHashSet<>();
+        collectFields(ensureParsed(entityMetadata), fields);
+        return fields;
+    }
+
+    private static void collectFields(Condition condition, Set<FieldMetadata> out) {
+        if (condition instanceof BooleanCondition bc) {
+            for (Condition sub : bc.getConditions()) {
+                collectFields(sub, out);
+            }
+        } else if (condition instanceof BinaryCondition bc) {
+            out.add(bc.getField().getMetadataForParsing());
         }
     }
 

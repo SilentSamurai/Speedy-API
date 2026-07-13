@@ -78,7 +78,7 @@ class QueryFieldPolicyHandlerTest {
 
     private static PolicyEngine policy(String resource) {
         SpeedyPolicy allow = new SpeedyPolicy("allow", PolicyEffect.ALLOW, Set.of(PermissionType.READ),
-                List.of(resource), List.of());
+                resource, List.of());
         return new PolicyEngine(new SpeedyAuthContext(
                 new PolicyDocument(PolicyEffect.DENY, List.of(allow)),
                 Map.of("principal.id", new SpeedyText("principal"))));

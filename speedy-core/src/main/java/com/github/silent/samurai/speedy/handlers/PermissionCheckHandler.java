@@ -22,6 +22,7 @@ public class PermissionCheckHandler implements com.github.silent.samurai.speedy.
             case READ -> entityMetadata.isReadAllowed();
             case CREATE -> entityMetadata.isCreateAllowed();
             case UPDATE -> entityMetadata.isUpdateAllowed();
+            case REPLACE -> entityMetadata.isReplaceAllowed();
             case DELETE -> entityMetadata.isDeleteAllowed();
         };
         if (!allowed) {

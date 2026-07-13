@@ -1,5 +1,6 @@
 package com.github.silent.samurai.speedy.handlers;
 
+import com.github.silent.samurai.speedy.enums.PermissionType;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
@@ -32,5 +33,10 @@ public class UpdateHandler extends AbstractUpdateHandler {
     @Override
     protected String operationLabel() {
         return "Update";
+    }
+
+    @Override
+    protected PermissionType permission() {
+        return PermissionType.UPDATE;
     }
 }

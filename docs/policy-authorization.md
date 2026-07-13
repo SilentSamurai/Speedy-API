@@ -52,15 +52,24 @@ SpeedyAuthContext context = PolicyBuilder.denyByDefault()
         .principalId(authentication.getName())
         .allow("read-own-invoices", PermissionType.READ, "Invoice.*",
                 fieldEquals("ownerId", variable("principal.id")))
+        // A write may only gate on a field the caller can read, so grant read of ownerId too.
+        .allow("read-invoice-owner", PermissionType.READ, "Invoice.ownerId")
         .allow("update-own-status", PermissionType.UPDATE, "Invoice.status",
                 fieldEquals("ownerId", variable("principal.id")))
         .build();
 ```
 
-Use `fieldIn("status", "DRAFT", "REVIEW")` for `$in` conditions and
-`orFieldEquals("department", "HR", "FINANCE")` for a same-field `$or` condition. The builder also supports
-`variable(name, speedyValue)`, multi-action allow rules, explicit `deny(...)` rules, and `allowByDefault()` when
-an application intentionally needs an allow-by-default document.
+For anything beyond a single field equality, pass the condition map to `QueryCondition` directly — it accepts the
+full `$or`/`$and`/`$in`/operator/`${variable}` grammar, e.g.
+`new QueryCondition(Map.of("status", Map.of("$in", List.of("DRAFT", "REVIEW"))))`. The builder also supports
+`variable(name, speedyValue)`, explicit `deny(...)` rules, and `allowByDefault()` when an application intentionally
+needs an allow-by-default document.
+
+**Write-condition guard.** A field an `UPDATE`/`REPLACE`/`DELETE` rule gates on must itself be readable by the caller
+(as `read-invoice-owner` grants above). Otherwise the write's per-row success/failure — most visibly in a bulk
+`207` response — would leak that field's values for rows the caller cannot read. A caller lacking that read grant
+is refused before any row is touched. `CREATE` conditions are exempt: they test only the caller's own submitted
+values, which reveal nothing new.
 
 ## Policy Format
 
@@ -71,14 +80,14 @@ SpeedyPolicy hrCanReadSalaries = new SpeedyPolicy(
         "hr-can-read-salaries",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.READ),
-        List.of("Employee.salary"),
+        "Employee.salary",
         List.of());
 
 SpeedyPolicy userOwnsRecord = new SpeedyPolicy(
         "user-owns-record",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.READ, PermissionType.UPDATE),
-        List.of("Employee.*"),
+        "Employee.*",
         List.of(new QueryCondition(Map.of("ownerId", "${principal.id}"))));
 
 PolicyDocument policyDocument = new PolicyDocument(
@@ -90,8 +99,8 @@ The five-argument `SpeedyPolicy` constructor takes `id`, `effect`, `action`, `su
 six-argument form adds an optional `role` string for policy-store metadata; resolve the rules for the caller's roles
 before building the document.
 
-`action` is a `Set<PermissionType>` containing any of `CREATE`, `READ`, `UPDATE`, and `DELETE`. `subject` is a list
-of selectors:
+`action` is a `Set<PermissionType>` containing any of `CREATE`, `READ`, `UPDATE`, `REPLACE`, and `DELETE`. Each policy has one
+`subject` selector:
 
 | Selector | Matches |
 | --- | --- |
@@ -113,7 +122,7 @@ SpeedyPolicy visibleInvoices = new SpeedyPolicy(
         "visible-invoices",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.READ),
-        List.of("Invoice.*"),
+        "Invoice.*",
         List.of(new QueryCondition(Map.of(
                 "$or", List.of(
                         Map.of("ownerId", "${principal.id}"),
@@ -125,7 +134,7 @@ SpeedyPolicy editableStates = new SpeedyPolicy(
         "editable-states",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.UPDATE),
-        List.of("Invoice.status"),
+        "Invoice.status",
         List.of(new QueryCondition(Map.of(
                 "status", Map.of("$in", List.of("DRAFT", "REVIEW"))
         ))));
@@ -146,7 +155,7 @@ SpeedyPolicy namesOnly = new SpeedyPolicy(
         "product-names-only",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.READ),
-        List.of("Product.name"),
+        "Product.name",
         List.of());
 ```
 
@@ -161,7 +170,7 @@ SpeedyPolicy ownProducts = new SpeedyPolicy(
         "own-products",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.READ),
-        List.of("Product.*"),
+        "Product.*",
         List.of(new QueryCondition(Map.of("description", "${principal.id}"))));
 ```
 
@@ -170,35 +179,38 @@ For `principal.id = "Description 1"`, `GET /speedy/v1/Product` returns only the 
 all describe the visible set. The same rule does **not** allow `GET /speedy/v1/Product?name='Product 1'`: `name` is
 only conditionally readable, so filtering or sorting by it is rejected with `400`.
 
-### A public field plus a conditional field
+Field-level READ visibility is always unconditional — it never depends on a row's own data. A condition only ever
+selects which rows are visible at all, and only takes effect on a whole-entity selector (`Entity` / `Entity.*`); a
+condition attached to a field-specific selector (`Entity.field`) never grants or denies READ. To hide one field from
+an otherwise-visible row, pair the row condition above with an unconditional field `DENY`:
 
 ```java
-SpeedyPolicy descriptions = new SpeedyPolicy(
-        "read-descriptions",
-        PolicyEffect.ALLOW,
+SpeedyPolicy hideDescription = new SpeedyPolicy(
+        "hide-description",
+        PolicyEffect.DENY,
         Set.of(PermissionType.READ),
-        List.of("Product.description"),
+        "Product.description",
         List.of());
-SpeedyPolicy ownNames = new SpeedyPolicy(
-        "read-own-names",
-        PolicyEffect.ALLOW,
-        Set.of(PermissionType.READ),
-        List.of("Product.name"),
-        List.of(new QueryCondition(Map.of("description", "${principal.id}"))));
 ```
 
-All products are returned with `description`. Only the product whose description matches `principal.id` also includes
-`name`. This is useful when a response may contain public and tenant- or owner-scoped fields together.
+The caller still only sees their own product (row visibility stays conditional), but `description` is stripped from
+it regardless of the row's data (field visibility is unconditional) — row selection can filter on a field's raw
+column value even while that same field is denied from the response.
+
+This restriction is READ-only. `CREATE`, `UPDATE`, and `REPLACE` field checks validate a write rather than gate read visibility,
+so field-specific selectors with conditions keep working there exactly as shown in
+[Owner-scoped update and partial bulk results](#owner-scoped-update-and-partial-bulk-results) and
+[Create only selected values](#create-only-selected-values) below.
 
 ### Explicit deny wins
 
 ```java
 SpeedyPolicy allowAllProductFields = new SpeedyPolicy(
         "allow-product-fields", PolicyEffect.ALLOW, Set.of(PermissionType.READ),
-        List.of("Product.*"), List.of());
+        "Product.*", List.of());
 SpeedyPolicy denyDescription = new SpeedyPolicy(
         "deny-description", PolicyEffect.DENY, Set.of(PermissionType.READ),
-        List.of("Product.description"), List.of());
+        "Product.description", List.of());
 ```
 
 `GET /speedy/v1/Product` succeeds and returns `name`, but never `description`. The result is the same whichever order
@@ -212,7 +224,7 @@ SpeedyPolicy updateOwnCategoryNames = new SpeedyPolicy(
         "update-own-category-names",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.UPDATE),
-        List.of("Category.name"),
+        "Category.name",
         List.of(new QueryCondition(Map.of("name", "${principal.id}"))));
 ```
 
@@ -229,7 +241,7 @@ SpeedyPolicy importNames = new SpeedyPolicy(
         "import-approved-names",
         PolicyEffect.ALLOW,
         Set.of(PermissionType.CREATE),
-        List.of("Category.name"),
+        "Category.name",
         List.of(new QueryCondition(Map.of(
                 "name", Map.of("$in", List.of("approved-a", "approved-b"))
         ))));
@@ -245,15 +257,16 @@ gate as well as field- and row-level checks:
 
 | Operation | Policy behavior |
 | --- | --- |
-| Read / query | An action with no possible `ALLOW` is rejected with `403`. An unconditional `DENY` for `Entity` or `Entity.*` also rejects the request before returning rows or counts. Fields denied for a particular row are omitted; primary-key fields are always emitted so a returned row keeps its identity. |
-| Read row conditions | Conditional `READ` allows are translated into the query `WHERE` clause before paging and `totalCount`; conditions from different allow rules are OR-combined. An unconditional read allow, or a condition that cannot be translated, leaves SQL unrestricted, but per-row field filtering remains in force. |
+| Read / query | An action with no possible `ALLOW` is rejected with `403`. An unconditional `DENY` for `Entity` or `Entity.*` also rejects the request before returning rows or counts. Field-level READ grants/denies are always unconditional — they never depend on row data — so a field is either included on every row it's checked against or omitted from all of them; primary-key fields are always emitted so a returned row keeps its identity. |
+| Read row conditions | Only whole-entity (`Entity` / `Entity.*`) conditional `READ` allows are translated into the query `WHERE` clause before paging and `totalCount`; conditions from different allow rules are OR-combined. A condition on a field-specific selector never affects row visibility. An unconditional read allow, or a condition that cannot be translated, leaves SQL unrestricted, but per-row field filtering remains in force. |
 | Filters and ordering | A referenced field must be readable **unconditionally**. A conditional allow cannot make a field filterable or sortable, because that could disclose row data. This check also applies to fields reached through an association. |
 | Create | The entity must permit `CREATE`, and every supplied writable field must be allowed for the submitted entity. A denied field returns `403 Forbidden`. |
 | Update | The entity must permit `UPDATE`, and every supplied writable (non-key) field is evaluated against the target row's current persisted state. The primary key only identifies the row and does not need `UPDATE` permission. This supports rules such as “update only records I own.” A denied field returns `403 Forbidden`. |
+| Replace | `PUT` must be permitted by both `@SpeedyAction(REPLACE)` and `PermissionType.REPLACE`. Its writable fields are evaluated against the target row's current persisted state, just as for update. `UPDATE`/PATCH permission does not grant replace access. |
 | Delete | The entity must permit `DELETE`; Speedy loads the target row and evaluates its conditions before deleting it. A denied row returns `403 Forbidden`. |
 
 Policy failures follow the normal bulk transaction mode. A denied create field is checked before creation, so the whole
-create request fails. In `batch` mode, a denied update or delete rolls back the whole request. In `per-entity` mode,
+create request fails. In `batch` mode, a denied update, replace, or delete rolls back the whole request. In `per-entity` mode,
 successful items commit independently; a mix of successes and policy failures returns `207 Multi-Status`, with the
 failed item reporting status `403`. See [PUT Operations](put-operation.md#transaction-mode-transaction) and
 [DELETE Operations](delete-operation.md) for bulk transaction-mode details.

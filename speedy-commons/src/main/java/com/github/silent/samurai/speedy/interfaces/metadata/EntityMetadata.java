@@ -86,6 +86,10 @@ public interface EntityMetadata {
         return getActionType().contains(ActionType.UPDATE) || getActionType().contains(ActionType.ALL);
     }
 
+    default boolean isReplaceAllowed() {
+        return getActionType().contains(ActionType.REPLACE) || getActionType().contains(ActionType.ALL);
+    }
+
     default boolean isDeleteAllowed() {
         return getActionType().contains(ActionType.DELETE) || getActionType().contains(ActionType.ALL);
     }

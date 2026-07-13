@@ -29,6 +29,7 @@ class MetadataBuilderTest {
         Assertions.assertTrue(md.isReadAllowed(), "READ must stay allowed");
         Assertions.assertFalse(md.isCreateAllowed(), "@SpeedyAction(READ) must deny create");
         Assertions.assertFalse(md.isUpdateAllowed(), "@SpeedyAction(READ) must deny update");
+        Assertions.assertFalse(md.isReplaceAllowed(), "@SpeedyAction(READ) must deny replace");
         Assertions.assertFalse(md.isDeleteAllowed(), "@SpeedyAction(READ) must deny delete");
     }
 
@@ -45,6 +46,7 @@ class MetadataBuilderTest {
         Assertions.assertTrue(md.isReadAllowed());
         Assertions.assertTrue(md.isCreateAllowed());
         Assertions.assertTrue(md.isUpdateAllowed());
+        Assertions.assertTrue(md.isReplaceAllowed());
         Assertions.assertTrue(md.isDeleteAllowed());
     }
 
@@ -63,7 +65,20 @@ class MetadataBuilderTest {
         Assertions.assertTrue(md.isReadAllowed());
         Assertions.assertTrue(md.isCreateAllowed());
         Assertions.assertFalse(md.isUpdateAllowed());
+        Assertions.assertFalse(md.isReplaceAllowed());
         Assertions.assertFalse(md.isDeleteAllowed());
+    }
+
+    @Test
+    void replaceAction_allowsOnlyReplace() throws NotFoundException {
+        EntityBuilder entity = MetadataBuilder.builder().entity("ReplaceOnly");
+        entity.keyField("id", "ID", ColumnType.UUID).shouldGenerateKey(true);
+        entity.field("name", "NAME", ColumnType.VARCHAR);
+        entity.addActionType(ActionType.REPLACE);
+
+        EntityMetadata md = entity.build();
+        Assertions.assertFalse(md.isUpdateAllowed());
+        Assertions.assertTrue(md.isReplaceAllowed());
     }
 
     /**

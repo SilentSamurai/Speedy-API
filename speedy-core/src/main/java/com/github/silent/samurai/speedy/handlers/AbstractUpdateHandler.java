@@ -80,6 +80,9 @@ public abstract class AbstractUpdateHandler implements Handler {
     /// Human-readable operation name used in transaction log lines (e.g. "Update", "Replace").
     protected abstract String operationLabel();
 
+    /// Request-policy permission for this write operation.
+    protected abstract PermissionType permission();
+
     private void processBatchUpdate(SpeedyContext context, List<SpeedyUpdateBody.Item> items)
             throws SpeedyHttpException {
         EntityMetadata entityMetadata = context.get(SpeedyUriContext.class).getParsedQuery().getFrom();
@@ -201,7 +204,7 @@ public abstract class AbstractUpdateHandler implements Handler {
         if (existingRow.isEmpty()) {
             throw new NotFoundException("entity not found: " + pk);
         }
-        enforceUpdateFieldPolicy(engine, entityMetadata, entity, existingRow.get());
+        enforceWriteFieldPolicy(engine, entityMetadata, entity, existingRow.get());
 
         eventProcessor.triggerEvent(SpeedyEventType.PRE_UPDATE, entityMetadata, entity);
         validate(validationProcessor, entityMetadata, entity);
@@ -215,19 +218,20 @@ public abstract class AbstractUpdateHandler implements Handler {
         return saved;
     }
 
-    /// Requirements 9/12 + row-level ABAC for UPDATE: a client-supplied mutable field the policy
+    /// Row-level ABAC for UPDATE/REPLACE: a client-supplied mutable field the policy
     /// denies — evaluated against the row's *current* state, so "only your own records" style
     /// conditions work — fails the request explicitly. Key fields identify the target row and are
     /// never part of the update set, so they are intentionally excluded from this field check.
-    private void enforceUpdateFieldPolicy(PolicyEngine engine, EntityMetadata entityMetadata,
-                                          SpeedyEntity entity, SpeedyEntity existingRow) throws SpeedyHttpException {
+    private void enforceWriteFieldPolicy(PolicyEngine engine, EntityMetadata entityMetadata,
+                                         SpeedyEntity entity, SpeedyEntity existingRow) throws SpeedyHttpException {
         for (FieldMetadata field : entityMetadata.getAllFields()) {
             if (field instanceof KeyFieldMetadata || !entity.has(field)) {
                 continue;
             }
-            if (engine.isAuthorized(PermissionType.UPDATE, PolicyTarget.field(entityMetadata, field), existingRow)
+            if (engine.isAuthorized(permission(), PolicyTarget.field(entityMetadata, field), existingRow)
                     != PolicyEffect.ALLOW) {
-                throw new ForbiddenException("Field '" + field.getOutputPropertyName() + "' not permitted on update");
+                throw new ForbiddenException("Field '" + field.getOutputPropertyName() + "' not permitted on "
+                        + permission().name().toLowerCase());
             }
         }
     }

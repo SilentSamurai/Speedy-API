@@ -4,20 +4,25 @@ import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.enums.PermissionType;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.conditions.BooleanConditionImpl;
 import com.github.silent.samurai.speedy.policy.condition.ConditionContext;
+import com.github.silent.samurai.speedy.policy.condition.QueryCondition;
 import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.policy.model.SpeedyPolicy;
+import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /// The per-request decision core, built once from the {@link SpeedyAuthContext} a request resolved
 /// (see {@code ISpeedyConfiguration.authContextPerReq()}). {@code DefaultSpeedyEngine} always
@@ -35,10 +40,19 @@ import java.util.Optional;
 ///   whole-entity DENY blocks immediately, but a field-specific DENY does not, since other fields
 ///   may still be readable, while any ALLOW rule at all (even field-specific or conditional) is
 ///   enough to avoid the block and defer to the row-bearing overload once a row exists.
+///   Field-level READ visibility is always unconditional: a rule whose only matching selector is
+///   field-specific (e.g. {@code "Entity.field"}) never gates on row data, even with a row in
+///   hand. Only a whole-entity rule (e.g. {@code "Entity.*"}) may condition on row data for READ —
+///   its condition is what decides which rows are visible at all (see
+///   {@link #rowVisibilityConditions}); every visible row's fields are then governed only by
+///   unconditional grants/denies. CREATE/UPDATE/REPLACE field-level checks are unaffected by this
+///   restriction, since they validate a write rather than gate read visibility.
 /// - {@link #rowVisibilityConditions}: not a per-target decision at all — it compiles a query
 ///   predicate for WHERE-injection so rows the caller can't read never come back from the
 ///   database. Fails open (empty list = don't restrict) where `isAuthorized` fails closed, because
-///   per-row field omission remains the real security boundary regardless.
+///   per-row field omission remains the real security boundary regardless. Only whole-entity
+///   selectors are considered here, so a field-specific rule's condition can never affect which
+///   rows come back — row visibility and field visibility are fully independent.
 public class PolicyEngine {
 
     private final PolicyDocument document;
@@ -58,7 +72,9 @@ public class PolicyEngine {
     /// conditional Allow does not grant since there is no row to check its condition against
     /// Filtering/sorting on such a field is rejected rather than risk leaking information about
     /// rows the caller can't see an explicit DENY always beats an ALLOW; absent too, the
-    /// document's default effect governs.
+    /// document's default effect governs. For a READ field-level question, a rule whose only
+    /// matching selector is field-specific never applies if it carries conditions — field
+    /// visibility is unconditional; only a whole-entity rule's condition may gate on row data.
     public PolicyEffect isAuthorized(PermissionType action, PolicyTarget target, SpeedyEntity row) {
         String entityName = target.entity().getName();
         String fieldName = target.field() == null ? null : target.field().getOutputPropertyName();
@@ -76,6 +92,13 @@ public class PolicyEngine {
             boolean applies;
             if (rule.conditions().isEmpty()) {
                 applies = true;
+            } else if (action == PermissionType.READ && target.field() != null
+                    && !hasWholeEntityResourceMatch(rule, entityName)) {
+                // Field-level READ visibility is unconditional: a rule scoped to one specific
+                // field never gates on row data. Only a whole-entity (row-level) rule's condition
+                // may do that — it determines which rows are visible at all; every visible row's
+                // fields are then governed by unconditional grants/denies only.
+                applies = false;
             } else if (row == null) {
                 applies = false;
             } else {
@@ -128,9 +151,35 @@ public class PolicyEngine {
         return anyAllow ? PolicyEffect.ALLOW : document.defaultEffect();
     }
 
+    /// The entity fields any {@code action} rule (ALLOW or DENY) tests in a row condition for
+    /// {@code entity}. A write whose outcome turns on one of these fields leaks information about
+    /// it through success/failure — most sharply in per-item bulk responses — so the caller must be
+    /// able to read the field plainly; {@code WriteConditionPolicyHandler} enforces that using this
+    /// list. Depends only on the policy document, never on a row, so the check it drives is constant
+    /// per caller and cannot itself become an oracle.
+    public Set<FieldMetadata> writeConditionFields(EntityMetadata entity, PermissionType action)
+            throws SpeedyHttpException {
+        String entityName = entity.getName();
+        Set<FieldMetadata> fields = new LinkedHashSet<>();
+        for (SpeedyPolicy rule : document.speedyPolicies()) {
+            if (!rule.getActions().contains(action)) {
+                continue;
+            }
+            if (!resourceMatches(rule, entityName, null)) {
+                continue;
+            }
+            for (QueryCondition condition : rule.conditions()) {
+                fields.addAll(condition.referencedFields(entity));
+            }
+        }
+        return fields;
+    }
+
     /// Row-scoped READ Allow conditions for {@code entity}, translated into a query condition for
-    /// WHERE-injection so rows the caller cannot read never come back from the database. Returns
-    /// an empty list — meaning "inject nothing, don't restrict" — in two fail-open cases: an
+    /// WHERE-injection so rows the caller cannot read never come back from the database. Only
+    /// whole-entity selectors are considered — a field-specific rule's condition never
+    /// contributes here, keeping row visibility independent of field visibility. Returns an empty
+    /// list — meaning "inject nothing, don't restrict" — in two fail-open cases: an
     /// unconditional Allow rule already grants every row, or some conditional rule contains a
     /// condition that cannot be translated (never wrongly hide a row the caller may in fact read;
     /// per-row field omission remains the actual security boundary regardless).
@@ -144,7 +193,7 @@ public class PolicyEngine {
             if (!rule.getActions().contains(PermissionType.READ)) {
                 continue;
             }
-            if (resourceMatches(rule, entityName, null)) {
+            if (hasWholeEntityResourceMatch(rule, entityName)) {
                 readAllows.add(rule);
             }
         }
@@ -184,20 +233,22 @@ public class PolicyEngine {
         return group;
     }
 
-    /// Whether any of {@code rule}'s resource selectors reference this (entity, field) pair.
-    /// {@code fieldName == null} matches any selector for the entity, whole-entity or
+    /// Whether {@code rule}'s resource selector references this (entity, field) pair.
+    /// {@code fieldName == null} matches a selector for the entity, whole-entity or
     /// field-specific alike (used for entity-level questions); a non-null {@code fieldName}
     /// requires a selector that actually covers that field.
     private static boolean resourceMatches(SpeedyPolicy rule, String entityName, String fieldName) {
-        return rule.getResources().stream().anyMatch(selector ->
-                fieldName == null ? selectorMatchesEntity(selector, entityName) : selectorMatches(selector, entityName, fieldName));
+        String selector = rule.getResource();
+        return fieldName == null
+                ? selectorMatchesEntity(selector, entityName)
+                : selectorMatches(selector, entityName, fieldName);
     }
 
-    /// Whether {@code rule} has a selector that is specifically whole-entity ({@code Entity} or
+    /// Whether {@code rule}'s selector is specifically whole-entity ({@code Entity} or
     /// {@code Entity.*}), as opposed to merely referencing the entity via a field-specific selector.
     private static boolean hasWholeEntityResourceMatch(SpeedyPolicy rule, String entityName) {
-        return rule.getResources().stream().anyMatch(selector ->
-                selectorMatchesEntity(selector, entityName) && selectorIsWholeEntity(selector));
+        String selector = rule.getResource();
+        return selectorMatchesEntity(selector, entityName) && selectorIsWholeEntity(selector);
     }
 
     /// A selector's entity is everything before the first {@code '.'} (or the whole token if

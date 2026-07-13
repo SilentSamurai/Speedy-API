@@ -265,7 +265,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                 fieldMetadata.insertable(true);
                 fieldMetadata.deserializable(true);
             }
-            if (actionTypesSet.contains(UPDATE)) {
+            if (actionTypesSet.contains(UPDATE) || actionTypesSet.contains(REPLACE)) {
                 fieldMetadata.updatable(true);
                 fieldMetadata.deserializable(true);
             }

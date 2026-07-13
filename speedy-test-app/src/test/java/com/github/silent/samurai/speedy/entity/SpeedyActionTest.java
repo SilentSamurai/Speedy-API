@@ -66,6 +66,16 @@ class SpeedyActionTest {
     }
 
     @Test
+    void virtualEntity_putReplace_shouldBeBlocked() {
+        client.replace("VirtualEntity")
+                .key("id", "any-id")
+                .field("name", "test")
+                .execute()
+                .expectStatus(403)
+                .expectJsonPath("$.message", containsString("not allowed for VirtualEntity"));
+    }
+
+    @Test
     void virtualEntity_delete_shouldBeBlocked() {
         client.delete("VirtualEntity")
                 .key("id", "any-id")

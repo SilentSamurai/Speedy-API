@@ -34,7 +34,7 @@ public class PolicyRuleParser {
         String role = text(node, "role");
         PolicyEffect effect = parseEffect(node.path("effect").asText("Deny"));
         Set<PermissionType> action = parseActions(field(node, "action", "actions"));
-        List<String> subject = parseSubjects(field(node, "subject", "resources"));
+        String subject = parseSubject(node.path("subject"));
         List<QueryCondition> conditions = parseConditions(node.path("conditions"));
         return new SpeedyPolicy(id, role, effect, action, subject, conditions);
     }
@@ -71,7 +71,7 @@ public class PolicyRuleParser {
         String normalized = raw.trim().toUpperCase(Locale.ROOT);
         if ("MANAGE".equals(normalized)) {
             actions.addAll(Set.of(PermissionType.CREATE, PermissionType.READ,
-                    PermissionType.UPDATE, PermissionType.DELETE));
+                    PermissionType.UPDATE, PermissionType.REPLACE, PermissionType.DELETE));
             return;
         }
         try {
@@ -81,21 +81,13 @@ public class PolicyRuleParser {
         }
     }
 
-    private List<String> parseSubjects(JsonNode node) {
-        List<String> subjects = new ArrayList<>();
+    private String parseSubject(JsonNode node) {
         if (node.isTextual()) {
-            subjects.add(parseSubjectToken(node.asText()));
-        } else if (node.isArray()) {
-            for (JsonNode subjectNode : node) {
-                if (!subjectNode.isTextual()) {
-                    throw new IllegalArgumentException("Each 'subject' entry must be a string");
-                }
-                subjects.add(parseSubjectToken(subjectNode.asText()));
-            }
+            return parseSubjectToken(node.asText());
         } else if (!node.isMissingNode() && !node.isNull()) {
-            throw new IllegalArgumentException("'subject' must be a string or array of strings");
+            throw new IllegalArgumentException("'subject' must be a string");
         }
-        return subjects;
+        return null;
     }
 
     private String parseSubjectToken(String token) {

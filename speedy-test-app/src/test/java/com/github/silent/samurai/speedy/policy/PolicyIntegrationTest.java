@@ -16,7 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
-import java.util.Set;
+import com.github.silent.samurai.speedy.policy.condition.QueryCondition;
+
+import java.util.List;
+import java.util.Map;
 
 import static com.github.silent.samurai.speedy.policy.PolicyBuilder.denyByDefault;
 import static com.github.silent.samurai.speedy.policy.PolicyConditions.*;
@@ -105,18 +108,18 @@ class PolicyIntegrationTest {
         assertEquals("Product 1", payload.get(0).path("name").asText());
     }
 
-    /// The caller may read {@code Product.description} for every product, which keeps all products
-    /// in the response. A second rule grants {@code Product.name} only when the product's
-    /// description matches {@code principal.id}; therefore only the caller's product includes
-    /// {@code name}, while every other product is still returned with its public description.
+    /// A row condition (whole-entity selector) selects a small subset of rows the caller can see
+    /// at all; within that subset, an unconditional field deny is flat — it doesn't depend on the
+    /// row's own data, it's just gone. Row selection can still filter on a field's raw column
+    /// value even when that same field is denied from the response.
     @Test
-    void fieldPolicyOmitsConditionalFieldsWithoutDroppingUnconditionallyReadableRows() throws Exception {
+    void rowConditionSelectsSubsetAndFieldDenyIsUnconditionalWithinIt() throws Exception {
         String principalId = "Description 1";
         SpeedyAuthContext authContext = denyByDefault()
                 .principalId(principalId)
-                .allow("read-descriptions", PermissionType.READ, "Product.description")
-                .allow("read-own-names", PermissionType.READ, "Product.name",
+                .allow("read-own-products", PermissionType.READ, "Product.*",
                         fieldEquals("description", variable("principal.id")))
+                .deny("hide-description", PermissionType.READ, "Product.description")
                 .build();
 
         MvcResult result = mvc.perform(get(SpeedyConstants.URI + "/Product")
@@ -124,17 +127,12 @@ class PolicyIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.payload.length()").value(7))
+                .andExpect(jsonPath("$.payload.length()").value(1))
                 .andReturn();
 
         JsonNode payload = responseBody(result).path("payload");
-        JsonNode owned = productWithDescription(payload, "Description 1");
-        JsonNode other = productWithDescription(payload, "Description 2");
-
-        assertTrue(owned.has("name"));
-        assertTrue(owned.has("description"));
-        assertFalse(other.has("name"));
-        assertTrue(other.has("description"));
+        assertEquals("Product 1", payload.get(0).path("name").asText());
+        assertFalse(payload.get(0).has("description"));
     }
 
     /// A conditionally readable field may be returned for eligible rows but cannot be used as a
@@ -215,6 +213,9 @@ class PolicyIntegrationTest {
         String principalId = "cat-1-1";
         SpeedyAuthContext authContext = denyByDefault()
                 .principalId(principalId)
+                // The write conditions below gate on `name`, so `name` must be plainly readable
+                // (see WriteConditionPolicyHandler); grant an unconditional read of it.
+                .allow("read-category-name", PermissionType.READ, "Category.name")
                 .allow("identify-categories", PermissionType.UPDATE, "Category.id")
                 .allow("change-own-categories", PermissionType.UPDATE, "Category.name",
                         fieldEquals("name", variable("principal.id")))
@@ -237,6 +238,56 @@ class PolicyIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.message").value("delete not allowed for Category"));
+    }
+
+    @Test
+    void replaceRequiresReplacePermissionRatherThanUpdatePermission() throws Exception {
+        String categoryId = createScratchCategory("replace-policy-category");
+        String url = operationUrl("Category", SpeedyEndpoint.UPDATE);
+        String body = "{\"id\":\"" + categoryId + "\",\"name\":\"replace-policy-category-renamed\"}";
+        SpeedyAuthContext updateOnly = denyByDefault()
+                .allow("update-category-name", PermissionType.UPDATE, "Category.name")
+                .build();
+
+        mvc.perform(put(url)
+                        .with(withPolicy(updateOnly))
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value("replace not allowed for Category"));
+
+        SpeedyAuthContext replaceOnly = denyByDefault()
+                .allow("replace-category-name", PermissionType.REPLACE, "Category.name")
+                .build();
+
+        mvc.perform(put(url)
+                        .with(withPolicy(replaceOnly))
+                        .content(body)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.payload[0].name").value("replace-policy-category-renamed"));
+    }
+
+    /// The write-condition oracle guard: an UPDATE rule that gates on a field the caller cannot
+    /// read is a misconfiguration — permitting it would let per-row write success/failure leak that
+    /// field's values — so the request is rejected up front, before any row is examined. The
+    /// decision depends only on the policy and the caller, never on a row, so it is constant per
+    /// caller and cannot itself become an oracle.
+    @Test
+    void updateGatedOnUnreadableConditionFieldIsRejectedAsMisconfiguration() throws Exception {
+        SpeedyAuthContext authContext = denyByDefault()
+                .allow("update-gated-on-unreadable-name", PermissionType.UPDATE, "Category.name",
+                        fieldEquals("name", "cat-1-1"))
+                .build();
+
+        mvc.perform(patch(operationUrl("Category", SpeedyEndpoint.UPDATE))
+                        .with(withPolicy(authContext))
+                        .content("{\"id\":\"2\",\"name\":\"cat-1-1\"}")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message")
+                        .value("Field 'name' is used in a policy update condition but is not readable"));
     }
 
     /// A field-level deny overrides a wildcard allow for that field without rejecting reads of
@@ -291,7 +342,8 @@ class PolicyIntegrationTest {
     void orCombinatorWithinASingleConditionGrantsEitherBranch() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
                 .allow("read-two-categories", PermissionType.READ, "Category.*",
-                        orFieldEquals("name", "cat-5-5", "cat-6-6"))
+                        new QueryCondition(Map.of("$or",
+                                List.of(Map.of("name", "cat-5-5"), Map.of("name", "cat-6-6")))))
                 .build();
 
         MvcResult result = mvc.perform(get(SpeedyConstants.URI + "/Category")
@@ -311,7 +363,7 @@ class PolicyIntegrationTest {
     void nonEqOperatorInIsHonoredByRowVisibilityFiltering() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
                 .allow("read-selected-categories", PermissionType.READ, "Category.*",
-                        fieldIn("id", "1", "2", "3"))
+                        new QueryCondition(Map.of("id", Map.of("$in", List.of("1", "2", "3")))))
                 .build();
 
         MvcResult result = mvc.perform(get(SpeedyConstants.URI + "/Category")
@@ -327,14 +379,20 @@ class PolicyIntegrationTest {
         rowWithFieldValue(payload, "name", "cat-3-3");
     }
 
-    /// One rule can grant more than one action: the same caller can read their category and then
-    /// update that persisted category under the same name-based condition.
+    /// Row-level read scoping and field-level update scoping are independent mechanisms that can
+    /// still express the same "own records only" restriction together: a whole-entity condition
+    /// grants read of the caller's own category (and every one of its fields), while a separate
+    /// field-specific condition grants update of that same category's name.
     @Test
-    void singlePolicyRuleGrantsReadAndUpdateIndependently() throws Exception {
+    void rowConditionGrantsReadWhileFieldConditionGrantsUpdateIndependently() throws Exception {
         String principalId = OWNER_SCOPED_CATEGORY_NAME;
         SpeedyAuthContext authContext = denyByDefault()
                 .principalId(principalId)
-                .allow("read-update-own", Set.of(PermissionType.READ, PermissionType.UPDATE), "Category.name",
+                .allow("read-own-category", PermissionType.READ, "Category.*",
+                        fieldEquals("name", variable("principal.id")))
+                // The UPDATE condition gates on `name`, so it must be plainly readable too.
+                .allow("read-category-name", PermissionType.READ, "Category.name")
+                .allow("update-own-name", PermissionType.UPDATE, "Category.name",
                         fieldEquals("name", variable("principal.id")))
                 .build();
         String scratchId = createScratchCategory(OWNER_SCOPED_CATEGORY_NAME);
@@ -360,7 +418,7 @@ class PolicyIntegrationTest {
     void bulkCreateFailsTheEntireRequestWhenAnyItemViolatesFieldPolicy() throws Exception {
         SpeedyAuthContext authContext = denyByDefault()
                 .allow("create-allowed-names", PermissionType.CREATE, "Category.name",
-                        fieldIn("name", "bulk-ok-1", "bulk-ok-2"))
+                        new QueryCondition(Map.of("name", Map.of("$in", List.of("bulk-ok-1", "bulk-ok-2")))))
                 .build();
 
         mvc.perform(post(operationUrl("Category", SpeedyEndpoint.CREATE))
@@ -378,6 +436,8 @@ class PolicyIntegrationTest {
         String principalId = BULK_OWNER_CATEGORY_NAME;
         SpeedyAuthContext authContext = denyByDefault()
                 .principalId(principalId)
+                // The UPDATE condition gates on `name`, so it must be plainly readable too.
+                .allow("read-category-name", PermissionType.READ, "Category.name")
                 .allow("bulk-update-own", PermissionType.UPDATE, "Category.name",
                         fieldEquals("name", variable("principal.id")))
                 .build();

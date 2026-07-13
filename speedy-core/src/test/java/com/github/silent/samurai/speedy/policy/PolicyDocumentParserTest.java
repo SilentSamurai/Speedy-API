@@ -7,11 +7,11 @@ import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.policy.model.SpeedyPolicy;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PolicyDocumentParserTest {
@@ -25,7 +25,7 @@ class PolicyDocumentParserTest {
                   "role": "hr-role-id",
                   "effect": "Allow",
                   "action": "read",
-                  "subject": ["Employee.salary", "Employee.bonus"]
+                  "subject": "Employee.salary"
                 },
                 {
                   "id": "user-owns-record",
@@ -53,15 +53,14 @@ class PolicyDocumentParserTest {
         assertEquals("hr-role-id", hrRule.role());
         assertEquals(PolicyEffect.ALLOW, hrRule.effect());
         assertEquals(Set.of(PermissionType.READ), hrRule.getActions());
-        assertEquals(List.of("Employee.salary", "Employee.bonus"),
-                hrRule.getResources());
+        assertEquals("Employee.salary", hrRule.getResource());
         assertTrue(hrRule.conditions().isEmpty());
 
         SpeedyPolicy ownsRule = document.speedyPolicies().get(1);
         assertEquals("user-owns-record", ownsRule.getName());
         assertEquals("employee-role-id", ownsRule.role());
         assertEquals(Set.of(PermissionType.READ, PermissionType.UPDATE), ownsRule.getActions());
-        assertEquals(List.of("Employee"), ownsRule.getResources());
+        assertEquals("Employee", ownsRule.getResource());
         assertEquals(1, ownsRule.conditions().size());
 
         assertInstanceOf(QueryCondition.class, ownsRule.conditions().get(0));
@@ -76,9 +75,22 @@ class PolicyDocumentParserTest {
                 """;
 
         SpeedyPolicy rule = parser.parse(json).speedyPolicies().get(0);
-        assertEquals(Set.of(PermissionType.CREATE, PermissionType.READ, PermissionType.UPDATE, PermissionType.DELETE),
+        assertEquals(Set.of(PermissionType.CREATE, PermissionType.READ, PermissionType.UPDATE,
+                        PermissionType.REPLACE, PermissionType.DELETE),
                 rule.getActions());
-        assertEquals(List.of("Employee"), rule.getResources());
+        assertEquals("Employee", rule.getResource());
         assertEquals(1, rule.conditions().size());
+    }
+
+    @Test
+    void subjectArrayIsRejected() {
+        String json = """
+                {"defaultEffect":"Deny","policies":{"id":"read-employees","effect":"Allow",
+                "action":"read","subject":["Employee.name","Employee.salary"]}}
+                """;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> parser.parse(json));
+
+        assertEquals("'subject' must be a string", exception.getMessage());
     }
 }

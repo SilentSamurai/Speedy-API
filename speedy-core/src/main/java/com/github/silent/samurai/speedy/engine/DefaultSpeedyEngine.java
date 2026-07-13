@@ -169,6 +169,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.UPDATE),
                 new EntityPolicyGateHandler(PermissionType.UPDATE),
+                new WriteConditionPolicyHandler(PermissionType.UPDATE),
                 new BulkCheckHandler(BulkOperation.UPDATE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
@@ -176,12 +177,13 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new WriteEtagHandler(),
                 new TailHandler()
         );
-        // PUT full-replace reuses the update-level permission; only the handler differs.
-        // Bulk, however, is toggled independently of PATCH via BulkOperation.REPLACE.
+        // PUT has its own static and request-policy permission; bulk is independently toggled
+        // via BulkOperation.REPLACE.
         replaceChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.UPDATE),
-                new EntityPolicyGateHandler(PermissionType.UPDATE),
+                new PermissionCheckHandler(PermissionType.REPLACE),
+                new EntityPolicyGateHandler(PermissionType.REPLACE),
+                new WriteConditionPolicyHandler(PermissionType.REPLACE),
                 new BulkCheckHandler(BulkOperation.REPLACE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
@@ -193,6 +195,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
                 new HeadHandler(),
                 new PermissionCheckHandler(PermissionType.DELETE),
                 new EntityPolicyGateHandler(PermissionType.DELETE),
+                new WriteConditionPolicyHandler(PermissionType.DELETE),
                 new BulkCheckHandler(BulkOperation.DELETE),
                 new PreconditionCheckHandler(),
                 new DeleteHandler(),
