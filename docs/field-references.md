@@ -53,7 +53,7 @@ This finds products where the sale price is less than the regular price.
 ### Basic Field Reference
 
 ```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 
 // Compare two fields for equality
 SpeedyQuery query = SpeedyQuery.from("products")

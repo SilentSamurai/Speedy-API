@@ -5,7 +5,6 @@ import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.PreconditionFailedException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.Handler;
-import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
 import com.github.silent.samurai.speedy.models.*;
@@ -13,13 +12,13 @@ import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.utils.EtagUtil;
 
 import java.util.List;
-import java.util.Optional;
 
 /// Honors `If-Match` on PATCH/PUT/DELETE. A request with no `If-Match` is untouched (zero cost).
 /// Otherwise: a multi-item batch carrying the header is rejected with 400 (a single header value
 /// can't address N resources); an entity with no version field is rejected with 400 (no ETag
 /// protection is possible, so the client is never falsely assured of one); and otherwise the
-/// row's current state is fetched and compared — a missing row or a tag mismatch is 412.
+/// persisted row loaded by {@link ExistsInDbCheckHandler} is compared with the supplied tag. Missing
+/// rows are rejected by that preflight handler before this handler runs; a tag mismatch is 412.
 ///
 /// @see EtagUtil
 public class PreconditionCheckHandler implements Handler {
@@ -46,15 +45,8 @@ public class PreconditionCheckHandler implements Handler {
                     "If-Match is not supported for entity '" + entityMetadata.getName() + "' (no @SpeedyETag field)");
         }
 
-        QueryProcessor queryProcessor = context.get(QueryProcessor.class);
-        Optional<SpeedyEntity> current = queryProcessor.fetchByKey(pks.get(0));
-        if (current.isEmpty()) {
-            // If-Match (any value, including "*") against a resource that doesn't exist always fails.
-            throw new PreconditionFailedException(
-                    "If-Match precondition failed: " + entityMetadata.getName() + " not found");
-        }
-
-        String currentEtag = EtagUtil.computeEtag(current.get()).orElse(null);
+        SpeedyEntity current = context.get(DbCheckEntities.class).get(pks.get(0));
+        String currentEtag = EtagUtil.computeEtag(current).orElse(null);
         if (!EtagUtil.ifMatchSatisfied(ifMatch, currentEtag)) {
             throw new PreconditionFailedException("If-Match precondition failed for " + entityMetadata.getName());
         }

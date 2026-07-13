@@ -141,8 +141,8 @@ public class User {
 
 ### Authentication & Authorization
 
-Speedy-API is a library — it does **not** enforce authentication or per-user authorization. These responsibilities
-belong to the consuming application (e.g., Spring Security filters) that run before requests reach `/speedy/v1/**`.
+Speedy-API is a library — it does **not** authenticate callers or decode tokens. Authentication belongs to the
+consuming application (for example, Spring Security filters) before requests reach `/speedy/v1/**`.
 
 #### Securing Endpoints with Spring Security
 
@@ -170,9 +170,9 @@ public class SecurityConfig {
 Replace `oauth2ResourceServer` with any authentication mechanism your application uses (basic auth, JWT, OAuth2, API
 keys, etc.).
 
-#### `@SpeedyAction` — Static CRUD Gating
+#### `@SpeedyAction` — Static Operation Gating
 
-The `@SpeedyAction` annotation provides **static** per-entity and per-field CRUD gating enforced by `PermissionCheckHandler`:
+The `@SpeedyAction` annotation provides **static** per-entity and per-field operation gating enforced by `PermissionCheckHandler`:
 
 ```java
 
@@ -183,17 +183,17 @@ private LocalDateTime createdAt;
 
 - **Entity-level**: Place `@SpeedyAction` on the entity class to gate the entire entity.
 - **Field-level**: Place it on a field to override or restrict access to that field.
-- `ActionType.READ`, `CREATE`, `UPDATE`, `DELETE`, `ALL` control which HTTP verbs are allowed.
-- This is a **static** check (same rules for all users). Per-user or role-based access control must be implemented in
-  your own middleware.
+- `ActionType.READ`, `CREATE`, `UPDATE`, `REPLACE`, `DELETE`, `ALL` control which HTTP verbs are allowed. `UPDATE`
+  controls `PATCH`; `REPLACE` controls `PUT`.
+- This is a **static** check (the same rule for all users).
 
 #### Per-Field & Per-User Access Control
 
-Because Speedy-API runs behind your security layer, you can:
+For dynamic, request-scoped authorization, implement `ISpeedyConfiguration.authContextPerReq()`. Resolve the trusted
+caller in your application, then return a `SpeedyAuthContext` containing its `PolicyDocument` and any variables used by
+row conditions. Speedy enforces permitted fields, row conditions, and create/update/delete rules. The default is
+fail-closed: an empty optional becomes an empty deny-by-default policy, so return an explicit allow document for a
+request that should remain unrestricted.
 
-1. Use Spring Security method security (`@PreAuthorize`) on your service layer.
-2. Inject `Authentication` into a custom `ISpeedyEventHandler` or `ISpeedyCustomValidation` to enforce user-specific
-   rules.
-3. Apply field-level filtering in your own serialization layer if needed.
-
-Speedy-API deliberately stays out of auth so you can use whatever security model fits your application.
+See [Request-Scoped Authorization](policy-authorization.md) for the policy format, a Spring Security integration
+example, and the precise read/query/write behavior.

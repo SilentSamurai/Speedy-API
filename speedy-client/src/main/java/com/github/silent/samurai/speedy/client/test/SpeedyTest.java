@@ -548,7 +548,6 @@ public class SpeedyTest {
     public class TestBulkCreateBuilder {
         private final String entity;
         private List<ObjectNode> items = new ArrayList<>();
-        private String transactionMode;
 
         TestBulkCreateBuilder(String entity) {
             this.entity = entity;
@@ -569,16 +568,8 @@ public class SpeedyTest {
             return this;
         }
 
-        public TestBulkCreateBuilder transaction(String mode) {
-            this.transactionMode = mode;
-            return this;
-        }
-
         public SpeedyTestResult execute() {
             String url = paths.createPath(entity);
-            if (transactionMode != null && !transactionMode.isEmpty()) {
-                url += "?$transaction=" + transactionMode;
-            }
             ArrayNode array = mapper.createArrayNode();
             items.forEach(array::add);
             try {
@@ -593,7 +584,6 @@ public class SpeedyTest {
         private final String entity;
         private final Map<String, String> headers = new java.util.LinkedHashMap<>();
         private List<ObjectNode> items = new ArrayList<>();
-        private String transactionMode;
 
         TestBulkDeleteBuilder(String entity) {
             this.entity = entity;
@@ -622,16 +612,8 @@ public class SpeedyTest {
             return this;
         }
 
-        public TestBulkDeleteBuilder transaction(String mode) {
-            this.transactionMode = mode;
-            return this;
-        }
-
         public SpeedyTestResult execute() {
             String url = paths.deletePath(entity);
-            if (transactionMode != null && !transactionMode.isEmpty()) {
-                url += "?$transaction=" + transactionMode;
-            }
             ArrayNode array = mapper.createArrayNode();
             items.forEach(array::add);
             try {
@@ -646,7 +628,6 @@ public class SpeedyTest {
         private final String entity;
         private final Map<String, String> headers = new java.util.LinkedHashMap<>();
         private List<ObjectNode> items = new ArrayList<>();
-        private String transactionMode;
 
         TestBulkUpdateBuilder(String entity) {
             this.entity = entity;
@@ -675,16 +656,8 @@ public class SpeedyTest {
             return this;
         }
 
-        public TestBulkUpdateBuilder transaction(String mode) {
-            this.transactionMode = mode;
-            return this;
-        }
-
         public SpeedyTestResult execute() {
             String url = paths.updatePath(entity);
-            if (transactionMode != null && !transactionMode.isEmpty()) {
-                url += "?$transaction=" + transactionMode;
-            }
             ArrayNode array = mapper.createArrayNode();
             items.forEach(array::add);
             try {
@@ -698,7 +671,6 @@ public class SpeedyTest {
     public class TestBulkReplaceBuilder {
         private final String entity;
         private List<ObjectNode> items = new ArrayList<>();
-        private String transactionMode;
 
         TestBulkReplaceBuilder(String entity) {
             this.entity = entity;
@@ -719,16 +691,8 @@ public class SpeedyTest {
             return this;
         }
 
-        public TestBulkReplaceBuilder transaction(String mode) {
-            this.transactionMode = mode;
-            return this;
-        }
-
         public SpeedyTestResult execute() {
             String url = paths.updatePath(entity);
-            if (transactionMode != null && !transactionMode.isEmpty()) {
-                url += "?$transaction=" + transactionMode;
-            }
             ArrayNode array = mapper.createArrayNode();
             items.forEach(array::add);
             try {

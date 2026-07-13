@@ -4,5 +4,6 @@ public enum PermissionType {
     READ,
     CREATE,
     UPDATE,
+    REPLACE,
     DELETE
 }

@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.handlers;
 
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.*;
 import com.github.silent.samurai.speedy.interfaces.backend.QueryProcessor;
@@ -27,7 +26,6 @@ public class UpdateBodyParserHandler implements Handler {
 
         SpeedyBody body = parser.parseUpdate(rawBody,
                 uriContext.getParsedQuery().getFrom(),
-                context.get(TransactionMode.class),
                 context.get(QueryProcessor.class));
 
         context.put(SpeedyBody.class, body);

@@ -32,7 +32,6 @@ public class BulkReplaceBuilder {
     private final ResponseParser parser;
     private final SpeedyFormat format;
     private List<ObjectNode> items;
-    private String transactionMode;
 
     public BulkReplaceBuilder(String entity, PathBuilder paths, RequestSender sender,
                               ObjectMapper mapper, ResponseParser parser) {
@@ -54,19 +53,11 @@ public class BulkReplaceBuilder {
         return this;
     }
 
-    public BulkReplaceBuilder transaction(String mode) {
-        this.transactionMode = mode;
-        return this;
-    }
-
     public SpeedyResult execute() {
         if (items == null) {
             throw new IllegalStateException("items is required");
         }
         String url = paths.updatePath(entity);
-        if (transactionMode != null && !transactionMode.isEmpty()) {
-            url += "?$transaction=" + transactionMode;
-        }
         ArrayNode array = mapper.createArrayNode();
         for (ObjectNode entityNode : items) {
             array.add(entityNode);

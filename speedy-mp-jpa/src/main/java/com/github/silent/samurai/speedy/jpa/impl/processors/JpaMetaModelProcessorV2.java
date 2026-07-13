@@ -99,10 +99,6 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             Arrays.stream(annotation.value())
                     .forEach(entity::addActionType);
         }
-        SpeedyTransaction txAnnotation = entityType.getBindableJavaType().getAnnotation(SpeedyTransaction.class);
-        if (txAnnotation != null) {
-            entity.transactionMode(txAnnotation.value());
-        }
         SpeedyBulk bulkAnnotation = entityType.getBindableJavaType().getAnnotation(SpeedyBulk.class);
         if (bulkAnnotation != null) {
             Arrays.stream(bulkAnnotation.value())
@@ -265,7 +261,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                 fieldMetadata.insertable(true);
                 fieldMetadata.deserializable(true);
             }
-            if (actionTypesSet.contains(UPDATE)) {
+            if (actionTypesSet.contains(UPDATE) || actionTypesSet.contains(REPLACE)) {
                 fieldMetadata.updatable(true);
                 fieldMetadata.deserializable(true);
             }

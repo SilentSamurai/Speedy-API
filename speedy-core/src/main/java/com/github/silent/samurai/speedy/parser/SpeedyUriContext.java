@@ -2,7 +2,6 @@ package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
-import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpRuntimeException;
@@ -16,6 +15,8 @@ import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -48,6 +49,8 @@ public class SpeedyUriContext {
     @Builder.Default
     private final int maxFilterCount = Integer.MAX_VALUE;
     private SpeedyQueryImpl speedyQuery;
+    @Getter
+    @Setter
     private String actionSuffix;
 
     Expression buildExpression(FieldMetadata metadata, String symbol) throws SpeedyHttpException {
@@ -199,14 +202,6 @@ public class SpeedyUriContext {
     private String extractActionSuffix(UriComponents uriComponents) {
         List<String> pathSegments = uriComponents.getPathSegments();
         return pathSegments.isEmpty() ? "" : pathSegments.get(pathSegments.size() - 1);
-    }
-
-    public void setActionSuffix(String actionSuffix) {
-        this.actionSuffix = actionSuffix;
-    }
-
-    public String getActionSuffix() {
-        return actionSuffix;
     }
 
     public SpeedyQueryImpl getParsedQuery() {

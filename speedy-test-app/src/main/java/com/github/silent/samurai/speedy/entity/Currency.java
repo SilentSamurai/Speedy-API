@@ -1,8 +1,6 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.annotations.SpeedyBulk;
-import com.github.silent.samurai.speedy.annotations.SpeedyTransaction;
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -18,7 +16,6 @@ import java.time.LocalDateTime;
 @Setter
 @Table(name = "currencies")
 @Entity
-@SpeedyTransaction(TransactionMode.BATCH)
 @SpeedyBulk
 public class Currency extends AbstractBaseEntity {
 

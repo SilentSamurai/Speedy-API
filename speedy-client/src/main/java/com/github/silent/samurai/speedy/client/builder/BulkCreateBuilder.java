@@ -26,7 +26,6 @@ public class BulkCreateBuilder {
     private final ResponseParser parser;
     private final SpeedyFormat format;
     private List<ObjectNode> items;
-    private String transactionMode;
 
     public BulkCreateBuilder(String entity, PathBuilder paths, RequestSender sender,
                              ObjectMapper mapper, ResponseParser parser) {
@@ -48,16 +47,8 @@ public class BulkCreateBuilder {
         return this;
     }
 
-    public BulkCreateBuilder transaction(String mode) {
-        this.transactionMode = mode;
-        return this;
-    }
-
     public SpeedyResult execute() {
         String url = paths.createPath(entity);
-        if (transactionMode != null && !transactionMode.isEmpty()) {
-            url += "?$transaction=" + transactionMode;
-        }
         ArrayNode array = mapper.createArrayNode();
         for (ObjectNode entityNode : items) {
             array.add(entityNode);

@@ -170,42 +170,15 @@ public class CreateOnlyResource { ...
 ```
 
 `BulkOperation.ALL` is equivalent to `@SpeedyBulk`; `@SpeedyBulk({})` explicitly disables bulk.
-The same operation-specific rule governs `$create`, `$update`, and `$delete`.
+The same operation-specific rule governs `$create`, `$update` (PATCH and PUT), and `$delete`.
 
-### Transaction mode — `$transaction`
+### Atomicity
 
-Bulk update honors the entity's configured transaction mode, overridable per request via the
-`$transaction` query parameter:
+Every bulk write — `$create`, `$update` (PATCH and PUT), and `$delete` — runs in a single
+transaction. If **any** item fails (validation, a missing row, a lifecycle event, or a constraint
+violation), the whole request is rejected and **nothing is committed**. The response carries that
+failure's HTTP status (e.g. `400`, `404`, `409`); there is no partial-success result.
 
-```http
-[PATCH] /speedy/v1/Supplier/$update?$transaction=batch
-[PATCH] /speedy/v1/Supplier/$update?$transaction=per-entity
-```
-
-| Mode         | Behavior                                                                                               |
-|--------------|--------------------------------------------------------------------------------------------------------|
-| `batch`      | One shared transaction. Any item failing (validation, missing row, etc.) rolls back the whole request. |
-| `per-entity` | Each item gets its own transaction. Failures are reported per-item without blocking the others.        |
-
-In `per-entity` mode, if some items succeed and others fail, the response is `207 Multi-Status`:
-
-```json
-{
-    "succeeded": [
-        {
-            "id": "1a2b3c4d-5678-90ab-cdef-1234567890ab"
-        }
-    ],
-    "failed": [
-        {
-            "index": 1,
-            "status": 404,
-            "message": "entity not found: ...",
-            "timestamp": "2024-01-01T00:00:00"
-        }
-    ],
-    "pageIndex": 0
-}
-```
+To apply a subset of items independently, send them as separate requests.
 
 <hr>

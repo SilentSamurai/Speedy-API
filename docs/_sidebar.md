@@ -2,6 +2,7 @@
 
 * [Home](README.md)
 * [Getting Started](getting-started.md)
+* [Request-Scoped Authorization](policy-authorization.md)
 * [Open-Api Integration](api-docs.md)
 * [GET Operations](get-operation.md)
 * [QUERY Operations](query-operation.md)
@@ -19,3 +20,4 @@
 * [Java Client](java-client.md)
     * [SpeedyClient](speedy-client.md)
     * [SpeedyQuery](speedy-query.md)
+* [QueryVisitor Architecture](query-visitor-architecture.md)

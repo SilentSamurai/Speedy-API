@@ -20,12 +20,17 @@ import com.github.silent.samurai.speedy.interfaces.response.IResponseSerializerV
 import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.policy.PolicyEngine;
+import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
+import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
+import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 
 public class DefaultSpeedyEngine implements SpeedyEngine {
 
@@ -128,53 +133,78 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
 
         getChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.READ),
-                new GetHandler(),
+                new SpeedyActionCheckHandler(PermissionType.READ),
+                new ReadQueryPolicyHandler(),
+                new RequestValidationHandler(SpeedyRequestType.GET_LIST),
+                new GetHandler(),   
                 new ConditionalGetHandler(),
+                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         queryChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.READ),
+                new SpeedyActionCheckHandler(PermissionType.READ),
+                new ReadQueryPolicyHandler(),
+                new RequestValidationHandler(SpeedyRequestType.QUERY),
                 new QueryHandler(),
+                new ReadFieldFilterHandler(),
                 new TailHandler()
         );
         createChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.CREATE),
-                new BulkCheckHandler(BulkOperation.CREATE),
+                new SpeedyActionCheckHandler(PermissionType.CREATE),
+                new CreateRequestPolicyHandler(),
+                new IsBulkEnableCheckHandler(BulkOperation.CREATE),
+                // missing handler for checking if key exists in db
                 new EtagStampHandler(),
+                new CreatePreEventHandler(),
+                new RequestValidationHandler(SpeedyRequestType.CREATE),
                 new CreateHandler(),
                 new WriteEtagHandler(),
                 new TailHandler()
         );
         updateChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.UPDATE),
-                new BulkCheckHandler(BulkOperation.UPDATE),
+                new SpeedyActionCheckHandler(PermissionType.UPDATE),
+                new WriteRequestPolicyHandler(PermissionType.UPDATE),
+                new IsBulkEnableCheckHandler(BulkOperation.UPDATE),
+                new ExistsInDbCheckHandler(),
+                new UpdateAuthorizationPreflight(PermissionType.UPDATE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
+                new UpdatePreEventHandler(),
+                new RequestValidationHandler(SpeedyRequestType.UPDATE),
                 new UpdateHandler(),
                 new WriteEtagHandler(),
                 new TailHandler()
         );
-        // PUT full-replace reuses the update-level permission; only the handler differs.
-        // Bulk, however, is toggled independently of PATCH via BulkOperation.REPLACE.
+        // PUT has its own static and request-policy permission; bulk is independently toggled
+        // via BulkOperation.REPLACE.
         replaceChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.UPDATE),
-                new BulkCheckHandler(BulkOperation.REPLACE),
+                new SpeedyActionCheckHandler(PermissionType.REPLACE),
+                new WriteRequestPolicyHandler(PermissionType.REPLACE),
+                new IsBulkEnableCheckHandler(BulkOperation.REPLACE),
+                new ExistsInDbCheckHandler(), // all checks need to be performed b4 we touch db
+                new UpdateAuthorizationPreflight(PermissionType.REPLACE),
                 new PreconditionCheckHandler(),
                 new EtagStampHandler(),
+                new UpdatePreEventHandler(),
+                new RequestValidationHandler(SpeedyRequestType.REPLACE),
                 new ReplaceHandler(),
                 new WriteEtagHandler(),
                 new TailHandler()
         );
         deleteChain = List.of(
                 new HeadHandler(),
-                new PermissionCheckHandler(PermissionType.DELETE),
-                new BulkCheckHandler(BulkOperation.DELETE),
+                new SpeedyActionCheckHandler(PermissionType.DELETE),
+                new WriteRequestPolicyHandler(PermissionType.DELETE),
+                new IsBulkEnableCheckHandler(BulkOperation.DELETE),
+                new ExistsInDbCheckHandler(),
+                new DeleteRowPolicyPreflightHandler(),
                 new PreconditionCheckHandler(),
+                new RequestValidationHandler(SpeedyRequestType.DELETE),
+                new DeletePreEventHandler(),
                 new DeleteHandler(),
                 new TailHandler()
         );
@@ -219,6 +249,12 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
             }
         }
         ctx.put(QueryProcessor.class, qp);
+
+        SpeedyAuthContext authContext = config.authContextPerReq()
+                .orElseGet(() -> new SpeedyAuthContext(
+                        new PolicyDocument(PolicyEffect.DENY, List.of()),
+                        Map.of()));
+        ctx.put(PolicyEngine.class, new PolicyEngine(authContext));
     }
 
     @Override

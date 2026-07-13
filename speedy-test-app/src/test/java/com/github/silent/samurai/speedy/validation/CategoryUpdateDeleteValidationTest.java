@@ -116,7 +116,7 @@ class CategoryUpdateDeleteValidationTest {
         }
 
         @Test
-        @DisplayName("DELETE with empty ID should fail - custom validator")
+        @DisplayName("DELETE with empty ID should return not found during the database check")
         void deleteWithEmptyId_shouldFail() {
             SpeedyTestResult result = client.delete("Category")
                     .key("id", "")

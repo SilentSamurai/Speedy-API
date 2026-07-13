@@ -168,7 +168,7 @@ are wired inline in `SpeedyEngineImpl`'s constructor. Individual handlers are un
 - **`QueryProcessor`** interface — implemented by `JooqQueryProcessorImpl` (in `speedy-jooq-query-processor`), swappable
   for other DB backends.
 - **`MetaModelProcessor`** interface — `JpaMetaModelProcessorV2` (JPA scan) or `FileMetaModelProcessor` (JSON file).
-- **`IResponseSerializerV2`** interface — `JSONResponseSerializer` (entity list, count, batch, error, metadata),
+- **`IResponseSerializerV2`** interface — `JSONResponseSerializer` (entity list, count, error, metadata),
   field-level predicate for key-only serialization.
 - **`TypeConverter`** — type conversion between `SpeedyValue` and DB types (jOOQ backend, dialect-aware).
 - **`FieldRule`** interface — 25 composable validation rule implementations.

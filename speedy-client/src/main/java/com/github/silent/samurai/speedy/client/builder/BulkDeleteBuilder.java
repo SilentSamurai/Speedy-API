@@ -26,7 +26,6 @@ public class BulkDeleteBuilder {
     private final ResponseParser parser;
     private final SpeedyFormat format;
     private List<ObjectNode> items;
-    private String transactionMode;
 
     public BulkDeleteBuilder(String entity, PathBuilder paths, RequestSender sender,
                              ObjectMapper mapper, ResponseParser parser) {
@@ -48,16 +47,8 @@ public class BulkDeleteBuilder {
         return this;
     }
 
-    public BulkDeleteBuilder transaction(String mode) {
-        this.transactionMode = mode;
-        return this;
-    }
-
     public SpeedyResult execute() {
         String url = paths.deletePath(entity);
-        if (transactionMode != null && !transactionMode.isEmpty()) {
-            url += "?$transaction=" + transactionMode;
-        }
         ArrayNode array = mapper.createArrayNode();
         for (ObjectNode pk : items) {
             array.add(pk);

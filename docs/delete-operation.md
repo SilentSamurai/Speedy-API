@@ -1,6 +1,6 @@
 # Speedy Delete API
 
-create entity CRUD apis with writing a line of code
+create entity CRUD apis without writing a line of code
 
 ### Delete Operations
 
@@ -11,7 +11,7 @@ delete multiple resource
 **URL**
 
 ```http
-[DELETE] /speedy/v1/User
+[DELETE] /speedy/v1/User/$delete
 ```
 
 **Request Body**

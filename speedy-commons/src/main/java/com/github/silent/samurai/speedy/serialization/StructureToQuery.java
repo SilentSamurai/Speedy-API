@@ -17,6 +17,7 @@ import com.github.silent.samurai.speedy.interfaces.query.Identifier;
 import com.github.silent.samurai.speedy.interfaces.query.Literal;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
+import com.github.silent.samurai.speedy.interfaces.query.VariableRef;
 import com.github.silent.samurai.speedy.models.SpeedyBoolean;
 import com.github.silent.samurai.speedy.models.SpeedyCollection;
 import com.github.silent.samurai.speedy.models.SpeedyQueryImpl;
@@ -25,6 +26,8 @@ import com.github.silent.samurai.speedy.parser.ConditionFactory;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /// Format-agnostic {@code $query} parser: owns the whole structural traversal of a query
 /// body (the {@code $where} boolean condition tree with {@code $or}/{@code $and}, per-field
@@ -39,8 +42,22 @@ import java.util.List;
 /// **only** key of its object — a single-key lookahead is therefore enough and no per-object
 /// buffering is needed.
 ///
+/// {@link #parseCondition} exposes just the condition-tree grammar (no {@code $select}/
+/// {@code $orderBy}/{@code $page}/{@code $expand}) so callers with a standalone condition body —
+/// e.g. an ABAC policy's {@code QueryCondition} — get the exact same {@code $or}/{@code $and}/
+/// operator/{@code ${variable}} grammar real request filters use, instead of a second parser.
+///
 /// Stateless and thread-safe; the same instance can serve every request.
 public class StructureToQuery {
+
+    /// Parses a standalone condition body (the reader's root value, not wrapped in a
+    /// {@code $where} key) into a {@link BooleanCondition} against {@code entity}.
+    public BooleanCondition parseCondition(EntityMetadata entity, StructureReader r) throws SpeedyHttpException {
+        if (r.begin() != Kind.OBJECT) {
+            throw new BadRequestException("condition body must be an object");
+        }
+        return parseBoolean(new ConditionFactory(entity), r);
+    }
 
     public SpeedyQuery parse(EntityMetadata entity, StructureReader r,
                              int maxPageSize, int defaultPageSize) throws SpeedyHttpException {
@@ -258,13 +275,20 @@ public class StructureToQuery {
         }
     }
 
-    /// A {@code $field}-prefixed string is a field reference ({@link Identifier}); anything else
+    /// A {@code $field}-prefixed string is a field reference ({@link Identifier}); a
+    /// {@code ${name}} string is a variable reference ({@link VariableRef}); anything else
     /// is a {@link Literal} decoded by the format. Peeking the text does not advance the cursor,
     /// so the literal branch can still {@link StructureReader#readField} the same token.
+    private static final Pattern VARIABLE_REF = Pattern.compile("^\\$\\{([^}]+)}$");
+
     private Expression buildExpression(FieldMetadata metadata, ConditionFactory cf, StructureReader r)
             throws SpeedyHttpException {
         String text = r.textValue();
         if (text != null && text.startsWith("$")) {
+            Matcher variableMatcher = VARIABLE_REF.matcher(text);
+            if (variableMatcher.matches()) {
+                return new VariableRef(variableMatcher.group(1));
+            }
             QueryField queryField = cf.createQueryField(text.substring(1));
             cf.validateQueryFieldNotSensitive(queryField);
             return new Identifier(queryField);

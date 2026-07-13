@@ -1,6 +1,5 @@
 package com.github.silent.samurai.speedy.serialization;
 
-import com.github.silent.samurai.speedy.enums.TransactionMode;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
@@ -51,7 +50,7 @@ public class DefaultRequestParser implements IRequestBodyParser {
     }
 
     @Override
-    public SpeedyCreateBody parseCreate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
+    public SpeedyCreateBody parseCreate(byte[] rawBody, EntityMetadata entity,
                                         QueryProcessor queryProcessor) throws SpeedyHttpException {
         List<SpeedyEntity> entities = new LinkedList<>();
         List<SpeedyEntityKey> keysToCheck = new LinkedList<>();
@@ -74,7 +73,7 @@ public class DefaultRequestParser implements IRequestBodyParser {
             }
         }
         // Bulk gating (multi-element rejection for entities not opted in via @SpeedyBulk)
-        // is enforced downstream per-operation by BulkCheckHandler in the create/update/
+        // is enforced downstream per-operation by IsBulkEnableCheckHandler in the create/update/
         // replace/delete chains, so PATCH and PUT can be toggled independently.
         // Batch existence check: one query instead of N
         if (!keysToCheck.isEmpty()) {
@@ -85,12 +84,11 @@ public class DefaultRequestParser implements IRequestBodyParser {
         }
         return SpeedyCreateBody.builder()
                 .entities(entities)
-                .mode(mode)
                 .build();
     }
 
     @Override
-    public SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
+    public SpeedyUpdateBody parseUpdate(byte[] rawBody, EntityMetadata entity,
                                         QueryProcessor queryProcessor) throws SpeedyHttpException {
         List<SpeedyUpdateBody.Item> items = new LinkedList<>();
         try (StructureReader r = reader.readDocument(rawBody)) {
@@ -113,7 +111,6 @@ public class DefaultRequestParser implements IRequestBodyParser {
         }
         return SpeedyUpdateBody.builder()
                 .items(items)
-                .mode(mode)
                 .build();
     }
 
@@ -135,7 +132,7 @@ public class DefaultRequestParser implements IRequestBodyParser {
     }
 
     @Override
-    public SpeedyDeleteBody parseDelete(byte[] rawBody, EntityMetadata entity, TransactionMode mode,
+    public SpeedyDeleteBody parseDelete(byte[] rawBody, EntityMetadata entity,
                                         QueryProcessor queryProcessor) throws SpeedyHttpException {
         List<SpeedyEntityKey> keys = new LinkedList<>();
         try (StructureReader r = reader.readDocument(rawBody)) {
@@ -158,7 +155,6 @@ public class DefaultRequestParser implements IRequestBodyParser {
         }
         return SpeedyDeleteBody.builder()
                 .keys(keys)
-                .mode(mode)
                 .build();
     }
 

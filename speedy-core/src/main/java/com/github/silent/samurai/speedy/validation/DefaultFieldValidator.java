@@ -110,7 +110,7 @@ public class DefaultFieldValidator {
 
             boolean hasValue = entity.has(field);
 
-            // 1. Missing required value — only enforced on create (full payload expected).
+            // 1. Missing required value — only enforced on creation (full payload expected).
             if (enforceRequired && requiredField && !hasValue) {
                 errors.add(field.getOutputPropertyName() + " is required");
                 continue;

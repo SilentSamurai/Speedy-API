@@ -4,6 +4,7 @@ public enum ActionType {
     READ,
     CREATE,
     UPDATE,
+    REPLACE,
     DELETE,
     ALL
 }

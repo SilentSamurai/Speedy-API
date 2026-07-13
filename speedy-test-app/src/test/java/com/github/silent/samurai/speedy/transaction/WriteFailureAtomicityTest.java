@@ -18,14 +18,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/// Every bulk write is a single all-or-nothing transaction: if one item fails validation or a
+/// lifecycle event, the whole request is rejected and nothing is committed. These tests exercise
+/// that rollback across create/update/delete and confirm the failing item's HTTP status is preserved.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = TestApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-class PerEntityUnexpectedFailureTest {
+class WriteFailureAtomicityTest {
 
     @Autowired
     private MockMvc mvc;
@@ -48,36 +49,32 @@ class PerEntityUnexpectedFailureTest {
     }
 
     @Test
-    void createRecordsGenericValidatorFailureAndCommitsTheOtherItem() {
+    void createValidatorFailure_failsWholeRequest() {
         String successfulName = uniqueName("validator-success");
 
+        // A generic validator exception (IllegalStateException) surfaces as a 409 for the whole request.
         client.createMany("Category", List.of(category(successfulName), category("validator-runtime-trigger")))
-                .expectStatus(207)
-                .expectJsonPath("$.succeeded[*]", hasSize(1))
-                .expectJsonPath("$.failed[*]", hasSize(1))
-                .expectJsonPath("$.failed[0].index", equalTo(1))
-                .expectJsonPath("$.failed[0].status", equalTo(500));
+                .expectStatus(409);
 
-        assertTrue(categoryRepository.findByName(successfulName).isPresent());
+        // All-or-nothing: the otherwise-valid item is not committed when another item fails.
+        assertFalse(categoryRepository.findByName(successfulName).isPresent());
         assertFalse(categoryRepository.findByName("validator-runtime-trigger").isPresent());
     }
 
     @Test
-    void createPreservesCustomValidatorHttpRuntimeStatus() {
+    void createCustomValidatorHttpStatus_failsWholeRequestWithThatStatus() {
         String successfulName = uniqueName("validator-http-success");
 
+        // The custom validator's own HTTP status (422) is preserved for the whole request.
         client.createMany("Category", List.of(category(successfulName), category("validator-http-runtime-trigger")))
-                .expectStatus(207)
-                .expectJsonPath("$.succeeded[*]", hasSize(1))
-                .expectJsonPath("$.failed[0].index", equalTo(1))
-                .expectJsonPath("$.failed[0].status", equalTo(422));
+                .expectStatus(422);
 
-        assertTrue(categoryRepository.findByName(successfulName).isPresent());
+        assertFalse(categoryRepository.findByName(successfulName).isPresent());
         assertFalse(categoryRepository.findByName("validator-http-runtime-trigger").isPresent());
     }
 
     @Test
-    void updateRecordsUnexpectedEventFailureAndCommitsTheOtherItem() {
+    void updateEventFailure_failsWholeRequest() {
         String successfulName = uniqueName("update-success");
         String failingName = uniqueName("update-failure");
         String successfulId = createCategory(successfulName);
@@ -88,18 +85,16 @@ class PerEntityUnexpectedFailureTest {
                 .item(item -> item.key("id", successfulId).field("name", updatedName))
                 .item(item -> item.key("id", failingId).field("name", "generic-update-error-trigger"))
                 .execute()
-                .expectStatus(207)
-                .expectJsonPath("$.succeeded[*]", hasSize(1))
-                .expectJsonPath("$.failed[*]", hasSize(1))
-                .expectJsonPath("$.failed[0].index", equalTo(1))
-                .expectJsonPath("$.failed[0].status", equalTo(500));
+                .expectStatus(500);
 
-        assertTrue(categoryRepository.findByName(updatedName).isPresent());
+        // All-or-nothing: neither row is updated when one item's PRE_UPDATE event fails.
+        assertFalse(categoryRepository.findByName(updatedName).isPresent());
+        assertTrue(categoryRepository.findByName(successfulName).isPresent());
         assertTrue(categoryRepository.findByName(failingName).isPresent());
     }
 
     @Test
-    void deleteRecordsUnexpectedEventFailureAndCommitsTheOtherItem() {
+    void deleteEventFailure_failsWholeRequest() {
         String firstName = uniqueName("delete-first");
         String secondName = uniqueName("delete-second");
         String firstId = createCategory(firstName);
@@ -109,14 +104,11 @@ class PerEntityUnexpectedFailureTest {
         client.deleteMany("Category")
                 .items(List.of(key(firstId), key(secondId)))
                 .execute()
-                .expectStatus(207)
-                .expectJsonPath("$.succeeded[*]", hasSize(1))
-                .expectJsonPath("$.failed[*]", hasSize(1))
-                .expectJsonPath("$.failed[0].index", equalTo(0))
-                .expectJsonPath("$.failed[0].status", equalTo(500));
+                .expectStatus(500);
 
+        // All-or-nothing: neither row is deleted when one item's PRE_DELETE event fails.
         assertTrue(categoryRepository.findByName(firstName).isPresent());
-        assertFalse(categoryRepository.findByName(secondName).isPresent());
+        assertTrue(categoryRepository.findByName(secondName).isPresent());
     }
 
     private String createCategory(String name) {
