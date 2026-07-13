@@ -1,571 +1,275 @@
 # SpeedyClient
 
-The `SpeedyClient<T>` is a generic client class that provides a fluent API for interacting with the Speedy API. It
-serves as the main entry point for making CRUD operations and queries against a Speedy-enabled backend.
-
-## Overview
-
-The SpeedyClient offers:
-
-- **Generic Type Support**: Uses type parameter `T` to handle different response types
-- **Builder Pattern**: Provides builder classes for different HTTP operations
-- **HTTP Client Abstraction**: Supports different HTTP client implementations
-- **Query Support**: Allows execution of custom queries using `SpeedyQuery`
+`Speedy` is the main entry point for the production Java client. It's configured once (via `Speedy.connect(...)` or
+`Speedy.builder()...build()`) and reused for all calls — each call returns a fluent builder for one operation.
 
 ## Creating a Client
 
-### Using RestTemplate (Production)
+### Quick Connect (JDK HttpClient, zero deps)
 
 ```java
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import org.springframework.web.client.RestTemplate;
-
-RestTemplate restTemplate = new RestTemplate();
-SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "https://api.example.com");
+Speedy speedy = Speedy.connect("http://localhost:8080");
 ```
 
-### Using MockMvc (Testing)
+### Using RestTemplate
 
 ```java
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
+Speedy speedy = Speedy.builder()
+        .baseUrl("http://localhost:8080")
+        .transport(new RestTemplateTransport(new RestTemplate()))
+        .build();
+```
 
+### Custom Transport
+
+Implement `SpeedyTransport` for any HTTP library — it's a single-method functional interface mapping a
+`SpeedyRequest` to a `SpeedyRawResponse`:
+
+```java
+Speedy speedy = Speedy.builder()
+        .baseUrl("http://localhost:8080")
+        .transport(request -> {
+            // Your custom HTTP logic
+            return new SpeedyRawResponse(200, Map.of(), "{\"payload\":[]}");
+        })
+        .build();
+```
+
+### Testing with MockMvc
+
+`SpeedyTest` mirrors the same builder API but returns `SpeedyTestResult`, which carries the status code for
+assertions instead of throwing on 4xx/5xx:
+
+```java
 @Autowired
 private MockMvc mockMvc;
 
-SpeedyClient<ResultActions> testClient = SpeedyClient.mockMvc(mockMvc);
-```
-
-### Using Custom HTTP Client
-
-```java
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.HttpClient;
-
-HttpClient<CustomResponse> customClient = new CustomHttpClient();
-SpeedyClient<CustomResponse> client = SpeedyClient.from(customClient);
+SpeedyTest speedy = SpeedyTest.mockMvc(mockMvc);
 ```
 
 ## CRUD Operations
 
-### Create Operations
+### Create
 
 ```java
-// Create a single user with fields
-SpeedyResponse response = client.create("Category")
-    .addField("name", "cat-client-1")
-    .execute();
+SpeedyResult result = speedy.create("Category")
+        .field("name", "cat-client-1")
+        .execute();
+Category created = result.first(Category.class);
 
-// Create with multiple fields
-SpeedyResponse response = client.create("ValueTestEntity")
-    .addField("localDateTime", LocalDateTime.now())
-    .addField("localDate", LocalDate.now())
-    .addField("localTime", LocalTime.now())
-    .addField("instantTime", Instant.now())
-    .addField("booleanValue", true)
-    .addField("doubleValue", 1.5430434)
-    .execute();
-
-// Create with foreign key relationships
-SpeedyResponse response = client.create("Product")
-    .addField("name", "client-product-1")
-    .addField("description", "test description")
-    .addField("category.id", "1")  // Foreign Key to Category entity
-    .execute();
+// Foreign-key fields via dot notation
+speedy.create("Product")
+        .field("name", "client-product-1")
+        .field("description", "test description")
+        .field("category.id", categoryId)
+        .execute();
 ```
 
-### Read Operations
+### Read
 
 ```java
-// Get entity by ID
-SpeedyResponse response = client.get("Category")
-    .key("id", "category-id")
-    .execute();
+// By primary key
+User user = speedy.get("User")
+        .key("id", userId)
+        .execute()
+        .first(User.class);
 
-// Get entity by ID (alternative syntax)
-SpeedyResponse response = client.get("ValueTestEntity")
-    .key("id", entityId)
-    .execute();
+// List, with selection/pagination/expansion
+List<User> users = speedy.get("User")
+        .select("id", "name", "email")
+        .pageSize(20)
+        .pageNo(0)
+        .expand("profile")
+        .execute()
+        .list(User.class);
 ```
 
-### Update Operations
+### Update — PATCH (partial)
 
 ```java
-// Update entity by ID
-SpeedyResponse response = client.update("Category")
-    .key("id", categoryId)
-    .field("name", "cat-CLIENT-updated-1")
-    .execute();
-
-// Update multiple fields
-SpeedyResponse response = client.update("ValueTestEntity")
-    .key("id", entityId)
-    .field("booleanValue", false)
-    .field("localDateTime", LocalDateTime.now().plusDays(1).toString())
-    .execute();
-
-// Update product
-SpeedyResponse response = client.update("Product")
-    .key("id", productId)
-    .field("name", "updated-client-product")
-    .execute();
+speedy.update("Category")
+        .key("id", categoryId)
+        .field("name", "cat-updated")
+        .execute();
 ```
 
-### Delete Operations
+Only the fields set via `field(...)` are sent; the server leaves every other column unchanged. See
+[PUT Operations](put-operation.md) for PATCH vs. PUT semantics.
+
+### Replace — PUT (full replace)
 
 ```java
-// Delete entity by ID
-SpeedyResponse response = client.delete("Category")
-    .key("id", categoryId)
-    .execute();
+speedy.replace("Category")
+        .key("id", categoryId)
+        .field("name", "cat-updated")
+        .field("description", "full replacement value")
+        .execute();
+```
 
-// Delete entity by ID (alternative syntax)
-SpeedyResponse response = client.delete("ValueTestEntity")
-    .key("id", entityId)
-    .execute();
+`replace(...)` sends every field as the complete representation of the resource: omitted nullable fields are reset
+to `null` on the server, and omitted required fields are rejected with `400`.
+
+### Delete
+
+```java
+speedy.delete("Category")
+        .key("id", categoryId)
+        .execute();
+```
+
+## Bulk Operations
+
+Every mutating operation has a bulk counterpart, each taking a `List<ObjectNode>` (or its own item-by-item builder):
+
+```java
+// Bulk create
+SpeedyResult result = speedy.createMany("Category", List.of(categoryA, categoryB));
+
+// Or via the item builder
+speedy.createMany("Category")
+        .items(List.of(categoryA, categoryB))
+        .execute();
+
+// Bulk update / replace / delete follow the same shape
+speedy.updateMany("Category", items);
+speedy.replaceMany("Category", items);
+speedy.deleteMany("Category", primaryKeys);
 ```
 
 ## Query Operations
 
-### Basic Query
+`speedy.query(entity)` builds an advanced query against `POST /{Entity}/$query` — see [SpeedyQuery](speedy-query.md)
+for the full condition/operator DSL:
 
 ```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 
-SpeedyQuery query = SpeedyQuery.from("Category")
-    .where(condition("name", eq("cat-CLIENT-updated-1")))
-    .build();
+List<Category> categories = speedy.query("Category")
+        .where(condition("name", eq("cat-updated")))
+        .orderByAsc("name")
+        .execute()
+        .list(Category.class);
 
-SpeedyResponse response = client.query(query).execute();
-```
-
-### Complex Query with Ordering
-
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-// Query with ordering
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .orderByAsc("localDate")
-    .build();
-
-SpeedyResponse response = client.query(query).execute();
-
-// Query with descending order
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .orderByDesc("localTime")
-    .build();
-
-SpeedyResponse response = client.query(query).execute();
-```
-
-### Date and Time Queries
-
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-// Query by date range
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("localDate", gt(LocalDate.now().toString())))
-    .build();
-
-SpeedyResponse response = client.query(query).execute();
-
-// Query by time
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("localTime", gt(LocalTime.of(11, 0).toString())))
-    .build();
-
-SpeedyResponse response = client.query(query).execute();
-
-// Query by instant
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("instantTime", lt(Instant.now().toString())))
-    .build();
-
-SpeedyResponse response = client.query(query).execute();
-```
-
-### Numeric Queries
-
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-// Query by double value
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("doubleValue", eq(1.5430434)))
-    .build();
-
-SpeedyResponse response = client.query(query).execute();
-```
-
-## Testing Examples
-
-### Unit Testing with MockMvc
-
-```java
-@SpringBootTest
-@AutoConfigureMockMvc
-class UserControllerTest {
-    
-    @Autowired
-    private MockMvc mockMvc;
-    
-    @Test
-    void testCreateUser() {
-        SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
-        
-        ResultActions result = client.create("users")
-            .addField("name", "John Doe")
-            .addField("email", "john@example.com")
-            .execute();
-            
-        result.andExpect(status().isCreated())
-              .andExpect(jsonPath("$.name").value("John Doe"));
-    }
-    
-    @Test
-    void testGetUsers() {
-        SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
-        
-        ResultActions result = client.get("users")
-            .select("id", "name")
-            .execute();
-            
-        result.andExpect(status().isOk())
-              .andExpect(jsonPath("$").isArray());
-    }
-    
-    @Test
-    void testQueryUsers() {
-        SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
-        
-        SpeedyQuery query = from("users")
-            .where(condition("active", eq(true)))
-            .select("id", "name")
-            .build();
-        
-        ResultActions result = client.query(query).execute();
-        
-        result.andExpect(status().isOk())
-              .andExpect(jsonPath("$").isArray());
-    }
-}
+// Count
+long total = speedy.query("Category")
+        .where(condition("active", eq(true)))
+        .count();
 ```
 
 ## Response Handling
 
-### SpeedyResult Structure
-
-The `SpeedyResult` class contains the following fields:
+`SpeedyResult` wraps the response payload and pagination metadata, with typed deserialization helpers:
 
 ```java
-public class SpeedyResult {
-    private final JsonNode payload;      // The actual response data (JSON array)
-    private final int pageIndex;         // Current page index (0-based)
-    private final int pageSize;          // Number of items per page
-    private final long totalCount;       // Total number of records
-    private final int totalPages;        // Total number of pages
-}
-```
+SpeedyResult result = speedy.get("User").execute();
 
-### Basic Response Handling
-
-```java
-import com.github.silent.samurai.speedy.client.SpeedyResult;
-
-SpeedyResult result = client.get("users").execute();
-
-// Access pagination information
+List<User> users = result.list(User.class);
+User first = result.first(User.class);              // null if empty
+Optional<User> opt = result.firstOptional(User.class);
+JsonNode raw = result.raw();                          // raw payload array
+JsonNode firstRaw = result.firstRaw();
 int pageIndex = result.pageIndex();
 int pageSize = result.pageSize();
 long totalCount = result.totalCount();
 int totalPages = result.totalPages();
-
-// Access the payload as raw JsonNode
-JsonNode payload = result.raw();
-
-// Check if payload contains data
-if (payload != null && !payload.isEmpty()) {
-    System.out.println("Found data in response");
-    // Process the payload based on your needs
-}
-```
-
-### Working with Payload Data
-
-```java
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-
-SpeedyResponse response = client.get("users").execute();
-JsonNode payload = response.getPayload();
-
-// For single entity responses
-if (payload.isObject()) {
-    // Handle single entity
-    String userId = payload.get("id").asText();
-    String userName = payload.get("name").asText();
-}
-
-// For multiple entity responses
-if (payload.isArray()) {
-    // Handle array of entities
-    for (JsonNode user : payload) {
-        String userId = user.get("id").asText();
-        String userName = user.get("name").asText();
-    }
-}
+boolean empty = result.isEmpty();
+int size = result.size();
 ```
 
 ## Error Handling
 
-### HTTP Status and Exceptions
-
-The SpeedyClient throws exceptions for HTTP errors and network issues:
-
-```java
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-
-try {
-    SpeedyResponse response = client.get("users").execute();
-    // Process successful response
-} catch (SpeedyClientException e) {
-    // Handle Speedy-specific client errors
-    log.error("Client error: {}", e.getMessage());
-} catch (HttpClientErrorException e) {
-    // Handle HTTP 4xx errors (Bad Request, Not Found, etc.)
-    log.error("HTTP client error: {} - {}", e.getStatusCode(), e.getMessage());
-} catch (HttpServerErrorException e) {
-    // Handle HTTP 5xx errors (Internal Server Error, etc.)
-    log.error("HTTP server error: {} - {}", e.getStatusCode(), e.getMessage());
-} catch (Exception e) {
-    // Handle other unexpected errors
-    log.error("Unexpected error: {}", e.getMessage());
-}
-```
-
-### Exception Handling
+All errors surface as unchecked `SpeedyException` subclasses — no framework exceptions leak through:
 
 ```java
 try {
-    SpeedyResponse response = client.create("users")
-        .addField("name", "John Doe")
-        .addField("email", "john@example.com")
-        .execute();
-        
-    // Check if the operation was successful by examining the payload
-    JsonNode payload = response.getPayload();
-    if (payload != null && !payload.isEmpty()) {
-        log.info("User created successfully");
-    } else {
-        log.warn("No data returned from create operation");
-    }
-} catch (SpeedyClientException e) {
-    log.error("Client error: {}", e.getMessage());
-} catch (Exception e) {
-    log.error("Unexpected error: {}", e.getMessage());
+    speedy.create("User").field("name", null).execute();
+} catch (SpeedyBadRequestException e) {
+    e.statusCode();      // 400
+    e.serverMessage();   // validation error detail from the server
+    e.timestamp();
+    e.responseBody();    // raw response body, for debugging
 }
 ```
 
-### Validation Errors
+| Exception                        | HTTP Status        |
+|-----------------------------------|--------------------|
+| `SpeedyBadRequestException`       | 400                |
+| `SpeedyNotFoundException`         | 404                |
+| `SpeedyServerException`           | 500+                |
+| `SpeedyConnectionException`       | network failure     |
+| `SpeedyDeserializationException`  | JSON parse failure  |
+
+All of the above extend `SpeedyException`, so a single `catch (SpeedyException e)` handles every case if you don't
+need to distinguish them.
+
+## Interceptors
+
+Chain interceptors for auth headers, logging, or tracing — each receives and can transform the outgoing
+`SpeedyRequest`:
 
 ```java
-try {
-    SpeedyResponse response = client.create("users")
-        .addField("name", "")  // Invalid empty name
-        .addField("email", "invalid-email")  // Invalid email format
-        .execute();
-        
-    // Check response payload for validation errors
-    JsonNode payload = response.getPayload();
-    if (payload != null && payload.has("errors")) {
-        JsonNode errors = payload.get("errors");
-        if (errors.isArray()) {
-            for (JsonNode error : errors) {
-                log.error("Validation error: {}", error.asText());
-            }
-        }
-    }
-} catch (Exception e) {
-    log.error("Request failed: {}", e.getMessage());
-}
+Speedy speedy = Speedy.builder()
+        .baseUrl("http://localhost:8080")
+        .interceptor(req -> req.withHeader("Authorization", "Bearer token"))
+        .interceptor(req -> req.withHeader("X-Trace-Id", UUID.randomUUID().toString()))
+        .build();
 ```
 
-## Best Practices
+## Testing with SpeedyTest
 
-### 1. Use Static Imports for Queries
-
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-// Much cleaner than SpeedyQuery.from("users")
-SpeedyQuery query = from("users")
-    .where(condition("active", eq(true)))
-    .build();
-```
-
-### 2. Handle Responses Properly
+`SpeedyTest` exposes the same `create`/`get`/`update`/`replace`/`delete`/`query` methods as `Speedy`, backed by
+`MockMvc` instead of a network transport. Results are `SpeedyTestResult`, which adds fluent assertions instead of
+throwing on error responses:
 
 ```java
-SpeedyResponse response = client.get("users").execute();
-JsonNode payload = response.getPayload();
+@SpringBootTest
+@AutoConfigureMockMvc
+class CategoryControllerTest {
 
-if (payload != null && !payload.isEmpty()) {
-    // Process data from payload
-    if (payload.isArray()) {
-        // Handle array of entities
-        for (JsonNode user : payload) {
-            // Process each user
-        }
-    } else if (payload.isObject()) {
-        // Handle single entity
-        // Process the user object
-    }
-} else {
-    // Handle empty or null response
-    log.warn("No data returned from API");
-}
-```
+    @Autowired
+    private MockMvc mockMvc;
 
-### 3. Use Appropriate HTTP Clients
+    @Test
+    void testCreateCategory() {
+        SpeedyTest speedy = SpeedyTest.mockMvc(mockMvc);
 
-- **Production**: Use `RestTemplate` with proper configuration
-- **Testing**: Use `MockMvc` for fast, reliable tests
-- **Custom**: Implement `HttpClient<T>` for special requirements
-
-### 4. Optimize Queries
-
-```java
-// Good: Select only needed fields
-SpeedyQuery query = from("users")
-    .select("id", "name", "email")  // Only get what you need
-    .where(condition("active", eq(true)))
-    .pageSize(20)  // Reasonable page size
-    .build();
-
-// Avoid: Getting all fields without pagination
-SpeedyQuery badQuery = from("users").build();  // Gets everything!
-```
-
-### 5. Reuse Client Instances
-
-```java
-// Good: Reuse client instance
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.silent.samurai.speedy.api.client.SpeedyClient;
-import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-import java.util.ArrayList;
-import java.util.List;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-@Service
-public class UserService {
-    private final SpeedyClient<SpeedyResponse> client;
-    
-    public UserService(RestTemplate restTemplate) {
-        this.client = SpeedyClient.restTemplate(restTemplate, "https://api.example.com");
-    }
-    
-    public List<JsonNode> getActiveUsers() {
-        SpeedyQuery query = from("users")
-            .where(condition("active", eq(true)))
-            .build();
-        SpeedyResponse response = client.query(query).execute();
-        JsonNode payload = response.getPayload();
-        
-        List<JsonNode> users = new ArrayList<>();
-        if (payload != null && payload.isArray()) {
-            for (JsonNode user : payload) {
-                users.add(user);
-            }
-        }
-        return users;
+        speedy.create("Category")
+                .field("name", "test-category")
+                .execute()
+                .expectCreated()
+                .expectJsonPath("$.payload[0].name", "test-category");
     }
 }
 ```
 
-## Query Operators
+| Assertion                                    | Checks                                  |
+|-----------------------------------------------|------------------------------------------|
+| `expectStatus(int)`                          | Exact HTTP status                        |
+| `expectOk()`                                 | 200                                       |
+| `expectCreated()`                             | 201                                       |
+| `expectBadRequest()`                          | 400                                       |
+| `expectNotFound()`                            | 404                                       |
+| `expectNotModified()`                         | 304                                       |
+| `expectPreconditionFailed()`                  | 412                                       |
+| `expectJsonPath(expr, matcher\|value)`        | JSON-path value/Hamcrest matcher          |
+| `expectJsonPathExists(expr)`                  | JSON-path is present                     |
+| `expectJsonPathDoesNotExist(expr)`            | JSON-path is absent                      |
 
-The `SpeedyQuery` builder provides these operator methods for constructing WHERE conditions:
+## Factory / Entry-Point Methods Reference
 
-### Range Operator
-
-```java
-import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
-
-// $between: Inclusive range (equivalent to $gte AND $lte)
-SpeedyQuery query = from("Inventory")
-    .where(
-        condition("cost", between(10, 50))
-    )
-    .build();
-```
-
-### Null Check Operators
-
-```java
-import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
-
-// $isnull: IS NULL check
-SpeedyQuery nullQuery = from("Procurement")
-    .where(
-        condition("modifiedAt", isnull())
-    )
-    .build();
-
-// $isnotnull: IS NOT NULL check
-SpeedyQuery notNullQuery = from("Procurement")
-    .where(
-        condition("createdAt", isnotnull())
-    )
-    .build();
-```
-
-### Composition
-
-```java
-SpeedyQuery combined = from("Procurement")
-    .where(
-        or(
-            condition("createdAt", between("2024-01-01", "2024-03-31")),
-            condition("modifiedAt", isnull())
-        )
-    )
-    .build();
-```
-
-### Error Handling
-
-| Operator     | Error Condition        | Message                                                 |
-|--------------|------------------------|---------------------------------------------------------|
-| `$between`   | Non-array value        | "$between only accepts an array"                        |
-| `$between`   | Wrong array size (≠ 2) | "$between requires exactly 2 values"                    |
-| `$isnull`    | Non-boolean value      | "$isnull only accepts a boolean value"                  |
-| `$isnull`    | `false` value          | "$isnull requires true. Use $isnotnull for IS NOT NULL" |
-| `$isnotnull` | `false` value          | "$isnotnull requires true. Use $isnull for IS NULL"     |
-
-## Factory Methods Reference
-
-| Method                               | Description                            | Use Case                 |
-|--------------------------------------|----------------------------------------|--------------------------|
-| `restTemplate(RestTemplate, String)` | Creates client with RestTemplate       | Production applications  |
-| `mockMvc(MockMvc)`                   | Creates client with MockMvc            | Unit/integration testing |
-| `from(HttpClient<T>)`                | Creates client with custom HTTP client | Custom implementations   |
-
-## Available Operations
-
-| Operation | Method                      | Description              | Returns                         |
-|-----------|-----------------------------|--------------------------|---------------------------------|
-| Create    | `create(String entityName)` | Create new entities      | `SpeedyCreateRequestBuilder<T>` |
-| Read      | `get(String entityName)`    | Retrieve entities        | `SpeedyGetRequestBuilder<T>`    |
-| Update    | `update(String entityName)` | Update existing entities | `SpeedyUpdateRequestBuilder<T>` |
-| Delete    | `delete(String entityName)` | Delete entities          | `SpeedyDeleteRequestBuilder<T>` |
-| Query     | `query(SpeedyQuery query)`  | Execute custom queries   | `SpeedyQueryRequest<T>`         |
+| Method                            | Returns              | Purpose                                  |
+|------------------------------------|-----------------------|-------------------------------------------|
+| `Speedy.connect(baseUrl)`          | `Speedy`              | Quick-connect with JDK transport defaults |
+| `Speedy.builder()...build()`       | `Speedy`              | Full configuration (transport, interceptors, format) |
+| `SpeedyTest.mockMvc(mockMvc)`      | `SpeedyTest`          | MockMvc-backed test facade                |
+| `speedy.create(entity)`            | `CreateBuilder`       | Create one entity                         |
+| `speedy.get(entity)`               | `GetBuilder`          | Fetch by key, or list                     |
+| `speedy.update(entity)`            | `UpdateBuilder`       | PATCH — partial update                    |
+| `speedy.replace(entity)`           | `ReplaceBuilder`      | PUT — full replace                        |
+| `speedy.delete(entity)`            | `DeleteBuilder`       | Delete by key                             |
+| `speedy.query(entity)`             | `QueryBuilder`        | Advanced query / count                    |
+| `speedy.createMany(entity)`        | `BulkCreateBuilder`   | Bulk create                               |
+| `speedy.updateMany(entity)`        | `BulkUpdateBuilder`   | Bulk update                               |
+| `speedy.replaceMany(entity)`       | `BulkReplaceBuilder`  | Bulk replace                              |
+| `speedy.deleteMany(entity)`        | `BulkDeleteBuilder`   | Bulk delete                               |
+| `speedy.metadata()`                | `JsonNode`            | Fetches `/$metadata`                      |

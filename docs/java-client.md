@@ -1,116 +1,114 @@
 # Java Client
 
-The Speedy Java Client provides a fluent, type-safe API for interacting with Speedy-enabled backends. It offers a clean,
-builder-based interface for making CRUD operations and complex queries.
+The `speedy-client` module is a library-agnostic Java client for calling a Speedy-enabled backend. It has **no
+required dependency on Spring, Lombok, or `speedy-commons`** — only Jackson. Bring your own HTTP transport, or use
+the zero-dependency JDK `HttpClient` transport out of the box.
 
 ## Features
 
-- **Fluent API**: Chain methods for building complex requests
-- **Type Safety**: Compile-time validation of request structure
-- **Multiple HTTP Clients**: Support for RestTemplate, MockMvc, and custom implementations
-- **Query Builder**: Powerful query construction with conditions, ordering, and pagination
-- **Testing Support**: Built-in MockMvc client for unit and integration testing
+- **Fluent API** — chainable builders for create, get, update, replace, delete, and query
+- **Typed responses** — deserialize results directly into your own POJOs via `SpeedyResult`
+- **Pluggable transport** — JDK `HttpClient` (default), Spring `RestTemplate`, `MockMvc`, or any custom
+  `SpeedyTransport`
+- **Typed exceptions** — `SpeedyException` subclasses map to HTTP status categories, no leaked framework exceptions
+- **Interceptors** — chain request interceptors for auth headers, tracing, logging
+- **Testing support** — `SpeedyTest`, a MockMvc-backed facade with built-in JSON-path assertions
 
 ## Maven Dependency
 
 ```xml
-
 <dependency>
     <groupId>com.github.silentsamurai</groupId>
-    <artifactId>speedy-java-client</artifactId>
+    <artifactId>speedy-client</artifactId>
     <version>3.1.4</version>
 </dependency>
 ```
 
 ## Quick Start
 
-### Basic Usage
+### Production (JDK HttpClient, zero deps)
 
 ```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+Speedy speedy = Speedy.connect("http://localhost:8080");
 
-// Create a client
-RestTemplate restTemplate = new RestTemplate();
-        SpeedyClient<SpeedyResponse> client = SpeedyClient.restTemplate(restTemplate, "http://localhost:8080");
-
-        // Create a new category
-        SpeedyResponse response = client.create("Category")
-                .addField("name", "cat-client-1")
-                .execute();
-
-        // Query categories
-        SpeedyQuery query = SpeedyQuery.from("Category")
-                .where(condition("name", eq("cat-client-1")))
-                .build();
-
-        SpeedyResponse categories = client.query(query).execute();
+List<User> users = speedy.get("User")
+        .execute()
+        .list(User.class);
 ```
 
-### Testing with MockMvc
+### Spring RestTemplate (optional)
 
 ```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-@SpringBootTest
-@AutoConfigureMockMvc
-class CategoryControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Test
-    void testCreateCategory() {
-        SpeedyClient<ResultActions> client = SpeedyClient.mockMvc(mockMvc);
-
-        ResultActions result = client.create("Category")
-                .addField("name", "test-category")
-                .execute();
-
-        result.andExpect(status().isCreated());
-    }
-}
-```
-
-## Components
-
-### [SpeedyClient](speedy-client.md)
-
-The main client class that provides CRUD operations and query execution.
-
-### [SpeedyQuery](speedy-query.md)
-
-A fluent query builder for constructing complex database queries with conditions, ordering, pagination, and entity
-expansions.
-
-### Entity Expansions
-
-The Java client supports both simple and multi-level entity expansions:
-
-```java
-// Simple expansion
-SpeedyQuery query = SpeedyQuery.from("inventory")
-                .expand("Product")
-                .expand("Procurement")
-                .build();
-
-// Multi-level expansion with dot notation
-SpeedyQuery query = SpeedyQuery.from("inventory")
-        .expand("Product")
-        .expand("Product.Category")
-        .expand("Product.Category.Supplier")
-        .expand("Procurement")
-        .expand("Procurement.Product")
+Speedy speedy = Speedy.builder()
+        .baseUrl("http://localhost:8080")
+        .transport(new RestTemplateTransport(new RestTemplate()))
         .build();
 
-// Execute the query
-SpeedyResponse response = client.query(query).execute();
+User user = speedy.get("User")
+        .key("id", 123)
+        .execute()
+        .first(User.class);
 ```
 
-For detailed information about multi-level expansions, see [Multi-Level Expansions](multi-level-expansions.md).
+### MockMvc Integration Testing
+
+```java
+SpeedyTest speedy = SpeedyTest.mockMvc(mockMvc);
+
+speedy.get("User")
+        .key("id", 123)
+        .execute()
+        .expectOk()
+        .expectJsonPath("$.payload[*].name", everyItem(notNullValue()));
+```
+
+## CRUD Operations
+
+```java
+// Create
+SpeedyResult created = speedy.create("User")
+        .field("name", "John")
+        .field("email", "john@example.com")
+        .execute();
+User user = created.first(User.class);
+
+// Read by primary key
+User user = speedy.get("User")
+        .key("id", 123)
+        .execute()
+        .first(User.class);
+
+// Update (PATCH — partial)
+speedy.update("User")
+        .key("id", 123)
+        .field("name", "Jane")
+        .execute();
+
+// Replace (PUT — full replace)
+speedy.replace("User")
+        .key("id", 123)
+        .field("name", "Jane")
+        .field("email", "jane@example.com")
+        .execute();
+
+// Delete
+speedy.delete("User")
+        .key("id", 123)
+        .execute();
+```
+
+`field(name, value)` supports dot-notation for foreign-key fields, e.g. `field("category.id", categoryId)`.
+
+Bulk variants are available for all mutating operations: `speedy.createMany(...)`, `speedy.updateMany(...)`,
+`speedy.replaceMany(...)`, `speedy.deleteMany(...)` — each accepting a `List<ObjectNode>` or returning a dedicated
+bulk builder (`BulkCreateBuilder`, `BulkUpdateBuilder`, `BulkReplaceBuilder`, `BulkDeleteBuilder`).
+
+See [SpeedyClient](speedy-client.md) for the full builder reference (including error handling, transports, and
+interceptors) and [SpeedyQuery](speedy-query.md) for the query/condition DSL.
 
 ## GET List Queries
 
-When using `get()` without a primary key, you can apply field selection, pagination, and expansion via URL query
+`get()` without a primary key returns a list, and supports field selection, pagination, and expansion as URL query
 parameters:
 
 ```java
@@ -130,16 +128,11 @@ List<Product> products = speedy.get("Product")
         .expand("category")
         .execute()
         .list(Product.class);
-
-// Count query
-SpeedyResult result = speedy.get("Product")
-        .select("$count")
-        .execute();
-long count = result.raw().get("count").asLong();
 ```
 
-These methods produce URL query parameters (`$select=id,name&$pageSize=20&...`) rather than JSON body fields, matching
-the [GET Operation](get-operation.md) API.
+These methods produce URL query parameters (`$select=id,name&$pageSize=20&...`) rather than JSON body fields,
+matching the [GET Operation](get-operation.md) API. For conditions, ordering, and count queries, use
+`speedy.query(...)` — see [SpeedyQuery](speedy-query.md).
 
 ## Character Encoding
 
@@ -153,79 +146,19 @@ All transports guarantee UTF-8 encoding for both request and response:
 
 Response bodies are always decoded as UTF-8.
 
-## HTTP Client Support
+## Wire Format
 
-The Java client supports multiple HTTP client implementations:
+JSON is the default wire format. XML and YAML are also supported via `speedy-io-xml` / `speedy-io-yaml` on the
+server side; configure the client to match with `Speedy.builder().format(new XmlFormat())` or
+`.format(new YamlFormat())`.
 
-| Client           | Use Case                 | Factory Method                                     |
-|------------------|--------------------------|----------------------------------------------------|
-| **RestTemplate** | Production applications  | `SpeedyClient.restTemplate(restTemplate, baseUrl)` |
-| **MockMvc**      | Unit/integration testing | `SpeedyClient.mockMvc(mockMvc)`                    |
-| **Custom**       | Custom implementations   | `SpeedyClient.from(httpClient)`                    |
+## Transports
 
-## Best Practices
+| Transport             | Use Case                            |
+|------------------------|-------------------------------------|
+| `JdkHttpTransport`     | Default — zero extra dependencies   |
+| `RestTemplateTransport`| Spring applications already using `RestTemplate` |
+| `MockMvcTransport`     | Integration tests (used internally by `SpeedyTest`) |
+| Custom `SpeedyTransport` | Any other HTTP library             |
 
-1. **Use static imports** for cleaner code:
-   ```java
-   import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-   ```
-
-2. **Handle responses properly**:
-   ```java
-   import com.fasterxml.jackson.databind.JsonNode;
-   import com.github.silent.samurai.speedy.api.client.models.SpeedyResponse;
-   
-   SpeedyResponse response = client.get("users").execute();
-   JsonNode payload = response.getPayload();
-   
-   if (payload != null && !payload.isEmpty()) {
-       // Process data from payload
-       if (payload.isArray()) {
-           // Handle array of entities
-           for (JsonNode user : payload) {
-               // Process each user
-           }
-       } else if (payload.isObject()) {
-           // Handle single entity
-           // Process the user object
-       }
-   } else {
-       // Handle empty or null response
-       log.warn("No data returned from API");
-   }
-   ```
-
-3. **Use appropriate HTTP clients**:
-    - Use `RestTemplate` for production
-    - Use `MockMvc` for testing
-    - Create custom clients for special requirements
-
-4. **Optimize queries**:
-    - Select only needed fields
-    - Use appropriate page sizes
-    - Add proper conditions to reduce data transfer
-
-## Error Handling
-
-The client provides comprehensive error handling:
-
-```java
-try{
-SpeedyResponse response = client.create("users")
-        .addField("name", "John Doe")
-        .addField("email", "john@example.com")
-        .execute();
-}catch(
-SpeedyClientException e){
-        // Handle client-specific errors
-        log.
-
-error("Client error: {}",e.getMessage());
-        }catch(
-Exception e){
-        // Handle general errors
-        log.
-
-error("Unexpected error: {}",e.getMessage());
-        }
-```
+See [SpeedyClient](speedy-client.md) for custom transport and interceptor examples.

@@ -1,66 +1,36 @@
 # SpeedyQuery
 
-A fluent query builder for constructing complex database queries in the Speedy API. This class provides a type-safe and
-intuitive way to build queries with conditions, ordering, pagination, field selection, and entity expansion.
-
-## Overview
-
-SpeedyQuery offers:
-
-- **Fluent API**: Chain methods for building complex queries
-- **Type Safety**: Compile-time validation of query structure
-- **Conditional Logic**: Support for AND/OR conditions with nested logic
-- **Pagination**: Built-in support for page-based results
-- **Field Selection**: Choose specific fields to return
-- **Entity Expansion**: Include related entities in results
-- **JSON Output**: Generate JSON query objects for API consumption
+`SpeedyQuery` is a set of static factory methods for building the `$where` condition tree used by
+`speedy.query(entity)` (see [SpeedyClient](speedy-client.md)). Operator methods (`eq`, `gt`, `in`, ...) return Jackson
+`JsonNode`s that compose into the same JSON query structure documented in [Query Operations](query-operation.md).
 
 ## Quick Start
 
-### Basic Query
-
 ```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
 
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("active", eq(true)))
-    .orderByAsc("name")
-    .pageSize(20)
-    .build();
-```
-
-### Complex Query
-
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(
-        and(
-            condition("age", gte(18)),
-            condition("active", eq(true)),
-            or(
-                condition("role", eq("admin")),
-                condition("role", eq("moderator"))
-            )
+List<User> users = speedy.query("User")
+        .where(
+                and(
+                        condition("active", eq(true)),
+                        condition("age", gte(18))
+                )
         )
-    )
-    .select("id", "name", "email", "role")
-    .expand("profile", "permissions")
-    .orderByDesc("createdAt")
-    .pageNo(1)
-    .pageSize(50)
-    .build();
+        .select("id", "name", "email")
+        .orderByAsc("name")
+        .pageSize(20)
+        .execute()
+        .list(User.class);
 ```
 
 ## Query Structure
 
-The generated query follows this JSON structure:
+`speedy.query(entity)` builds and sends this JSON body to `POST /{Entity}/$query`:
 
 ```json
 {
   "$from": "entity_name",
-  "$where": { "conditions" },
+  "$where": { "conditions": "..." },
   "$select": ["field1", "field2"],
   "$expand": ["relation1", "relation2"],
   "$orderBy": { "field": "ASC|DESC" },
@@ -70,324 +40,133 @@ The generated query follows this JSON structure:
 
 ## Builder Methods
 
-### Entity Selection
+`speedy.query(entity)` returns a `QueryBuilder` with:
 
-```java
-// Start with entity name (recommended)
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("active", eq(true)))
-    .build();
-
-// Or set entity later
-SpeedyQuery query = SpeedyQuery.from()
-    .fromEntity("users")
-    .where(condition("active", eq(true)))
-    .build();
-```
+| Method                          | Effect                                                    |
+|-----------------------------------|-------------------------------------------------------------|
+| `where(JsonNode... conditions)`  | Sets/merges `$where` conditions                             |
+| `select(String... fields)`       | Adds fields to `$select` (projection)                       |
+| `expand(String... relations)`    | Adds relations to `$expand`, dot-notation for multi-level    |
+| `orderByAsc(String field)`       | Adds an ascending `$orderBy` entry                           |
+| `orderByDesc(String field)`      | Adds a descending `$orderBy` entry                           |
+| `pageNo(int)`                    | Sets `$page.$index` (0-based)                                |
+| `pageSize(int)`                  | Sets `$page.$size`                                           |
+| `build()`                        | Returns the built JSON body without executing                |
+| `execute()`                      | Sends the query and returns a `SpeedyResult`                 |
+| `count()`                        | Sends a `$select=$count`-equivalent request and returns `long`|
 
 ### Field Selection
 
 ```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .select("id", "name", "email", "createdAt")
-    .where(condition("active", eq(true)))
-    .build();
+List<User> users = speedy.query("User")
+        .select("id", "name", "email", "createdAt")
+        .where(condition("active", eq(true)))
+        .execute()
+        .list(User.class);
 ```
 
 ### Entity Expansion
 
-SpeedyQuery supports both simple entity expansions and multi-level nested expansions using dot notation.
-
-#### Simple Entity Expansion
-
-```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .expand("profile")
-    .expand("permissions")
-    .expand("department")
-    .where(condition("active", eq(true)))
-    .build();
-```
-
-#### Multi-Level Expansion
-
-Use dot notation to expand nested relationships:
+`expand(...)` supports dot notation for nested relationships, same as the [GET](get-operation.md) and
+[Multi-Level Expansions](multi-level-expansions.md) URL DSL:
 
 ```java
-// Expand product and its category
-SpeedyQuery query = SpeedyQuery.from("inventory")
-    .expand("Product")
-    .expand("Product.Category")
-    .where(condition("quantity", gt(0)))
-    .build();
-
-// Deep nested expansion
-SpeedyQuery query = SpeedyQuery.from("inventory")
-    .expand("Product")
-    .expand("Product.Category")
-    .expand("Product.Category.Supplier")
-    .expand("Product.Category.Supplier.Address")
-    .where(condition("quantity", gt(0)))
-    .build();
+List<Inventory> inventory = speedy.query("Inventory")
+        .where(condition("quantity", gt(0)))
+        .expand("Product")
+        .expand("Product.Category")
+        .expand("Product.Category.Supplier")
+        .execute()
+        .list(Inventory.class);
 ```
-
-#### Complex Multi-Level Expansion Examples
-
-```java
-// Multiple expansion paths at different levels
-SpeedyQuery query = SpeedyQuery.from("inventory")
-    .expand("Product")
-    .expand("Product.Category")
-    .expand("Procurement")
-    .expand("Procurement.Product")
-    .expand("Procurement.Product.Category")
-    .where(condition("quantity", gt(0)))
-    .build();
-
-// Expansion with field selection
-SpeedyQuery query = SpeedyQuery.from("inventory")
-    .select("id", "quantity", "location")
-    .expand("Product")
-    .expand("Product.Category")
-    .expand("Product.Category.Supplier")
-    .where(condition("quantity", gt(0)))
-    .build();
-```
-
-#### Multi-Level Expansion Rules
-
-- **Dot Notation**: Use dots (`.`) to separate entity levels in the expansion path
-- **Path Validation**: Each segment in the path must be a valid entity association
-- **Performance**: Deep expansions may impact query performance
-- **Validation**: Invalid expansion paths will result in a `BadRequestException`
-
-#### Multi-Level Expansion Examples
-
-| Use Case              | Query                                                       | Description                      |
-|-----------------------|-------------------------------------------------------------|----------------------------------|
-| Product with Category | `.expand("Product").expand("Product.Category")`             | Include product and its category |
-| Deep Supplier Chain   | `.expand("Product.Category.Supplier.Address")`              | Include complete supplier chain  |
-| Multiple Paths        | `.expand("Product.Category").expand("Procurement.Product")` | Different expansion paths        |
-| Selective Expansion   | `.expand("Product").expand("Product.Category")`             | Only expand specific paths       |
 
 ### Ordering
 
 ```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .orderByAsc("name")
-    .orderByAsc("createdAt")
-    .orderByDesc("lastLogin")
-    .where(condition("active", eq(true)))
-    .build();
+speedy.query("User")
+        .where(condition("active", eq(true)))
+        .orderByAsc("name")
+        .orderByDesc("createdAt")
+        .execute();
 ```
+
+Each call adds one field to `$orderBy`; the server applies them in the order given.
 
 ### Pagination
 
 ```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .pageNo(2)      // Get the third page (0-based indexing)
-    .pageSize(50)   // Get 50 records per page
-    .where(condition("active", eq(true)))
-    .build();
+speedy.query("User")
+        .where(condition("active", eq(true)))
+        .pageNo(2)      // third page, 0-based
+        .pageSize(50)
+        .execute();
+```
+
+### Count
+
+```java
+long total = speedy.query("User")
+        .where(condition("active", eq(true)))
+        .count();
 ```
 
 ## Comparison Operators
 
-### Basic Comparisons
+Each returns a Jackson `ObjectNode` wrapping a single operator key, to be passed into `condition(field, operator)`:
 
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
+| Operator     | Method                | Example                        |
+|--------------|------------------------|---------------------------------|
+| `$eq`        | `eq(Object)`           | `condition("status", eq("active"))` |
+| `$ne`        | `ne(Object)`           | `condition("status", ne("inactive"))` |
+| `$gt`        | `gt(Object)`           | `condition("age", gt(18))`      |
+| `$lt`        | `lt(Object)`           | `condition("price", lt(100))`   |
+| `$gte`       | `gte(Object)`          | `condition("score", gte(80))`   |
+| `$lte`       | `lte(Object)`          | `condition("quantity", lte(10))`|
+| `$in`        | `in(Object...)`        | `condition("role", in("admin", "user"))` |
+| `$nin`       | `nin(Object...)`       | `condition("status", nin("deleted", "archived"))` |
+| `$matches`   | `matches(Object)`      | `condition("name", matches("*john*"))` |
+| `$contains`  | `contains(Object)`     | `condition("tags", contains("urgent"))` |
+| `$between`   | `between(low, high)`   | `condition("cost", between(10, 50))` |
+| `$isnull`    | `isnull()`             | `condition("modifiedAt", isnull())` |
+| `$isnotnull` | `isnotnull()`          | `condition("createdAt", isnotnull())` |
 
-// Equal to
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("status", eq("active")))
-    .build();
+**Wildcard syntax for `$matches`:** `*` matches zero or more characters, `?` matches exactly one.
 
-// Not equal to
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("status", ne("inactive")))
-    .build();
+**`$between` / `$isnull` / `$isnotnull` error conditions:**
 
-// Greater than
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("age", gt(18)))
-    .build();
-
-// Less than
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(condition("price", lt(100)))
-    .build();
-
-// Greater than or equal
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("score", gte(80)))
-    .build();
-
-// Less than or equal
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(condition("quantity", lte(10)))
-    .build();
-```
-
-### Array Operations
-
-```java
-// In array of values
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("role", in("admin", "moderator", "user")))
-    .build();
-
-// Not in array
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("status", nin("deleted", "archived")))
-    .build();
-```
-
-### Pattern Matching
-
-```java
-// Pattern matching (wildcard)
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("name", matches("*john*")))
-    .build();
-```
-
-**Wildcard Syntax:**
-
-- `*` = 0 or more characters/spaces
-- `?` = exactly 1 character/space
-- Examples:
-    - `"*john*"` matches "john", "johnny", "john doe", "my john", etc.
-    - `"john*"` matches "john", "johnny", "john doe", etc.
-    - `"*john"` matches "john", "my john", "the john", etc.
-    - `"j?hn"` matches "john", "jahn", etc.
-
-### Field References
-
-SpeedyQuery supports field-to-field comparisons using the `field()` method. This allows you to compare values between
-different fields in the same entity.
-
-#### Basic Field Reference
-
-```java
-// Compare two fields for equality
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(condition("salePrice", eq("$regularPrice")))
-    .build();
-```
-
-#### Field Reference with Comparison Operators
-
-```java
-// Find products where sale price is less than regular price
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(condition("salePrice", lt("$regularPrice")))
-    .build();
-
-// Find orders where start date is before end date
-SpeedyQuery query = SpeedyQuery.from("orders")
-    .where(condition("startDate", lte("$endDate")))
-    .build();
-```
-
-#### Complex Field Reference Examples
-
-```java
-// Compare user tracking fields
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("createdBy", eq("$updatedBy")))
-    .build();
-
-// Inventory check with field reference
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(
-        and(
-            condition("currentStock", gte(field("minimumStock"))),
-            condition("salePrice", lt(field("regularPrice")))
-        )
-    )
-    .build();
-```
-
-#### Field Reference Rules
-
-- **Method**: Use `"$fieldName"` to reference another field
-- **Field Names**: Use the exact field names as defined in your entity
-- **Supported Operators**: All comparison operators support field references
-- **Validation**: Invalid field references will result in a `NotFoundException`
-
-#### Field Reference Examples
-
-| Use Case         | Query                                             | Description           |
-|------------------|---------------------------------------------------|-----------------------|
-| Price Comparison | `condition("salePrice", lt("$regularPrice"))`     | Find products on sale |
-| Date Range       | `condition("startDate", lte("$endDate"))`         | Valid date ranges     |
-| User Tracking    | `condition("createdBy", eq("$updatedBy"))`        | Self-updated records  |
-| Inventory Check  | `condition("currentStock", gte("$minimumStock"))` | Sufficient inventory  |
+| Operator     | Error Condition          | Message                                                  |
+|--------------|--------------------------|------------------------------------------------------------|
+| `$between`   | Non-array value           | "$between only accepts an array"                          |
+| `$between`   | Array with ≠ 2 values     | "$between requires exactly 2 values"                       |
+| `$isnull`    | `false` value             | "$isnull requires true. Use $isnotnull for IS NOT NULL"    |
+| `$isnotnull` | `false` value             | "$isnotnull requires true. Use $isnull for IS NULL"        |
 
 ## Logical Operators
 
-### AND Conditions
+`and(...)` / `or(...)` combine multiple `condition(...)` calls, and can nest:
 
 ```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(
-        and(
-            condition("active", eq(true)),
-            condition("age", gte(18)),
-            condition("verified", eq(true))
-        )
-    )
-    .build();
-```
-
-### OR Conditions
-
-```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(
-        or(
-            condition("role", eq("admin")),
-            condition("role", eq("moderator"))
-        )
-    )
-    .build();
-```
-
-### Complex Nested Logic
-
-```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(
-        and(
-            condition("active", eq(true)),
-            condition("age", gte(18)),
-            or(
-                condition("role", eq("admin")),
-                condition("role", eq("moderator")),
+speedy.query("User")
+        .where(
                 and(
-                    condition("verified", eq(true)),
-                    condition("premium", eq(true))
+                        condition("active", eq(true)),
+                        condition("age", gte(18)),
+                        or(
+                                condition("role", eq("admin")),
+                                condition("role", eq("moderator"))
+                        )
                 )
-            )
         )
-    )
-    .build();
+        .execute();
 ```
 
-### Field-Level Logical Operators
-
-`and()`/`or()` can also be nested *inside* a single `condition(...)`, combining several
-operators on the same field without repeating it as a separate top-level condition. This is
-the concise way to express patterns like "field matches a value OR is null":
+`and`/`or` can also nest *inside* a single `condition(...)` call, combining several operators on the same field
+without repeating it as a top-level condition — e.g. "field matches a value OR is null":
 
 ```java
-// Find products whose category is unset (nullable FK) or matches a specific category
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(
-        condition("categoryId", or(eq(null), eq("electronics")))
-    )
-    .build();
+speedy.query("Product")
+        .where(condition("categoryId", or(eq(null), eq("electronics"))))
+        .execute();
 ```
 
 This generates:
@@ -395,412 +174,38 @@ This generates:
 ```json
 {
   "$where": {
-    "categoryId": {
-      "$or": [
-        { "$eq": null },
-        { "$eq": "electronics" }
-      ]
-    }
+    "categoryId": { "$or": [{ "$eq": null }, { "$eq": "electronics" }] }
   }
 }
 ```
 
-It composes with ordinary top-level conditions and with `$and` the same way:
+## Field-to-Field References
+
+There's no dedicated `field(...)` helper — reference another field by passing its name prefixed with `$` as the
+operator value, exactly as in the raw JSON DSL described in [Field References](field-references.md):
 
 ```java
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(
-        condition("categoryId", or(eq(null), eq("electronics"))),
-        condition("active", eq(true))
-    )
-    .build();
+// Find products on sale: salePrice < regularPrice
+speedy.query("Product")
+        .where(condition("salePrice", lt("$regularPrice")))
+        .execute();
+
+// Valid date ranges: startDate <= endDate
+speedy.query("Order")
+        .where(condition("startDate", lte("$endDate")))
+        .execute();
 ```
 
-As with top-level `$and`/`$or`, the logical key must be the only key inside the field's
-condition object — combine additional operators as further array entries instead of mixing
-a logical key with a plain operator key.
-
-## Real-World Examples
-
-### User Search
+## Debugging
 
 ```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(
-        and(
-            condition("active", eq(true)),
-            or(
-                condition("name", matches("*john*")),
-                condition("email", matches("*john*"))
-            ),
-            condition("age", gte(18))
-        )
-    )
-    .select("id", "name", "email", "avatar")
-    .orderByAsc("name")
-    .pageSize(20)
-    .build();
+QueryBuilder query = speedy.query("User")
+        .where(condition("active", eq(true)))
+        .select("id", "name");
+
+JsonNode body = query.build();
+System.out.println(body.toPrettyString());
 ```
 
-### Product Filtering
-
-```java
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(
-        and(
-            condition("category", in("electronics", "computers")),
-            condition("price", gte(500)),
-            condition("inStock", eq(true)),
-            or(
-                condition("brand", eq("Apple")),
-                condition("brand", eq("Samsung"))
-            )
-        )
-    )
-    .select("id", "name", "price", "brand", "rating")
-    .expand("reviews", "images")
-    .orderByDesc("rating")
-    .orderByAsc("price")
-    .pageSize(50)
-    .build();
-```
-
-### Order History
-
-```java
-SpeedyQuery query = SpeedyQuery.from("orders")
-    .where(
-        and(
-            condition("userId", eq(userId)),
-            condition("status", nin("cancelled", "refunded")),
-            condition("createdAt", gte(startDate)),
-            condition("createdAt", lte(endDate))
-        )
-    )
-    .select("id", "total", "status", "createdAt")
-    .expand("items", "shipping")
-    .orderByDesc("createdAt")
-    .pageSize(100)
-    .build();
-```
-
-### Product Inventory Management
-
-```java
-SpeedyQuery query = SpeedyQuery.from("products")
-    .where(
-        and(
-            // Find products where sale price is less than regular price
-            condition("salePrice", lt(field("regularPrice"))),
-            // Ensure current stock is above minimum threshold
-            condition("currentStock", gte(field("minimumStock"))),
-            // Only active products
-            condition("active", eq(true)),
-            // In specific categories
-            condition("category", in("electronics", "computers"))
-        )
-    )
-    .select("id", "name", "salePrice", "regularPrice", "currentStock", "minimumStock")
-    .orderByAsc("currentStock")  // Show low stock first
-    .pageSize(50)
-    .build();
-```
-
-### Date Range Validation
-
-```java
-SpeedyQuery query = SpeedyQuery.from("events")
-    .where(
-        and(
-            // Ensure start date is before end date
-            condition("startDate", lte(field("endDate"))),
-            // Events in the future
-            condition("startDate", gte(LocalDate.now().toString())),
-            // Active events only
-            condition("status", eq("active"))
-        )
-    )
-    .select("id", "title", "startDate", "endDate", "location")
-    .orderByAsc("startDate")
-    .pageSize(20)
-    .build();
-```
-
-### Date and Time Queries
-
-```java
-// Query by date range
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("localDate", gt(LocalDate.now().toString())))
-    .build();
-
-// Query by time
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("localTime", gt(LocalTime.of(11, 0).toString())))
-    .build();
-
-// Query by instant
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("instantTime", lt(Instant.now().toString())))
-    .build();
-```
-
-### Numeric Queries
-
-```java
-// Query by double value
-SpeedyQuery query = SpeedyQuery.from("ValueTestEntity")
-    .where(condition("doubleValue", eq(1.5430434)))
-    .build();
-```
-
-## Debugging Queries
-
-### Pretty Print
-
-```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("active", eq(true)))
-    .select("id", "name")
-    .prettyPrint()  // Logs the query structure
-    .build();
-```
-
-This will log the generated JSON query to help with debugging.
-
-### Manual JSON Inspection
-
-```java
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("active", eq(true)))
-    .build();
-
-JsonNode queryJson = query.build();
-System.out.println(queryJson.toPrettyString());
-```
-
-## New Operators
-
-### `$between` — Inclusive Range Filtering
-
-The `$between` operator filters records where a field falls within an inclusive range (equivalent to `$gte` AND `$lte`).
-
-```json
-POST /speedy/v1/Inventory/$query
-{
-  "$from": "Inventory",
-  "$where": {
-    "cost": { "$between": [10, 50] }
-  }
-}
-```
-
-Works with numeric, date, datetime, and string (lexicographic) fields:
-
-```json
-{
-  "$from": "Category",
-  "$where": {
-    "name": { "$between": ["A", "M"] }
-  }
-}
-```
-
-```java
-SpeedyQuery query = SpeedyQuery.from("Inventory")
-    .where(condition("cost", between(10, 50)))
-    .build();
-```
-
-**Error conditions:**
-
-- Non-array value → `400 BadRequest` — "$between only accepts an array"
-- Array with ≠ 2 values → `400 BadRequest` — "$between requires exactly 2 values"
-
-### `$isnull` — IS NULL Check
-
-Two forms — shorthand (recommended) and explicit:
-
-```json
-// Shorthand
-{ "modifiedAt": "$isnull" }
-
-// Explicit
-{ "modifiedAt": { "$isnull": true } }
-```
-
-Both generate `modifiedAt IS NULL`. The `$isnotnull` operator works identically for IS NOT NULL.
-
-```java
-SpeedyQuery query = SpeedyQuery.from("Procurement")
-    .where(condition("modifiedAt", isnull()))
-    .build();
-```
-
-**Error conditions:**
-
-- Non-boolean value → `400 BadRequest` — "$isnull only accepts a boolean value"
-- `false` value → `400 BadRequest` — "$isnull requires true. Use $isnotnull for IS NOT NULL"
-
-### `$isnotnull` — IS NOT NULL Check
-
-```json
-// Shorthand
-{ "modifiedAt": "$isnotnull" }
-
-// Explicit
-{ "modifiedAt": { "$isnotnull": true } }
-```
-
-**Error conditions:**
-
-- `false` value → `400 BadRequest` — "$isnotnull requires true. Use $isnull for IS NULL"
-
-All three operators compose inside `$and`/`$or`:
-
-```json
-{
-  "$from": "Procurement",
-  "$where": {
-    "$or": [
-      { "createdAt": { "$between": ["2024-01-01", "2024-03-31"] } },
-      { "modifiedAt": { "$isnull": true } }
-    ]
-  }
-}
-```
-
-## Best Practices
-
-### 1. Use Static Imports
-
-```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-// Much cleaner than SpeedyQuery.from("users")
-SpeedyQuery query = SpeedyQuery.from("users")
-    .where(condition("active", eq(true)))
-    .build();
-```
-
-### 2. Validate Inputs
-
-```java
-public SpeedyQuery buildUserQuery(String status, int minAge) {
-    if (status == null || status.trim().isEmpty()) {
-        throw new IllegalArgumentException("Status cannot be null or empty");
-    }
-    if (minAge < 0) {
-        throw new IllegalArgumentException("Minimum age cannot be negative");
-    }
-    
-    return SpeedyQuery.from("users")
-        .where(
-            and(
-                condition("status", eq(status)),
-                condition("age", gte(minAge))
-            )
-        )
-        .build();
-}
-```
-
-### 3. Optimize Field Selection
-
-```java
-// Good: Select only needed fields
-SpeedyQuery query = SpeedyQuery.from("users")
-    .select("id", "name", "email")  // Only get what you need
-    .where(condition("active", eq(true)))
-    .build();
-
-// Avoid: Getting all fields
-SpeedyQuery badQuery = SpeedyQuery.from("users")
-    .where(condition("active", eq(true)))
-    .build();  // Gets everything!
-```
-
-### 4. Use Appropriate Page Sizes
-
-```java
-// Good: Reasonable page size
-SpeedyQuery query = SpeedyQuery.from("users")
-    .pageSize(20)  // Good for UI pagination
-    .where(condition("active", eq(true)))
-    .build();
-
-// Avoid: Too large page sizes
-SpeedyQuery badQuery = SpeedyQuery.from("users")
-    .pageSize(10000)  // Could cause performance issues
-    .where(condition("active", eq(true)))
-    .build();
-```
-
-### 5. Build Reusable Query Components
-
-```java
-public class UserQueries {
-    
-    public static SpeedyQuery activeUsers() {
-        return SpeedyQuery.from("users")
-            .where(condition("active", eq(true)))
-            .build();
-    }
-    
-    public static SpeedyQuery usersByRole(String role) {
-        return SpeedyQuery.from("users")
-            .where(condition("role", eq(role)))
-            .build();
-    }
-    
-    public static SpeedyQuery usersWithProfile() {
-        return SpeedyQuery.from("users")
-            .expand("profile")
-            .select("id", "name", "email")
-            .build();
-    }
-}
-
-// Usage
-SpeedyQuery query = UserQueries.activeUsers();
-SpeedyQuery adminQuery = UserQueries.usersByRole("admin");
-```
-
-## Operator Reference
-
-### Comparison Operators
-
-| Operator     | Method               | Description           | Example                      |
-|--------------|----------------------|-----------------------|------------------------------|
-| `$eq`        | `eq(Object)`         | Equal to              | `eq("active")`               |
-| `$ne`        | `ne(Object)`         | Not equal to          | `ne("inactive")`             |
-| `$gt`        | `gt(Object)`         | Greater than          | `gt(18)`                     |
-| `$lt`        | `lt(Object)`         | Less than             | `lt(100)`                    |
-| `$gte`       | `gte(Object)`        | Greater than or equal | `gte(80)`                    |
-| `$lte`       | `lte(Object)`        | Less than or equal    | `lte(10)`                    |
-| `$in`        | `in(Object...)`      | In array of values    | `in("A", "B", "C")`          |
-| `$nin`       | `nin(Object...)`     | Not in array          | `nin("deleted", "archived")` |
-| `$matches`   | `matches(Object)`    | Pattern matching      | `matches("*john*")`          |
-| `$between`   | `between(low, high)` | Inclusive range       | `between(10, 50)`            |
-| `$isnull`    | `isnull()`           | IS NULL check         | `isnull()`                   |
-| `$isnotnull` | `isnotnull()`        | IS NOT NULL check     | `isnotnull()`                |
-
-### Logical Operators
-
-| Operator | Method             | Description | Example                    |
-|----------|--------------------|-------------|----------------------------|
-| `$and`   | `and(JsonNode...)` | Logical AND | `and(cond1, cond2, cond3)` |
-| `$or`    | `or(JsonNode...)`  | Logical OR  | `or(cond1, cond2)`         |
-
-### Query Methods
-
-| Category       | Methods                                     | Description                |
-|----------------|---------------------------------------------|----------------------------|
-| **Builder**    | `from()`, `from(String entity)`             | Create new query instances |
-| **Source**     | `fromEntity(String entity)`                 | Set the target entity      |
-| **Conditions** | `where(JsonNode...)`                        | Add WHERE conditions       |
-| **Selection**  | `select(String...)`                         | Choose fields to return    |
-| **Expansion**  | `expand(String...)`                         | Include related entities   |
-| **Ordering**   | `orderByAsc(String)`, `orderByDesc(String)` | Sort results               |
-| **Pagination** | `pageNo(int)`, `pageSize(int)`              | Control result pagination  |
-| **Execution**  | `build()`, `prettyPrint()`                  | Generate final query       | 
+`build()` returns the JSON body without sending the request, so it's safe to inspect or log before calling
+`execute()`.

@@ -21,9 +21,9 @@ Published to: Maven Central via Sonatype Central Portal
 ```
 speedy-commons          (shared interfaces, models, enums, annotations, exceptions)
     ├── speedy-mp-jpa         (JPA → MetaModel bridge)
-    ├── speedy-java-client      (Java client SDK, MockMvc test support)
+    ├── speedy-client           (Java client SDK, MockMvc test support)
     ├── speedy-mp-json      (file-based MetaModel for non-JPA use)
-    ├── speedy-jooq-query-processor        (jOOQ query execution)
+    ├── speedy-qp-jooq        (jOOQ query execution)
     └── speedy-core             (core engine: handlers, serialization, OpenAPI)
             └── spring-boot-starter-speedy-api  (auto-configuration starter)
                     └── speedy-test-app         (integration test application)
@@ -107,7 +107,7 @@ SpeedyFactory.processReqV2()
   one `QueryProcessor` (and one JOOQ `DSLContext`) for the application lifetime. Multi-tenant deployments automatically
   get a cached instance per tenant's DataSource.
 - jOOQ is used for SQL generation and execution (not JPA/Hibernate at runtime), implemented in
-  `speedy-jooq-query-processor`
+  `speedy-qp-jooq`
 - JPA/Hibernate is only used at startup for metadata introspection via `EntityManagerFactory`
 
 ---
@@ -275,6 +275,6 @@ mvn test -pl antlr-parser
   in `SpeedyEngineImpl.run()`)
 - New entity types/fields: add to JPA entities, MetaModel picks them up automatically
 - New CRUD behavior: add/modify handlers in the relevant sub-chain (wired in `SpeedyEngineImpl` constructor)
-- New query operators: extend `ConditionOperator` enum + `ConditionFactory` + `speedy-jooq-query-processor` query
+- New query operators: extend `ConditionOperator` enum + `ConditionFactory` + `speedy-qp-jooq` query
   builder
 - Serialization: `JSONResponseSerializer` for response output, `JsonNode2SpeedyValue` for input parsing

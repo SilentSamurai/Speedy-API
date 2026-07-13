@@ -122,8 +122,8 @@ All errors surface as unchecked `SpeedyException` subclasses:
 try {
     speedy.create("User").field("name", null).execute();
 } catch (SpeedyBadRequestException e) {
-    e.getStatusCode();   // 400
-    e.getServerMessage(); // validation error detail
+    e.statusCode();      // 400
+    e.serverMessage();   // validation error detail
 }
 ```
 

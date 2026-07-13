@@ -20,3 +20,4 @@
 * [Java Client](java-client.md)
     * [SpeedyClient](speedy-client.md)
     * [SpeedyQuery](speedy-query.md)
+* [QueryVisitor Architecture](query-visitor-architecture.md)

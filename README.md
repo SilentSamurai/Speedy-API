@@ -16,8 +16,10 @@ Speedy-API is a Spring Boot library that exposes every `@Entity` in your applica
 - **Relationship expansion** — pull in related entities to any depth with dot-notation `$expand` paths.
 - **jOOQ-powered SQL** — queries compile to efficient SQL with automatic JOINs; supports H2, PostgreSQL, MySQL, and more.
 - **Extensible** — lifecycle event handlers, custom validators, a rich set of validation annotations, and per-entity/per-field CRUD gating.
+- **Request-scoped ABAC authorization** — dynamic, per-caller policies gate entities, fields, and rows, on top of static `@SpeedyAction` operation gating.
+- **Conditional requests** — opt-in `@SpeedyETag` fields power `If-Match`/`If-None-Match` optimistic concurrency and `304`/`412` responses.
 - **OpenAPI integration** — endpoints are described via springdoc for Swagger UI.
-- **Typed Java client** — a fluent SDK for calling Speedy backends from Java (production via `RestTemplate`, tests via `MockMvc`).
+- **Typed Java client** — a fluent SDK for calling Speedy backends from Java (production via the zero-dependency JDK `HttpClient` or `RestTemplate`, tests via `MockMvc`).
 
 ---
 
@@ -159,24 +161,24 @@ The query DSL supports comparison operators (`$eq`, `$ne`, `$lt`, `$gt`, `$lte`,
 
 ## Java Client
 
-Call a Speedy backend from Java with a fluent, type-safe client:
+Call a Speedy backend from Java with a fluent, type-safe client. It's library-agnostic — zero framework dependency
+on the default classpath:
 
 ```java
-import static com.github.silent.samurai.speedy.api.client.SpeedyQuery.*;
-
-SpeedyClient<SpeedyResponse> client =
-        SpeedyClient.restTemplate(new RestTemplate(), "http://localhost:8080");
+Speedy speedy = Speedy.connect("http://localhost:8080");
 
 // Create
-client.create("Category")
-      .addField("name", "Electronics")
-      .execute();
+SpeedyResult created = speedy.create("Category")
+        .field("name", "Electronics")
+        .execute();
 
 // Query
-SpeedyQuery query = SpeedyQuery.from("Category")
+import static com.github.silent.samurai.speedy.client.SpeedyQuery.*;
+
+List<Category> categories = speedy.query("Category")
         .where(condition("name", eq("Electronics")))
-        .build();
-SpeedyResponse categories = client.query(query).execute();
+        .execute()
+        .list(Category.class);
 ```
 
 Add it with:
@@ -184,12 +186,13 @@ Add it with:
 ```xml
 <dependency>
     <groupId>com.github.silentsamurai</groupId>
-    <artifactId>speedy-java-client</artifactId>
+    <artifactId>speedy-client</artifactId>
     <version>3.1.4</version>
 </dependency>
 ```
 
-A `MockMvc` transport (`SpeedyClient.mockMvc(mockMvc)`) makes it easy to drive Speedy endpoints from integration tests. See the [Java Client docs](docs/java-client.md).
+A `MockMvc` transport (`SpeedyTest.mockMvc(mockMvc)`) makes it easy to drive Speedy endpoints from integration
+tests, with built-in assertion helpers. See the [Java Client docs](docs/java-client.md).
 
 ---
 
@@ -203,10 +206,12 @@ Speedy is a multi-module Maven project:
 | `speedy-core`                       | Request-processing engine: handler chain, URI/JSON parsing, serialization, `SpeedyApiController` |
 | `speedy-mp-jpa`    | Builds the metamodel by scanning JPA `@Entity` classes                                     |
 | `speedy-mp-json` | Builds the metamodel from a JSON file                                                      |
-| `speedy-jooq-query-processor`       | jOOQ-based SQL generation and query execution                                             |
-| `speedy-json-io`                    | JSON serialization/deserialization support                                                |
+| `speedy-qp-jooq`       | jOOQ-based SQL generation and query execution                                             |
+| `speedy-io-json`                    | JSON serialization/deserialization support                                                |
+| `speedy-io-xml`                     | XML serialization/deserialization support                                                 |
+| `speedy-io-yaml`                    | YAML serialization/deserialization support                                                |
 | `spring-boot-starter-speedy-api`    | Spring Boot auto-configuration entry point                                                |
-| `speedy-java-client`                | Fluent, typed Java client SDK                                                              |
+| `speedy-client`                     | Framework-agnostic, fluent Java client SDK                                                 |
 | `antlr-parser`                      | ANTLR4 grammar for a URL DSL (legacy)                                                      |
 | `speedy-test-app`                   | Full Spring Boot integration-test application                                             |
 | `jacoco-aggregate`                  | Aggregates code-coverage reports across modules                                           |
@@ -230,6 +235,7 @@ This compiles every module and runs the test suite (unit tests plus `speedy-test
 Full documentation is published at **[silentsamurai.github.io/Speedy-API](https://silentsamurai.github.io/Speedy-API/)** and lives in [`docs/`](docs/README.md):
 
 - [Getting Started](docs/getting-started.md)
+- [Request-Scoped Authorization](docs/policy-authorization.md) · [Conditional Requests / ETags](docs/conditional-requests.md)
 - [GET Operations](docs/get-operation.md) · [Query Operations](docs/query-operation.md) · [POST](docs/post-operation.md) · [PUT](docs/put-operation.md) · [DELETE](docs/delete-operation.md)
 - [Field References](docs/field-references.md) · [Multi-Level Expansions](docs/multi-level-expansions.md)
 - [Validation Rules](docs/validation-rules.md) · [Speedy Events](docs/speedy-events.md) · [Exception Handling](docs/exception-handling.md)

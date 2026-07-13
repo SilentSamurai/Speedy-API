@@ -1,6 +1,6 @@
 # Speedy Post API
 
-create entity CRUD apis with writing a line of code
+create entity CRUD apis without writing a line of code
 
 ### Post Operations
 
@@ -11,7 +11,7 @@ create multiple User
 **URL**
 
 ```http
-[POST] /speedy/v1/User
+[POST] /speedy/v1/User/$create
 ```
 
 **Request Body**
