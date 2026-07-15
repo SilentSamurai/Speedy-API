@@ -45,7 +45,7 @@ class PolicyEngineTest {
 
     private static PolicyEngine engineOf(PolicyEffect defaultEffect, SpeedyPolicy... rules) {
         PolicyDocument document = new PolicyDocument(defaultEffect, List.of(rules));
-        return new PolicyEngine(new SpeedyAuthContext(document, Map.of("principal.id", new SpeedyText("u1"))));
+        return new PolicyEngine(PolicyBuilder.from(document).principalId("u1").build());
     }
 
     @Test

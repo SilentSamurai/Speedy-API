@@ -20,17 +20,15 @@ import com.github.silent.samurai.speedy.interfaces.response.IResponseSerializerV
 import com.github.silent.samurai.speedy.interfaces.response.SpeedyResponse;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
+import com.github.silent.samurai.speedy.policy.PolicyBuilder;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
 import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
-import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
-import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.validation.ValidationProcessor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import javax.sql.DataSource;
 import java.util.List;
-import java.util.Map;
 
 public class DefaultSpeedyEngine implements SpeedyEngine {
 
@@ -251,9 +249,7 @@ public class DefaultSpeedyEngine implements SpeedyEngine {
         ctx.put(QueryProcessor.class, qp);
 
         SpeedyAuthContext authContext = config.authContextPerReq()
-                .orElseGet(() -> new SpeedyAuthContext(
-                        new PolicyDocument(PolicyEffect.DENY, List.of()),
-                        Map.of()));
+                .orElseGet(() -> PolicyBuilder.denyByDefault().build());
         ctx.put(PolicyEngine.class, new PolicyEngine(authContext));
     }
 

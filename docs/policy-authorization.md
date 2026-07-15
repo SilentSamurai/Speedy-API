@@ -9,35 +9,33 @@ does not inspect the authentication mechanism or construct these values for you.
 
 ## Configure a Policy Per Request
 
-Resolve the caller from your application's security context, session, API key, or tenant resolver. Return a
-`SpeedyAuthContext` with the caller's policy document and variables. Variable values use `SpeedyValue` types, such as
-`SpeedyText`.
+Resolve the caller from your application's security context, session, API key, or tenant resolver, then build a
+`SpeedyAuthContext` with `PolicyBuilder` — the only way to make one. Variable values are plain Java values —
+`String`, `Boolean`, `Long`, `Integer`, `Double`, `Float`, `LocalDate`, `LocalTime`, `LocalDateTime`,
+`ZonedDateTime`, or `null` — converted for you. Any other type is rejected at the `variable(...)` call that sets it.
 
 ```java
 @Override
 public Optional<SpeedyAuthContext> authContextPerReq() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !authentication.isAuthenticated()) {
-        return Optional.of(new SpeedyAuthContext(new PolicyDocument(PolicyEffect.DENY, List.of())));
+        return Optional.of(PolicyBuilder.denyByDefault().build());
     }
 
-    return Optional.of(new SpeedyAuthContext(
-            policyDocument,
-            Map.of(
-                    "principal.id", new SpeedyText(authentication.getName()),
-                    "principal.department", new SpeedyText("HR")
-            )
-    ));
+    return Optional.of(PolicyBuilder.from(policyDocument)
+            .variable("principal.id", authentication.getName())
+            .variable("principal.department", "HR")
+            .build());
 }
 ```
 
-`authContextPerReq()` is invoked for every request. A shared, immutable `PolicyDocument` can safely be combined with
-different caller variables each time.
+`authContextPerReq()` is invoked for every request. `PolicyBuilder.from(...)` adopts an existing document, so a
+shared, immutable `PolicyDocument` built once at startup can safely be combined with different caller variables each
+time. To assemble the rules inline instead, start from `denyByDefault()` — see [Fluent Builder](#fluent-builder).
 
 > `Optional.empty()` is fail-closed: `DefaultSpeedyEngine` substitutes an empty, `DENY`-by-default policy document.
 > It does not disable policy enforcement. Applications upgrading to policies must return an explicit
-> `new SpeedyAuthContext(new PolicyDocument(PolicyEffect.ALLOW, List.of()))` for requests that should retain
-> unrestricted access.
+> `PolicyBuilder.allowByDefault().build()` for requests that should retain unrestricted access.
 
 ## Fluent Builder
 
@@ -62,8 +60,9 @@ SpeedyAuthContext context = PolicyBuilder.denyByDefault()
 For anything beyond a single field equality, pass the condition map to `QueryCondition` directly — it accepts the
 full `$or`/`$and`/`$in`/operator/`${variable}` grammar, e.g.
 `new QueryCondition(Map.of("status", Map.of("$in", List.of("DRAFT", "REVIEW"))))`. The builder also supports
-`variable(name, speedyValue)`, explicit `deny(...)` rules, and `allowByDefault()` when an application intentionally
-needs an allow-by-default document.
+`variable(name, value)` for any trusted variable beyond `principal.id`, `from(document)` to adopt a prebuilt
+document, explicit `deny(...)` rules, and `allowByDefault()` when an application intentionally needs an
+allow-by-default document.
 
 **Write-condition guard.** A field an `UPDATE`/`REPLACE`/`DELETE` rule gates on must itself be readable by the caller
 (as `read-invoice-owner` grants above). Otherwise the write's success/failure would leak that field's values for

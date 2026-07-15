@@ -10,15 +10,14 @@ import com.github.silent.samurai.speedy.interfaces.query.BooleanCondition;
 import com.github.silent.samurai.speedy.interfaces.query.QueryField;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.interfaces.request.SpeedyBody;
+import com.github.silent.samurai.speedy.policy.PolicyBuilder;
 import com.github.silent.samurai.speedy.policy.PolicyEngine;
-import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
 import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.policy.model.SpeedyPolicy;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -82,8 +81,6 @@ class ReadQueryPolicyHandlerTest {
                 .map(resource -> new SpeedyPolicy("allow-" + resource, PolicyEffect.ALLOW,
                         Set.of(PermissionType.READ), resource, List.of()))
                 .toList();
-        return new PolicyEngine(new SpeedyAuthContext(
-                new PolicyDocument(PolicyEffect.DENY, allows),
-                Map.of()));
+        return new PolicyEngine(PolicyBuilder.from(new PolicyDocument(PolicyEffect.DENY, allows)).build());
     }
 }

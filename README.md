@@ -4,7 +4,7 @@
 
 Speedy-API is a Spring Boot library that exposes every `@Entity` in your application as a fully-featured REST resource. Annotate your entities, drop in a small configuration class, and Speedy gives you list, query, create, update, delete, metadata, paging, ordering, field selection, and relationship expansion out of the box — all backed by jOOQ-generated SQL.
 
-![main workflow](https://github.com/SilentSamurai/Speedy-API/actions/workflows/main.yml/badge.svg)
+[![Maven Build](https://github.com/SilentSamurai/Speedy-API/actions/workflows/main.yml/badge.svg)](https://github.com/SilentSamurai/Speedy-API/actions/workflows/main.yml)
 ![release workflow](https://github.com/SilentSamurai/Speedy-API/actions/workflows/release.yml/badge.svg)
 
 ---
