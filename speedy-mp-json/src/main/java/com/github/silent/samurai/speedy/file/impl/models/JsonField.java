@@ -1,24 +1,19 @@
 package com.github.silent.samurai.speedy.file.impl.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotNull;
 
 public class JsonField {
 
     @JsonProperty(required = true)
-    @NotNull(message = "Name cannot be null")
     public String name;
 
     @JsonProperty(required = true)
-    @NotNull(message = "outputProperty cannot be null")
     public String outputProperty;
 
     @JsonProperty(required = true)
-    @NotNull(message = "dbColumn cannot be null")
     public String dbColumn;
 
     @JsonProperty(required = true)
-    @NotNull(message = "fieldType cannot be null")
     public String fieldType;
 
     public boolean isNullable = false;

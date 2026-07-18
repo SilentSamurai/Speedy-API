@@ -102,7 +102,9 @@ public class RequestListener extends SpeedyBaseListener {
 
     @Override
     public void exitSearchParameter(SpeedyParser.SearchParameterContext ctx) {
-        current.getQueries().add(ctx.identifier().getText(), currentUrlQuery);
+        current.getQueries()
+                .computeIfAbsent(ctx.identifier().getText(), ignored -> new ArrayList<>())
+                .add(currentUrlQuery);
     }
 
 

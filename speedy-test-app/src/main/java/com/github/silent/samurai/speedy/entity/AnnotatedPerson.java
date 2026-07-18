@@ -1,13 +1,13 @@
 package com.github.silent.samurai.speedy.entity;
 
 import com.github.silent.samurai.speedy.annotations.validation.*;
+import com.github.silent.samurai.speedy.enums.SpeedyDateFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
@@ -125,7 +125,7 @@ public class AnnotatedPerson extends AbstractBaseEntity {
     /**
      * ISO DATE format enforced
      */
-    @SpeedyDateWithFormat(iso = DateTimeFormat.ISO.DATE)
+    @SpeedyDateWithFormat(iso = SpeedyDateFormat.DATE)
     @Column(name = "iso_date")
     private LocalDate isoDate;
 }

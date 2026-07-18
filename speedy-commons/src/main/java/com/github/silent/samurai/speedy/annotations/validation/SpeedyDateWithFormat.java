@@ -1,6 +1,6 @@
 package com.github.silent.samurai.speedy.annotations.validation;
 
-import org.springframework.format.annotation.DateTimeFormat;
+import com.github.silent.samurai.speedy.enums.SpeedyDateFormat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -14,5 +14,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(FIELD)
 @Retention(RUNTIME)
 public @interface SpeedyDateWithFormat {
-    DateTimeFormat.ISO iso() default DateTimeFormat.ISO.NONE;
+    SpeedyDateFormat iso() default SpeedyDateFormat.NONE;
 }

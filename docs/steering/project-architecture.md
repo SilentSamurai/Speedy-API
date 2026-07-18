@@ -32,6 +32,11 @@ antlr-parser            (ANTLR4 grammar for URL query DSL — standalone, used b
 jacoco-aggregate        (code coverage aggregation)
 ```
 
+The root Maven POM is a framework-neutral aggregator and dependency-management parent. Spring Boot dependency
+management is imported only by `spring-boot-starter-speedy-api` and `speedy-test-app`; it is not inherited by the
+library modules. Consequently, `speedy-commons` and `speedy-core` have neither Spring Framework nor Spring Boot on
+their effective dependency trees.
+
 ---
 
 ## Core Abstractions (speedy-commons)
@@ -76,7 +81,8 @@ These interfaces define the contract that all implementations must follow:
 
 ## Request Processing Pipeline (speedy-core)
 
-All requests hit `SpeedyApiController` which delegates to `SpeedyFactory.processReqV2()`.
+In Spring Boot applications, the starter's `SpeedyApiController` delegates requests to the
+Spring-free `SpeedyFactory.processReqV2()` engine in `speedy-core`.
 Processing is orchestrated in phases via **multiple sub-chains** (each a `List<Handler>` iterated
 sequentially in `SpeedyEngineImpl.run()`). The operation dispatch switch lives in `processReqV2()`.
 
@@ -219,7 +225,7 @@ Add `spring-boot-starter-speedy-api` dependency. The auto-configuration:
 1. Detects an `ISpeedyConfiguration` bean
 2. Creates `SpeedyFactory` (builds MetaModel, event processor, validation processor, handler chain)
 3. Creates `SpeedyOpenApiCustomizer` for OpenAPI/Swagger doc generation
-4. Registers `SpeedyApiController` at `/speedy/v1/**`
+4. Creates and registers the Spring MVC `SpeedyApiController` adapter at `/speedy/v1/**`
 
 User must provide:
 

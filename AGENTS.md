@@ -9,20 +9,23 @@
 
 | Module                           | Layer              | Purpose                                                                                                                                                                              |
 |----------------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `speedy-commons`                 | Shared Library     | Interfaces, enums, `SpeedyValue` types, `SpeedyQuery`/`Condition` model, annotations, metadata builders, serializers, validation rules. Dependencies: Lombok (provided), Spring Framework (`BeanWrapper`, `DateTimeFormat`), `jakarta.servlet-api` (response writer interface). |
-| `speedy-core`                    | Core Engine        | Handler chain, URI/JSON parsing, response serialization, event/validation processing, `SpeedyApiController`.                                                                         |
+| `speedy-commons`                 | Shared Library     | Interfaces, enums, `SpeedyValue` types, `SpeedyQuery`/`Condition` model, annotations, metadata builders, serializers, validation rules. Spring-free; uses JDK JavaBean introspection for POJO conversion and `jakarta.servlet-api` for the response writer interface. |
+| `speedy-core`                    | Core Engine        | Spring-free handler chain, URI/JSON parsing, response serialization, event/validation processing.                                                                                    |
 | `antlr-parser`                   | Parser (Legacy)    | ANTLR4 grammar for a URL DSL. Compiled but runtime URI parsing uses `SpeedyUriContext` instead.                                                                                      |
 | `speedy-mp-jpa`                | JPA Bridge         | `JpaMetaModelProcessorV2` scans `EntityManagerFactory` to build the `MetaModel` from `@Entity` classes.                                                                              |
 | `speedy-jooq-query-processor`    | jOOQ Bridge        | `JooqQueryProcessorImpl` — jOOQ-based query execution, `JooqQueryBuilder`, `SpeedyInsertQuery`, `SpeedyUpdateQuery`, `SpeedyDeleteQuery`, `JooqSqlToSpeedy`.                         |
 | `speedy-mp-json`             | Static Bridge      | `FileMetaModelProcessor` builds `MetaModel` from a JSON file.                                                                                                                        |
-| `spring-boot-starter-speedy-api` | Auto-Configuration | `SpeedyApiAutoConfiguration` — conditionally creates `SpeedyFactory` and `SpeedyOpenApiCustomizer` beans. Entry point: `META-INF/spring/...AutoConfiguration.imports`.               |
+| `spring-boot-starter-speedy-api` | Auto-Configuration | `SpeedyApiAutoConfiguration` — conditionally creates `SpeedyFactory`, `SpeedyApiController`, and `SpeedyOpenApiCustomizer` beans. Entry point: `META-INF/spring/...AutoConfiguration.imports`. |
 | `speedy-java-client`             | Client SDK         | Fluent Java client (`SpeedyApi`) with typed request builders for GET, query, create, update, delete.                                                                                 |
 | `speedy-test-app`                | Integration Tests  | Full Spring Boot app with 19 JPA entities, sample config, event handlers, validators.                                                                                                |
 | `jacoco-aggregate`               | Coverage           | Aggregates JaCoCo reports across all modules.                                                                                                                                        |
 
+The root Maven POM is framework-neutral. Only `spring-boot-starter-speedy-api` and `speedy-test-app` import the
+Spring Boot BOM; Boot dependency management does not flow into the library modules.
+
 ### Request Processing Flow
 
-All requests enter through `SpeedyApiController` (`/speedy/v1/**`) and are delegated to `SpeedyFactory.processReqV2()`.
+In Spring Boot applications, requests enter through the starter's `SpeedyApiController` (`/speedy/v1/**`) and are delegated to the Spring-free `SpeedyFactory.processReqV2()` engine.
 Processing is orchestrated in phases via **multiple sub-chains** (each a `List<Handler>` iterated with a simple `for`
 loop in `SpeedyEngineImpl.run()`). The switch dispatch lives in `processReqV2()` itself, not inside a handler.
 

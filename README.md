@@ -202,14 +202,14 @@ Speedy is a multi-module Maven project:
 | Module                              | Purpose                                                                                   |
 |-------------------------------------|-------------------------------------------------------------------------------------------|
 | `speedy-commons`                    | Shared interfaces, `SpeedyValue` types, query/condition model, annotations, validation    |
-| `speedy-core`                       | Request-processing engine: handler chain, URI/JSON parsing, serialization, `SpeedyApiController` |
+| `speedy-core`                       | Spring-free request engine: handler chain, URI/JSON parsing, serialization and validation |
 | `speedy-mp-jpa`    | Builds the metamodel by scanning JPA `@Entity` classes                                     |
 | `speedy-mp-json` | Builds the metamodel from a JSON file                                                      |
 | `speedy-qp-jooq`       | jOOQ-based SQL generation and query execution                                             |
 | `speedy-io-json`                    | JSON serialization/deserialization support                                                |
 | `speedy-io-xml`                     | XML serialization/deserialization support                                                 |
 | `speedy-io-yaml`                    | YAML serialization/deserialization support                                                |
-| `spring-boot-starter-speedy-api`    | Spring Boot auto-configuration entry point                                                |
+| `spring-boot-starter-speedy-api`    | Spring Boot auto-configuration and MVC controller adapter                                 |
 | `speedy-client`                     | Framework-agnostic, fluent Java client SDK                                                 |
 | `antlr-parser`                      | ANTLR4 grammar for a URL DSL (legacy)                                                      |
 | `speedy-test-app`                   | Full Spring Boot integration-test application                                             |

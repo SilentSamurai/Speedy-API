@@ -1,14 +1,13 @@
 package com.github.silent.samurai.speedy.handlers;
 
 import com.github.silent.samurai.speedy.context.SpeedyContext;
+import com.github.silent.samurai.speedy.enums.SpeedyHttpMethod;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.PayloadTooLargeException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.request.IRequestBodyParser;
 import com.github.silent.samurai.speedy.models.SpeedyHeaders;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpMethod;
-import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +35,7 @@ public class RequestParserHandler implements com.github.silent.samurai.speedy.in
     public void process(SpeedyContext context) throws SpeedyHttpException {
         HttpServletRequest request = context.get(HttpServletRequest.class);
         String method = request.getMethod();
-        HttpMethod httpMethod = HttpMethod.valueOf(method);
+        SpeedyHttpMethod httpMethod = SpeedyHttpMethod.valueOf(method);
         SpeedyHeaders headers = new SpeedyHeaders(extractHeaders(request));
 
         context.put(httpMethod);
@@ -65,7 +64,6 @@ public class RequestParserHandler implements com.github.silent.samurai.speedy.in
 
     }
 
-    @NonNull
     private byte[] getBodyBytes(HttpServletRequest request) throws IOException, PayloadTooLargeException {
         long effectiveLimit = maxRequestBodySize > 0 ? maxRequestBodySize : Integer.MAX_VALUE;
         InputStream is = request.getInputStream();

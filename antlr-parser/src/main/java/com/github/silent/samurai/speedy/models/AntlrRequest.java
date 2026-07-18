@@ -1,17 +1,17 @@
 package com.github.silent.samurai.speedy.models;
 
 import lombok.Data;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 
 @Data
 public class AntlrRequest {
 
-    private final MultiValueMap<String, UrlQuery> queries = new LinkedMultiValueMap<>();
+    private final Map<String, List<UrlQuery>> queries = new LinkedHashMap<>();
     private List<ResourceRequest> requestList = new LinkedList<>();
     private String fragment;
 

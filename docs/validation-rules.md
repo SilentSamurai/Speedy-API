@@ -54,7 +54,7 @@ HTTP 400  –  salary must be > 0
 | Pattern        | `@SpeedyRegex("regex")`               | `@Pattern`         | Must match regex                                |
 | E-mail         | `@SpeedyEmail`                        | `@Email`           | Must be valid email                             |
 | URL            | `@SpeedyUrl`                          | —                  | Must be valid URL                               |
-| Date & Time    | `@SpeedyDateWithFormat(ISO_DATE)`     | —                  | Value must match ISO format (DATE or DATE_TIME) |
+| Date & Time    | `@SpeedyDateWithFormat(iso = SpeedyDateFormat.DATE)` | — | Value must match ISO format (DATE or DATE_TIME) |
 |                | `@SpeedyFuture`                       | —                  | Date/time strictly in the future                |
 |                | `@SpeedyPast`                         | —                  | Date/time strictly in the past                  |
 |                | `@SpeedyDateRange(min,max)`           | —                  | Date within inclusive range                     |

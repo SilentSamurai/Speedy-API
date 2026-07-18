@@ -1,13 +1,17 @@
 package com.github.silent.samurai.speedy.controllers;
 
-
 import com.github.silent.samurai.speedy.SpeedyFactory;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 
@@ -16,8 +20,11 @@ import java.io.IOException;
 @RequestMapping(SpeedyConstants.URI)
 public class SpeedyApiController {
 
-    @Autowired
-    SpeedyFactory speedyFactory;
+    private final SpeedyFactory speedyFactory;
+
+    public SpeedyApiController(SpeedyFactory speedyFactory) {
+        this.speedyFactory = speedyFactory;
+    }
 
     @Hidden
     @GetMapping(value = "/$metadata")
