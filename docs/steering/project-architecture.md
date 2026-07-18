@@ -28,7 +28,6 @@ speedy-commons          (shared interfaces, models, enums, annotations, exceptio
             └── spring-boot-starter-speedy-api  (auto-configuration starter)
                     └── speedy-test-app         (integration test application)
 
-antlr-parser            (ANTLR4 grammar for URL query DSL — standalone, used by antlr tests)
 jacoco-aggregate        (code coverage aggregation)
 ```
 
@@ -142,7 +141,7 @@ POST `$query` requests use a JSON body parsed by `JsonQueryParser`:
 }
 ```
 
-The ANTLR grammar (`Speedy.g4`) defines a richer URL syntax used by the `antlr-parser` module:
+The ANTLR grammar (`Speedy.g4`) defines a richer URL syntax (legacy):
 
 ```
 /Customer(id='1',name='jolly')
@@ -253,7 +252,7 @@ mvn clean compile -DskipTests
 
 # Run specific module tests
 mvn test -pl speedy-test-app
-mvn test -pl antlr-parser
+# antlr-parser module was removed (legacy, unused)
 ```
 
 - Java 17 required

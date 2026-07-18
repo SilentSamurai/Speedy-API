@@ -11,7 +11,6 @@
 |----------------------------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `speedy-commons`                 | Shared Library     | Interfaces, enums, `SpeedyValue` types, `SpeedyQuery`/`Condition` model, annotations, metadata builders, serializers, validation rules. Spring-free; uses JDK JavaBean introspection for POJO conversion and `jakarta.servlet-api` for the response writer interface. |
 | `speedy-core`                    | Core Engine        | Spring-free handler chain, URI/JSON parsing, response serialization, event/validation processing.                                                                                    |
-| `antlr-parser`                   | Parser (Legacy)    | ANTLR4 grammar for a URL DSL. Compiled but runtime URI parsing uses `SpeedyUriContext` instead.                                                                                      |
 | `speedy-mp-jpa`                | JPA Bridge         | `JpaMetaModelProcessorV2` scans `EntityManagerFactory` to build the `MetaModel` from `@Entity` classes.                                                                              |
 | `speedy-jooq-query-processor`    | jOOQ Bridge        | `JooqQueryProcessorImpl` — jOOQ-based query execution, `JooqQueryBuilder`, `SpeedyInsertQuery`, `SpeedyUpdateQuery`, `SpeedyDeleteQuery`, `JooqSqlToSpeedy`.                         |
 | `speedy-mp-json`             | Static Bridge      | `FileMetaModelProcessor` builds `MetaModel` from a JSON file.                                                                                                                        |
@@ -224,7 +223,6 @@ decoupled from the database.
 | `speedy-jooq-query-processor` | `src/test/java/.../jooq/impl/query/`                                              | Unit tests for jOOQ query builder, SQL generation, type conversion                 |
 | `speedy-mp-json`          | `src/test/java/.../file/impl/`                                                    | Unit tests for file-based metamodel                                                |
 | `speedy-java-client`          | `src/test/java/.../QueryTest.java`                                                | Unit tests for client builders                                                     |
-| `antlr-parser`                | `src/test/java/.../AntlrRequestListenerTest.java`                                 | Unit tests for ANTLR grammar                                                       |
 | `speedy-test-app`             | `src/test/java/.../url/`, `query/`, `entity/`, `client/`, `validation/`           | **Integration tests** (`@SpringBootTest` + H2)                                     |
 
 ### Integration Test Structure (`speedy-test-app`)

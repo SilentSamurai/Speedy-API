@@ -211,7 +211,6 @@ Speedy is a multi-module Maven project:
 | `speedy-io-yaml`                    | YAML serialization/deserialization support                                                |
 | `spring-boot-starter-speedy-api`    | Spring Boot auto-configuration and MVC controller adapter                                 |
 | `speedy-client`                     | Framework-agnostic, fluent Java client SDK                                                 |
-| `antlr-parser`                      | ANTLR4 grammar for a URL DSL (legacy)                                                      |
 | `speedy-test-app`                   | Full Spring Boot integration-test application                                             |
 | `jacoco-aggregate`                  | Aggregates code-coverage reports across modules                                           |
 
