@@ -9,11 +9,7 @@ import com.github.silent.samurai.speedy.parser.SpeedyUriContext;
 import com.github.silent.samurai.speedy.context.SpeedyContext;
 import com.github.silent.samurai.speedy.interfaces.SpeedyConstants;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+import com.github.silent.samurai.speedy.parser.SpeedyUriComponents;
 
 public class UriParserHandler implements com.github.silent.samurai.speedy.interfaces.Handler {
 
@@ -24,8 +20,7 @@ public class UriParserHandler implements com.github.silent.samurai.speedy.interf
         String requestURI = getRequestURI(httpRequest);
         JavaTypeRegistry jtr = context.get(ConversionContext.class).get(JavaTypeRegistry.class);
 
-        UriComponents uriComponents = UriComponentsBuilder.fromUriString(requestURI).build();
-        java.util.List<String> pathSegments = uriComponents.getPathSegments();
+        java.util.List<String> pathSegments = SpeedyUriComponents.parse(requestURI).getPathSegments();
 
         // Server-level actions (e.g. /$metadata) have no entity to resolve
         if (pathSegments.size() == 1 && "$metadata".equals(pathSegments.get(0))) {
@@ -54,9 +49,9 @@ public class UriParserHandler implements com.github.silent.samurai.speedy.interf
     }
 
     private static String getRequestURI(HttpServletRequest request) {
-        String requestURI = URLDecoder.decode(request.getRequestURI(), StandardCharsets.UTF_8);
+        String requestURI = request.getRequestURI();
         if (request.getQueryString() != null) {
-            requestURI += "?" + URLDecoder.decode(request.getQueryString(), StandardCharsets.UTF_8);
+            requestURI += "?" + request.getQueryString();
         }
         return requestURI.replaceFirst("^" + SpeedyConstants.URI, "");
     }

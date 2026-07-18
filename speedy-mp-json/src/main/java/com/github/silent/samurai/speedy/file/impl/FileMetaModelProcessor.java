@@ -5,19 +5,14 @@ import com.github.silent.samurai.speedy.file.impl.processor.FileProcessor;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModelProcessor;
 import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.ResourceUtils;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class FileMetaModelProcessor implements MetaModelProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileMetaModelProcessor.class);
-
-    @Value("${speedy.metamodel.file}")
-    private String metaModelFile;
+    private final String metaModelFile;
 
     private MetaModel metaModel;
 
@@ -32,16 +27,24 @@ public class FileMetaModelProcessor implements MetaModelProcessor {
 
     @Override
     public void processMetaModel(MetaModelBuilder builder) {
-        try {
-            File file = ResourceUtils.getFile("classpath:" + metaModelFile);
-            try (InputStream in = new FileInputStream(file)) {
-                FileProcessor.process(in, builder);
-            } catch (IOException | NotFoundException e) {
-                throw new RuntimeException(e);
-            }
+        try (InputStream in = openResource()) {
+            FileProcessor.process(in, builder);
             metaModel = builder.build();
-        } catch (FileNotFoundException | NotFoundException e) {
+        } catch (IOException | NotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private InputStream openResource() throws FileNotFoundException {
+        String resourceName = metaModelFile.startsWith("/") ? metaModelFile.substring(1) : metaModelFile;
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        if (classLoader == null) {
+            classLoader = FileMetaModelProcessor.class.getClassLoader();
+        }
+        InputStream inputStream = classLoader.getResourceAsStream(resourceName);
+        if (inputStream == null) {
+            throw new FileNotFoundException("Classpath resource not found: " + resourceName);
+        }
+        return inputStream;
     }
 }

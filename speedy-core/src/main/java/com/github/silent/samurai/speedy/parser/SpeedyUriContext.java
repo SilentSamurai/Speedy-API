@@ -18,10 +18,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +35,7 @@ public class SpeedyUriContext {
     ///
     /// @see JavaTypeRegistry#parseString(String, Class)
     private final JavaTypeRegistry javaTypeRegistry;
-    private final MultiValueMap<String, String> queryParameters = new LinkedMultiValueMap<>();
+    private final Map<String, List<String>> queryParameters = new LinkedHashMap<>();
     @Builder.Default
     private final int maxPageSize = Integer.MAX_VALUE;
     @Builder.Default
@@ -94,8 +90,7 @@ public class SpeedyUriContext {
             sanitizedURI = sanitizedURI.substring(indexOf + SpeedyConstants.URI.length());
         }
 
-        UriComponents uriComponents = UriComponentsBuilder.fromUriString(sanitizedURI)
-                .build();
+        SpeedyUriComponents uriComponents = SpeedyUriComponents.parseDecoded(sanitizedURI);
 
         EntityMetadata entityMetadata = this.extractEntity(uriComponents);
         this.actionSuffix = this.extractActionSuffix(uriComponents);
@@ -117,10 +112,10 @@ public class SpeedyUriContext {
         return this.speedyQuery;
     }
 
-    private void capturePageInfo(UriComponents uriComponents) throws SpeedyHttpException {
-        if (uriComponents.getQueryParams().containsKey("$pageSize")) {
-            String $pageSize = uriComponents.getQueryParams().getFirst("$pageSize");
-            try {
+    private void capturePageInfo(SpeedyUriComponents uriComponents) throws SpeedyHttpException {
+        if (uriComponents.getQueryParameters().containsKey("$pageSize")) {
+            String $pageSize = uriComponents.getFirstQueryParameter("$pageSize");
+            if ($pageSize != null) try {
                 Integer pageSize = javaTypeRegistry.parseString($pageSize.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageSize);
                 if (pageSize > maxPageSize) {
@@ -136,9 +131,9 @@ public class SpeedyUriContext {
             }
         }
 
-        if (uriComponents.getQueryParams().containsKey("$pageNo")) {
-            String $pageNo = uriComponents.getQueryParams().getFirst("$pageNo");
-            try {
+        if (uriComponents.getQueryParameters().containsKey("$pageNo")) {
+            String $pageNo = uriComponents.getFirstQueryParameter("$pageNo");
+            if ($pageNo != null) try {
                 Integer pageNo = javaTypeRegistry.parseString($pageNo.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageNo);
                 speedyQuery.addPageNo(pageNo);
@@ -147,15 +142,15 @@ public class SpeedyUriContext {
             }
         }
 
-        if (uriComponents.getQueryParams().containsKey("$format")) {
-            String $format = uriComponents.getQueryParams().getFirst("$format");
+        if (uriComponents.getQueryParameters().containsKey("$format")) {
+            String $format = uriComponents.getFirstQueryParameter("$format");
             if ($format != null) {
                 speedyQuery.addFormat(javaTypeRegistry.parseString($format.replaceAll("['\" ]", ""), String.class));
             }
         }
 
-        if (uriComponents.getQueryParams().containsKey("$expand")) {
-            String $expand = uriComponents.getQueryParams().getFirst("$expand");
+        if (uriComponents.getQueryParameters().containsKey("$expand")) {
+            String $expand = uriComponents.getFirstQueryParameter("$expand");
             if ($expand != null) {
                 String[] expands = $expand.replaceAll("['\" ]", "").split(",");
                 for (String exp : expands) {
@@ -167,9 +162,9 @@ public class SpeedyUriContext {
         }
     }
 
-    private void captureSelectParams(UriComponents uriComponents) throws BadRequestException {
-        if (uriComponents.getQueryParams().containsKey("$select")) {
-            String $select = uriComponents.getQueryParams().getFirst("$select");
+    private void captureSelectParams(SpeedyUriComponents uriComponents) throws BadRequestException {
+        if (uriComponents.getQueryParameters().containsKey("$select")) {
+            String $select = uriComponents.getFirstQueryParameter("$select");
             if ($select != null) {
                 String[] selects = $select.replaceAll("['\" ]", "").split(",");
                 for (String sel : selects) {
@@ -189,7 +184,7 @@ public class SpeedyUriContext {
         }
     }
 
-    private EntityMetadata extractEntity(UriComponents uriComponents) throws BadRequestException, NotFoundException {
+    private EntityMetadata extractEntity(SpeedyUriComponents uriComponents) throws BadRequestException, NotFoundException {
         List<String> pathSegments = uriComponents.getPathSegments();
         if (!pathSegments.isEmpty()) {
             String resourceName = pathSegments.get(0);
@@ -199,7 +194,7 @@ public class SpeedyUriContext {
         }
     }
 
-    private String extractActionSuffix(UriComponents uriComponents) {
+    private String extractActionSuffix(SpeedyUriComponents uriComponents) {
         List<String> pathSegments = uriComponents.getPathSegments();
         return pathSegments.isEmpty() ? "" : pathSegments.get(pathSegments.size() - 1);
     }
@@ -208,9 +203,9 @@ public class SpeedyUriContext {
         return speedyQuery;
     }
 
-    private void captureUrlParams(UriComponents uriComponents) throws SpeedyHttpException {
-        if (!uriComponents.getQueryParams().isEmpty()) {
-            MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
+    private void captureUrlParams(SpeedyUriComponents uriComponents) throws SpeedyHttpException {
+        if (!uriComponents.getQueryParameters().isEmpty()) {
+            Map<String, List<String>> queryParams = uriComponents.getQueryParameters();
             int filterCount = 0;
             for (Map.Entry<String, List<String>> entry : queryParams.entrySet()) {
                 String key = entry.getKey().strip();
@@ -277,7 +272,7 @@ public class SpeedyUriContext {
     }
 
     private void addToOrderList(String queryName, boolean isDesc) throws SpeedyHttpException {
-        MultiValueMap<String, String> queryParams = queryParameters;
+        Map<String, List<String>> queryParams = queryParameters;
         if (queryParams.containsKey(queryName)) {
             List<String> values = queryParams.remove(queryName);
             List<String> fields = values.stream()

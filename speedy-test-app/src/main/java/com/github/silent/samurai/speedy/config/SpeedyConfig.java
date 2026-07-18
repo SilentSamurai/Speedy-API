@@ -9,9 +9,8 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyRegistry;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModelProcessor;
 import com.github.silent.samurai.speedy.jpa.impl.processors.JpaMetaModelProcessorV2;
+import com.github.silent.samurai.speedy.policy.PolicyBuilder;
 import com.github.silent.samurai.speedy.policy.SpeedyAuthContext;
-import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
-import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.validation.SpeedyValidation;
 import jakarta.persistence.EntityManagerFactory;
 import org.springdoc.core.customizers.OpenApiCustomizer;
@@ -89,6 +88,6 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     // is empty, so tests that don't care about ABAC need an explicit allow-all default here.
     @Override
     public Optional<SpeedyAuthContext> authContextPerReq() {
-        return Optional.of(new SpeedyAuthContext(new PolicyDocument(PolicyEffect.ALLOW, List.of())));
+        return Optional.of(PolicyBuilder.allowByDefault().build());
     }
 }

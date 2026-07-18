@@ -13,14 +13,14 @@ import com.github.silent.samurai.speedy.conversion.walker.java.SpeedyToJava;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EventProcessor {
@@ -40,7 +40,7 @@ public class EventProcessor {
     /// @see JavaToSpeedy#updateEntity
     private final JavaToSpeedy deserializer;
 
-    private final Map<SpeedyEventType, MultiValueMap<String, EventHandlerMetadata>> eventMap = new HashMap<>();
+    private final Map<SpeedyEventType, Map<String, List<EventHandlerMetadata>>> eventMap = new HashMap<>();
 
     /// Creates the event processor with the necessary serialization infrastructure.
     ///
@@ -75,13 +75,14 @@ public class EventProcessor {
                     Class<?> ioClass = parameterTypes[0];
                     EntityMetadata entityMetadata = this.metaModel.findEntityMetadata(entity);
                     for (SpeedyEventType event : SpeedyEventType.values()) {
-                        eventMap.putIfAbsent(event, new LinkedMultiValueMap<>());
-                        MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(event);
+                        Map<String, List<EventHandlerMetadata>> eventEntityMap =
+                                eventMap.computeIfAbsent(event, ignored -> new HashMap<>());
                         if (Arrays.stream(annotation.eventType()).anyMatch(rt -> rt == event)) {
                             try {
                                 MethodHandle mh = MethodHandles.lookup().unreflect(declaredMethod);
                                 EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, mh, ioClass);
-                                eventEntityMap.add(entityMetadata.getName(), metadata);
+                                eventEntityMap.computeIfAbsent(entityMetadata.getName(), ignored -> new ArrayList<>())
+                                        .add(metadata);
                             } catch (IllegalAccessException e) {
                                 throw new RuntimeException("Cannot access event handler method " + declaredMethod.getName(), e);
                             }
@@ -97,7 +98,7 @@ public class EventProcessor {
     public void triggerEvent(SpeedyEventType eventType, EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
         if (isEventPresent(eventType, entityMetadata)) {
             boolean writeBack = isPreEvent(eventType);
-            MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
+            Map<String, List<EventHandlerMetadata>> eventEntityMap = eventMap.get(eventType);
             for (EventHandlerMetadata metadata : eventEntityMap.get(entityMetadata.getName())) {
                 metadata.invokeEventHandler(entity, serializer, deserializer, writeBack);
             }
@@ -115,7 +116,7 @@ public class EventProcessor {
     }
 
     public boolean isEventPresent(SpeedyEventType eventType, EntityMetadata entityMetadata) {
-        MultiValueMap<String, EventHandlerMetadata> eventEntityMap = eventMap.get(eventType);
+        Map<String, List<EventHandlerMetadata>> eventEntityMap = eventMap.get(eventType);
         return eventEntityMap != null && eventEntityMap.containsKey(entityMetadata.getName()) &&
                 !eventEntityMap.get(entityMetadata.getName()).isEmpty();
     }

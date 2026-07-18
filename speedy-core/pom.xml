@@ -22,17 +22,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-
-
-        <!--        <dependency>-->
-        <!--            <groupId>${project.parent.groupId}</groupId>-->
-        <!--            <artifactId>antlr-parser</artifactId>-->
-        <!--            <version>${project.parent.version}</version>-->
-        <!--        </dependency>-->
-        <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-commons</artifactId>
             <version>${project.parent.version}</version>
@@ -47,16 +36,7 @@
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-models</artifactId>
-            <version>2.2.8</version>
-            <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>io.swagger.core.v3</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>2.0.10</version>
-            <scope>compile</scope>
-        </dependency>
-
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>speedy-client</artifactId>
@@ -65,15 +45,18 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>4.6</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
     </dependencies>

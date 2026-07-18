@@ -12,8 +12,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyInt;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.models.SpeedyText;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.PropertyAccessorFactory;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -25,7 +23,7 @@ import java.util.stream.Collectors;
 /// Primitive Java values are converted via {@link #fromJavaObject(FieldMetadata, Object)}
 /// using a {@link JavaTypeRegistry}, with special handling for enums.
 /// Composite Java objects are mapped to {@link SpeedyEntity} through
-/// {@link #updateEntity(Object, SpeedyEntity)}, which uses Spring's {@code BeanWrapper}
+/// {@link #updateEntity(Object, SpeedyEntity)}, which uses JavaBean property access
 /// to read fields by name and populate the entity graph, including nested associations.
 public class JavaToSpeedy {
 
@@ -88,16 +86,16 @@ public class JavaToSpeedy {
         try {
             EntityMetadata entityMetadata = entity.getMetadata();
             Class<?> clazz = instance.getClass();
-            BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(instance);
+            JavaBeanAccessor accessor = JavaBeanAccessor.forBean(instance);
             Map<String, Field> fieldMap = Arrays.stream(clazz.getDeclaredFields())
                     .collect(Collectors.toMap(Field::getName, f -> f));
 
             for (FieldMetadata fm : entityMetadata.getAllFields()) {
                 String name = fm.getOutputPropertyName();
-                if (!fieldMap.containsKey(name) || !wrapper.isReadableProperty(name)) continue;
+                if (!fieldMap.containsKey(name) || !accessor.isReadableProperty(name)) continue;
 
                 try {
-                    Object srcVal = wrapper.getPropertyValue(name);
+                    Object srcVal = accessor.getPropertyValue(name);
 
                     if (srcVal == null) {
                         if (!entity.has(fm)) entity.put(fm, SpeedyNull.SPEEDY_NULL);

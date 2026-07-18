@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
+import com.github.silent.samurai.speedy.controllers.SpeedyApiController;
 import com.github.silent.samurai.speedy.docs.SpeedyOpenApiCustomizer;
 import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
@@ -8,11 +9,7 @@ import com.github.silent.samurai.speedy.interfaces.metadata.MetaModelProcessor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,12 +25,13 @@ import static org.mockito.Mockito.when;
 /// via @SpringBootTest, covering both the positive and negative bean-creation paths.
 ///
 /// ## What we test
-/// SpeedyApiAutoConfiguration declares two conditional beans:
+/// SpeedyApiAutoConfiguration declares three conditional beans:
 ///   SpeedyFactory            → @ConditionalOnBean(ISpeedyConfiguration.class)
+///   SpeedyApiController       → @ConditionalOnBean(SpeedyFactory.class)
 ///   SpeedyOpenApiCustomizer  → @ConditionalOnBean(SpeedyFactory.class)
 ///
-/// When ISpeedyConfiguration is present, both beans are created. When it is absent,
-/// neither bean is created.
+/// When ISpeedyConfiguration is present, all three beans are created. When it is absent,
+/// none of them is created.
 ///
 /// ## How we test
 /// Two @Nested inner classes each boot their own minimal Spring Boot app via
@@ -45,9 +43,8 @@ import static org.mockito.Mockito.when;
 ///   defaults for SpeedyFactory constructor). The real @ConditionalOnBean conditions
 ///   are exercised directly on the real auto-config class — no proxy duplication.
 ///
-/// Negative: the app does NOT provide ISpeedyConfiguration. A
-///   BeanDefinitionRegistryPostProcessor removes the auto-scanned SpeedyApiController
-///   bean (which would fail to autowire the missing SpeedyFactory) before instantiation.
+/// Negative: the app does NOT provide ISpeedyConfiguration, so none of the conditional
+///   Speedy beans are created.
 class SpeedyApiAutoConfigurationConditionalTest {
 
     @Nested
@@ -63,12 +60,15 @@ class SpeedyApiAutoConfigurationConditionalTest {
         SpeedyFactory speedyFactory;
         @Autowired
         SpeedyOpenApiCustomizer speedyOpenApiCustomizer;
+        @Autowired
+        SpeedyApiController speedyApiController;
 
         @Test
-        @DisplayName("SpeedyFactory and SpeedyOpenApiCustomizer are created when ISpeedyConfiguration is present")
+        @DisplayName("Speedy beans are created when ISpeedyConfiguration is present")
         void allConditionalBeansCreated() {
             assertThat(speedyFactory).isNotNull();
             assertThat(speedyOpenApiCustomizer).isNotNull();
+            assertThat(speedyApiController).isNotNull();
         }
 
         @SpringBootConfiguration
@@ -101,32 +101,20 @@ class SpeedyApiAutoConfigurationConditionalTest {
         SpeedyFactory speedyFactory;
         @Autowired(required = false)
         SpeedyOpenApiCustomizer speedyOpenApiCustomizer;
+        @Autowired(required = false)
+        SpeedyApiController speedyApiController;
 
         @Test
-        @DisplayName("SpeedyFactory and SpeedyOpenApiCustomizer are NOT created when ISpeedyConfiguration is absent")
+        @DisplayName("Speedy beans are not created when ISpeedyConfiguration is absent")
         void noConditionalBeansCreated() {
             assertThat(speedyFactory).isNull();
             assertThat(speedyOpenApiCustomizer).isNull();
+            assertThat(speedyApiController).isNull();
         }
 
         @SpringBootConfiguration
         @EnableAutoConfiguration
         static class Unconfigured {
-            @Bean
-            static BeanDefinitionRegistryPostProcessor removeController() {
-                return new BeanDefinitionRegistryPostProcessor() {
-                    @Override
-                    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-                        if (registry.containsBeanDefinition("speedyApiController")) {
-                            registry.removeBeanDefinition("speedyApiController");
-                        }
-                    }
-
-                    @Override
-                    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-                    }
-                };
-            }
         }
     }
 }

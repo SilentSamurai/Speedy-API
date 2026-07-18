@@ -1,8 +1,8 @@
 package com.github.silent.samurai.speedy.validation.rules;
 
+import com.github.silent.samurai.speedy.enums.SpeedyDateFormat;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
 
@@ -10,9 +10,9 @@ import java.util.List;
  * Ensures that a date/datetime value matches the desired ISO style (DATE or DATE_TIME).
  */
 public class DateFormatRule implements FieldRule {
-    private final DateTimeFormat.ISO iso;
+    private final SpeedyDateFormat iso;
 
-    public DateFormatRule(DateTimeFormat.ISO iso) {
+    public DateFormatRule(SpeedyDateFormat iso) {
         this.iso = iso;
     }
 

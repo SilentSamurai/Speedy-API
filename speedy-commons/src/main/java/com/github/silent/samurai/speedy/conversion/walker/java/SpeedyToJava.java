@@ -10,8 +10,6 @@ import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.utils.CommonUtil;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.PropertyAccessorFactory;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -22,7 +20,7 @@ import java.util.stream.Collectors;
 /// Primitive values (text, number, boolean, enum, date, etc.) are handled via
 /// {@link #asJavaObject(SpeedyValue)} using a {@link JavaTypeRegistry}.
 /// Entity values are mapped to composite Java classes through
-/// {@link #toJavaEntity(SpeedyEntity, Class)}, which uses Spring's {@code BeanWrapper}
+/// {@link #toJavaEntity(SpeedyEntity, Class)}, which uses JavaBean property access
 /// to populate fields by name, including nested association traversal.
 public class SpeedyToJava {
 
@@ -102,7 +100,7 @@ public class SpeedyToJava {
             SpeedyEntity entity = value.asObject();
             // Create instance of target class
             T instance = clazz.getDeclaredConstructor().newInstance();
-            BeanWrapper wrapper = PropertyAccessorFactory.forBeanPropertyAccess(instance);
+            JavaBeanAccessor accessor = JavaBeanAccessor.forBean(instance);
             Map<String, Field> fieldMap = Arrays.stream(clazz.getDeclaredFields())
                     .collect(Collectors.toMap(Field::getName, f -> f));
 
@@ -121,7 +119,7 @@ public class SpeedyToJava {
                         val = toJavaField(fv, fm, fieldMap.get(name).getType());
                     }
 
-                    if (wrapper.isWritableProperty(name)) wrapper.setPropertyValue(name, val);
+                    if (accessor.isWritableProperty(name)) accessor.setPropertyValue(name, val);
                 } catch (ConversionException e) {
                     throw e;
                 } catch (Exception e) {

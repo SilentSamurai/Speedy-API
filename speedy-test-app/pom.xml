@@ -13,57 +13,29 @@
     <name>speedy-test-app</name>
 
     <properties>
+        <spring-boot.version>3.3.13</spring-boot.version>
+        <springdoc.version>2.5.0</springdoc.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>spring-boot-starter-speedy-api</artifactId>
             <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-client</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-mp-jpa</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-qp-jooq</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-io-json</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-io-yaml</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>speedy-io-xml</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-xml</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -77,6 +49,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!--        <dependency>-->
@@ -196,6 +178,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
             </plugin>
         </plugins>
     </build>

@@ -1,12 +1,13 @@
 package com.github.silent.samurai.speedy.policy;
 
 import com.github.silent.samurai.speedy.enums.PermissionType;
+import com.github.silent.samurai.speedy.exceptions.ConversionException;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
-import com.github.silent.samurai.speedy.models.SpeedyText;
 import com.github.silent.samurai.speedy.policy.condition.QueryCondition;
 import com.github.silent.samurai.speedy.policy.model.PolicyDocument;
 import com.github.silent.samurai.speedy.policy.model.PolicyEffect;
 import com.github.silent.samurai.speedy.policy.model.SpeedyPolicy;
+import com.github.silent.samurai.speedy.utils.Speedy;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -17,10 +18,15 @@ import java.util.Map;
 import java.util.Set;
 
 /// Fluent builder for the request-scoped {@link SpeedyAuthContext} returned by
-/// {@code ISpeedyConfiguration.authContextPerReq()}.
+/// {@code ISpeedyConfiguration.authContextPerReq()}, and the only way to make one.
 ///
 /// <p>Use {@link #denyByDefault()} for a fail-closed policy document, add the trusted caller
-/// variables and rules that apply to the request, then call {@link #build()}.</p>
+/// variables and rules that apply to the request, then call {@link #build()}. Already hold a
+/// document? {@link #from(PolicyDocument)} seeds a builder from it, so a shared, immutable
+/// document can be paired with fresh caller variables on every request.</p>
+///
+/// <p>Variables are supplied as plain Java values and converted here, which is what keeps
+/// {@code SpeedyValue} out of application code — see {@link #variable(String, Object)}.</p>
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PolicyBuilder {
 
@@ -38,14 +44,34 @@ public final class PolicyBuilder {
         return new PolicyBuilder(PolicyEffect.ALLOW);
     }
 
+    /// Seeds a builder from an existing document, adopting its default effect and rules. Lets a
+    /// shared, immutable {@link PolicyDocument} built once at startup be combined with the
+    /// variables of whichever caller made the current request.
+    public static PolicyBuilder from(PolicyDocument document) {
+        PolicyBuilder builder = new PolicyBuilder(document.defaultEffect());
+        document.speedyPolicies().forEach(builder::rule);
+        return builder;
+    }
+
     /// Adds the standard {@code principal.id} variable used by policy conditions.
     public PolicyBuilder principalId(String principalId) {
-        return variable("principal.id", new SpeedyText(principalId));
+        return variable("principal.id", principalId);
     }
 
     /// Adds a trusted variable that policy conditions can reference as {@code ${name}}.
-    public PolicyBuilder variable(String name, SpeedyValue value) {
-        variables.put(name, value);
+    ///
+    /// <p>{@code value} is a plain Java value — {@code String}, {@code Boolean}, {@code Long},
+    /// {@code Integer}, {@code Double}, {@code Float}, {@code LocalDate}, {@code LocalTime},
+    /// {@code LocalDateTime}, {@code ZonedDateTime}, or {@code null} — converted here, so callers
+    /// never build a {@code SpeedyValue}. An unsupported type is rejected at this call.</p>
+    ///
+    /// @throws ConversionException if {@code value} is not one of the supported types
+    public PolicyBuilder variable(String name, Object value) {
+        try {
+            variables.put(name, Speedy.from(value));
+        } catch (ConversionException e) {
+            throw new ConversionException("Policy variable '" + name + "': " + e.getMessage(), e);
+        }
         return this;
     }
 
@@ -91,7 +117,7 @@ public final class PolicyBuilder {
 
     /// Builds the request-scoped authorization context.
     public SpeedyAuthContext build() {
-        return new SpeedyAuthContext(buildDocument(), variables);
+        return new SpeedyAuthContext(buildDocument(), Map.copyOf(variables));
     }
 
     private PolicyBuilder addRule(String id, PolicyEffect effect, Set<PermissionType> actions,

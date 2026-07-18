@@ -18,9 +18,9 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Predicate;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
-
 public class OASGenerator {
+
+    private static final String APPLICATION_JSON_UTF8_VALUE = "application/json;charset=UTF-8";
 
     public static final String LIGHT_ENTITY_NAME = "Light{0}";
     public static final String ENTITY_NAME = "{0}";
