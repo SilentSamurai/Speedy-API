@@ -68,6 +68,9 @@ public class Speedy {
         if (value instanceof Long longValue) return from(longValue);
         if (value instanceof Integer intValue) return from((long) intValue);
         if (value instanceof Double doubleValue) return from(doubleValue);
+        // Integer/Float are widened to the long-backed INT / double-backed FLOAT that Speedy models;
+        // the Float->double widening can surface representation artifacts (e.g. 0.1f), which is
+        // acceptable for the untyped policy-variable use case this method exists for.
         if (value instanceof Float floatValue) return from((double) floatValue);
         if (value instanceof LocalDate date) return from(date);
         if (value instanceof LocalTime time) return from(time);

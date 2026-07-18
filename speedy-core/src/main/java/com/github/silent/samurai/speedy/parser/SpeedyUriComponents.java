@@ -27,10 +27,22 @@ public final class SpeedyUriComponents {
         this.queryParameters = Collections.unmodifiableMap(immutableParameters);
     }
 
+    /**
+     * Parses a still-percent-encoded URI: the input is URL-decoded once, then split.
+     *
+     * <p>Pass the raw request URI here <em>exactly once</em>. Callers that have already decoded the
+     * URI must use {@link #parseDecoded(String)} instead — decoding twice corrupts any value that
+     * legitimately contains a percent sign or an encoded delimiter.</p>
+     */
     public static SpeedyUriComponents parse(String uri) {
         return parseDecoded(URLDecoder.decode(uri, StandardCharsets.UTF_8));
     }
 
+    /**
+     * Splits an already-decoded URI into path segments and query parameters without decoding again.
+     * Decoding is split-then-* here, so an encoded {@code &}/{@code =} inside a value is treated as a
+     * delimiter — matching the behaviour of the Spring {@code UriComponentsBuilder} this replaced.
+     */
     static SpeedyUriComponents parseDecoded(String decoded) {
         int queryStart = decoded.indexOf('?');
         String path = queryStart >= 0 ? decoded.substring(0, queryStart) : decoded;

@@ -32,8 +32,6 @@
         <json-path.version>2.9.0</json-path.version>
         <jooq.version>3.19.24</jooq.version>
         <hibernate.version>6.5.3.Final</hibernate.version>
-        <h2.version>2.2.224</h2.version>
-        <postgresql.version>42.7.7</postgresql.version>
     </properties>
 
     <modules>
@@ -161,24 +159,15 @@
                 <artifactId>hibernate-core</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.h2database</groupId>
-                <artifactId>h2</artifactId>
-                <version>${h2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>${postgresql.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
+    <!--
+      Test stack shared by every module. Kept as inherited dependencies (not just dependencyManagement)
+      because all modules test with this trio; compile/provided deps like slf4j-api and lombok stay
+      declared per-module so each artifact's published POM reflects what it actually uses.
+    -->
     <dependencies>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -193,12 +182,6 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 

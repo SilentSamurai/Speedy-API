@@ -20,8 +20,9 @@
 | `speedy-test-app`                | Integration Tests  | Full Spring Boot app with 19 JPA entities, sample config, event handlers, validators.                                                                                                |
 | `jacoco-aggregate`               | Coverage           | Aggregates JaCoCo reports across all modules.                                                                                                                                        |
 
-The root Maven POM is framework-neutral. Only `spring-boot-starter-speedy-api` and `speedy-test-app` import the
-Spring Boot BOM; Boot dependency management does not flow into the library modules.
+The root Maven POM is framework-neutral and declares no inherited dependencies. Each module declares the libraries
+it actually uses. Only `spring-boot-starter-speedy-api` and `speedy-test-app` import the Spring Boot BOM; Boot
+dependency management does not flow into the library modules.
 
 ### Request Processing Flow
 
@@ -185,7 +186,7 @@ are wired inline in `SpeedyEngineImpl`'s constructor. Individual handlers are un
 ### Observer / Event-Driven Pattern
 
 `EventProcessor` scans handler beans for `@SpeedyEvent` methods, builds a
-`Map<SpeedyEventType, MultiValueMap<String, EventHandlerMetadata>>` registry. Events: PRE_INSERT, POST_INSERT,
+`Map<SpeedyEventType, Map<String, List<EventHandlerMetadata>>>` registry. Events: PRE_INSERT, POST_INSERT,
 PRE_UPDATE, POST_UPDATE, PRE_DELETE, POST_DELETE. Entities are auto-converted between `SpeedyEntity` and Java POJOs for
 handler method parameters.
 

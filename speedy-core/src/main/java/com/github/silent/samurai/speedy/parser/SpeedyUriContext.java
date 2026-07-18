@@ -115,7 +115,7 @@ public class SpeedyUriContext {
     private void capturePageInfo(SpeedyUriComponents uriComponents) throws SpeedyHttpException {
         if (uriComponents.getQueryParameters().containsKey("$pageSize")) {
             String $pageSize = uriComponents.getFirstQueryParameter("$pageSize");
-            try {
+            if ($pageSize != null) try {
                 Integer pageSize = javaTypeRegistry.parseString($pageSize.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageSize);
                 if (pageSize > maxPageSize) {
@@ -133,7 +133,7 @@ public class SpeedyUriContext {
 
         if (uriComponents.getQueryParameters().containsKey("$pageNo")) {
             String $pageNo = uriComponents.getFirstQueryParameter("$pageNo");
-            try {
+            if ($pageNo != null) try {
                 Integer pageNo = javaTypeRegistry.parseString($pageNo.replaceAll("['\" ]", ""), Integer.class);
                 Objects.requireNonNull(pageNo);
                 speedyQuery.addPageNo(pageNo);

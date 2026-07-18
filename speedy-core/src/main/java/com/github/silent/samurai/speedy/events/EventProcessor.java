@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -80,7 +81,7 @@ public class EventProcessor {
                             try {
                                 MethodHandle mh = MethodHandles.lookup().unreflect(declaredMethod);
                                 EventHandlerMetadata metadata = new EventHandlerMetadata(eventHandler, mh, ioClass);
-                                eventEntityMap.computeIfAbsent(entityMetadata.getName(), ignored -> new java.util.ArrayList<>())
+                                eventEntityMap.computeIfAbsent(entityMetadata.getName(), ignored -> new ArrayList<>())
                                         .add(metadata);
                             } catch (IllegalAccessException e) {
                                 throw new RuntimeException("Cannot access event handler method " + declaredMethod.getName(), e);
