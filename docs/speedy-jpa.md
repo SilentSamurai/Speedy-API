@@ -125,6 +125,52 @@ public class PublicEntity {
 }
 ```
 
+### Speedy Association
+
+By default Speedy only discovers associations from real JPA relationships (`@ManyToOne`/`@OneToOne`).
+If a foreign key has to stay a plain scalar column — for example a `UUID` field on a shared or
+legacy entity that can't be remapped to an object reference — annotate it with `@SpeedyAssociation`
+to wire it into the metamodel as an association anyway. It always binds to the target entity's
+primary key, exactly like `@ManyToOne` does.
+
+```java
+@Table(name = "entity")
+@Entity
+public class Entity {
+
+    @Column(name = "target_id")
+    @SpeedyAssociation(Target.class)
+    private UUID target;
+}
+```
+
+The target entity is given as exactly one of `value()` (its JPA entity class) or `entity()` (its
+Speedy entity name as a `String`) — use the latter when the target class isn't available to
+reference directly, e.g. across module boundaries:
+
+```java
+    @Column(name = "target_id")
+    @SpeedyAssociation(entity = "Target")
+    private UUID target;
+```
+
+Specifying both, or neither, fails fast at metamodel build time.
+
+The scalar field's own declared Java type doesn't need to match the target's primary key type —
+the actual read/write conversion is driven entirely by the target key field's type, so this works
+identically against `UUID`, `String`, or numeric (e.g. `Long` `IDENTITY`) primary keys. Like
+`@ManyToOne`, it only ever binds to the target's *first* key field
+(`EntityBuilder#keyFields().iterator().next()`), so a composite-key target isn't fully addressable
+this way — this is a pre-existing limitation shared with every other association kind, not
+specific to `@SpeedyAssociation`.
+
+Once annotated, the field behaves exactly like a `@ManyToOne` association: it gains `$expand`
+support, `$filter` navigation through the association (e.g. `target.name`), and is serialized as
+a keys-only reference object (or fully expanded object with `$expand`) rather than a bare scalar.
+This also means write payloads must use the nested-object shape (`{"target": {"id": "<uuid>"}}`)
+instead of a bare scalar value — a plain `UUID` value is rejected, same as for any other
+association field.
+
 ### Speedy Sensitive
 
 Prevent fields from being used in `$` field references in queries.
