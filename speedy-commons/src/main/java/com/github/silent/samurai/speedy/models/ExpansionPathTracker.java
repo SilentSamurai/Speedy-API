@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,12 +39,18 @@ public class ExpansionPathTracker {
 
     private final Deque<EntityMetadata> currentPath = new LinkedList<>();
     private final Set<String> requestedExpansions;
+    // Case-insensitive lookup mirror of requestedExpansions, kept separate so
+    // getRequestedExpansions() still returns the paths in their original casing.
+    private final Set<String> normalizedExpansions;
 
     public ExpansionPathTracker(Set<String> requestedExpansions) {
         if (requestedExpansions == null) {
             throw new IllegalArgumentException("Requested expansions cannot be null");
         }
         this.requestedExpansions = Set.copyOf(requestedExpansions);
+        this.normalizedExpansions = requestedExpansions.stream()
+                .map(path -> path.toLowerCase(Locale.ROOT))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     /// Pushes an entity onto the current processing path (top of stack).
@@ -85,7 +92,9 @@ public class ExpansionPathTracker {
 
     /// Checks if a specific association should be expanded based on the current path.
     /// This method checks both dot notation expansions (e.g., `Inventory.Product.Category`)
-    /// and entity-based expansions (e.g., `Category`) for backward compatibility.
+    /// and entity-based expansions (e.g., `Category`) for backward compatibility. Matching is
+    /// case-insensitive, consistent with the `$filter` association-name fallback in
+    /// `ConditionFactory#resolveAssociationOwningField`.
     ///
     /// @param association the association metadata to check for expansion
     /// @return true if the association should be expanded, false otherwise
@@ -94,7 +103,7 @@ public class ExpansionPathTracker {
             throw new IllegalArgumentException("Association cannot be null");
         }
         String fullPath = getCurrentDotPath(association);
-        return requestedExpansions.contains(fullPath);
+        return normalizedExpansions.contains(fullPath.toLowerCase(Locale.ROOT));
     }
 
     /// Gets the current path depth.
