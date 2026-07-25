@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.parser;
 
 import com.github.silent.samurai.speedy.enums.ConditionOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
+import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
@@ -13,6 +14,9 @@ import com.github.silent.samurai.speedy.models.conditions.NormalField;
 import com.github.silent.samurai.speedy.models.conditions.AssociatedField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConditionFactory {
 
@@ -58,7 +62,7 @@ public class ConditionFactory {
     }
 
     public QueryField createAssociatedField(String field, String associatedField) throws SpeedyHttpException {
-        FieldMetadata fieldMetadata = this.entityMetadata.getField(field);
+        FieldMetadata fieldMetadata = resolveAssociationOwningField(field);
         if (!fieldMetadata.isAssociation()) {
             throw new BadRequestException("field is not an association: " + fieldMetadata.getOutputPropertyName());
         }
@@ -72,6 +76,36 @@ public class ConditionFactory {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associatedFieldMetadata = associationMetadata.getField(associatedField);
         return new AssociatedField(fieldMetadata, associatedFieldMetadata);
+    }
+
+    /**
+     * Resolves the owning side of an association path segment (the {@code product} in
+     * {@code product.id}). Tries the field's own output name first; if that misses, falls back
+     * to matching by the associated entity's name, case-insensitively — e.g. {@code product.id}
+     * or {@code Product.id} both resolve to whichever field associates with the {@code Product}
+     * entity, the same convention {@code $expand} already uses ({@code ExpansionPathTracker}
+     * matches by entity name, not the owning field's output name — also case-insensitively).
+     * Ambiguous matches (two fields to the same target entity) are rejected rather than guessed at.
+     */
+    private FieldMetadata resolveAssociationOwningField(String field) throws SpeedyHttpException {
+        if (entityMetadata.has(field)) {
+            return entityMetadata.getField(field);
+        }
+        List<FieldMetadata> byAssociationName = entityMetadata.getAssociatedFields().stream()
+                .filter(f -> f.getAssociationMetadata().getName().equalsIgnoreCase(field))
+                .collect(Collectors.toList());
+        if (byAssociationName.size() == 1) {
+            return byAssociationName.get(0);
+        }
+        if (byAssociationName.size() > 1) {
+            String candidates = byAssociationName.stream()
+                    .map(FieldMetadata::getOutputPropertyName)
+                    .collect(Collectors.joining(", "));
+            throw new BadRequestException(String.format(
+                    "'%s' matches multiple associations on entity %s (%s) — reference one of these field names directly",
+                    field, entityMetadata.getName(), candidates));
+        }
+        throw new NotFoundException(String.format("Field '%s' not found in entity %s", field, entityMetadata.getName()));
     }
 
     /**

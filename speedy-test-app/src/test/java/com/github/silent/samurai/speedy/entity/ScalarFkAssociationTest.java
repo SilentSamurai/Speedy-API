@@ -242,4 +242,79 @@ class ScalarFkAssociationTest {
                 .expectOk()
                 .expectJsonPathExists("$.payload[0].id");
     }
+
+    @Test
+    void update_reassigningAssociationField_changesReference() {
+        String firstTargetId = createTarget();
+        String secondTargetId = createTarget();
+
+        String sourceId = speedyClient.create("ScalarFkEntity")
+                .field("name", "source-" + UUID.randomUUID())
+                .field("ref.id", firstTargetId)
+                .execute()
+                .expectOk()
+                .jsonPath("$.payload[0].id");
+
+        speedyClient.update("ScalarFkEntity")
+                .key("id", sourceId)
+                .field("ref.id", secondTargetId)
+                .execute()
+                .expectOk();
+
+        speedyClient.get("ScalarFkEntity")
+                .key("id", sourceId)
+                .execute()
+                .expectOk()
+                .expectJsonPath("$.payload[0].ref.id", secondTargetId);
+    }
+
+    @Test
+    void update_withNumericPkTarget_reassignsReference() {
+        // Confirms the update path also drives the write conversion through the *target* key
+        // field's type (Long/IDENTITY here), same as create.
+        long firstTargetId = createIdentityTarget();
+        long secondTargetId = createIdentityTarget();
+
+        String sourceId = speedyClient.create("ScalarFkEntity")
+                .field("name", "source-" + UUID.randomUUID())
+                .field("numRef.id", firstTargetId)
+                .execute()
+                .expectOk()
+                .jsonPath("$.payload[0].id");
+
+        speedyClient.update("ScalarFkEntity")
+                .key("id", sourceId)
+                .field("numRef.id", secondTargetId)
+                .execute()
+                .expectOk();
+
+        Object actual = speedyClient.get("ScalarFkEntity")
+                .key("id", sourceId)
+                .execute()
+                .expectOk()
+                .jsonPath("$.payload[0].numRef.id", Object.class);
+
+        assertThat(Long.parseLong(String.valueOf(actual)), is(secondTargetId));
+    }
+
+    @Test
+    void update_withBareScalarPayload_isRejected() {
+        // Same StructureToSpeedy-level rejection as create_withBareScalarPayload_isRejected —
+        // association fields must be sent as a nested object on update too.
+        String targetId = createTarget();
+
+        String sourceId = speedyClient.create("ScalarFkEntity")
+                .field("name", "source-" + UUID.randomUUID())
+                .field("ref.id", targetId)
+                .execute()
+                .expectOk()
+                .jsonPath("$.payload[0].id");
+
+        speedyClient.update("ScalarFkEntity")
+                .key("id", sourceId)
+                .field("ref", UUID.randomUUID().toString())
+                .execute()
+                .expectBadRequest()
+                .expectJsonPath("$.message", containsString("must be an object"));
+    }
 }
