@@ -30,10 +30,11 @@ public class JooqToJooqSql {
         FieldMetadata associationFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
 
         Field<Object> field = JooqUtil.getColumn(associationFieldMetadata, dslContext.dialect());
+        Table<Record> table = JooqUtil.getTable(associationMetadata, dslContext.dialect());
 
         SelectConditionStep<Record> query = dslContext
                 .select()
-                .from(associationMetadata.getDbTableName())
+                .from(table)
                 .where(field.eq(fkColumnValue));
 
         LOGGER.info("expand query: {} ", query);

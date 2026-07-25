@@ -515,18 +515,28 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
 
             for (FieldBuilder fieldBuilder : entity.fields()) {
                 Attribute<?, ?> attribute = attributeMap.get(fieldBuilder.getOutputPropertyName());
-                if (!attribute.isAssociation()) {
-                    continue;
-                }
                 Member member = attribute.getJavaMember();
                 Field field = findReflectionField(attribute, entityType.getJavaType());
 
+                SpeedyAssociation manualAssociation = AnnotationUtils.getAnnotation(field, SpeedyAssociation.class);
+                if (!attribute.isAssociation() && manualAssociation == null) {
+                    continue;
+                }
+
                 String outputName = findOutputName(field, member);
 
-                Class<?> fieldType = field.getType();
-                if (attribute.isCollection()) {
-                    fieldType = resolveGenericFieldType(field);
+                if (manualAssociation != null) {
+                    String associatedEntityName = resolveManualAssociationEntityName(manualAssociation, entityType, member);
+                    if (!builder.hasEntity(associatedEntityName)) {
+                        throw new RuntimeException(String.format("association not found %s.%s for %s", entityType.getName(), member.getName(), associatedEntityName));
+                    }
+                    EntityBuilder associatedEntity = builder.ref(associatedEntityName);
+                    KeyFieldBuilder keyFieldBuilder = associatedEntity.keyFields().iterator().next();
+                    fieldBuilder.associateWith(keyFieldBuilder);
+                    continue;
                 }
+
+                Class<?> fieldType = attribute.isCollection() ? resolveGenericFieldType(field) : field.getType();
 
                 EntityType<?> associatedEntityType = entityManagerFactory.getMetamodel().entity(fieldType);
                 if (!builder.hasEntity(associatedEntityType.getName())) {
@@ -552,5 +562,21 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                 }
             }
         }
+    }
+
+    /// Resolves the target entity name for a {@link SpeedyAssociation}, which accepts exactly one
+    /// of {@code value()} (a JPA entity class) or {@code entity()} (a Speedy entity name directly).
+    String resolveManualAssociationEntityName(SpeedyAssociation manualAssociation, EntityType<?> entityType, Member member) {
+        boolean hasClass = manualAssociation.value() != Void.class;
+        boolean hasEntityName = !manualAssociation.entity().isBlank();
+        if (hasClass == hasEntityName) {
+            throw new RuntimeException(String.format(
+                    "@SpeedyAssociation on %s.%s must specify exactly one of value() or entity()",
+                    entityType.getName(), member.getName()));
+        }
+        if (hasClass) {
+            return entityManagerFactory.getMetamodel().entity(manualAssociation.value()).getName();
+        }
+        return manualAssociation.entity();
     }
 }
