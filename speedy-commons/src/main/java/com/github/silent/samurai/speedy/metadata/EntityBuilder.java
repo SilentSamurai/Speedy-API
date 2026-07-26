@@ -14,7 +14,11 @@ import java.util.stream.Collectors;
 public class EntityBuilder {
     boolean hasCompositeKey;
     Set<ActionType> actionTypes = new HashSet<>(List.of(ActionType.ALL));
-    Map<String, FieldBuilder> fieldMap = new HashMap<>();
+    // LinkedHashMap so field/key iteration order (and thus the order OASGenerator emits
+    // composite-key parameters — the generated Java client's positional method arguments) stays
+    // stable and matches declaration order, rather than an arbitrary hash-bucket order that could
+    // change between JVM runs.
+    Map<String, FieldBuilder> fieldMap = new LinkedHashMap<>();
     private String name;
     private String dbTableName;
     private boolean isSensitive = false;
@@ -121,7 +125,7 @@ public class EntityBuilder {
 
     public EntityMetadataImpl build() throws NotFoundException {
 
-        Map<String, FieldMetadata> fieldMetadataMap = new HashMap<>();
+        Map<String, FieldMetadata> fieldMetadataMap = new LinkedHashMap<>();
         for (Map.Entry<String, FieldBuilder> e : fieldMap.entrySet()) {
             Map.Entry<String, FieldMetadataImpl> entry = Map.entry(e.getKey(), e.getValue().build());
             if (fieldMetadataMap.put(entry.getKey(), entry.getValue()) != null) {

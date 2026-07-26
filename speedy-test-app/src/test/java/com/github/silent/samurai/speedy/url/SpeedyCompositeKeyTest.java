@@ -150,7 +150,7 @@ class SpeedyCompositeKeyTest {
         request.setSupplierId(key.getSupplierId());
         request.setDiscount(100.0);
 
-        UpdateOrderResponse response = apiInstance.updateOrder(request);
+        UpdateOrderResponse response = apiInstance.updateOrder(List.of(request));
         List<Order> payload = response.getPayload();
         Assertions.assertNotNull(payload);
         Assertions.assertFalse(payload.isEmpty());

@@ -393,7 +393,7 @@ class SpeedyEntityTest {
         updateCurrencyRequest.setId(currencyKey.getId());
 
         UpdateCurrencyResponse updateCurrency200Response = currencyApi
-                .updateCurrency(updateCurrencyRequest);
+                .updateCurrency(List.of(updateCurrencyRequest));
 
         Assertions.assertNotNull(updateCurrency200Response);
         Assertions.assertNotNull(updateCurrency200Response.getPayload());

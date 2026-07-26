@@ -109,7 +109,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (speedySensitive != null) {
             entity.sensitive(speedySensitive.value());
         }
-        for (Attribute<?, ?> attribute : entityType.getAttributes()) {
+        for (Attribute<?, ?> attribute : attributesInDeclarationOrder(entityType)) {
             if (isIgnorable(attribute, entityType.getJavaType())) {
                 continue;
             }
@@ -120,6 +120,29 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             );
         }
         return entity;
+    }
+
+    /// {@link EntityType#getAttributes()} is backed by a {@code Set} with no ordering guarantee, so
+    /// relying on it directly leaves field order — and, downstream, the order OASGenerator emits
+    /// composite-key parameters (which becomes the generated Java client's *positional* method
+    /// arguments) — to whatever a hash-bucket layout happens to produce. Re-sort by each attribute's
+    /// position in the entity's own declared-field order (walking superclasses first) so it matches
+    /// the order a reader of the entity source would expect, and stays stable across regenerations.
+    private static List<Attribute<?, ?>> attributesInDeclarationOrder(EntityType<?> entityType) {
+        Deque<Class<?>> hierarchy = new ArrayDeque<>();
+        for (Class<?> c = entityType.getJavaType(); c != null && c != Object.class; c = c.getSuperclass()) {
+            hierarchy.addFirst(c);
+        }
+        Map<String, Integer> declarationIndex = new HashMap<>();
+        for (Class<?> klass : hierarchy) {
+            for (Field field : klass.getDeclaredFields()) {
+                declarationIndex.putIfAbsent(field.getName(), declarationIndex.size());
+            }
+        }
+        return entityType.getAttributes().stream()
+                .sorted(Comparator.comparingInt(a ->
+                        declarationIndex.getOrDefault(a.getJavaMember().getName(), Integer.MAX_VALUE)))
+                .collect(Collectors.toList());
     }
 
     boolean isIgnorable(Attribute<?, ?> attribute, Class<?> entityClass) {
