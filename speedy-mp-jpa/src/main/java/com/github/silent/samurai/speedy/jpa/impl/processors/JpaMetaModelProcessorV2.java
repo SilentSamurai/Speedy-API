@@ -470,10 +470,27 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         }
     }
 
+    /// Resolves the property name a field is exposed under. Both call sites — {@link #processField}
+    /// and the attribute lookup in {@link #processAssociations} — go through here, so any rename
+    /// stays consistent across the two passes.
     String findOutputName(Field field, Member member) {
         JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(field, JsonProperty.class);
-        if (propertyAnnotation != null) {
-            return propertyAnnotation.value();
+        String jsonPropertyName = propertyAnnotation != null ? propertyAnnotation.value() : null;
+
+        SpeedyAssociation manualAssociation = AnnotationUtils.getAnnotation(field, SpeedyAssociation.class);
+        if (manualAssociation != null && !manualAssociation.name().isBlank()) {
+            String associationName = manualAssociation.name();
+            if (jsonPropertyName != null && !jsonPropertyName.equals(associationName)) {
+                throw new RuntimeException(String.format(
+                        "@SpeedyAssociation(name = \"%s\") on %s.%s conflicts with @JsonProperty(\"%s\") — " +
+                                "a field can only be exposed under one name",
+                        associationName, member.getDeclaringClass().getSimpleName(), member.getName(), jsonPropertyName));
+            }
+            return associationName;
+        }
+
+        if (jsonPropertyName != null) {
+            return jsonPropertyName;
         }
         return member.getName();
     }
