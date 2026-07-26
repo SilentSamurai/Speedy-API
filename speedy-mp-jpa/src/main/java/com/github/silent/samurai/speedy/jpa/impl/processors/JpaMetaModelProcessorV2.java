@@ -109,7 +109,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (speedySensitive != null) {
             entity.sensitive(speedySensitive.value());
         }
-        for (Attribute<?, ?> attribute : entityType.getAttributes()) {
+        for (Attribute<?, ?> attribute : attributesInDeclarationOrder(entityType)) {
             if (isIgnorable(attribute, entityType.getJavaType())) {
                 continue;
             }
@@ -120,6 +120,29 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             );
         }
         return entity;
+    }
+
+    /// {@link EntityType#getAttributes()} is backed by a {@code Set} with no ordering guarantee, so
+    /// relying on it directly leaves field order — and, downstream, the order OASGenerator emits
+    /// composite-key parameters (which becomes the generated Java client's *positional* method
+    /// arguments) — to whatever a hash-bucket layout happens to produce. Re-sort by each attribute's
+    /// position in the entity's own declared-field order (walking superclasses first) so it matches
+    /// the order a reader of the entity source would expect, and stays stable across regenerations.
+    private static List<Attribute<?, ?>> attributesInDeclarationOrder(EntityType<?> entityType) {
+        Deque<Class<?>> hierarchy = new ArrayDeque<>();
+        for (Class<?> c = entityType.getJavaType(); c != null && c != Object.class; c = c.getSuperclass()) {
+            hierarchy.addFirst(c);
+        }
+        Map<String, Integer> declarationIndex = new HashMap<>();
+        for (Class<?> klass : hierarchy) {
+            for (Field field : klass.getDeclaredFields()) {
+                declarationIndex.putIfAbsent(field.getName(), declarationIndex.size());
+            }
+        }
+        return entityType.getAttributes().stream()
+                .sorted(Comparator.comparingInt(a ->
+                        declarationIndex.getOrDefault(a.getJavaMember().getName(), Integer.MAX_VALUE)))
+                .collect(Collectors.toList());
     }
 
     boolean isIgnorable(Attribute<?, ?> attribute, Class<?> entityClass) {
@@ -470,10 +493,27 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         }
     }
 
+    /// Resolves the property name a field is exposed under. Both call sites — {@link #processField}
+    /// and the attribute lookup in {@link #processAssociations} — go through here, so any rename
+    /// stays consistent across the two passes.
     String findOutputName(Field field, Member member) {
         JsonProperty propertyAnnotation = AnnotationUtils.getAnnotation(field, JsonProperty.class);
-        if (propertyAnnotation != null) {
-            return propertyAnnotation.value();
+        String jsonPropertyName = propertyAnnotation != null ? propertyAnnotation.value() : null;
+
+        SpeedyAssociation manualAssociation = AnnotationUtils.getAnnotation(field, SpeedyAssociation.class);
+        if (manualAssociation != null && !manualAssociation.name().isBlank()) {
+            String associationName = manualAssociation.name();
+            if (jsonPropertyName != null && !jsonPropertyName.equals(associationName)) {
+                throw new RuntimeException(String.format(
+                        "@SpeedyAssociation(name = \"%s\") on %s.%s conflicts with @JsonProperty(\"%s\") — " +
+                                "a field can only be exposed under one name",
+                        associationName, member.getDeclaringClass().getSimpleName(), member.getName(), jsonPropertyName));
+            }
+            return associationName;
+        }
+
+        if (jsonPropertyName != null) {
+            return jsonPropertyName;
         }
         return member.getName();
     }

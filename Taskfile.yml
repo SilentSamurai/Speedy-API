@@ -1,131 +1,172 @@
 version: '3'
 
 vars:
-  TEST_APP_DIR: speedy-test-app
-  LOAD_TEST_DIR: k6-load-test
-  DB_TEST_DIR: db-tests
+    TEST_APP_DIR: speedy-test-app
+    LOAD_TEST_DIR: k6-load-test
+    DB_TEST_DIR: db-tests
 
 tasks:
-  default:
-    desc: Show available tasks
-    cmds:
-      - task: help
+    default:
+        desc: Show available tasks
+        cmds:
+            -   task: help
 
-  help:
-    desc: Show available tasks
-    cmds:
-      - echo "Speedy-API - Instant REST CRUD APIs for JPA entities"
-      - echo ""
-      - echo "Available tasks:"
-      - echo "  task build              # Build all modules (skip tests)"
-      - echo "  task install            # Install dependencies (skip tests, no clean)"
-      - echo "  task test               # Run all tests (unit + integration)"
-      - echo "  task test:unit          # Unit tests only"
-      - echo "  task test:integration   # Integration tests in speedy-test-app"
-      - echo "  task test:load          # Run k6 load tests"
-      - echo "  task test:db            # Run DB integration tests (Postgres/MySQL)"
-      - echo "  task clean              # Clean all build artifacts"
-      - echo "  task start              # Start speedy-test-app (H2, dev profile)"
-      - echo "  task api-docs:generate  # Generate api-docs.json from springdoc endpoint"
-      - echo "  task docs:serve         # Start docsify documentation server"
+    help:
+        desc: Show available tasks
+        cmds:
+            - echo "Speedy-API - Instant REST CRUD APIs for JPA entities"
+            - echo ""
+            - echo "Available tasks:"
+            - echo "  task build              # Build all modules (skip tests)"
+            - echo "  task install            # Install dependencies (skip tests, no clean)"
+            - echo "  task test               # Run all tests (unit + integration)"
+            - echo "  task test:unit          # Unit tests only"
+            - echo "  task test:integration   # Integration tests in speedy-test-app"
+            - echo "  task test:load          # Run k6 load tests"
+            - echo "  task test:db            # Run DB integration tests (Postgres/MySQL)"
+            - echo "  task clean              # Clean all build artifacts"
+            - echo "  task start              # Start speedy-test-app (H2, dev profile)"
+            - echo "  task api-docs:generate  # Generate api-docs.json from springdoc endpoint"
+            - echo "  task kill-port          # Kill whatever process is listening on a port (default 8080)"
+            - echo "  task docs:serve         # Start docsify documentation server"
 
-  build:
-    desc: Build all modules (skip tests)
-    cmds:
-      - cmd: mvn clean install -DskipTests
+    build:
+        desc: Build all modules (skip tests)
+        cmds:
+            -   cmd: mvn clean install -DskipTests
 
-  release:
-    desc: Install dependencies (skip tests, no clean)
-    cmds:
-      - cmd: mvn install
+    release:
+        desc: Regenerate api-docs.json, rebuild the OpenAPI client against it, and run all tests
+        deps: [ api-docs:generate ]
+        cmds:
+            -   cmd: mvn clean install
 
-  test:
-    desc: Run all tests (unit + integration)
-    cmds:
-      - cmd: mvn clean verify
+    test:
+        desc: Run all tests (unit + integration)
+        cmds:
+            -   cmd: mvn clean verify
 
-  test:unit:
-    desc: Run unit tests only (skip integration tests)
-    cmds:
-      - cmd: mvn clean verify -DskipITs
+    test:unit:
+        desc: Run unit tests only (skip integration tests)
+        cmds:
+            -   cmd: mvn clean verify -DskipITs
 
-  test:integration:
-    desc: Run integration tests in speedy-test-app
-    dir: "{{.TEST_APP_DIR}}"
-    cmds:
-      - cmd: mvn clean verify
+    test:integration:
+        desc: Run integration tests in speedy-test-app
+        dir: "{{.TEST_APP_DIR}}"
+        cmds:
+            -   cmd: mvn clean verify
 
-  test:load:
-    desc: Run k6 load tests
-    dir: "{{.LOAD_TEST_DIR}}"
-    cmds:
-      - cmd: powershell -NoLogo -NoProfile -File run-test.ps1
+    test:load:
+        desc: Run k6 load tests
+        dir: "{{.LOAD_TEST_DIR}}"
+        cmds:
+            -   cmd: powershell -NoLogo -NoProfile -File run-test.ps1
 
-  test:db:
-    desc: Run DB integration tests (starts containers for Postgres/MySQL)
-    dir: "{{.DB_TEST_DIR}}"
-    cmds:
-      - cmd: python run-test.py
+    test:db:
+        desc: Run DB integration tests (starts containers for Postgres/MySQL)
+        dir: "{{.DB_TEST_DIR}}"
+        cmds:
+            -   cmd: python run-test.py
 
-  clean:
-    desc: Clean all build artifacts
-    cmds:
-      - cmd: mvn clean
+    clean:
+        desc: Clean all build artifacts
+        cmds:
+            -   cmd: mvn clean
 
-  api-docs:generate:
-    desc: Generate api-docs.json from springdoc endpoint
-    deps: [build]
-    cmds:
-      - cmd: >-
-          powershell -NoLogo -NoProfile -Command '& {
-            $ErrorActionPreference = "Stop"
-            $apiDocs = "{{.TEST_APP_DIR}}\api-docs.json"
-            $process = Start-Process -NoNewWindow -PassThru -FilePath "mvn.cmd" -ArgumentList "spring-boot:run" -WorkingDirectory "{{.TEST_APP_DIR}}"
-            try {
-              $waitUntil = [DateTime]::Now.AddSeconds(60)
-              $ready = $false
-              while ([DateTime]::Now -lt $waitUntil -and -not $ready) {
-                Start-Sleep -Seconds 2
-                try {
-                  $response = Invoke-WebRequest -Uri "http://localhost:8080/v3/api-docs" -UseBasicParsing -TimeoutSec 5
-                  if ($response.StatusCode -eq 200) { $ready = $true }
-                } catch { }
-              }
-              if (-not $ready) { throw "App did not start within 60s" }
-              $response.Content | Out-File -FilePath $apiDocs -Encoding utf8
-              Write-Host "api-docs.json generated at $apiDocs"
-            } finally {
-              if ($process -and !$process.HasExited) { $process.Kill() }
-            }
-          }'
-        platforms: [windows]
-      - cmd: >-
-          bash -lc '
-            cd {{.TEST_APP_DIR}} &&
-            mvn spring-boot:run &
-            PID=$!
-            for i in $(seq 1 30); do
-              sleep 2
-              if curl -sf http://localhost:8080/v3/api-docs > /dev/null 2>&1; then
-                curl -sf http://localhost:8080/v3/api-docs > api-docs.json
-                echo "api-docs.json generated"
-                kill $PID 2>/dev/null
-                exit 0
-              fi
-            done
-            echo "App did not start within 60s"
-            kill $PID 2>/dev/null
-            exit 1
-          '
-        platforms: [linux, darwin]
+    api-docs:generate:
+        desc: Generate api-docs.json from springdoc endpoint
+        deps: [ build ]
+        vars:
+            API_DOCS_PORT: '{{.API_DOCS_PORT | default "8080"}}'
+            API_DOCS_TIMEOUT_SEC: '{{.API_DOCS_TIMEOUT_SEC | default "60"}}'
+        cmds:
+            # Launch the jar already produced by `build` directly with `java`, instead of `mvn spring-boot:run`.
+            # spring-boot:run forks a child JVM by default, so killing the mvn process it prints leaves the
+            # real app (and port {{.API_DOCS_PORT}}) orphaned. A plain `java -jar` process has no fork, so the
+            # PID/handle we capture here is the one actually holding the port, and is guaranteed to be killed
+            # via try/finally (Windows) or trap (bash) even if the poll below fails or times out.
+            -   cmd: >-
+                    powershell -NoLogo -NoProfile -Command '& {
+                      $ErrorActionPreference = "Stop"
+                      $jar = Get-ChildItem -Path "{{.TEST_APP_DIR}}\target" -Filter "speedy-test-app-*.jar" |
+                             Where-Object { $_.Name -notmatch "sources|javadoc|original" } | Select-Object -First 1
+                      if (-not $jar) { throw "No built jar found in {{.TEST_APP_DIR}}\target - run task build first" }
+                      $apiDocs = "{{.TEST_APP_DIR}}\api-docs.json"
+                      $process = Start-Process -NoNewWindow -PassThru -FilePath "java" -ArgumentList "-jar", $jar.FullName
+                      try {
+                        $waitUntil = [DateTime]::Now.AddSeconds({{.API_DOCS_TIMEOUT_SEC}})
+                        $ready = $false
+                        while ([DateTime]::Now -lt $waitUntil -and -not $ready) {
+                          Start-Sleep -Seconds 2
+                          try {
+                            $response = Invoke-WebRequest -Uri "http://localhost:{{.API_DOCS_PORT}}/v3/api-docs" -UseBasicParsing -TimeoutSec 5
+                            if ($response.StatusCode -eq 200) { $ready = $true }
+                          } catch { }
+                        }
+                        if (-not $ready) { throw "App did not start within {{.API_DOCS_TIMEOUT_SEC}}s" }
+                        $response.Content | Out-File -FilePath $apiDocs -Encoding utf8
+                        Write-Host "api-docs.json generated at $apiDocs"
+                      } finally {
+                        if ($process -and !$process.HasExited) { $process.Kill() }
+                      }
+                    }'
+                platforms: [ windows ]
+            -   cmd: >-
+                    bash -lc '
+                      set -e
+                      JAR=$(ls {{.TEST_APP_DIR}}/target/speedy-test-app-*.jar 2>/dev/null | grep -vE "sources|javadoc|original" | head -n1)
+                      if [ -z "$JAR" ]; then echo "No built jar found in {{.TEST_APP_DIR}}/target - run task build first" >&2; exit 1; fi
+                      apiDocs="{{.TEST_APP_DIR}}/api-docs.json"
+                      java -jar "$JAR" &
+                      PID=$!
+                      trap "kill $PID 2>/dev/null" EXIT
+                      for i in $(seq 1 $(( {{.API_DOCS_TIMEOUT_SEC}} / 2 ))); do
+                        sleep 2
+                        if curl -sf "http://localhost:{{.API_DOCS_PORT}}/v3/api-docs" -o "$apiDocs"; then
+                          echo "api-docs.json generated at $apiDocs"
+                          exit 0
+                        fi
+                      done
+                      echo "App did not start within {{.API_DOCS_TIMEOUT_SEC}}s" >&2
+                      exit 1
+                    '
+                platforms: [ linux, darwin ]
 
-  start:
-    desc: Start speedy-test-app with H2 dev profile
-    dir: "{{.TEST_APP_DIR}}"
-    cmds:
-      - cmd: mvn spring-boot:run
+    kill-port:
+        desc: "Kill whatever process is listening on a port (default 8080). Usage: task kill-port PORT=8080"
+        vars:
+            PORT: '{{.PORT | default "8080"}}'
+        cmds:
+            -   cmd: >-
+                    powershell -NoLogo -NoProfile -Command '& {
+                      $conns = Get-NetTCPConnection -LocalPort {{.PORT}} -State Listen -ErrorAction SilentlyContinue
+                      if (-not $conns) { Write-Host "Nothing listening on port {{.PORT}}"; exit 0 }
+                      $conns | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object {
+                        $proc = Get-Process -Id $_ -ErrorAction SilentlyContinue
+                        if ($proc) {
+                          Write-Host "Killing PID $_ ($($proc.ProcessName)) on port {{.PORT}}"
+                          Stop-Process -Id $_ -Force
+                        }
+                      }
+                    }'
+                platforms: [ windows ]
+            -   cmd: >-
+                    bash -lc '
+                      PIDS=$(lsof -ti tcp:{{.PORT}} 2>/dev/null)
+                      if [ -z "$PIDS" ]; then echo "Nothing listening on port {{.PORT}}"; exit 0; fi
+                      echo "Killing PID(s) $PIDS on port {{.PORT}}"
+                      kill -9 $PIDS
+                    '
+                platforms: [ linux, darwin ]
 
-  docs:serve:
-    desc: Start docsify documentation server
-    cmds:
-      - cmd: docsify serve docs
+    start:
+        desc: Start speedy-test-app with H2 dev profile
+        dir: "{{.TEST_APP_DIR}}"
+        cmds:
+            -   cmd: mvn spring-boot:run
+
+    docs:serve:
+        desc: Start docsify documentation server
+        cmds:
+            -   cmd: docsify serve docs

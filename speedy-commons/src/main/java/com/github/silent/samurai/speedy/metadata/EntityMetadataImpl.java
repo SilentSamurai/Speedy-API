@@ -9,6 +9,8 @@ import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import lombok.Getter;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,7 +41,11 @@ public class EntityMetadataImpl implements EntityMetadata {
         this.hasCompositeKey = hasCompositeKey;
         this.isSensitive = isSensitive;
         this.actionType = actionType == null ? null : Set.copyOf(actionType);
-        this.fieldMap = fieldMap == null ? null : Map.copyOf(fieldMap);
+        // Map.copyOf/Set.copyOf make no iteration-order guarantee; a LinkedHashMap/LinkedHashSet
+        // copy preserves the caller's (declaration) order, which OASGenerator relies on when
+        // emitting composite-key parameters — that order becomes the generated Java client's
+        // positional method arguments.
+        this.fieldMap = fieldMap == null ? null : Collections.unmodifiableMap(new LinkedHashMap<>(fieldMap));
     }
 
     @Override
@@ -58,9 +64,9 @@ public class EntityMetadataImpl implements EntityMetadata {
     @Override
     public Set<FieldMetadata> getAllFields() {
         if (allFieldsCache == null) {
-            allFieldsCache = fieldMap.values().stream()
-                    .map(fieldMetadata -> fieldMetadata)
-                    .collect(Collectors.toUnmodifiableSet());
+            LinkedHashSet<FieldMetadata> ordered = fieldMap.values().stream()
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            allFieldsCache = Collections.unmodifiableSet(ordered);
         }
         return allFieldsCache;
     }
@@ -68,9 +74,10 @@ public class EntityMetadataImpl implements EntityMetadata {
     @Override
     public Set<String> getAllFieldNames() {
         if (allFieldNamesCache == null) {
-            allFieldNamesCache = fieldMap.values().stream()
+            LinkedHashSet<String> ordered = fieldMap.values().stream()
                     .map(FieldMetadata::getOutputPropertyName)
-                    .collect(Collectors.toUnmodifiableSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            allFieldNamesCache = Collections.unmodifiableSet(ordered);
         }
         return allFieldNamesCache;
     }
@@ -83,10 +90,11 @@ public class EntityMetadataImpl implements EntityMetadata {
     @Override
     public Set<KeyFieldMetadata> getKeyFields() {
         if (keyFieldsCache == null) {
-            keyFieldsCache = fieldMap.values().stream()
+            LinkedHashSet<KeyFieldMetadata> ordered = fieldMap.values().stream()
                     .filter(KeyFieldMetadata.class::isInstance)
                     .map(KeyFieldMetadata.class::cast)
-                    .collect(Collectors.toUnmodifiableSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            keyFieldsCache = Collections.unmodifiableSet(ordered);
         }
         return keyFieldsCache;
     }
@@ -94,11 +102,12 @@ public class EntityMetadataImpl implements EntityMetadata {
     @Override
     public Set<String> getKeyFieldNames() {
         if (keyFieldNamesCache == null) {
-            keyFieldNamesCache = fieldMap.values().stream()
+            LinkedHashSet<String> ordered = fieldMap.values().stream()
                     .filter(KeyFieldMetadata.class::isInstance)
                     .map(KeyFieldMetadata.class::cast)
                     .map(KeyFieldMetadata::getOutputPropertyName)
-                    .collect(Collectors.toUnmodifiableSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            keyFieldNamesCache = Collections.unmodifiableSet(ordered);
         }
         return keyFieldNamesCache;
     }
@@ -106,9 +115,10 @@ public class EntityMetadataImpl implements EntityMetadata {
     @Override
     public Set<FieldMetadata> getAssociatedFields() {
         if (associatedFieldsCache == null) {
-            associatedFieldsCache = fieldMap.values().stream()
+            LinkedHashSet<FieldMetadata> ordered = fieldMap.values().stream()
                     .filter(FieldMetadata::isAssociation)
-                    .collect(Collectors.toUnmodifiableSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            associatedFieldsCache = Collections.unmodifiableSet(ordered);
         }
         return associatedFieldsCache;
     }

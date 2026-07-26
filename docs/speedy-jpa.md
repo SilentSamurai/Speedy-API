@@ -171,6 +171,28 @@ This also means write payloads must use the nested-object shape (`{"target": {"i
 instead of a bare scalar value — a plain `UUID` value is rejected, same as for any other
 association field.
 
+**Renaming the exposed property.** A scalar FK is conventionally named after the column it maps
+(`someFieldId`), but the annotation turns it into an object reference — so left alone it is
+exposed and navigated as `someFieldId.id`, with a `{"someFieldId": {"id": "<uuid>"}}` write
+payload. The `Id` suffix now describes a property that isn't an id. Use `name()` to expose it
+under the name it would have had as a `@ManyToOne`:
+
+```java
+    @Column(name = "some_field_id")
+    @SpeedyAssociation(value = SomeEntity.class, name = "someField")
+    private UUID someFieldId;
+```
+
+The rename applies everywhere the property name surfaces — request/response JSON, the generated
+OpenAPI schema properties, and `$filter` navigation paths (`someField.id`) — while `@Column`
+still drives the DB column name. It is equivalent to putting `@JsonProperty("someField")` on the
+field, just co-located with the annotation that causes the shape change; setting both to
+*different* values fails fast at metamodel build time.
+
+Note that `$expand` is unaffected either way: `$expand` entries are matched by the *associated
+entity's* name, not the owning field's property name (see `ExpansionPathTracker`), the same as
+for every other association kind.
+
 ### Speedy Sensitive
 
 Prevent fields from being used in `$` field references in queries.

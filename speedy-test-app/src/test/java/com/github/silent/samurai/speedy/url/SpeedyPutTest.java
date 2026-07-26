@@ -101,7 +101,7 @@ public class SpeedyPutTest {
         UpdateProductRequest productRequest = new UpdateProductRequest();
         productRequest.setId("7");
         productRequest.setCategory(new CategoryKey().id("1"));
-        UpdateProductResponse response = productApi.updateProduct(productRequest);
+        UpdateProductResponse response = productApi.updateProduct(List.of(productRequest));
         assertNotNull(response);
         assertNotNull(response.getPayload());
         assertFalse(response.getPayload().isEmpty());
@@ -130,7 +130,7 @@ public class SpeedyPutTest {
             UpdateCategoryRequest categoryRequest = new UpdateCategoryRequest();
             String value = CommonUtil.generateString(300);
             categoryRequest.setName(value);
-            UpdateCategoryResponse response = categoryApi.updateCategory(categoryRequest);
+            UpdateCategoryResponse response = categoryApi.updateCategory(List.of(categoryRequest));
             assertNotNull(response);
             assertNotNull(response.getPayload());
             List<org.openapitools.client.model.Category> payload = response.getPayload();
@@ -145,7 +145,7 @@ public class SpeedyPutTest {
             String value = CommonUtil.generateString(300);
             categoryRequest.setId("1");
             categoryRequest.setName(value);
-            UpdateCategoryResponse response = categoryApi.updateCategory(categoryRequest);
+            UpdateCategoryResponse response = categoryApi.updateCategory(List.of(categoryRequest));
             assertNotNull(response);
             assertNotNull(response.getPayload());
             List<org.openapitools.client.model.Category> payload = response.getPayload();
