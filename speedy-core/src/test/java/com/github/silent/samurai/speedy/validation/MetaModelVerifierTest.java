@@ -1,16 +1,22 @@
 package com.github.silent.samurai.speedy.validation;
 
+import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
+import com.github.silent.samurai.speedy.metadata.AssociationColumnRef;
+import com.github.silent.samurai.speedy.metadata.EntityBuilder;
+import com.github.silent.samurai.speedy.metadata.MetaModelBuilder;
+import com.github.silent.samurai.speedy.metadata.MetadataBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -156,6 +162,46 @@ class MetaModelVerifierTest {
         assertEquals(
                 "field testField in entity TestEntity is derived as speedy object type which is not supported",
                 ex.getMessage());
+    }
+
+    /// A metamodel built outside the JPA processor can name a single foreign-key column for a target
+    /// whose key spans several — the annotation check that would have caught it never runs. Left
+    /// unchecked, reads populate a partial key and resolve to an arbitrary sibling row.
+    @Test
+    void partiallyMappedCompositeKeyAssociation_isRejected() throws Exception {
+        MetaModelBuilder builder = MetadataBuilder.builder();
+        compositeKeyTarget(builder);
+        EntityBuilder shipment = builder.entity("OrderShipment").dbTableName("order_shipments");
+        shipment.keyField("id", "id", ColumnType.VARCHAR);
+        shipment.field("order", "order_product_id", ColumnType.VARCHAR)
+                .associateWith("Order", "productId");
+
+        MetaModelVerifier verifier = new MetaModelVerifier(builder.build());
+        InternalServerError ex = assertThrows(InternalServerError.class, verifier::verify);
+        assertTrue(ex.getMessage().contains("must be mapped through every key column of its target"),
+                ex.getMessage());
+    }
+
+    @Test
+    void fullyMappedCompositeKeyAssociation_isAccepted() throws Exception {
+        MetaModelBuilder builder = MetadataBuilder.builder();
+        compositeKeyTarget(builder);
+        EntityBuilder shipment = builder.entity("OrderShipment").dbTableName("order_shipments");
+        shipment.keyField("id", "id", ColumnType.VARCHAR);
+        shipment.field("order", "order_product_id", ColumnType.VARCHAR)
+                .associateWith("Order", List.of(
+                        new AssociationColumnRef("order_product_id", "productId"),
+                        new AssociationColumnRef("order_supplier_id", "supplierId")));
+
+        MetaModelVerifier verifier = new MetaModelVerifier(builder.build());
+        assertDoesNotThrow(verifier::verify);
+    }
+
+    private static void compositeKeyTarget(MetaModelBuilder builder) {
+        EntityBuilder order = builder.entity("Order").dbTableName("orders").hasCompositeKey(true);
+        order.keyField("productId", "product_id", ColumnType.VARCHAR);
+        order.keyField("supplierId", "supplier_id", ColumnType.VARCHAR);
+        order.field("price", "price", ColumnType.DOUBLE);
     }
 
     @Test

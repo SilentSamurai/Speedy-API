@@ -4,11 +4,14 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.backend.RowWriter;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.models.SpeedyText;
+import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /// Format-agnostic walker that flattens a source {@link SpeedyEntity} into a *column*
@@ -106,18 +109,20 @@ public class SpeedyToRecord {
         return entity;
     }
 
+    /// Replaces the nested target object with the foreign key itself: the bare scalar for a
+    /// single-column foreign key, the target's whole key when the association spans several columns.
+    /// A target that doesn't carry a usable value for every column identifies no row, so the field is
+    /// dropped from the write rather than written half-set.
     private void flattenAssociation(SpeedyEntity entity, FieldMetadata fieldMetadata) throws SpeedyHttpException {
         if (!fieldMetadata.isAssociation()) {
             return;
         }
         SpeedyEntity associatedEntity = entity.get(fieldMetadata).asObject();
-        FieldMetadata associatedFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
-        if (!associatedEntity.has(associatedFieldMetadata)
-                || associatedEntity.get(associatedFieldMetadata).isEmpty()
-                || associatedEntity.get(associatedFieldMetadata).isNull()) {
+        Optional<SpeedyValue> foreignKey = SpeedyEntityUtil.foreignKeyOf(associatedEntity, fieldMetadata);
+        if (foreignKey.isEmpty()) {
             entity.remove(fieldMetadata);
             return;
         }
-        entity.put(fieldMetadata, associatedEntity.get(associatedFieldMetadata));
+        entity.put(fieldMetadata, foreignKey.get());
     }
 }

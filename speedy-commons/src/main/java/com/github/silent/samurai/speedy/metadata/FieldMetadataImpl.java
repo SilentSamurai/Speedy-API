@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.EtagStrategy;
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
@@ -44,8 +45,19 @@ public class FieldMetadataImpl implements FieldMetadata {
     private EntityMetadata entityMetadata;
     @Setter
     private EntityMetadata associationMetadata;
-    @Setter
-    private FieldMetadata associatedFieldMetadata;
+    /// Every foreign-key column of this association, ordered by the target's key-field order.
+    /// Populated by {@link MetaModelBuilder} once every entity's fields are resolvable; empty for a
+    /// non-association field.
+    private List<AssociationColumn> associationColumns = List.of();
+
+    public void setAssociationColumns(List<AssociationColumn> associationColumns) {
+        this.associationColumns = associationColumns == null ? List.of() : List.copyOf(associationColumns);
+    }
+
+    @Override
+    public FieldMetadata getAssociatedFieldMetadata() {
+        return associationColumns.isEmpty() ? null : associationColumns.get(0).targetKeyField();
+    }
 
     public FieldMetadataImpl(ColumnType columnType,
                              ValueType valueType,

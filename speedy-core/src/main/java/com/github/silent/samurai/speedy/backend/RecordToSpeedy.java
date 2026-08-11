@@ -13,6 +13,7 @@ import com.github.silent.samurai.speedy.models.ExpansionPathTracker;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
 import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.utils.Speedy;
+import com.github.silent.samurai.speedy.utils.SpeedyEntityUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -135,7 +136,6 @@ public class RecordToSpeedy {
                     + association.getOutputPropertyName() + "' on entity '" + entityMetadata.getName() + "'");
         }
 
-        FieldMetadata associatedField = association.getAssociatedFieldMetadata();
         Map<SpeedyValue, SpeedyEntity> targetsByFk = new HashMap<>();
         List<SpeedyEntity> targets = new ArrayList<>();
 
@@ -145,11 +145,14 @@ public class RecordToSpeedy {
         for (int start = 0; start < fkBatch.size(); start += FK_BATCH_SIZE) {
             List<SpeedyValue> chunk = fkBatch.subList(start, Math.min(start + FK_BATCH_SIZE, fkBatch.size()));
             for (SpeedyEntity target : rowReader.selectByFks(association, chunk)) {
-                if (!target.has(associatedField)) {
+                // Keyed by the same shape the parent rows carry — a scalar for a single-column
+                // foreign key, the target's whole key for a multi-column one.
+                Optional<SpeedyValue> targetFk = SpeedyEntityUtil.foreignKeyOf(target, association);
+                if (targetFk.isEmpty()) {
                     continue;
                 }
                 // First row wins per foreign key, matching the single-row fetch this replaces.
-                if (targetsByFk.putIfAbsent(target.get(associatedField), target) == null) {
+                if (targetsByFk.putIfAbsent(targetFk.get(), target) == null) {
                     targets.add(target);
                 }
             }
@@ -180,19 +183,19 @@ public class RecordToSpeedy {
         return fk;
     }
 
+    /// Expands the foreign key {@code fieldMetadata} carries on {@code row} into the target's full
+    /// primary key — one column for the common case, every key column when the target's key is
+    /// composite (the whole key is already stored under the association field by the backend).
     public Optional<SpeedyEntityKey> createSpeedyKeyFromFK(SpeedyEntity row, FieldMetadata fieldMetadata) throws SpeedyHttpException {
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
-        KeyFieldMetadata keyFieldMetadata = associationMetadata.getKeyFields().stream().findAny()
-                .orElseThrow(() -> new InternalServerError(
-                        "Associated entity '" + associationMetadata.getName() + "' has no key fields"));
-        // foreign key column, decoded with the associated field's type by the backend
+        if (associationMetadata.getKeyFields().isEmpty()) {
+            throw new InternalServerError(
+                    "Associated entity '" + associationMetadata.getName() + "' has no key fields");
+        }
+        // foreign key column(s), decoded with the associated field's type by the backend
         if (!row.has(fieldMetadata)) {
             return Optional.empty();
         }
-        SpeedyValue fk = row.get(fieldMetadata);
-        SpeedyEntityKey speedyEntityKey = new SpeedyEntityKey(associationMetadata);
-        speedyEntityKey.put(keyFieldMetadata, fk);
-
-        return Optional.of(speedyEntityKey);
+        return SpeedyEntityUtil.associationKeyOf(row.get(fieldMetadata), fieldMetadata);
     }
 }

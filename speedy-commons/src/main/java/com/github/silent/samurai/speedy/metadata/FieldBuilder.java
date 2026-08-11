@@ -32,6 +32,7 @@ public class FieldBuilder {
     boolean shouldGenerateKey = false;
     String associatedField;
     String associatedEntity;
+    List<AssociationColumnRef> associationColumns = List.of();
     boolean isEnum = false;
     // Inherited from the entity's @SpeedySensitive or set directly via
     // field-level @SpeedySensitive. Determines whether this field is
@@ -115,15 +116,27 @@ public class FieldBuilder {
     }
 
     public FieldBuilder associateWith(FieldBuilder associatedField) {
-        this.associatedField = associatedField.outputPropertyName;
-        this.associatedEntity = associatedField.entityBuilder.getName();
-        this.isAssociation = true;
-        return this;
+        return associateWith(associatedField.entityBuilder.getName(), associatedField.outputPropertyName);
     }
 
     public FieldBuilder associateWith(String entity, String field) {
+        // Null local column: this field's own column carries the foreign key, resolved at build time
+        // so a later dbColumnName(...) call still wins.
+        return associateWith(entity, List.of(new AssociationColumnRef(null, field)));
+    }
+
+    /// Declares a foreign key spanning {@code columns} — one entry per column of the target's
+    /// primary key, in the target's key-field order. Use the single-column overloads unless the
+    /// target has a composite key.
+    public FieldBuilder associateWith(String entity, List<AssociationColumnRef> columns) {
+        if (columns.isEmpty()) {
+            throw new IllegalArgumentException(String.format(
+                    "association %s.%s must be mapped through at least one column",
+                    entityBuilder.getName(), outputPropertyName));
+        }
         this.associatedEntity = entity;
-        this.associatedField = field;
+        this.associatedField = columns.get(0).targetFieldName();
+        this.associationColumns = List.copyOf(columns);
         this.isAssociation = true;
         return this;
     }

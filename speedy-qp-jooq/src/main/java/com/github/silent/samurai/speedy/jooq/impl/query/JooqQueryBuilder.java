@@ -5,6 +5,7 @@ import com.github.silent.samurai.speedy.enums.OrderByOperator;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.NotFoundException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
@@ -21,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /// Translates SpeedyQuery condition tree into jOOQ Condition predicates.
@@ -274,19 +276,27 @@ public class JooqQueryBuilder {
     }
 
     /**
-     * Translates an {@code $isnull} condition to a JOOQ {@code Field.isNull()} predicate.
+     * Translates an {@code $isnull} condition to a JOOQ {@code Field.isNull()} predicate. A
+     * multi-column foreign key is null only when every one of its columns is.
      */
     org.jooq.Condition isNullPredicate(BinaryCondition bCondition) {
-        Field<Object> path = getPath(bCondition.getField());
-        return path.isNull();
+        org.jooq.Condition predicate = DSL.noCondition();
+        for (Field<Object> path : getPaths(bCondition.getField())) {
+            predicate = predicate.and(path.isNull());
+        }
+        return predicate;
     }
 
     /**
-     * Translates an {@code $isnotnull} condition to a JOOQ {@code Field.isNotNull()} predicate.
+     * Translates an {@code $isnotnull} condition to a JOOQ {@code Field.isNotNull()} predicate. A
+     * multi-column foreign key is set as soon as any of its columns is.
      */
     org.jooq.Condition isNotNullPredicate(BinaryCondition bCondition) {
-        Field<Object> path = getPath(bCondition.getField());
-        return path.isNotNull();
+        org.jooq.Condition predicate = DSL.noCondition();
+        for (Field<Object> path : getPaths(bCondition.getField())) {
+            predicate = predicate.or(path.isNotNull());
+        }
+        return predicate;
     }
 
     org.jooq.Condition conditionToPredicate(Condition condition) throws SpeedyHttpException {
@@ -296,6 +306,7 @@ public class JooqQueryBuilder {
         }
 
         BinaryCondition bCondition = (BinaryCondition) condition;
+        rejectScalarComparisonOnCompositeForeignKey(bCondition);
 
         return switch (condition.getOperator()) {
             case EQ:
@@ -330,15 +341,40 @@ public class JooqQueryBuilder {
 
     void captureOrderBy() {
         for (OrderBy orderBy : speedyQuery.getOrderByList()) {
-            Field<Object> field = getPath(orderBy.getField());
             OrderByOperator operator = orderBy.getOperator();
-            if (operator == OrderByOperator.ASC) {
-                query.orderBy(field.asc());
-            }
-            if (operator == OrderByOperator.DESC) {
-                query.orderBy(field.desc());
+            // Ordering by a multi-column foreign key orders by its columns in key order, the same
+            // lexicographic order the target's own composite key sorts in.
+            for (Field<Object> field : getPaths(orderBy.getField())) {
+                if (operator == OrderByOperator.ASC) {
+                    query.orderBy(field.asc());
+                }
+                if (operator == OrderByOperator.DESC) {
+                    query.orderBy(field.desc());
+                }
             }
         }
+    }
+
+    /// Rejects comparing a multi-column foreign key against a single value. Such a field has no one
+    /// column to compare — only a navigated path ({@code order.productId}) or a null check addresses
+    /// it meaningfully.
+    private void rejectScalarComparisonOnCompositeForeignKey(BinaryCondition bCondition) throws BadRequestException {
+        ConditionOperator operator = bCondition.getOperator();
+        if (operator == ConditionOperator.ISNULL || operator == ConditionOperator.ISNOTNULL) {
+            return;
+        }
+        QueryField queryField = bCondition.getField();
+        if (queryField.isAssociated() || !queryField.getFieldMetadata().isCompositeAssociation()) {
+            return;
+        }
+        throw new BadRequestException(String.format(
+                "'%s' is a foreign key spanning %d columns and cannot be compared to a single value — " +
+                        "reference one of %s's key fields instead (e.g. '%s.%s')",
+                queryField.getFieldMetadata().getOutputPropertyName(),
+                queryField.getFieldMetadata().getAssociationColumns().size(),
+                queryField.getFieldMetadata().getAssociationMetadata().getName(),
+                queryField.getFieldMetadata().getOutputPropertyName(),
+                queryField.getFieldMetadata().getAssociatedFieldMetadata().getOutputPropertyName()));
     }
 
     private void addPageInfo() throws BadRequestException {
@@ -349,9 +385,14 @@ public class JooqQueryBuilder {
         query.limit(offset, pageSize);
     }
 
-    // foreign key table and fkfield
+    // foreign key table and fkfield(s) — all of them, so two associations to the same table that
+    // happen to share their first column still get their own join.
     String getJoinKey(EntityMetadata fkEntityMetadata, FieldMetadata fieldMetadata) {
-        return String.format("%s.%s", fkEntityMetadata.getDbTableName(), fieldMetadata.getDbColumnName());
+        String columns = fieldMetadata.getAssociationColumns().stream()
+                .map(AssociationColumn::localDbColumnName)
+                .collect(Collectors.joining(","));
+        return String.format("%s.%s", fkEntityMetadata.getDbTableName(),
+                columns.isEmpty() ? fieldMetadata.getDbColumnName() : columns);
     }
 
     String getTableAlias(EntityMetadata fkEntityMetadata) {
@@ -359,6 +400,12 @@ public class JooqQueryBuilder {
     }
 
     Field<Object> getPath(QueryField queryField) {
+        return getPaths(queryField).get(0);
+    }
+
+    /// Every column {@code queryField} addresses: one for a navigated association path or a plain
+    /// column, several when the field is a foreign key spanning the columns of a composite key.
+    List<Field<Object>> getPaths(QueryField queryField) {
         if (queryField.isAssociated()) {
             FieldMetadata fkMetadata = queryField.getAssociatedFieldMetadata();
             String key = getJoinKey(fkMetadata.getEntityMetadata(), queryField.getFieldMetadata());
@@ -368,10 +415,10 @@ public class JooqQueryBuilder {
                 joinAlias.put(key, alias);
             }
             String alias = joinAlias.get(key);
-            return JooqUtil.getColumnWithTableAlias(alias, fkMetadata, dialect);
+            return List.of(JooqUtil.getColumnWithTableAlias(alias, fkMetadata, dialect));
         } else {
             FieldMetadata fieldMetadata = queryField.getFieldMetadata();
-            return JooqUtil.getColumn(fieldMetadata, dialect);
+            return JooqUtil.getColumns(fieldMetadata, dialect);
         }
     }
 
@@ -379,17 +426,23 @@ public class JooqQueryBuilder {
         for (FieldMetadata join : joins.values()) {
             // the foreign key table to join
             Table<?> table = JooqUtil.getTable(join.getAssociationMetadata(), dialect);
-            // foreign key field
-            Field<?> fromField = JooqUtil.getColumn(join, dialect);
-            // primary key field, from foreign table
-            // Field joinField = JooqUtil.getColumn(join.getAssociatedFieldMetadata(), dialect);
+            // foreign key field(s)
+            List<Field<Object>> fromFields = JooqUtil.getColumns(join, dialect);
             String joinKey = getJoinKey(join.getAssociationMetadata(), join);
             String alias = joinAlias.get(joinKey);
 
-            Field joinField = JooqUtil.getColumnWithTableAlias(alias, join.getAssociatedFieldMetadata(), dialect);
+            // A multi-column foreign key matches on every column of the target's key at once.
+            List<AssociationColumn> associationColumns = join.getAssociationColumns();
+            org.jooq.Condition on = DSL.noCondition();
+            for (int i = 0; i < fromFields.size(); i++) {
+                // primary key field, from foreign table
+                Field<Object> joinField = JooqUtil.getColumnWithTableAlias(
+                        alias, associationColumns.get(i).targetKeyField(), dialect);
+                on = on.and(fromFields.get(i).eq(joinField));
+            }
             // LEFT (outer) join: filtering on an association path must not silently drop source rows
             // whose FK is null — they are kept and excluded only if the predicate itself fails.
-            query.leftJoin(table.as(alias)).on(fromField.eq(joinField));
+            query.leftJoin(table.as(alias)).on(on);
         }
     }
 
@@ -428,7 +481,9 @@ public class JooqQueryBuilder {
                 }
                 List<Field<?>> fields = new ArrayList<>(addedFields.size());
                 for (FieldMetadata fm : addedFields) {
-                    fields.add(JooqUtil.getColumn(fm, dialect));
+                    // A multi-column foreign key needs every one of its columns selected, or the
+                    // association resolves to a partial key.
+                    fields.addAll(JooqUtil.getColumns(fm, dialect));
                 }
                 this.query = this.dslContext.select(fields)
                         .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
