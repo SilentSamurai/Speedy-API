@@ -216,13 +216,11 @@ public class DefaultQueryProcessor implements QueryProcessor {
         backend.runInTransaction(block);
     }
 
-    /// Rebuilds each backend row into a {@link SpeedyEntity}, preserving the backend's row order.
+    /// Rebuilds the backend rows into {@link SpeedyEntity}s, preserving the backend's row order.
+    /// Handed to the walker as one batch so each `$expand` level costs a single fetch for the whole
+    /// result set rather than one per row.
     private List<SpeedyEntity> mapRows(List<SpeedyEntity> rows, SpeedyQuery query) throws SpeedyHttpException {
-        List<SpeedyEntity> list = new ArrayList<>(rows.size());
-        for (SpeedyEntity row : rows) {
-            list.add(recordToSpeedy.fromRow(row, query.getFrom(), query.getExpand()));
-        }
-        return list;
+        return recordToSpeedy.fromRows(rows, query.getFrom(), query.getExpand());
     }
 
     /// Refetches rows for the given keys and returns the rebuilt entities in the same order as
