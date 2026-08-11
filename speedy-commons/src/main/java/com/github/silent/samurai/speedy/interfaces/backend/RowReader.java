@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.interfaces.backend;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.query.SpeedyQuery;
 import com.github.silent.samurai.speedy.models.SpeedyEntity;
@@ -8,7 +9,6 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Optional;
 
 /// Read/fetch half of the backend port. The format-agnostic
 /// {@code DefaultQueryProcessor} (in speedy-core) drives the
@@ -42,7 +42,12 @@ public interface RowReader {
         return !selectByKeys(List.of(key)).isEmpty();
     }
 
-    /// The single related row reached by following the foreign key of {@code association} from
-    /// {@code parentRow} (used during {@code $expand}); empty when the FK is null or unresolved.
-    Optional<SpeedyEntity> selectByFk(FieldMetadata association, SpeedyEntity parentRow) throws SpeedyHttpException;
+    /// Rows of {@code association}'s target whose associated field matches any of {@code fkValues}
+    /// — the batched foreign-key fetch that drives {@code $expand}. Returns an empty list for empty
+    /// input, and may return fewer rows than keys (an unmatched key resolves to null).
+    ///
+    /// The walker calls this once per expansion level for the whole result set, so a backend should
+    /// answer it with a single statement (an {@code IN} list or equivalent). Callers chunk the key
+    /// list, so an implementation need not split it further.
+    List<SpeedyEntity> selectByFks(FieldMetadata association, List<SpeedyValue> fkValues) throws SpeedyHttpException;
 }
