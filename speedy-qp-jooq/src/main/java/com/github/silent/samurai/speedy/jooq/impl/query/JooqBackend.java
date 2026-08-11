@@ -100,22 +100,19 @@ public class JooqBackend implements SpeedyBackend {
     }
 
     @Override
-    public Optional<SpeedyEntity> selectByFk(FieldMetadata association, SpeedyEntity parentRow) throws SpeedyHttpException {
-        if (!parentRow.has(association)) {
-            return Optional.empty();
+    public List<SpeedyEntity> selectByFks(FieldMetadata association, List<SpeedyValue> fkValues) throws SpeedyHttpException {
+        if (fkValues.isEmpty()) {
+            return List.of();
         }
-        SpeedyValue fk = parentRow.get(association);
-        if (fk.isNull()) {
-            return Optional.empty();
+        // The FK is stored under the association field; re-encode each value (with the associated
+        // field's type) to query the related table.
+        FieldMetadata associatedField = association.getAssociatedFieldMetadata();
+        List<Object> fkColumnValues = new ArrayList<>(fkValues.size());
+        for (SpeedyValue fk : fkValues) {
+            fkColumnValues.add(converter.toColumnType(fk, associatedField));
         }
-        // The FK is stored under the association field; re-encode it (with the associated field's
-        // type) to query the related table.
-        Object fkColumnValue = converter.toColumnType(fk, association.getAssociatedFieldMetadata());
-        Optional<Record> associatedRecord = new JooqToJooqSql(dsl()).findByFK(association, fkColumnValue);
-        if (associatedRecord.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(toFlatEntity(associatedRecord.get(), association.getAssociationMetadata()));
+        Result<Record> result = new JooqToJooqSql(dsl()).findByFKs(association, fkColumnValues);
+        return wrap(result, association.getAssociationMetadata());
     }
 
     // ---- RowWriter ----

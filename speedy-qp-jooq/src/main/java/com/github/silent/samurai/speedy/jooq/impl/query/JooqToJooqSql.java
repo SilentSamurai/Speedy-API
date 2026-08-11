@@ -7,11 +7,11 @@ import org.jooq.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
+import java.util.Collection;
 
 /// Executes FK-based association expansion queries.
-/// Used by {@link JooqBackend#selectByFk} (driven by the shared {@code RecordToSpeedy} walker)
-/// during $expand resolution.
+/// Used by {@link JooqBackend#selectByFks} (driven by the shared {@code RecordToSpeedy} walker)
+/// during $expand resolution — one query per expansion level, not per row.
 public class JooqToJooqSql {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqToJooqSql.class);
@@ -22,9 +22,10 @@ public class JooqToJooqSql {
         this.dslContext = dslContext;
     }
 
-    /// Fetches the single related row of {@code fieldMetadata}'s association whose key column equals
-    /// {@code fkColumnValue} (the parent row's already-converted foreign key); empty if none matches.
-    public Optional<Record> findByFK(FieldMetadata fieldMetadata, Object fkColumnValue) {
+    /// Fetches the related rows of {@code fieldMetadata}'s association whose key column matches any of
+    /// {@code fkColumnValues} (the parent rows' already-converted foreign keys), as one {@code IN}
+    /// query. Callers must pass a non-empty collection, already chunked to a size the backend accepts.
+    public Result<Record> findByFKs(FieldMetadata fieldMetadata, Collection<?> fkColumnValues) {
 
         EntityMetadata associationMetadata = fieldMetadata.getAssociationMetadata();
         FieldMetadata associationFieldMetadata = fieldMetadata.getAssociatedFieldMetadata();
@@ -35,14 +36,10 @@ public class JooqToJooqSql {
         SelectConditionStep<Record> query = dslContext
                 .select()
                 .from(table)
-                .where(field.eq(fkColumnValue));
+                .where(field.in(fkColumnValues));
 
-        LOGGER.info("expand query: {} ", query);
+        LOGGER.debug("expand query: {} ", query);
 
-        Result<Record> result = query.fetch();
-        if (result.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(result.get(0));
+        return query.fetch();
     }
 }
