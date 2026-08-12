@@ -221,12 +221,16 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.nullable(columnAnnotation.nullable());
         }
 
-        // A multi-column foreign key spreads its @JoinColumns over several columns, each of which
-        // may carry its own flags, but Speedy reads and writes the whole key as one unit — so the
-        // flags are combined rather than taken from an arbitrary one of them. Writable only if
-        // every column is; null only when every column is (the same rule $isnull applies); unique
-        // as soon as any single column is, since that alone pins the association down.
-        // A lone @JoinColumn — every association that isn't composite — reduces to its own flags.
+        // A multi-column foreign key spreads its @JoinColumns over several columns, each carrying
+        // its own flags, but Speedy reads and writes the whole key as one unit — so the flags are
+        // combined rather than taken from an arbitrary one of them. Writable only if every column
+        // is; null only when every column is (the same rule $isnull applies); unique as soon as any
+        // single column is, since that alone pins the association down.
+        //
+        // In practice only `unique` can actually disagree: Hibernate refuses to map a property whose
+        // join columns mix insertable, updatable or nullable values, so those three arrive already
+        // agreed and combining them is defensive. A lone @JoinColumn — every association that isn't
+        // composite — reduces to its own flags either way.
         List<JoinColumn> joinColumns = findJoinColumns(field);
         if (!joinColumns.isEmpty()) {
             boolean insertable = true;

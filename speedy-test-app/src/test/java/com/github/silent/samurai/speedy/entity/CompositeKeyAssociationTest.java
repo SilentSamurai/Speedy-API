@@ -112,12 +112,10 @@ class CompositeKeyAssociationTest {
     }
 
     @Test
-    void metamodel_joinColumnFlagsCombineAcrossEveryColumn() throws NotFoundException {
+    void metamodel_joinColumnFlagsAgreeingAcrossColumns() throws NotFoundException {
         MetaModel metaModel = speedyFactory.getMetaModel();
 
-        // `order`'s two @JoinColumns are both nullable = false, `returnOrder`'s both nullable = true;
-        // the whole foreign key is null only when every column is, so the flags combine rather than
-        // being taken from whichever column happens to be declared first.
+        // `order`'s two @JoinColumns are both nullable = false, `returnOrder`'s both nullable = true.
         FieldMetadata order = metaModel.findFieldMetadata("OrderShipment", "order");
         assertThat(order.isNullable(), is(false));
         assertThat(order.isRequired(), is(true));
@@ -128,6 +126,30 @@ class CompositeKeyAssociationTest {
         assertThat(returnOrder.getAssociationColumns().stream()
                         .map(AssociationColumn::localDbColumnName).toList(),
                 contains("return_order_product_id", "return_order_supplier_id"));
+    }
+
+    @Test
+    void metamodel_joinColumnFlagsDisagreeingAcrossColumns_areCombined() throws NotFoundException {
+        // OrderAudit.auditedOrder's first @JoinColumn takes JPA's defaults and only its *second*
+        // marks itself unique. The foreign key is unique as soon as any single column pins it down,
+        // so this reads true -- where taking the first-declared column's flags would read false.
+        //
+        // `unique` is the only flag this can be shown with: Hibernate refuses to map a property
+        // whose join columns disagree on insertable, updatable or nullable (see OrderAudit), so
+        // combining those three is defensive only and they stay at their agreed values here.
+        MetaModel metaModel = speedyFactory.getMetaModel();
+        FieldMetadata auditedOrder = metaModel.findFieldMetadata("OrderAudit", "auditedOrder");
+
+        assertThat(auditedOrder.isCompositeAssociation(), is(true));
+        assertThat(auditedOrder.getAssociationColumns().stream()
+                        .map(AssociationColumn::localDbColumnName).toList(),
+                contains("audited_product_id", "audited_supplier_id"));
+
+        assertThat(auditedOrder.isUnique(), is(true));
+
+        assertThat(auditedOrder.isNullable(), is(true));
+        assertThat(auditedOrder.isInsertable(), is(true));
+        assertThat(auditedOrder.isUpdatable(), is(true));
     }
 
     @Test
