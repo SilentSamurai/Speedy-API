@@ -221,16 +221,28 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.nullable(columnAnnotation.nullable());
         }
 
-        // A multi-column foreign key spreads its @JoinColumns over several columns; JPA lets each one
-        // carry its own flags, but Speedy writes them as one unit, so the first column's flags apply
-        // to the association as a whole.
+        // A multi-column foreign key spreads its @JoinColumns over several columns, each of which
+        // may carry its own flags, but Speedy reads and writes the whole key as one unit — so the
+        // flags are combined rather than taken from an arbitrary one of them. Writable only if
+        // every column is; null only when every column is (the same rule $isnull applies); unique
+        // as soon as any single column is, since that alone pins the association down.
+        // A lone @JoinColumn — every association that isn't composite — reduces to its own flags.
         List<JoinColumn> joinColumns = findJoinColumns(field);
         if (!joinColumns.isEmpty()) {
-            JoinColumn joinColumnAnnotation = joinColumns.get(0);
-            fieldMetadata.insertable(joinColumnAnnotation.insertable());
-            fieldMetadata.unique(joinColumnAnnotation.unique());
-            fieldMetadata.updatable(joinColumnAnnotation.updatable());
-            fieldMetadata.nullable(joinColumnAnnotation.nullable());
+            boolean insertable = true;
+            boolean updatable = true;
+            boolean nullable = true;
+            boolean unique = false;
+            for (JoinColumn joinColumn : joinColumns) {
+                insertable &= joinColumn.insertable();
+                updatable &= joinColumn.updatable();
+                nullable &= joinColumn.nullable();
+                unique |= joinColumn.unique();
+            }
+            fieldMetadata.insertable(insertable);
+            fieldMetadata.unique(unique);
+            fieldMetadata.updatable(updatable);
+            fieldMetadata.nullable(nullable);
         }
 
         GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(field, GeneratedValue.class);
@@ -541,8 +553,10 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             return joinColumnAnnotation.name();
         }
         // A multi-column foreign key (target with a composite primary key) declares its columns via
-        // @JoinColumns. The field's own dbColumnName is the first of them; the complete mapping is
-        // built in processAssociations, which is where the target's key fields are resolvable.
+        // @JoinColumns. Any of them stands in until processAssociations builds the complete mapping
+        // (which needs the target's key fields, resolvable only in that later pass) — from then on
+        // FieldMetadata.getDbColumnName() reports the first *mapped* column, so which one is picked
+        // here does not decide anything.
         List<JoinColumn> joinColumns = findJoinColumns(field);
         if (!joinColumns.isEmpty()) {
             return joinColumns.get(0).name();

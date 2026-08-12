@@ -8,6 +8,7 @@ import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
 import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 
 import java.util.Objects;
@@ -41,6 +42,7 @@ public class MetaModelVerifier {
                     Objects.requireNonNull(fieldMetadata.getAssociationMetadata());
                     Objects.requireNonNull(fieldMetadata.getAssociatedFieldMetadata());
                     verifyAssociationCoversTargetKey(entityMetadata, fieldMetadata);
+                    verifyKeyFieldAssociationIsSingleColumn(entityMetadata, fieldMetadata);
                 }
 
                 if (fieldMetadata.getValueType() == ValueType.OBJECT || fieldMetadata.getValueType() == ValueType.COLLECTION) {
@@ -90,6 +92,25 @@ public class MetaModelVerifier {
                 mapped.size(), joinColumnNames(fieldMetadata),
                 fieldMetadata.getAssociationMetadata().getName(),
                 targetKey.size(), joinFieldNames(targetKey)));
+    }
+
+    /// Fails fast if one of an entity's *own* key fields is a multi-column foreign key. Speedy's
+    /// primary-key paths address each key field as a single column — the {@code WHERE} clauses
+    /// behind get-by-key, update and delete, and the key extraction that feeds them — so such a
+    /// field would silently match on its first column alone and act on the wrong rows.
+    ///
+    /// A multi-column foreign key is perfectly fine as an ordinary field; it is only being part of
+    /// the *owning* entity's key that is unsupported.
+    private void verifyKeyFieldAssociationIsSingleColumn(EntityMetadata entityMetadata, FieldMetadata fieldMetadata)
+            throws SpeedyHttpException {
+        if (!(fieldMetadata instanceof KeyFieldMetadata) || !fieldMetadata.isCompositeAssociation()) {
+            return;
+        }
+        throw new InternalServerError(String.format(
+                "key field %s.%s is a foreign key spanning %d columns [%s] — a key field must map to a " +
+                        "single column, because get-by-key, update and delete address it as one",
+                entityMetadata.getName(), fieldMetadata.getOutputPropertyName(),
+                fieldMetadata.getAssociationColumns().size(), joinColumnNames(fieldMetadata)));
     }
 
     private static String joinColumnNames(FieldMetadata fieldMetadata) {

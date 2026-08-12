@@ -197,6 +197,41 @@ class MetaModelVerifierTest {
         assertDoesNotThrow(verifier::verify);
     }
 
+    /// A multi-column foreign key is fine as an ordinary field, but the primary-key paths address
+    /// each key field as a single column, so one used as a *key* field would match on its first
+    /// column alone.
+    @Test
+    void compositeKeyAssociationUsedAsAKeyField_isRejected() throws Exception {
+        MetaModelBuilder builder = MetadataBuilder.builder();
+        compositeKeyTarget(builder);
+        EntityBuilder shipment = builder.entity("OrderShipment").dbTableName("order_shipments");
+        shipment.keyField("order", "order_product_id", ColumnType.VARCHAR)
+                .associateWith("Order", List.of(
+                        new AssociationColumnRef("order_product_id", "productId"),
+                        new AssociationColumnRef("order_supplier_id", "supplierId")));
+
+        MetaModelVerifier verifier = new MetaModelVerifier(builder.build());
+        InternalServerError ex = assertThrows(InternalServerError.class, verifier::verify);
+        assertTrue(ex.getMessage().contains("a key field must map to a single column"), ex.getMessage());
+    }
+
+    /// The declared column and the mapped column are separate inputs; the metamodel has to report
+    /// the *mapped* one, or every read and write addresses a column the association does not use.
+    @Test
+    void associationColumnOverridesTheFieldsDeclaredColumn() throws Exception {
+        MetaModelBuilder builder = MetadataBuilder.builder();
+        EntityBuilder category = builder.entity("Category").dbTableName("categories");
+        category.keyField("id", "id", ColumnType.VARCHAR);
+        EntityBuilder product = builder.entity("Product").dbTableName("products");
+        product.keyField("id", "id", ColumnType.VARCHAR);
+        product.field("category", "declared_on_field", ColumnType.VARCHAR)
+                .associateWith("Category", List.of(new AssociationColumnRef("mapped_column", "id")));
+
+        FieldMetadata field = builder.build().findFieldMetadata("Product", "category");
+        assertEquals("mapped_column", field.getDbColumnName());
+        assertEquals("mapped_column", field.getAssociationColumns().get(0).localDbColumnName());
+    }
+
     private static void compositeKeyTarget(MetaModelBuilder builder) {
         EntityBuilder order = builder.entity("Order").dbTableName("orders").hasCompositeKey(true);
         order.keyField("productId", "product_id", ColumnType.VARCHAR);

@@ -29,4 +29,14 @@ public class OrderShipment {
     })
     private Order order;
 
+    // A second, nullable multi-column foreign key to the same target: covers $isnull/$isnotnull and
+    // clearing a whole composite key on replace, neither of which the non-null `order` can reach,
+    // and forces the two associations onto separate joins despite sharing a table.
+    @ManyToOne
+    @JoinColumns({
+            @JoinColumn(name = "return_order_product_id", referencedColumnName = "product_id", nullable = true),
+            @JoinColumn(name = "return_order_supplier_id", referencedColumnName = "supplier_id", nullable = true)
+    })
+    private Order returnOrder;
+
 }
