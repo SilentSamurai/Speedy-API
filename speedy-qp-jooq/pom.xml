@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.silentsamurai</groupId>
         <artifactId>speedy-api-parent</artifactId>
-        <version>3.1.16</version>
+        <version>3.1.18</version>
     </parent>
 
     <artifactId>speedy-qp-jooq</artifactId>
