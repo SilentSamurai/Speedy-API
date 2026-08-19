@@ -64,6 +64,13 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+        <!-- Embedded upper-case-folding database, so the identifier form the backend emits is
+             checked against a real engine rather than only against rendered SQL. -->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
