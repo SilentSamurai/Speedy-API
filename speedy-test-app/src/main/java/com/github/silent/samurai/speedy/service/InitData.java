@@ -1,6 +1,11 @@
 package com.github.silent.samurai.speedy.service;
 
+import com.github.silent.samurai.speedy.entity.Category;
+import com.github.silent.samurai.speedy.entity.FkNullEntity;
+import com.github.silent.samurai.speedy.entity.PkUuidTest;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
+import com.github.silent.samurai.speedy.repositories.FkNullEntityRepository;
+import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +38,12 @@ public class InitData {
     @Autowired
     CategoryRepository categoryRepository;
 
+    @Autowired
+    PkUuidTestRepository pkUuidTestRepository;
+
+    @Autowired
+    FkNullEntityRepository fkNullEntityRepository;
+
     public static List<String> fetchSql() throws IOException {
         File file = ResourceUtils.getFile("classpath:x-data.sql");
         try (InputStream in = new FileInputStream(file)) {
@@ -59,5 +70,40 @@ public class InitData {
         } catch (Exception e) {
             LOGGER.error("", e);
         }
+        seedUuidKeyedRows();
+    }
+
+    /// Rows whose primary key is a {@code java.util.UUID}, seeded through JPA rather than from
+    /// x-data.sql. Hibernate maps the field to a native `uuid` column on H2 and Postgres but to
+    /// `binary(16)` on MySQL and HSQLDB, and no SQL literal is accepted by all four — HSQLDB rejects
+    /// the textual form with "invalid character value for cast". Binding an entity leaves the
+    /// conversion to the dialect. The keys are generated, so no test may depend on a fixed one.
+    private void seedUuidKeyedRows() {
+        pkUuidTestRepository.saveAll(List.of(
+                pkUuidTest("UUID Test 1", "Description for UUID test 1"),
+                pkUuidTest("UUID Test 2", "Description for UUID test 2"),
+                pkUuidTest("UUID Test 3", null)
+        ));
+
+        Category category = categoryRepository.findById("1").orElse(null);
+        fkNullEntityRepository.saveAll(List.of(
+                fkNullEntity("FK Null 1", null),
+                fkNullEntity("FK Null 2", category),
+                fkNullEntity("FK Null 3", null)
+        ));
+    }
+
+    private static PkUuidTest pkUuidTest(String name, String description) {
+        PkUuidTest entity = new PkUuidTest();
+        entity.setName(name);
+        entity.setDescription(description);
+        return entity;
+    }
+
+    private static FkNullEntity fkNullEntity(String name, Category category) {
+        FkNullEntity entity = new FkNullEntity();
+        entity.setName(name);
+        entity.setCategory(category);
+        return entity;
     }
 }

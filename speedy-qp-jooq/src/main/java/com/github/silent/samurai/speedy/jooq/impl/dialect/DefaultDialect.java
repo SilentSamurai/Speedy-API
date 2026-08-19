@@ -32,9 +32,10 @@ import java.util.UUID;
 /// subclass overrides only what its dialect changes. There is one cohesive place per dialect and no
 /// scattered branching.
 ///
-/// The four dialect-variant decisions:
-/// - {@link #encodeCarrier} — the Java carrier type a SpeedyValue is encoded to (and thus which codec)
-/// - {@link #sqlDataType} — the jOOQ {@link DataType} used to type a column reference
+/// The dialect-variant decisions:
+/// - storage overrides — for a column type this dialect stores differently, one {@link ColumnStorage}
+///   bundling the carrier type, the jOOQ {@link DataType} and the codec, so a dialect declares the
+///   difference once instead of implementing three overrides that have to agree with each other
 /// - {@link #supportsReturning} — whether {@code INSERT ... RETURNING} is available
 /// - {@link #transformIdentifier} — how table/column identifiers are cased
 ///
@@ -62,9 +63,20 @@ public class DefaultDialect {
 
     private final CodecRegistry registry = new CodecRegistry();
 
+    /// Column types this dialect stores differently from the defaults above.
+    private final Map<ColumnType, ColumnStorage> storageOverrides;
+
     public DefaultDialect() {
+        this(Map.of());
+    }
+
+    /// @param storageOverrides column types this dialect stores differently. Passed through the
+    ///                         constructor rather than read from an overridable method, so the codec
+    ///                         registry is fully populated before the instance escapes.
+    protected DefaultDialect(Map<ColumnType, ColumnStorage> storageOverrides) {
+        this.storageOverrides = Map.copyOf(storageOverrides);
         registerDefaultCodecs(registry);
-        registerDialectCodecs(registry);
+        this.storageOverrides.values().forEach(storage -> storage.registerCodec().accept(registry));
     }
 
     // ---- codec registry ----
@@ -74,14 +86,11 @@ public class DefaultDialect {
         return registry.findCodec(col, clazz);
     }
 
-    /// The Java carrier type a SpeedyValue is encoded to for {@code col} under this dialect. Default
-    /// behavior; subclasses override for dialect-specific carriers (e.g. MySQL zoned timestamps).
+    /// The Java carrier type a SpeedyValue is encoded to for {@code col} under this dialect — the
+    /// declared storage override where there is one, the standard carrier otherwise.
     public Class<?> encodeCarrier(ColumnType col) {
-        return DEFAULT_ENCODE_TYPE.get(col);
-    }
-
-    /// Hook for subclasses to register or override codecs for their dialect. Default: nothing extra.
-    protected void registerDialectCodecs(CodecRegistry r) {
+        ColumnStorage storage = storageOverrides.get(col);
+        return storage != null ? storage.carrier() : DEFAULT_ENCODE_TYPE.get(col);
     }
 
     /// The dialect-agnostic JDBC codecs. Each handles exactly one Java class — the JDBC driver's
@@ -146,9 +155,13 @@ public class DefaultDialect {
 
     // ---- column typing ----
 
-    /// The jOOQ {@link DataType} used to type a column reference for {@code col}. Default mapping;
-    /// subclasses override entries their dialect renders differently.
+    /// The jOOQ {@link DataType} used to type a column reference for {@code col} — the declared storage
+    /// override where there is one, the standard mapping otherwise.
     public DataType<?> sqlDataType(ColumnType col) {
+        ColumnStorage storage = storageOverrides.get(col);
+        if (storage != null) {
+            return storage.dataType();
+        }
         return switch (col) {
             case INTEGER -> SQLDataType.INTEGER;
             case SMALLINT -> SQLDataType.SMALLINT;

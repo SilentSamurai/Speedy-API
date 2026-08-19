@@ -5,7 +5,12 @@ name: Maven Build
 #   2. changes   — detect whether the PR touches code (vs docs-only).
 #   3. db-tests  — only if H2 passed AND code changed: run the speedy-test-app
 #                  suite against real Postgres + MySQL (mirrors db-tests/run-test.py).
-#   4. verify    — only after build + db-tests pass (same-repo PRs): dry-run the
+#   4. embedded  — same suite against each embedded database. These run in the test
+#                  JVM, so the leg has no `services:` block at all; adding one is a
+#                  matrix row, not a job. HSQLDB is there because it folds unquoted
+#                  identifiers to upper case and stores a UUID as binary(16) —
+#                  neither covered by H2, Postgres or MySQL.
+#   5. verify    — only after build + db-tests + embedded pass (same-repo PRs): dry-run the
 #                  release machinery (creds, GPG signing, Central Portal, bump
 #                  script) so a broken release setup fails the PR before the
 #                  merge-to-main that publishes.
@@ -152,13 +157,64 @@ jobs:
                     path: speedy-test-app/target/surefire-reports/
                     if-no-files-found: ignore
 
-    # Release-readiness dry-run. Runs only after the H2 build and both DB legs
-    # pass, and only for same-repo PRs (forks don't get the publishing secrets).
-    # On a docs-only PR, db-tests is skipped, so this is skipped too — which is
+    # The same suite against each embedded database — one that runs inside the test JVM
+    # rather than in a container. Deliberately not a row in db-tests: that job's
+    # `services.db.image` is mandatory, so an embedded entry would have to name a database
+    # container it never connects to, and wait on its health check, to satisfy the schema.
+    # Here there is no service block to satisfy, and a new embedded database is one row.
+    embedded-tests:
+        name: ${{ matrix.db }}
+        needs: [ build, changes ]
+        if: needs.changes.outputs.run-db == 'true'
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    # Folds unquoted identifiers to upper case, and Hibernate maps a UUID to
+                    # binary(16) and a ZonedDateTime to a bare timestamp on it (issue #148).
+                    -   db: hsqldb
+                        profile: hsqldb
+
+        steps:
+            -   uses: actions/checkout@v5
+
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v5
+                with:
+                    java-version: '17'
+                    distribution: 'temurin'
+                    cache: maven
+
+            # speedy-test-app depends on the other modules, so install them first.
+            -   name: Install modules
+                run: mvn -B --no-transfer-progress install -DskipTests
+
+            -   name: Run speedy-test-app against ${{ matrix.db }}
+                env:
+                    SPRING_PROFILES_ACTIVE: ${{ matrix.profile }}
+                run: |
+                    ARGS=""
+                    if [ -n "${{ github.event.inputs.tests }}" ]; then
+                        ARGS="-Dtest=${{ github.event.inputs.tests }}"
+                    fi
+                    mvn -B --no-transfer-progress test -pl speedy-test-app $ARGS
+
+            -   name: Upload Surefire reports
+                if: always()
+                uses: actions/upload-artifact@v7
+                with:
+                    name: surefire-${{ matrix.db }}
+                    path: speedy-test-app/target/surefire-reports/
+                    if-no-files-found: ignore
+
+    # Release-readiness dry-run. Runs only after the H2 build and every DB leg
+    # passes, and only for same-repo PRs (forks don't get the publishing secrets).
+    # On a docs-only PR, the DB legs are skipped, so this is skipped too — which is
     # correct: such merges don't publish (release.yml paths-ignore).
     verify:
         name: Release readiness
-        needs: [ build, db-tests ]
+        needs: [ build, db-tests, embedded-tests ]
         if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         steps:
