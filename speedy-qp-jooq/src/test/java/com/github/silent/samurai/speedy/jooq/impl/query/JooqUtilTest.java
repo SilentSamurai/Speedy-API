@@ -1,15 +1,41 @@
 package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import org.jooq.SQLDialect;
+import org.jooq.conf.RenderNameStyle;
+import org.jooq.conf.RenderQuotedNames;
+import org.jooq.conf.Settings;
+import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JooqUtilTest {
 
+    /// Every dialect that folds unquoted identifiers to upper case needs the same treatment: the
+    /// backend renders all names quoted, so a lower-cased name can never match the stored one.
     @Test
-    void h2UpperCasesIdentifier() {
-        assertEquals("FIRSTNAME", JooqUtil.transformIdentifier("firstName", SQLDialect.H2));
+    void upperCaseFoldingDialectsUpperCaseIdentifiers() {
+        for (SQLDialect dialect : List.of(SQLDialect.H2, SQLDialect.HSQLDB, SQLDialect.DERBY, SQLDialect.FIREBIRD)) {
+            assertEquals("FIRSTNAME", JooqUtil.transformIdentifier("firstName", dialect), dialect.toString());
+            assertEquals("VENDOR", JooqUtil.transformIdentifier("VENDOR", dialect), dialect.toString());
+        }
+    }
+
+    /// The failure reported in #148, at the level it was observed: HSQLDB stores unquoted DDL names
+    /// upper-cased, and the backend's `RenderQuotedNames.ALWAYS` + `RenderNameStyle.AS_IS` settings
+    /// mean a lower-cased identifier is emitted as `"vendor"` and never resolves.
+    @Test
+    void hsqldbCountQueryRendersTheStoredUpperCaseTableName() {
+        Settings settings = new Settings()
+                .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
+                .withRenderNameStyle(RenderNameStyle.AS_IS);
+        String sql = DSL.using(SQLDialect.HSQLDB, settings)
+                .selectCount()
+                .from(DSL.table(DSL.name(JooqUtil.transformIdentifier("VENDOR", SQLDialect.HSQLDB))))
+                .getSQL();
+        assertEquals("select count(*) from \"VENDOR\"", sql);
     }
 
     @Test

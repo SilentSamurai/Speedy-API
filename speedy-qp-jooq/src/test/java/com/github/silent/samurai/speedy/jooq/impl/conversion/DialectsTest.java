@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,9 +23,9 @@ class DialectsTest {
     void forJooqMapsFamiliesToStrategies() {
         assertInstanceOf(MySqlDialect.class, Dialects.forJooq(SQLDialect.MYSQL));
         assertInstanceOf(MySqlDialect.class, Dialects.forJooq(SQLDialect.MARIADB));
-        assertInstanceOf(H2Dialect.class, Dialects.forJooq(SQLDialect.H2));
-        // MySqlDialect/H2Dialect are subtypes of DefaultDialect, so the default case needs an
-        // exact-class check rather than instanceof.
+        assertInstanceOf(UpperCaseIdentifierDialect.class, Dialects.forJooq(SQLDialect.H2));
+        // MySqlDialect/UpperCaseIdentifierDialect are subtypes of DefaultDialect, so the default case
+        // needs an exact-class check rather than instanceof.
         assertEquals(DefaultDialect.class, Dialects.forJooq(SQLDialect.POSTGRES).getClass());
         assertEquals(DefaultDialect.class, Dialects.forJooq(SQLDialect.SQLITE).getClass());
         // MySQL and MariaDB share one strategy instance.
@@ -44,11 +45,22 @@ class DialectsTest {
         assertEquals("first_name", d.transformIdentifier("firstName"));
     }
 
+    /// HSQLDB, Derby and Firebird fold unquoted identifiers to upper case exactly as H2 does, and the
+    /// backend renders every name quoted — so mapping any of them to the snake_case default emits an
+    /// identifier that matches nothing in the schema (#148).
     @Test
-    void h2OnlyOverridesIdentifierCasing() {
-        DefaultDialect d = Dialects.forJooq(SQLDialect.H2);
+    void upperCaseFoldingDialectsShareOneStrategy() {
+        DefaultDialect h2 = Dialects.forJooq(SQLDialect.H2);
+        for (SQLDialect dialect : List.of(SQLDialect.HSQLDB, SQLDialect.DERBY, SQLDialect.FIREBIRD)) {
+            assertSame(h2, Dialects.forJooq(dialect), dialect.toString());
+        }
+    }
+
+    @Test
+    void upperCaseIdentifierDialectOnlyOverridesIdentifierCasing() {
+        DefaultDialect d = Dialects.forJooq(SQLDialect.HSQLDB);
         assertEquals("FIRSTNAME", d.transformIdentifier("firstName"));
-        // H2 keeps the defaults for everything else.
+        // Everything else keeps the defaults.
         assertEquals(SQLDataType.TIMESTAMPWITHTIMEZONE, d.sqlDataType(ColumnType.TIMESTAMP_WITH_ZONE));
         assertEquals(OffsetDateTime.class, d.encodeCarrier(ColumnType.TIMESTAMP_WITH_ZONE));
         assertTrue(d.supportsReturning());
