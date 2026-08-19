@@ -2,6 +2,8 @@ package com.github.silent.samurai.speedy.file.impl.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
+
 public class JsonField {
 
     @JsonProperty(required = true)
@@ -27,7 +29,14 @@ public class JsonField {
     public boolean isRequired = false;
     public boolean isKeyField = false;
 
+    /// Single-column foreign key: the target entity's key field this association binds to (the
+    /// local column is the field's own {@code dbColumn}). Mutually exclusive with
+    /// {@link #associatedColumns}.
     public String associatedColumn;
+
+    /// Multi-column foreign key for a target with a composite primary key: one entry per key
+    /// column, in the target's key-field order. Mutually exclusive with {@link #associatedColumn}.
+    public List<JsonAssociationColumn> associatedColumns;
 
     public Boolean sensitive;
 

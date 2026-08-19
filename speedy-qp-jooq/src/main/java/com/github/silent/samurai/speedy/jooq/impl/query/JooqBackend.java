@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.jooq.impl.query;
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.exceptions.BadRequestException;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
@@ -105,11 +106,21 @@ public class JooqBackend implements SpeedyBackend {
             return List.of();
         }
         // The FK is stored under the association field; re-encode each value (with the associated
-        // field's type) to query the related table.
-        FieldMetadata associatedField = association.getAssociatedFieldMetadata();
-        List<Object> fkColumnValues = new ArrayList<>(fkValues.size());
+        // field's type) to query the related table. A multi-column foreign key is stored as the
+        // target's whole key, so each entry re-encodes to one value per key column.
+        List<AssociationColumn> associationColumns = association.getAssociationColumns();
+        List<List<Object>> fkColumnValues = new ArrayList<>(fkValues.size());
         for (SpeedyValue fk : fkValues) {
-            fkColumnValues.add(converter.toColumnType(fk, associatedField));
+            List<Object> columnValues = new ArrayList<>(associationColumns.size());
+            if (associationColumns.size() == 1) {
+                columnValues.add(converter.toColumnType(fk, associationColumns.get(0).targetKeyField()));
+            } else {
+                SpeedyEntity key = fk.asObject();
+                for (AssociationColumn column : associationColumns) {
+                    columnValues.add(converter.toColumnType(key.get(column.targetKeyField()), column.targetKeyField()));
+                }
+            }
+            fkColumnValues.add(columnValues);
         }
         Result<Record> result = new JooqToJooqSql(dsl()).findByFKs(association, fkColumnValues);
         return wrap(result, association.getAssociationMetadata());
@@ -149,9 +160,11 @@ public class JooqBackend implements SpeedyBackend {
             if (!entity.has(fieldMetadata)) {
                 continue;
             }
-            Field<Object> field = JooqUtil.getColumn(fieldMetadata, dialect);
-            Object value = toColumnValue(fieldMetadata, entity.get(fieldMetadata));
-            step = (step == null ? insertQuery.set(field, value) : step.set(field, value));
+            for (ColumnAssignment assignment : columnAssignments(fieldMetadata, entity.get(fieldMetadata))) {
+                step = (step == null
+                        ? insertQuery.set(assignment.column(), assignment.value())
+                        : step.set(assignment.column(), assignment.value()));
+            }
         }
         return step;
     }
@@ -231,9 +244,11 @@ public class JooqBackend implements SpeedyBackend {
             if (!entity.has(fieldMetadata)) {
                 continue;
             }
-            Field<Object> field = JooqUtil.getColumn(fieldMetadata, dialect);
-            Object value = toColumnValue(fieldMetadata, entity.get(fieldMetadata));
-            step = (step == null ? updateQuery.set(field, value) : step.set(field, value));
+            for (ColumnAssignment assignment : columnAssignments(fieldMetadata, entity.get(fieldMetadata))) {
+                step = (step == null
+                        ? updateQuery.set(assignment.column(), assignment.value())
+                        : step.set(assignment.column(), assignment.value()));
+            }
         }
         if (step == null) {
             return;
@@ -321,6 +336,10 @@ public class JooqBackend implements SpeedyBackend {
     private SpeedyEntity toFlatEntity(Record record, EntityMetadata entityMetadata) throws SpeedyHttpException {
         SpeedyEntity row = new SpeedyEntity(entityMetadata);
         for (FieldMetadata field : entityMetadata.getAllFields()) {
+            if (field.isCompositeAssociation()) {
+                readCompositeForeignKey(record, row, field);
+                continue;
+            }
             Optional<Object> raw = JooqUtil.getValueFromRecord(record, field, dialect);
             if (raw.isEmpty()) {
                 continue;
@@ -342,5 +361,52 @@ public class JooqBackend implements SpeedyBackend {
             }
         }
         return row;
+    }
+
+    /// Decodes the several columns of a multi-column foreign key into the target's
+    /// {@link SpeedyEntityKey}, which is what the flat row stores under the association field (the
+    /// analogue of the single FK scalar). Left unset unless every column is readable and non-NULL —
+    /// a half-populated key identifies no target row.
+    private void readCompositeForeignKey(Record record, SpeedyEntity row, FieldMetadata association)
+            throws SpeedyHttpException {
+        List<AssociationColumn> associationColumns = association.getAssociationColumns();
+        List<Field<Object>> columns = JooqUtil.getColumns(association, dialect);
+        SpeedyEntityKey key = new SpeedyEntityKey(association.getAssociationMetadata());
+        for (int i = 0; i < associationColumns.size(); i++) {
+            Optional<Object> raw = JooqUtil.getValueFromRecord(record, columns.get(i));
+            if (raw.isEmpty()) {
+                return;
+            }
+            FieldMetadata targetKeyField = associationColumns.get(i).targetKeyField();
+            key.put(targetKeyField, converter.toSpeedyValue(raw.get(), targetKeyField));
+        }
+        row.put(association, key);
+    }
+
+    /// One column of a write, already encoded to its JDBC type.
+    private record ColumnAssignment(Field<Object> column, Object value) {
+    }
+
+    /// The columns one entity field contributes to an INSERT or UPDATE. A plain field or
+    /// single-column foreign key contributes one; a multi-column foreign key contributes one per
+    /// column, unpacked from the target key the flat entity stores under the association field —
+    /// or all-NULL when the association itself is being cleared.
+    private List<ColumnAssignment> columnAssignments(FieldMetadata fieldMetadata, SpeedyValue value) {
+        List<Field<Object>> columns = JooqUtil.getColumns(fieldMetadata, dialect);
+        if (columns.size() == 1) {
+            return List.of(new ColumnAssignment(columns.get(0), toColumnValue(fieldMetadata, value)));
+        }
+        List<AssociationColumn> associationColumns = fieldMetadata.getAssociationColumns();
+        boolean clearing = value == null || value.isNull() || !value.isObject();
+        SpeedyEntity key = clearing ? null : value.asObject();
+        List<ColumnAssignment> assignments = new ArrayList<>(columns.size());
+        for (int i = 0; i < columns.size(); i++) {
+            FieldMetadata targetKeyField = associationColumns.get(i).targetKeyField();
+            Object columnValue = clearing
+                    ? null
+                    : converter.toColumnType(key.get(targetKeyField), targetKeyField);
+            assignments.add(new ColumnAssignment(columns.get(i), columnValue));
+        }
+        return assignments;
     }
 }

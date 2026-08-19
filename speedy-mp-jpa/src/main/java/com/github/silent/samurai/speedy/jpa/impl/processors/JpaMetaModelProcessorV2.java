@@ -10,6 +10,7 @@ import com.github.silent.samurai.speedy.interfaces.ISpeedyConfiguration;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModelProcessor;
 import com.github.silent.samurai.speedy.jpa.impl.util.JavaType2ColumnType;
+import com.github.silent.samurai.speedy.metadata.AssociationColumnRef;
 import com.github.silent.samurai.speedy.metadata.EntityBuilder;
 import com.github.silent.samurai.speedy.metadata.FieldBuilder;
 import com.github.silent.samurai.speedy.metadata.KeyFieldBuilder;
@@ -220,12 +221,32 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             fieldMetadata.nullable(columnAnnotation.nullable());
         }
 
-        JoinColumn joinColumnAnnotation = AnnotationUtils.getAnnotation(field, JoinColumn.class);
-        if (joinColumnAnnotation != null) {
-            fieldMetadata.insertable(joinColumnAnnotation.insertable());
-            fieldMetadata.unique(joinColumnAnnotation.unique());
-            fieldMetadata.updatable(joinColumnAnnotation.updatable());
-            fieldMetadata.nullable(joinColumnAnnotation.nullable());
+        // A multi-column foreign key spreads its @JoinColumns over several columns, each carrying
+        // its own flags, but Speedy reads and writes the whole key as one unit — so the flags are
+        // combined rather than taken from an arbitrary one of them. Writable only if every column
+        // is; null only when every column is (the same rule $isnull applies); unique as soon as any
+        // single column is, since that alone pins the association down.
+        //
+        // In practice only `unique` can actually disagree: Hibernate refuses to map a property whose
+        // join columns mix insertable, updatable or nullable values, so those three arrive already
+        // agreed and combining them is defensive. A lone @JoinColumn — every association that isn't
+        // composite — reduces to its own flags either way.
+        List<JoinColumn> joinColumns = findJoinColumns(field);
+        if (!joinColumns.isEmpty()) {
+            boolean insertable = true;
+            boolean updatable = true;
+            boolean nullable = true;
+            boolean unique = false;
+            for (JoinColumn joinColumn : joinColumns) {
+                insertable &= joinColumn.insertable();
+                updatable &= joinColumn.updatable();
+                nullable &= joinColumn.nullable();
+                unique |= joinColumn.unique();
+            }
+            fieldMetadata.insertable(insertable);
+            fieldMetadata.unique(unique);
+            fieldMetadata.updatable(updatable);
+            fieldMetadata.nullable(nullable);
         }
 
         GeneratedValue generatedValueAnnotation = AnnotationUtils.getAnnotation(field, GeneratedValue.class);
@@ -535,7 +556,27 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         if (joinColumnAnnotation != null) {
             return joinColumnAnnotation.name();
         }
+        // A multi-column foreign key (target with a composite primary key) declares its columns via
+        // @JoinColumns. Any of them stands in until processAssociations builds the complete mapping
+        // (which needs the target's key fields, resolvable only in that later pass) — from then on
+        // FieldMetadata.getDbColumnName() reports the first *mapped* column, so which one is picked
+        // here does not decide anything.
+        List<JoinColumn> joinColumns = findJoinColumns(field);
+        if (!joinColumns.isEmpty()) {
+            return joinColumns.get(0).name();
+        }
         throw new RuntimeException("no column annotation found");
+    }
+
+    /// The {@code @JoinColumn}s declared on {@code field}, whether written as a single
+    /// {@code @JoinColumn} or as a plural {@code @JoinColumns}. Empty when the field declares neither.
+    static List<JoinColumn> findJoinColumns(Field field) {
+        JoinColumns plural = AnnotationUtils.getAnnotation(field, JoinColumns.class);
+        if (plural != null && plural.value().length > 0) {
+            return List.of(plural.value());
+        }
+        JoinColumn single = AnnotationUtils.getAnnotation(field, JoinColumn.class);
+        return single == null ? List.of() : List.of(single);
     }
 
     void processAssociations(MetaModelBuilder builder) throws NotFoundException {
@@ -571,8 +612,8 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                         throw new RuntimeException(String.format("association not found %s.%s for %s", entityType.getName(), member.getName(), associatedEntityName));
                     }
                     EntityBuilder associatedEntity = builder.ref(associatedEntityName);
-                    KeyFieldBuilder keyFieldBuilder = associatedEntity.keyFields().iterator().next();
-                    fieldBuilder.associateWith(keyFieldBuilder);
+                    fieldBuilder.associateWith(associatedEntityName,
+                            resolveAssociationColumns(field, entityType, member, associatedEntity));
                     continue;
                 }
 
@@ -590,8 +631,8 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
 
                 if (isManyToOne || isOneToOne) {
                     EntityBuilder associatedEntity = builder.ref(associatedEntityType.getName());
-                    KeyFieldBuilder keyFieldBuilder = associatedEntity.keyFields().iterator().next();
-                    fieldBuilder.associateWith(keyFieldBuilder);
+                    fieldBuilder.associateWith(associatedEntityType.getName(),
+                            resolveAssociationColumns(field, entityType, member, associatedEntity));
                 } else if (isOneToMany) {
                     String mappedBy = Objects.requireNonNull(AnnotationUtils.getAnnotation(field, OneToMany.class)).mappedBy();
                     EntityBuilder associatedEntity = builder.ref(associatedEntityType.getName());
@@ -602,6 +643,74 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
                 }
             }
         }
+    }
+
+    /// Maps a to-one association onto the foreign-key columns it is stored in, one per column of the
+    /// target's primary key, ordered by the target's key-field order.
+    ///
+    /// A target with a single-column key needs no annotation detail: whatever column the field
+    /// resolved to *is* the foreign key (a null local column defers to it, so a later rename still
+    /// applies). A target with a **composite** key must declare one {@code @JoinColumn} per key
+    /// column inside {@code @JoinColumns}, each naming the key column it references via
+    /// {@code referencedColumnName} — there is nothing else to match a local column against.
+    List<AssociationColumnRef> resolveAssociationColumns(Field field,
+                                                         EntityType<?> entityType,
+                                                         Member member,
+                                                         EntityBuilder associatedEntity) {
+        List<KeyFieldBuilder> targetKeys = new ArrayList<>();
+        associatedEntity.keyFields().forEach(targetKeys::add);
+        if (targetKeys.isEmpty()) {
+            throw new RuntimeException(String.format(
+                    "association %s.%s targets %s, which declares no primary key",
+                    entityType.getName(), member.getName(), associatedEntity.getName()));
+        }
+        if (targetKeys.size() == 1) {
+            return List.of(new AssociationColumnRef(null, targetKeys.get(0).getOutputPropertyName()));
+        }
+
+        List<JoinColumn> joinColumns = findJoinColumns(field);
+        if (joinColumns.size() != targetKeys.size()) {
+            throw new RuntimeException(String.format(
+                    "association %s.%s targets %s, whose primary key spans %d columns [%s], but declares %d " +
+                            "join column(s) — annotate it with @JoinColumns({@JoinColumn(name = ..., " +
+                            "referencedColumnName = ...), ...}), one per key column",
+                    entityType.getName(), member.getName(), associatedEntity.getName(),
+                    targetKeys.size(), targetKeyColumnNames(targetKeys), joinColumns.size()));
+        }
+
+        Map<String, JoinColumn> byReferencedColumn = new HashMap<>();
+        for (JoinColumn joinColumn : joinColumns) {
+            String referenced = joinColumn.referencedColumnName();
+            if (referenced.isBlank()) {
+                throw new RuntimeException(String.format(
+                        "association %s.%s targets %s, whose primary key spans %d columns [%s], so every " +
+                                "@JoinColumn must set referencedColumnName; '%s' does not",
+                        entityType.getName(), member.getName(), associatedEntity.getName(),
+                        targetKeys.size(), targetKeyColumnNames(targetKeys), joinColumn.name()));
+            }
+            byReferencedColumn.put(referenced.toUpperCase(Locale.ROOT), joinColumn);
+        }
+
+        // Ordered by the target's key fields, not by annotation order, so the pairs line up
+        // positionally with the target key everywhere downstream regardless of how they were written.
+        List<AssociationColumnRef> columns = new ArrayList<>(targetKeys.size());
+        for (KeyFieldBuilder targetKey : targetKeys) {
+            JoinColumn joinColumn = byReferencedColumn.remove(targetKey.getDbColumnName().toUpperCase(Locale.ROOT));
+            if (joinColumn == null) {
+                throw new RuntimeException(String.format(
+                        "association %s.%s targets %s but no @JoinColumn references its key column '%s'",
+                        entityType.getName(), member.getName(), associatedEntity.getName(),
+                        targetKey.getDbColumnName()));
+            }
+            columns.add(new AssociationColumnRef(joinColumn.name(), targetKey.getOutputPropertyName()));
+        }
+        return columns;
+    }
+
+    private static String targetKeyColumnNames(List<KeyFieldBuilder> targetKeys) {
+        return targetKeys.stream()
+                .map(KeyFieldBuilder::getDbColumnName)
+                .collect(Collectors.joining(", "));
     }
 
     /// Resolves the target entity name for a {@link SpeedyAssociation}, which accepts exactly one

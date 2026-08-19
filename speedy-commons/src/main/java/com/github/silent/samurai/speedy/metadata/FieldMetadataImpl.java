@@ -4,6 +4,7 @@ import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.enums.EnumMode;
 import com.github.silent.samurai.speedy.enums.EtagStrategy;
 import com.github.silent.samurai.speedy.enums.ValueType;
+import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.models.DynamicEnum;
@@ -44,8 +45,36 @@ public class FieldMetadataImpl implements FieldMetadata {
     private EntityMetadata entityMetadata;
     @Setter
     private EntityMetadata associationMetadata;
-    @Setter
-    private FieldMetadata associatedFieldMetadata;
+    /// Every foreign-key column of this association, ordered by the target's key-field order.
+    /// Populated by {@link MetaModelBuilder} once every entity's fields are resolvable; empty for a
+    /// non-association field.
+    private List<AssociationColumn> associationColumns = List.of();
+
+    public void setAssociationColumns(List<AssociationColumn> associationColumns) {
+        this.associationColumns = associationColumns == null ? List.of() : List.copyOf(associationColumns);
+    }
+
+    @Override
+    public FieldMetadata getAssociatedFieldMetadata() {
+        return associationColumns.isEmpty() ? null : associationColumns.get(0).targetKeyField();
+    }
+
+    /// For an association this is the *first foreign-key column*, so that it always describes the
+    /// same column {@link #getAssociatedFieldMetadata()} types — the two are read as a pair
+    /// throughout (a column and the target key field giving its type), and deriving both from
+    /// {@link #getAssociationColumns()} is what keeps them from drifting apart. They would
+    /// otherwise: the declared column and the first mapped column are separate inputs, and a
+    /// {@code @JoinColumns} list written in a different order than the target's key fields, or a
+    /// JSON metamodel naming a different {@code dbColumn} on the field than on its single mapped
+    /// column, makes them disagree.
+    ///
+    /// Falls back to the declared column while the association is still being resolved (which is
+    /// when {@link MetaModelBuilder} reads it to fill in an unspecified local column) and for every
+    /// non-association field, where it is the only column there is.
+    @Override
+    public String getDbColumnName() {
+        return associationColumns.isEmpty() ? dbColumnName : associationColumns.get(0).localDbColumnName();
+    }
 
     public FieldMetadataImpl(ColumnType columnType,
                              ValueType valueType,
@@ -89,12 +118,16 @@ public class FieldMetadataImpl implements FieldMetadata {
         this.etagStrategy = etagStrategy.isEmpty() ? Optional.empty() : etagStrategy;
     }
 
+    /// Deliberately the *declared* column rather than {@link #getDbColumnName()}: identity has to
+    /// stay fixed for the object's whole life, and the resolved column only appears once
+    /// {@link MetaModelBuilder} sets the association columns — an instance already sitting in a hash
+    /// structure would move buckets underneath it.
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        FieldMetadata otherMetadata = (FieldMetadata) o;
-        return dbColumnName.equals(otherMetadata.getDbColumnName());
+        FieldMetadataImpl otherMetadata = (FieldMetadataImpl) o;
+        return dbColumnName.equals(otherMetadata.dbColumnName);
     }
 
     @Override

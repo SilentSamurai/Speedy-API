@@ -5,13 +5,16 @@ import com.github.silent.samurai.speedy.enums.EtagStrategy;
 import com.github.silent.samurai.speedy.enums.ValueType;
 import com.github.silent.samurai.speedy.exceptions.InternalServerError;
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
+import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.MetaModel;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MetaModelVerifier {
 
@@ -38,6 +41,8 @@ public class MetaModelVerifier {
                 if (fieldMetadata.isAssociation()) {
                     Objects.requireNonNull(fieldMetadata.getAssociationMetadata());
                     Objects.requireNonNull(fieldMetadata.getAssociatedFieldMetadata());
+                    verifyAssociationCoversTargetKey(entityMetadata, fieldMetadata);
+                    verifyKeyFieldAssociationIsSingleColumn(entityMetadata, fieldMetadata);
                 }
 
                 if (fieldMetadata.getValueType() == ValueType.OBJECT || fieldMetadata.getValueType() == ValueType.COLLECTION) {
@@ -54,6 +59,70 @@ public class MetaModelVerifier {
 
             verifyEtagField(entityMetadata);
         }
+    }
+
+    /// Fails fast unless a to-one association is mapped through *every* column of its target's
+    /// primary key. A foreign key covering only part of a composite key cannot identify a single
+    /// target row: reads would populate a partial {@code SpeedyEntityKey} and resolve to whichever
+    /// sibling row the database returned first, and writes would leave the remaining key columns
+    /// unset. Only a metamodel built outside the JPA processor can express this (by hand via
+    /// {@code MetadataBuilder}, or from JSON via {@code FileProcessor}) — the JPA processor rejects
+    /// it while reading the annotations — so the check lives here, where every metamodel source
+    /// passes through it.
+    ///
+    /// Collection associations are exempt: they are mapped by the *inverse* side's field
+    /// ({@code @OneToMany(mappedBy)}), not by a foreign key on this entity.
+    private void verifyAssociationCoversTargetKey(EntityMetadata entityMetadata, FieldMetadata fieldMetadata)
+            throws SpeedyHttpException {
+        if (fieldMetadata.isCollection()) {
+            return;
+        }
+        Set<FieldMetadata> mapped = fieldMetadata.getAssociationColumns().stream()
+                .map(AssociationColumn::targetKeyField)
+                .collect(Collectors.toSet());
+        Set<FieldMetadata> targetKey = Set.copyOf(fieldMetadata.getAssociationMetadata().getKeyFields());
+        if (mapped.equals(targetKey)) {
+            return;
+        }
+        throw new InternalServerError(String.format(
+                "association %s.%s references %s through %d column(s) [%s], but %s has a %d-column primary key [%s] — " +
+                        "an association must be mapped through every key column of its target",
+                entityMetadata.getName(), fieldMetadata.getOutputPropertyName(),
+                fieldMetadata.getAssociationMetadata().getName(),
+                mapped.size(), joinColumnNames(fieldMetadata),
+                fieldMetadata.getAssociationMetadata().getName(),
+                targetKey.size(), joinFieldNames(targetKey)));
+    }
+
+    /// Fails fast if one of an entity's *own* key fields is a multi-column foreign key. Speedy's
+    /// primary-key paths address each key field as a single column — the {@code WHERE} clauses
+    /// behind get-by-key, update and delete, and the key extraction that feeds them — so such a
+    /// field would silently match on its first column alone and act on the wrong rows.
+    ///
+    /// A multi-column foreign key is perfectly fine as an ordinary field; it is only being part of
+    /// the *owning* entity's key that is unsupported.
+    private void verifyKeyFieldAssociationIsSingleColumn(EntityMetadata entityMetadata, FieldMetadata fieldMetadata)
+            throws SpeedyHttpException {
+        if (!(fieldMetadata instanceof KeyFieldMetadata) || !fieldMetadata.isCompositeAssociation()) {
+            return;
+        }
+        throw new InternalServerError(String.format(
+                "key field %s.%s is a foreign key spanning %d columns [%s] — a key field must map to a " +
+                        "single column, because get-by-key, update and delete address it as one",
+                entityMetadata.getName(), fieldMetadata.getOutputPropertyName(),
+                fieldMetadata.getAssociationColumns().size(), joinColumnNames(fieldMetadata)));
+    }
+
+    private static String joinColumnNames(FieldMetadata fieldMetadata) {
+        return fieldMetadata.getAssociationColumns().stream()
+                .map(c -> c.localDbColumnName() + " -> " + c.targetKeyField().getOutputPropertyName())
+                .collect(Collectors.joining(", "));
+    }
+
+    private static String joinFieldNames(Set<FieldMetadata> fields) {
+        return fields.stream()
+                .map(FieldMetadata::getOutputPropertyName)
+                .collect(Collectors.joining(", "));
     }
 
     /// Fails fast if a {@code @SpeedyETag} field's value type doesn't fit its strategy — e.g.

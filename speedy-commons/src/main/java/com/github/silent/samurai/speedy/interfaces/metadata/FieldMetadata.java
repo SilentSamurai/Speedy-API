@@ -42,7 +42,31 @@ public interface FieldMetadata {
 
     EntityMetadata getAssociationMetadata();
 
+    /// The target key field this association's *first* foreign-key column references. Convenience
+    /// accessor for the common single-column case; {@link #getAssociationColumns()} is the complete
+    /// mapping and is what callers that touch columns must use.
     FieldMetadata getAssociatedFieldMetadata();
+
+    /// The (local column -> target key field) pairs this association is mapped through, ordered by
+    /// the target entity's key-field order. Empty for a non-association field, a single element for
+    /// a single-column foreign key, and one element per key column when the target has a composite
+    /// primary key (JPA's {@code @JoinColumns}).
+    ///
+    /// The default derives the single-column mapping from {@link #getDbColumnName()} and
+    /// {@link #getAssociatedFieldMetadata()}, so an implementation that only supports single-column
+    /// foreign keys needs no change.
+    default List<AssociationColumn> getAssociationColumns() {
+        if (!isAssociation()) {
+            return List.of();
+        }
+        return List.of(new AssociationColumn(getDbColumnName(), getAssociatedFieldMetadata()));
+    }
+
+    /// Whether this association is mapped through more than one foreign-key column — i.e. its target
+    /// has a composite primary key.
+    default boolean isCompositeAssociation() {
+        return getAssociationColumns().size() > 1;
+    }
 
     // Enum metadata
     boolean isEnum();

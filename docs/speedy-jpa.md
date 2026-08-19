@@ -125,6 +125,52 @@ public class PublicEntity {
 }
 ```
 
+### Composite-Key Associations
+
+A to-one association (`@ManyToOne`/`@OneToOne`) whose target entity has a composite primary key
+is mapped through JPA's plural `@JoinColumns` — one `@JoinColumn` per key column, each naming the
+key column it references via `referencedColumnName`:
+
+```java
+@Table(name = "orders")
+@Entity
+@IdClass(OrderId.class) // product_id + supplier_id
+public class Order { /* ... */ }
+
+@Table(name = "order_shipments")
+@Entity
+public class OrderShipment {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id")
+    private String id;
+
+    @ManyToOne(optional = false)
+    @JoinColumns({
+            @JoinColumn(name = "order_product_id", referencedColumnName = "product_id"),
+            @JoinColumn(name = "order_supplier_id", referencedColumnName = "supplier_id")
+    })
+    private Order order;
+}
+```
+
+Every `@JoinColumn` must set `referencedColumnName` — it is the only thing a local column can be
+matched against, so a missing or unmatched one fails fast at metamodel build time, as does
+declaring fewer join columns than the target's key has.
+
+A composite-key association behaves like a single-column one everywhere:
+
+- **Reads / writes** use the keys-only reference object, which carries *every* key field:
+  `{"order": {"productId": "...", "supplierId": "..."}}`. A write payload missing a key field is
+  rejected with `400 Bad Request` (`order.supplierId is required`).
+- **Query filters** navigate the association (`order.price = 44`, `order.supplierId = "..."`), which
+  joins on all key columns at once. Comparing the association field itself to a single value is
+  rejected — reference one of the target's key fields instead. `$isnull` is true only when every
+  foreign-key column is null.
+- **`$expand`** matches parent rows to targets on the full key, so two targets that share one key
+  column still resolve to their own rows.
+
 ### Speedy Association
 
 By default Speedy only discovers associations from real JPA relationships (`@ManyToOne`/`@OneToOne`).
@@ -158,11 +204,11 @@ Specifying both, or neither, fails fast at metamodel build time.
 
 The scalar field's own declared Java type doesn't need to match the target's primary key type —
 the actual read/write conversion is driven entirely by the target key field's type, so this works
-identically against `UUID`, `String`, or numeric (e.g. `Long` `IDENTITY`) primary keys. Like
-`@ManyToOne`, it only ever binds to the target's *first* key field
-(`EntityBuilder#keyFields().iterator().next()`), so a composite-key target isn't fully addressable
-this way — this is a pre-existing limitation shared with every other association kind, not
-specific to `@SpeedyAssociation`.
+identically against `UUID`, `String`, or numeric (e.g. `Long` `IDENTITY`) primary keys. A scalar
+column *is* a single foreign-key column by construction, so the target must have a single-column
+primary key — pointing `@SpeedyAssociation` at a composite-key entity fails fast at metamodel
+build time. For composite-key targets use a real `@ManyToOne` with `@JoinColumns` instead (see
+[Composite-Key Associations](#composite-key-associations)).
 
 Once annotated, the field behaves exactly like a `@ManyToOne` association: it gains `$expand`
 support, `$filter` navigation through the association (e.g. `target.name`), and is serialized as

@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.jooq.impl.query;
 
 import com.github.silent.samurai.speedy.dialects.SpeedyDialect;
 import com.github.silent.samurai.speedy.enums.ColumnType;
+import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.jooq.impl.Dialects;
@@ -10,6 +11,8 @@ import org.jooq.Record;
 import org.jooq.impl.DSL;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -45,6 +48,30 @@ public class JooqUtil {
         return getTypedField(fieldMetadata, table, dialect);
     }
 
+    /// Every column a field occupies on its own table, in metamodel order: one for a plain field or a
+    /// single-column foreign key, several for an association whose target has a composite primary key.
+    /// Each foreign-key column is typed by the target key field it references.
+    public static List<Field<Object>> getColumns(FieldMetadata fieldMetadata, SQLDialect dialect) {
+        return getColumns(fieldMetadata, JooqUtil.getTable(fieldMetadata.getEntityMetadata(), dialect), dialect);
+    }
+
+    /// {@link #getColumns(FieldMetadata, SQLDialect)} against an aliased copy of the field's table.
+    public static List<Field<Object>> getColumnsWithTableAlias(String tableAlias, FieldMetadata fieldMetadata, SQLDialect dialect) {
+        return getColumns(fieldMetadata, DSL.table(DSL.name(tableAlias)), dialect);
+    }
+
+    private static List<Field<Object>> getColumns(FieldMetadata fieldMetadata, Table<?> table, SQLDialect dialect) {
+        List<AssociationColumn> associationColumns = fieldMetadata.getAssociationColumns();
+        if (associationColumns.size() <= 1) {
+            return List.of(getTypedField(fieldMetadata, table, dialect));
+        }
+        List<Field<Object>> fields = new ArrayList<>(associationColumns.size());
+        for (AssociationColumn column : associationColumns) {
+            fields.add(namedField(column.localDbColumnName(), column.targetKeyField().getColumnType(), table, dialect));
+        }
+        return fields;
+    }
+
     /// The metadata describing a field's stored value type. For an association field the stored value is
     /// the foreign key, typed by the associated (target primary-key) field; for a plain field it is the
     /// field itself. Centralises the FK special-case shared by column typing and value conversion.
@@ -53,14 +80,28 @@ public class JooqUtil {
     }
 
     private static <T> Field<T> getTypedField(FieldMetadata fieldMetadata, Table<?> table, SQLDialect dialect) {
-        ColumnType columnType = conversionField(fieldMetadata).getColumnType();
-        DataType<?> sqlDataType = JooqUtil.getSQLDataType(fieldMetadata.getDbColumnName(), columnType, dialect);
         Objects.requireNonNull(fieldMetadata.getDbColumnName());
+        ColumnType columnType = conversionField(fieldMetadata).getColumnType();
+        return namedField(fieldMetadata.getDbColumnName(), columnType, table, dialect);
+    }
+
+    private static <T> Field<T> namedField(String dbColumnName, ColumnType columnType, Table<?> table, SQLDialect dialect) {
+        DataType<?> sqlDataType = JooqUtil.getSQLDataType(dbColumnName, columnType, dialect);
         Name columnName = DSL.name(
                 table.getName(),
-                transformIdentifier(fieldMetadata.getDbColumnName(), dialect)
+                transformIdentifier(dbColumnName, dialect)
         );
         return (Field<T>) DSL.field(columnName, sqlDataType);
+    }
+
+    /// Reads one already-resolved column out of a record, or empty when the record doesn't carry it
+    /// (not selected, or SQL {@code NULL}).
+    public static <T> Optional<T> getValueFromRecord(Record record, Field<T> column) {
+        try {
+            return Optional.ofNullable(record.get(column, column.getType()));
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     public static <T> Optional<T> getValueFromRecord(Record record, FieldMetadata fieldMetadata, SQLDialect dialect) {

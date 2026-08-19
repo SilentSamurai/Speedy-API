@@ -1,6 +1,7 @@
 package com.github.silent.samurai.speedy.serialization;
 
 import com.github.silent.samurai.speedy.exceptions.SpeedyHttpException;
+import com.github.silent.samurai.speedy.interfaces.metadata.AssociationColumn;
 import com.github.silent.samurai.speedy.interfaces.metadata.EntityMetadata;
 import com.github.silent.samurai.speedy.interfaces.metadata.FieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.response.IResponseSerializerV2;
@@ -193,6 +194,14 @@ public class DefaultResponseSerializer implements IResponseSerializerV2 {
             w.writeText(fieldMetadata.getAssociationMetadata().getName());
             w.field("associatedField");
             w.writeText(fieldMetadata.getAssociatedFieldMetadata().getOutputPropertyName());
+            // The complete mapping: one entry per foreign-key column, so a client can see that an
+            // association to a composite-key entity references more than "associatedField".
+            w.field("associatedFields");
+            w.startArray();
+            for (AssociationColumn column : fieldMetadata.getAssociationColumns()) {
+                w.writeText(column.targetKeyField().getOutputPropertyName());
+            }
+            w.endArray();
         }
 
         w.field("fieldType");
