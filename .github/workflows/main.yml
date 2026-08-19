@@ -5,7 +5,10 @@ name: Maven Build
 #   2. changes   — detect whether the PR touches code (vs docs-only).
 #   3. db-tests  — only if H2 passed AND code changed: run the speedy-test-app
 #                  suite against real Postgres + MySQL (mirrors db-tests/run-test.py).
-#   4. verify    — only after build + db-tests pass (same-repo PRs): dry-run the
+#   4. hsqldb    — same suite against HSQLDB, which is embedded and so needs no
+#                  service container. It folds unquoted identifiers to upper case,
+#                  a whole dialect family H2/Postgres/MySQL don't cover.
+#   5. verify    — only after build + db-tests + hsqldb pass (same-repo PRs): dry-run the
 #                  release machinery (creds, GPG signing, Central Portal, bump
 #                  script) so a broken release setup fails the PR before the
 #                  merge-to-main that publishes.
@@ -152,13 +155,54 @@ jobs:
                     path: speedy-test-app/target/surefire-reports/
                     if-no-files-found: ignore
 
-    # Release-readiness dry-run. Runs only after the H2 build and both DB legs
-    # pass, and only for same-repo PRs (forks don't get the publishing secrets).
-    # On a docs-only PR, db-tests is skipped, so this is skipped too — which is
+    # The same suite against HSQLDB. Separate from the db-tests matrix because HSQLDB is
+    # embedded: there is no service container to start, so it needs none of that job's
+    # services/health-check machinery. It is worth its own leg anyway — HSQLDB folds unquoted
+    # identifiers to upper case and stores a UUID as binary(16), neither of which any other
+    # leg exercises (see issue #148).
+    hsqldb-tests:
+        name: hsqldb
+        needs: [ build, changes ]
+        if: needs.changes.outputs.run-db == 'true'
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v5
+
+            -   name: Set up JDK 17
+                uses: actions/setup-java@v5
+                with:
+                    java-version: '17'
+                    distribution: 'temurin'
+                    cache: maven
+
+            -   name: Install modules
+                run: mvn -B --no-transfer-progress install -DskipTests
+
+            -   name: Run speedy-test-app against HSQLDB
+                env:
+                    SPRING_PROFILES_ACTIVE: hsqldb
+                run: |
+                    ARGS=""
+                    if [ -n "${{ github.event.inputs.tests }}" ]; then
+                        ARGS="-Dtest=${{ github.event.inputs.tests }}"
+                    fi
+                    mvn -B --no-transfer-progress test -pl speedy-test-app $ARGS
+
+            -   name: Upload Surefire reports
+                if: always()
+                uses: actions/upload-artifact@v7
+                with:
+                    name: surefire-hsqldb
+                    path: speedy-test-app/target/surefire-reports/
+                    if-no-files-found: ignore
+
+    # Release-readiness dry-run. Runs only after the H2 build and every DB leg
+    # passes, and only for same-repo PRs (forks don't get the publishing secrets).
+    # On a docs-only PR, the DB legs are skipped, so this is skipped too — which is
     # correct: such merges don't publish (release.yml paths-ignore).
     verify:
         name: Release readiness
-        needs: [ build, db-tests ]
+        needs: [ build, db-tests, hsqldb-tests ]
         if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         steps:

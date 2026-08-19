@@ -45,25 +45,62 @@ class DialectsTest {
         assertEquals("first_name", d.transformIdentifier("firstName"));
     }
 
-    /// HSQLDB, Derby and Firebird fold unquoted identifiers to upper case exactly as H2 does, and the
-    /// backend renders every name quoted — so mapping any of them to the snake_case default emits an
-    /// identifier that matches nothing in the schema (#148).
+    /// H2, HSQLDB, Derby and Firebird all fold unquoted identifiers to upper case, and the backend
+    /// renders every name quoted — so mapping any of them to the snake_case default emits an identifier
+    /// that matches nothing in the schema (#148).
     @Test
-    void upperCaseFoldingDialectsShareOneStrategy() {
-        DefaultDialect h2 = Dialects.forJooq(SQLDialect.H2);
-        for (SQLDialect dialect : List.of(SQLDialect.HSQLDB, SQLDialect.DERBY, SQLDialect.FIREBIRD)) {
-            assertSame(h2, Dialects.forJooq(dialect), dialect.toString());
+    void everyUpperCaseFoldingDialectUpperCasesIdentifiers() {
+        for (SQLDialect dialect : List.of(SQLDialect.H2, SQLDialect.HSQLDB, SQLDialect.DERBY, SQLDialect.FIREBIRD)) {
+            assertInstanceOf(UpperCaseIdentifierDialect.class, Dialects.forJooq(dialect), dialect.toString());
+            assertEquals("FIRSTNAME", Dialects.forJooq(dialect).transformIdentifier("firstName"), dialect.toString());
         }
+        // Casing is all Derby and Firebird are known to share with H2, so they share its instance.
+        assertSame(Dialects.forJooq(SQLDialect.H2), Dialects.forJooq(SQLDialect.DERBY));
+        assertSame(Dialects.forJooq(SQLDialect.H2), Dialects.forJooq(SQLDialect.FIREBIRD));
     }
 
     @Test
     void upperCaseIdentifierDialectOnlyOverridesIdentifierCasing() {
-        DefaultDialect d = Dialects.forJooq(SQLDialect.HSQLDB);
+        DefaultDialect d = Dialects.forJooq(SQLDialect.H2);
         assertEquals("FIRSTNAME", d.transformIdentifier("firstName"));
         // Everything else keeps the defaults.
         assertEquals(SQLDataType.TIMESTAMPWITHTIMEZONE, d.sqlDataType(ColumnType.TIMESTAMP_WITH_ZONE));
         assertEquals(OffsetDateTime.class, d.encodeCarrier(ColumnType.TIMESTAMP_WITH_ZONE));
         assertTrue(d.supportsReturning());
+    }
+
+    /// HSQLDB needs the casing *and* two storage overrides, because of the DDL Hibernate emits for it:
+    /// a ZonedDateTime field becomes a bare `timestamp(6)` and a UUID field becomes `binary(16)`.
+    @Test
+    void hsqldbAddsZonedAndUuidStorageOverridesOnTopOfTheCasing() {
+        DefaultDialect d = Dialects.forJooq(SQLDialect.HSQLDB);
+        assertInstanceOf(HsqldbDialect.class, d);
+        assertEquals("FIRSTNAME", d.transformIdentifier("firstName"));
+
+        assertEquals(LocalDateTime.class, d.encodeCarrier(ColumnType.TIMESTAMP_WITH_ZONE));
+        assertEquals(SQLDataType.LOCALDATETIME, d.sqlDataType(ColumnType.TIMESTAMP_WITH_ZONE));
+        assertEquals(byte[].class, d.encodeCarrier(ColumnType.UUID));
+        assertEquals(SQLDataType.BINARY.length(16), d.sqlDataType(ColumnType.UUID));
+
+        // A storage override registers its codec, so the carrier round-trips.
+        assertNotNull(d.findCodec(ColumnType.UUID, byte[].class));
+        assertNotNull(d.findCodec(ColumnType.TIMESTAMP_WITH_ZONE, LocalDateTime.class));
+
+        // Untouched column types and the remaining capabilities keep the defaults.
+        assertEquals(SQLDataType.INTEGER, d.sqlDataType(ColumnType.INTEGER));
+        assertTrue(d.supportsReturning());
+    }
+
+    /// The same declaration drives MySQL's zoned-timestamp storage, so the two dialects that share the
+    /// fact share the value rather than repeating three agreeing overrides each.
+    @Test
+    void mySqlAndHsqldbShareTheZonedStorageDeclaration() {
+        DefaultDialect mysql = Dialects.forJooq(SQLDialect.MYSQL);
+        DefaultDialect hsqldb = Dialects.forJooq(SQLDialect.HSQLDB);
+        assertEquals(mysql.encodeCarrier(ColumnType.TIMESTAMP_WITH_ZONE),
+                hsqldb.encodeCarrier(ColumnType.TIMESTAMP_WITH_ZONE));
+        assertEquals(mysql.sqlDataType(ColumnType.TIMESTAMP_WITH_ZONE),
+                hsqldb.sqlDataType(ColumnType.TIMESTAMP_WITH_ZONE));
     }
 
     @Test

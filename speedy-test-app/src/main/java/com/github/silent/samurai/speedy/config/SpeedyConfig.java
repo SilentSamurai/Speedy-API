@@ -22,6 +22,7 @@ import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -68,15 +69,22 @@ public class SpeedyConfig implements ISpeedyConfiguration {
         return dataSource;
     }
 
+    /// The dialect each `application-<profile>.properties` datasource speaks. H2 is the default
+    /// because the unprofiled `application.properties` points at in-memory H2.
+    private static final Map<String, SpeedyDialect> DIALECT_BY_PROFILE = Map.of(
+            "postgres", SpeedyDialect.POSTGRES,
+            "mysql", SpeedyDialect.MYSQL,
+            "hsqldb", SpeedyDialect.HSQLDB
+    );
+
     @Override
     public SpeedyDialect getDialect() {
         Set<String> profiles = new HashSet<>(Arrays.asList(environment.getActiveProfiles()));
-        if (profiles.contains("postgres")) {
-            return SpeedyDialect.POSTGRES;
-        } else if (profiles.contains("mysql")) {
-            return SpeedyDialect.MYSQL;
-        }
-        return SpeedyDialect.H2;
+        return DIALECT_BY_PROFILE.entrySet().stream()
+                .filter(e -> profiles.contains(e.getKey()))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(SpeedyDialect.H2);
     }
 
     @Override

@@ -199,15 +199,11 @@ VALUES ('task-0000-0000-0000-000000000001', 'Fix login bug', 'HIGH', 1),
        ('task-0000-0000-0000-000000000004', 'Add tests', 'HIGH', 2),
        ('task-0000-0000-0000-000000000005', 'Deploy release', 'HIGH', 2);
 
-INSERT INTO pk_uuid_test (id, name, description)
-VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'UUID Test 1', 'Description for UUID test 1'),
-       ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'UUID Test 2', 'Description for UUID test 2'),
-       ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'UUID Test 3', NULL);
-
-INSERT INTO fk_null_entity (id, name, category_id)
-VALUES ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a21', 'FK Null 1', NULL),
-       ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'FK Null 2', '1'),
-       ('d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a23', 'FK Null 3', NULL);
+-- pk_uuid_test and fk_null_entity are seeded in InitData instead: their primary key is a
+-- java.util.UUID, and no SQL literal for one is portable across the databases this app runs on.
+-- Hibernate maps the field to a native `uuid` column on H2 and Postgres but to `binary(16)` on
+-- MySQL and HSQLDB, and HSQLDB rejects the textual form outright ("invalid character value for
+-- cast"). Inserting through JPA lets each dialect bind the value its own way.
 
 INSERT INTO auto_gen_identity (name)
 VALUES ('identity-seed-1'),

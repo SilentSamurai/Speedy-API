@@ -93,6 +93,14 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Embedded, like H2 — the `hsqldb` profile needs no server, so the whole suite can run
+             against an upper-case-folding dialect without a CI service container. -->
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
         <dependency>
             <groupId>com.mysql</groupId>
