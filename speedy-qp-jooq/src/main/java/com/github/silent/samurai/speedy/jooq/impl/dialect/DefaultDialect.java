@@ -193,6 +193,16 @@ public class DefaultDialect {
         return true;
     }
 
+    /// Whether a driver error code reports bad client input — a constraint violation or an
+    /// unusable value — rather than a server fault. Such a failure is a 400, not a 500.
+    ///
+    /// Standard SQLSTATEs (22xxx data exception, 23xxx integrity constraint) are checked before this
+    /// and cover H2 and Postgres; this hook exists for the drivers that report the same conditions
+    /// under a non-standard state, where the numeric code is the only signal. Default: none.
+    public boolean isClientErrorCode(int errorCode) {
+        return false;
+    }
+
     /// Transforms a Java identifier into the dialect's stored form. Default: camelCase → snake_case.
     public String transformIdentifier(String identifier) {
         return camelToSnake(identifier);
