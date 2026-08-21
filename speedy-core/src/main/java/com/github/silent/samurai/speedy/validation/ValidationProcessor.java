@@ -162,6 +162,9 @@ public class ValidationProcessor {
 
     public void validateCreateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
         RegisteredValidator custom = createValidationMethods.get(entityMetadata.getName());
+        // Schema constraints hold whatever the application registered: a custom validator can replace
+        // the default *rules*, but not the fact that a value has to fit the column it is stored in.
+        defaultFieldValidator.validateSchemaConstraints(entityMetadata, entity);
         if (custom == null || !custom.replacesDefault()) {
             defaultFieldValidator.validateCreate(entityMetadata, entity);
         }
@@ -172,6 +175,9 @@ public class ValidationProcessor {
 
     public void validateUpdateRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
         RegisteredValidator custom = updateValidationMethods.get(entityMetadata.getName());
+        // Schema constraints hold whatever the application registered: a custom validator can replace
+        // the default *rules*, but not the fact that a value has to fit the column it is stored in.
+        defaultFieldValidator.validateSchemaConstraints(entityMetadata, entity);
         if (custom == null || !custom.replacesDefault()) {
             // For PATCH/UPDATE only validate supplied fields, required check not enforced
             defaultFieldValidator.validateUpdate(entityMetadata, entity);
@@ -188,6 +194,9 @@ public class ValidationProcessor {
     /// sets {@code replacesDefault = true}, only the custom validator runs.
     public void validateReplaceRequestEntity(EntityMetadata entityMetadata, SpeedyEntity entity) throws SpeedyHttpException {
         RegisteredValidator custom = updateValidationMethods.get(entityMetadata.getName());
+        // Schema constraints hold whatever the application registered: a custom validator can replace
+        // the default *rules*, but not the fact that a value has to fit the column it is stored in.
+        defaultFieldValidator.validateSchemaConstraints(entityMetadata, entity);
         if (custom == null || !custom.replacesDefault()) {
             defaultFieldValidator.validateReplace(entityMetadata, entity);
         }

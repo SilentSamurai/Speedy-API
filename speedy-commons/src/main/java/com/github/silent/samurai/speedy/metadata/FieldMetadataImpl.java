@@ -50,6 +50,12 @@ public class FieldMetadataImpl implements FieldMetadata {
     /// non-association field.
     private List<AssociationColumn> associationColumns = List.of();
 
+    /// The declared column width; 0 when the field has none. Set after construction rather than
+    /// through the constructor, which already carries every other declared property.
+    @Setter
+    @Getter
+    private int maxLength;
+
     public void setAssociationColumns(List<AssociationColumn> associationColumns) {
         this.associationColumns = associationColumns == null ? List.of() : List.copyOf(associationColumns);
     }

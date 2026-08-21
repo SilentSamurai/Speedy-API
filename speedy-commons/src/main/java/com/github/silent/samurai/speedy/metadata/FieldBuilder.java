@@ -42,6 +42,8 @@ public class FieldBuilder {
     EnumMode operationalEnumMode;
     DynamicEnum dynamicEnum;
     List<FieldRule> validations = new java.util.ArrayList<>();
+    /// The declared column width, 0 for none. See {@link FieldMetadata#getMaxLength()}.
+    int maxLength = 0;
     EtagStrategy etagStrategy;
 
     public FieldBuilder(EntityBuilder entityBuilder, String name) {
@@ -141,6 +143,11 @@ public class FieldBuilder {
         return this;
     }
 
+    public FieldBuilder maxLength(int maxLength) {
+        this.maxLength = maxLength;
+        return this;
+    }
+
     public FieldBuilder addValidationRule(FieldRule rule) {
         this.validations.add(rule);
         return this;
@@ -192,6 +199,7 @@ public class FieldBuilder {
                 validations,
                 ofNullable(etagStrategy)
         );
+        fmi.setMaxLength(maxLength);
         return fmi;
     }
 

@@ -283,6 +283,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
 
         // Apply consolidated validation annotations
         applyValidationAnnotations(field, fieldMetadata);
+        applyDeclaredColumnLength(field, fieldMetadata, columnType);
 
 
         JsonIgnore jsonIgnore = AnnotationUtils.getAnnotation(field, JsonIgnore.class);
@@ -374,6 +375,31 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     }
 
     // Consolidated validation annotation processing
+    /// Records the column width declared by {@code @Column(length = ...)} on the metamodel.
+    ///
+    /// The width is part of the schema Hibernate generates, so most databases reject an over-long
+    /// value themselves and Speedy never had to. SQLite does not: it ignores VARCHAR length entirely
+    /// (its type system is affinity-based), so the same request that is rejected on Postgres is
+    /// silently stored there. Checking it here — from metadata, before the write — makes the
+    /// behaviour the same on every backend instead of only the strict ones. It is recorded as
+    /// metadata rather than as a validation rule because a custom validator may replace the default
+    /// rule set, and a value that does not fit its column is not something an application should be
+    /// able to opt out of.
+    ///
+    /// Only sized text columns carry a meaningful width; {@code @Lob}-style TEXT/CLOB columns and
+    /// non-text types are left alone. `@Column.length()` is 255 when unspecified, which is exactly
+    /// the width the generated DDL uses, so the rule matches the schema either way.
+    private void applyDeclaredColumnLength(Field field, FieldBuilder fieldMetadata, ColumnType columnType) {
+        if (columnType != ColumnType.VARCHAR && columnType != ColumnType.CHAR) {
+            return;
+        }
+        Column column = AnnotationUtils.getAnnotation(field, Column.class);
+        if (column == null) {
+            return;
+        }
+        fieldMetadata.maxLength(column.length());
+    }
+
     private void applyValidationAnnotations(Field field, FieldBuilder fieldMetadata) {
         // Speedy custom annotations
         SpeedyMin minAnn = AnnotationUtils.getAnnotation(field, SpeedyMin.class);

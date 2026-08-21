@@ -56,6 +56,38 @@ public class DefaultFieldValidator {
         }
     }
 
+    /// Checks the values against constraints the *schema* declares, as opposed to the business rules
+    /// in the rule set above. Kept separate because a custom validator may replace the default rules
+    /// entirely, and a value that cannot fit its column is not something an application should be
+    /// able to opt out of — it is a storage fact, not a policy.
+    ///
+    /// Today that is column width. Most databases enforce it themselves, so Speedy never had to;
+    /// SQLite does not enforce VARCHAR length at all, so without this check the same over-long value
+    /// is rejected on one backend and accepted on another.
+    public void validateSchemaConstraints(EntityMetadata entityMetadata, SpeedyEntity entity)
+            throws BadRequestException {
+        List<String> errors = new ArrayList<>();
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            if (!entity.has(fieldMetadata)) {
+                continue;
+            }
+            checkMaxLength(fieldMetadata, entity.get(fieldMetadata), errors);
+        }
+        throwIfErrors(errors);
+    }
+
+    private static void checkMaxLength(FieldMetadata fieldMetadata, SpeedyValue value, List<String> errors) {
+        int maxLength = fieldMetadata.getMaxLength();
+        if (maxLength <= 0 || value == null || value instanceof SpeedyNull || !value.isText()) {
+            return;
+        }
+        int length = value.asText().length();
+        if (length > maxLength) {
+            errors.add(fieldMetadata.getOutputPropertyName()
+                    + " must be at most " + maxLength + " characters, got " + length);
+        }
+    }
+
     public void validateCreate(EntityMetadata entityMetadata, SpeedyEntity entity)
             throws BadRequestException {
         validate(entityMetadata, entity, true);
