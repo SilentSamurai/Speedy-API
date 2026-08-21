@@ -175,6 +175,10 @@ jobs:
                     # binary(16) and a ZonedDateTime to a bare timestamp on it (issue #148).
                     -   db: hsqldb
                         profile: hsqldb
+                    # No temporal, UUID or sized-float storage class, and no VARCHAR length
+                    # enforcement — the loosest type system of any backend Speedy supports.
+                    -   db: sqlite
+                        profile: sqlite
 
         steps:
             -   uses: actions/checkout@v5

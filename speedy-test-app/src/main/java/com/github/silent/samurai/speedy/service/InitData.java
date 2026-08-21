@@ -3,9 +3,11 @@ package com.github.silent.samurai.speedy.service;
 import com.github.silent.samurai.speedy.entity.Category;
 import com.github.silent.samurai.speedy.entity.FkNullEntity;
 import com.github.silent.samurai.speedy.entity.PkUuidTest;
+import com.github.silent.samurai.speedy.entity.ValueTestEntity;
 import com.github.silent.samurai.speedy.repositories.CategoryRepository;
 import com.github.silent.samurai.speedy.repositories.FkNullEntityRepository;
 import com.github.silent.samurai.speedy.repositories.PkUuidTestRepository;
+import com.github.silent.samurai.speedy.repositories.ValueTestRepository;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -43,6 +50,9 @@ public class InitData {
 
     @Autowired
     FkNullEntityRepository fkNullEntityRepository;
+
+    @Autowired
+    ValueTestRepository valueTestRepository;
 
     public static List<String> fetchSql() throws IOException {
         File file = ResourceUtils.getFile("classpath:x-data.sql");
@@ -73,12 +83,16 @@ public class InitData {
         seedUuidKeyedRows();
     }
 
-    /// Rows whose primary key is a {@code java.util.UUID}, seeded through JPA rather than from
-    /// x-data.sql. Hibernate maps the field to a native `uuid` column on H2 and Postgres but to
+    /// Rows x-data.sql cannot express portably, seeded through JPA instead so each dialect binds the
+    /// values its own way.
+    ///
+    /// Two kinds. Rows whose primary key is a {@code java.util.UUID}: Hibernate maps the field to a native `uuid` column on H2 and Postgres but to
     /// `binary(16)` on MySQL and HSQLDB, and no SQL literal is accepted by all four — HSQLDB rejects
     /// the textual form with "invalid character value for cast". Binding an entity leaves the
     /// conversion to the dialect. The keys are generated, so no test may depend on a fixed one.
     private void seedUuidKeyedRows() {
+        valueTestRepository.save(valueTestRow());
+
         pkUuidTestRepository.saveAll(List.of(
                 pkUuidTest("UUID Test 1", "Description for UUID test 1"),
                 pkUuidTest("UUID Test 2", "Description for UUID test 2"),
@@ -104,6 +118,24 @@ public class InitData {
         FkNullEntity entity = new FkNullEntity();
         entity.setName(name);
         entity.setCategory(category);
+        return entity;
+    }
+
+    /// The other kind: the only seeded row with real `date` and `time` columns. No SQL literal suits
+    /// every database — SQLite's driver reads a temporal only as a full `yyyy-MM-dd HH:mm:ss.SSS`
+    /// timestamp, which a DATE column rejects on MySQL. Binding the values sidesteps the literal
+    /// entirely. The key is generated, so no test may depend on a fixed one.
+    private static ValueTestEntity valueTestRow() {
+        LocalDate date = LocalDate.of(2022, 4, 30);
+        LocalTime time = LocalTime.of(10, 0);
+        ValueTestEntity entity = new ValueTestEntity();
+        entity.setLocalDateTime(LocalDateTime.of(date, time));
+        entity.setLocalDate(date);
+        entity.setLocalTime(time);
+        entity.setInstantTime(LocalDateTime.of(date, time).toInstant(ZoneOffset.UTC));
+        entity.setZonedDateTime(ZonedDateTime.of(date, time, ZoneOffset.UTC));
+        entity.setBooleanValue(true);
+        entity.setDoubleValue(0.59393);
         return entity;
     }
 }
