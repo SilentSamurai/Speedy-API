@@ -74,7 +74,7 @@ class JooqQueryBuilderTest {
 
         String actualSql = json2SqlQuery(jsonQuery);
         String expectedQuery = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."ID" = '1'
                 offset 0 rows
@@ -96,7 +96,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expectedSql = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                   left outer join "PRODUCT" "Product_1"
                     on "MULTIPLEFK"."A" = "Product_1"."ID"
@@ -126,7 +131,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                   left outer join "PRODUCT" "Product_1"
                     on "MULTIPLEFK"."A" = "Product_1"."ID"
@@ -152,7 +162,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."ID" = '1'
                 offset 0 rows
@@ -171,7 +186,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."ID" <> '1'
                 offset 0 rows
@@ -191,7 +211,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" > 100
                 offset 0 rows
@@ -211,7 +231,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" >= 100
                 offset 0 rows
@@ -231,7 +251,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" < 100
                 offset 0 rows
@@ -251,7 +271,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" <= 100
                 offset 0 rows
@@ -271,7 +291,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."NAME" like 'P%1' escape '\\'
                 offset 0 rows
@@ -291,7 +311,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."NAME" like 'P1\\%' escape '\\'
                 offset 0 rows
@@ -311,7 +331,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."CATEGORY" in (
                   'A', 'B', 'C'
@@ -333,7 +358,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."CATEGORY" not in (
                   'A', 'B', 'C'
@@ -355,7 +385,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."A" is null
                 offset 0 rows
@@ -375,7 +410,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."A" is not null
                 offset 0 rows
@@ -400,7 +440,12 @@ class JooqQueryBuilderTest {
         String sqlQuery = json2SqlQuery(jsonQuery);
 
         String query = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where (
                   "MULTIPLEFK"."ID" = '1'
@@ -427,7 +472,12 @@ class JooqQueryBuilderTest {
         String json2SqlQuery = json2SqlQuery(jsonQuery);
 
         String sqlQuery = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where (
                   "MULTIPLEFK"."ID" = '1'
@@ -457,7 +507,7 @@ class JooqQueryBuilderTest {
         String sql = json2SqlQuery(jsonQuery);
 
         String query = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where (
                   (
@@ -502,7 +552,7 @@ class JooqQueryBuilderTest {
         String actualQuery = json2SqlQuery(jsonQuery);
 
         String expectedQuery = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where (
                   (
@@ -539,7 +589,12 @@ class JooqQueryBuilderTest {
         String json2SqlQuery = json2SqlQuery(jsonQuery);
 
         String sqlQuery = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 order by "MULTIPLEFK"."NAME" asc, "MULTIPLEFK"."ID" desc
                 offset 0 rows
@@ -556,7 +611,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expectedSql = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                   left outer join "PRODUCT" "Product_1"
                     on "MULTIPLEFK"."A" = "Product_1"."ID"
@@ -578,7 +638,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expectedSql = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                   left outer join "PRODUCT" "Product_1"
                     on "MULTIPLEFK"."A" = "Product_1"."ID"
@@ -601,7 +666,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" between 10 and 50
                 offset 0 rows
@@ -622,7 +687,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."CATEGORY" is null
                 offset 0 rows
@@ -643,7 +713,12 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select
+                  "MULTIPLEFK"."CATEGORY",
+                  "MULTIPLEFK"."ID",
+                  "MULTIPLEFK"."NAME",
+                  "MULTIPLEFK"."A",
+                  "MULTIPLEFK"."B"
                 from "MULTIPLEFK"
                 where "MULTIPLEFK"."CATEGORY" is not null
                 offset 0 rows
@@ -717,7 +792,7 @@ class JooqQueryBuilderTest {
                 .build();
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."ID" = '1'
                 offset 0 rows
@@ -778,7 +853,7 @@ class JooqQueryBuilderTest {
         cond.put("$eq", "$category");
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."ID" = "PRODUCT"."CATEGORY"
                 offset 0 rows
@@ -798,7 +873,7 @@ class JooqQueryBuilderTest {
         cond.put("$ne", "$name");
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."ID" <> "PRODUCT"."NAME"
                 offset 0 rows
@@ -818,7 +893,7 @@ class JooqQueryBuilderTest {
         cond.put("$lte", "$id");
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" <= "PRODUCT"."ID"
                 offset 0 rows
@@ -838,7 +913,7 @@ class JooqQueryBuilderTest {
         cond.put("$gte", "$id");
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" >= "PRODUCT"."ID"
                 offset 0 rows
@@ -858,7 +933,7 @@ class JooqQueryBuilderTest {
         cond.put("$lt", "$id");
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" < "PRODUCT"."ID"
                 offset 0 rows
@@ -878,7 +953,7 @@ class JooqQueryBuilderTest {
         cond.put("$gt", "$id");
 
         String expected = """
-                select *
+                select "PRODUCT"."CATEGORY", "PRODUCT"."ID", "PRODUCT"."COST", "PRODUCT"."NAME"
                 from "PRODUCT"
                 where "PRODUCT"."COST" > "PRODUCT"."ID"
                 offset 0 rows

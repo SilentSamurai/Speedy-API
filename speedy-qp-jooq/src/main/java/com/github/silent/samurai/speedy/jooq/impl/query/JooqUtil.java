@@ -55,6 +55,31 @@ public class JooqUtil {
         return getColumns(fieldMetadata, JooqUtil.getTable(fieldMetadata.getEntityMetadata(), dialect), dialect);
     }
 
+    /// Every stored column of an entity, typed by the dialect — the explicit form of `SELECT *`.
+    ///
+    /// A bare `SELECT *` looks equivalent but is not: jOOQ then types each column from the JDBC
+    /// driver's `ResultSetMetaData` instead of from the metamodel, so the dialect's storage overrides
+    /// never apply. On SQLite that silently changes results — a TIME column comes back through jOOQ's
+    /// own `java.sql.Time` binding and throws, a DATE loses its time part, and a `float`-declared
+    /// column is read as a 4-byte float. Selecting typed fields keeps one source of truth for column
+    /// types: {@link Dialects}.
+    ///
+    /// Collection associations have no column on this table and are skipped; a multi-column foreign
+    /// key contributes all of its columns.
+    public static List<Field<Object>> getAllColumns(EntityMetadata entityMetadata, SQLDialect dialect) {
+        List<Field<Object>> fields = new ArrayList<>();
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            if (fieldMetadata.getDbColumnName() == null) {
+                continue;
+            }
+            if (fieldMetadata.isAssociation() && fieldMetadata.isCollection()) {
+                continue;
+            }
+            fields.addAll(getColumns(fieldMetadata, dialect));
+        }
+        return fields;
+    }
+
     /// {@link #getColumns(FieldMetadata, SQLDialect)} against an aliased copy of the field's table.
     public static List<Field<Object>> getColumnsWithTableAlias(String tableAlias, FieldMetadata fieldMetadata, SQLDialect dialect) {
         return getColumns(fieldMetadata, DSL.table(DSL.name(tableAlias)), dialect);

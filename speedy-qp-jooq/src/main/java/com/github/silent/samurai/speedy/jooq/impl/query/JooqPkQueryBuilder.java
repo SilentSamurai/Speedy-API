@@ -31,7 +31,7 @@ public class JooqPkQueryBuilder {
 
     public Result<Record> findByPrimaryKey(SpeedyEntityKey pk) throws SpeedyHttpException {
         EntityMetadata entityMetadata = pk.getMetadata();
-        SelectJoinStep<Record> query = dslContext.select()
+        SelectJoinStep<Record> query = dslContext.select(JooqUtil.getAllColumns(entityMetadata, dialect))
                 .from(JooqUtil.getTable(entityMetadata, dialect));
         query.where(pkCondition(pk));
 
@@ -45,7 +45,7 @@ public class JooqPkQueryBuilder {
         }
 
         EntityMetadata entityMetadata = pks.get(0).getMetadata();
-        SelectJoinStep<Record> query = dslContext.select()
+        SelectJoinStep<Record> query = dslContext.select(JooqUtil.getAllColumns(entityMetadata, dialect))
                 .from(JooqUtil.getTable(entityMetadata, dialect));
         query.where(keysCondition(pks));
 

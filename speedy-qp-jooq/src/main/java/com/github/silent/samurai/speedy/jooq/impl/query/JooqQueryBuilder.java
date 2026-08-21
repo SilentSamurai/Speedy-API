@@ -461,7 +461,7 @@ public class JooqQueryBuilder {
                 }
             }
             if (!hasValidUserField) {
-                this.query = this.dslContext.select()
+                this.query = this.dslContext.select(JooqUtil.getAllColumns(speedyQuery.getFrom(), dialect))
                         .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
             } else {
                 Set<FieldMetadata> addedFields = new LinkedHashSet<>();
@@ -489,7 +489,9 @@ public class JooqQueryBuilder {
                         .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
             }
         } else {
-            this.query = this.dslContext.select()
+            // No $select: every column, still typed from the metamodel rather than left to jOOQ's
+            // JDBC-metadata guess (see JooqUtil.getAllColumns).
+            this.query = this.dslContext.select(JooqUtil.getAllColumns(speedyQuery.getFrom(), dialect))
                     .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
         }
         if (Objects.nonNull(speedyQuery.getWhere())) {
