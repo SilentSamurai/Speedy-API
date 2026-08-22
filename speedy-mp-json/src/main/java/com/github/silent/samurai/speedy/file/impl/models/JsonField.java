@@ -29,6 +29,11 @@ public class JsonField {
     public boolean isRequired = false;
     public boolean isKeyField = false;
 
+    /// Declared column width for a sized text column, 0 for none. The equivalent of
+    /// `@Column(length = ...)` on the JPA side: core rejects a longer value before the write, so the
+    /// answer does not depend on whether the database enforces the width itself.
+    public int maxLength = 0;
+
     /// Single-column foreign key: the target entity's key field this association binds to (the
     /// local column is the field's own {@code dbColumn}). Mutually exclusive with
     /// {@link #associatedColumns}.

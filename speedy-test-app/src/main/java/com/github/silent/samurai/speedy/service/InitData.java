@@ -73,12 +73,14 @@ public class InitData {
                 LOGGER.info("sql : {}", sql);
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                     preparedStatement.executeUpdate();
-                } catch (Exception e) {
-                    LOGGER.error("init-data error", e);
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("", e);
+            // Seeding is the precondition for every test in this module, so a failed statement has
+            // to stop the context coming up. Logging and carrying on left the suite running against
+            // a silently smaller dataset, which surfaces as unrelated assertion failures on
+            // whichever backend rejected the statement — the seed itself never named as the cause.
+            throw new IllegalStateException("x-data.sql seeding failed: " + e.getMessage(), e);
         }
         seedUuidKeyedRows();
     }

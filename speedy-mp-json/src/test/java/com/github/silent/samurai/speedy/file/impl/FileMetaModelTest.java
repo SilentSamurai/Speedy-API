@@ -147,6 +147,24 @@ class FileMetaModelTest {
         }
     }
 
+    /// The column-width check in core reads {@link FieldMetadata#getMaxLength()}, which the JPA
+    /// processor fills from `@Column(length = ...)`. A JSON metamodel has to be able to declare the
+    /// same width, or the check is silently off for every application that uses one — on SQLite,
+    /// which enforces no VARCHAR length itself, that leaves the value unchecked by anyone.
+    @Test
+    void mapsDeclaredMaxLength() throws Exception {
+        JsonField name = new JsonField();
+        name.name = "name";
+        name.outputProperty = "name";
+        name.dbColumn = "name";
+        name.fieldType = "VARCHAR";
+        name.maxLength = 10;
+
+        MetaModel metaModel = process(entityWith("JsonSizedText", name));
+
+        assertEquals(10, metaModel.findFieldMetadata("JsonSizedText", "name").getMaxLength());
+    }
+
     private MetaModel process(JsonEntity jsonEntity) throws Exception {
         return process(List.of(jsonEntity));
     }
