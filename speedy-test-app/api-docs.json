@@ -13586,6 +13586,12 @@
           },
           "content": {
             "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "abstractText": {
+            "type": "string"
           }
         }
       },
@@ -14326,6 +14332,12 @@
             "type": "string"
           },
           "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "abstractText": {
             "type": "string"
           }
         }
@@ -15543,6 +15555,12 @@
             "type": "string"
           },
           "content": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "abstractText": {
             "type": "string"
           }
         }

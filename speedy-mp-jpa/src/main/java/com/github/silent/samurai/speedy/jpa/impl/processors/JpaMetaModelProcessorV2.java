@@ -24,6 +24,8 @@ import jakarta.persistence.metamodel.SingularAttribute;
 import jakarta.validation.constraints.*;
 import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -391,23 +393,52 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     /// which is exactly the width the generated DDL uses, so the rule matches the schema whether or
     /// not the width is stated.
     ///
-    /// `@Lob` is the exception, and it has to be read from the annotation rather than inferred from
-    /// {@code columnType}: every Java String maps to {@link ColumnType#VARCHAR}, so a TEXT/CLOB
-    /// column is indistinguishable from a sized one here. Its `@Column.length()` still answers 255 —
-    /// the default for an unstated width — and enforcing that number rejects precisely the values the
-    /// column exists to hold.
+    /// The exceptions are the declarations that leave the column with no width `length()` describes,
+    /// and they have to be read from the annotations rather than inferred from {@code columnType}:
+    /// every Java String maps to {@link ColumnType#VARCHAR}, so an unsized text column is
+    /// indistinguishable from a sized one here. `@Column.length()` still answers 255 for each of them
+    /// — the default for an unstated width — and enforcing that number rejects precisely the values
+    /// such a column exists to hold. See {@link #declaresNoWidth}.
     private void applyDeclaredColumnLength(Field field, FieldBuilder fieldMetadata, ColumnType columnType) {
         if (columnType != ColumnType.VARCHAR && columnType != ColumnType.CHAR) {
             return;
         }
-        if (AnnotationUtils.getAnnotation(field, Lob.class) != null) {
-            return;
-        }
         Column column = AnnotationUtils.getAnnotation(field, Column.class);
-        if (column == null) {
+        if (column == null || declaresNoWidth(field, column)) {
             return;
         }
         fieldMetadata.maxLength(column.length());
+    }
+
+    /// JDBC type codes for a text column with no width of its own — the LOB and "long string" types.
+    /// A column pinned to one of these holds far more than `@Column.length()`'s 255, so that number
+    /// is not a width to enforce.
+    private static final Set<Integer> UNSIZED_TEXT_JDBC_TYPES = Set.of(
+            SqlTypes.CLOB, SqlTypes.NCLOB,
+            SqlTypes.LONGVARCHAR, SqlTypes.LONGNVARCHAR,
+            SqlTypes.LONG32VARCHAR, SqlTypes.LONG32NVARCHAR);
+
+    /// Whether the field's declaration leaves `@Column.length()` describing nothing, in which case
+    /// there is no width for core to check and the database answers for its own column.
+    ///
+    /// Three ways that happens, and all three have to be recognised or the check rejects values a
+    /// column accepts — the mirror image of the hole it was added to close:
+    ///
+    ///  - `@Lob`: the column is a CLOB, whatever width is stated.
+    ///  - `@JdbcTypeCode` pinning a LOB or long-string type: the same column, declared without
+    ///    `@Lob`. Speedy's own {@code Document.summary} is written this way, because `@Lob` alone
+    ///    maps to `oid` on Postgres and to a `@Column.length()`-sized `tinytext` on MySQL.
+    ///  - `@Column(columnDefinition = ...)`: the DDL is given verbatim, so JPA never renders
+    ///    `length()` at all and its value describes no column that exists.
+    private static boolean declaresNoWidth(Field field, Column column) {
+        if (AnnotationUtils.getAnnotation(field, Lob.class) != null) {
+            return true;
+        }
+        if (!column.columnDefinition().isEmpty()) {
+            return true;
+        }
+        JdbcTypeCode jdbcTypeCode = AnnotationUtils.getAnnotation(field, JdbcTypeCode.class);
+        return jdbcTypeCode != null && UNSIZED_TEXT_JDBC_TYPES.contains(jdbcTypeCode.value());
     }
 
     /// The digit counts a decimal column is declared with. `@Column.precision()` is 0 when

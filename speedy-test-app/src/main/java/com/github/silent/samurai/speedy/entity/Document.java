@@ -37,4 +37,17 @@ public class Document extends AbstractBaseEntity {
     @Column(name = "content")
     private String content;
 
+    /// Unsized text again, declared *without* `@Lob`. `@JdbcTypeCode` alone makes the column a long
+    /// string — the same `text`/`longtext`/`clob` {@link #content} gets — and `@Column.length()` still
+    /// answers 255, so a width check that recognises only `@Lob` rejects what this column holds.
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
+    @Column(name = "summary")
+    private String summary;
+
+    /// A width the metamodel cannot read. `columnDefinition` replaces the generated DDL outright, so
+    /// JPA never renders `length()` and its 255 describes nothing — the column is `varchar(2000)`.
+    /// Whatever the column really holds is the database's to enforce, not core's to guess.
+    @Column(name = "abstract_text", columnDefinition = "varchar(2000)")
+    private String abstractText;
+
 }

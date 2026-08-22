@@ -85,6 +85,42 @@ class SchemaConstraintTest {
                 .andExpect(status().isOk());
     }
 
+    /// `@Lob` is not the only way a column ends up without a width. `@JdbcTypeCode` pins the JDBC
+    /// type directly, and a long-string code makes the column exactly what `@Lob` would have — but
+    /// `@Column.length()` goes on answering 255, so a guard that keys on `@Lob` alone rejects the
+    /// same values on the same kind of column, purely because of how it was declared.
+    @Test
+    void create_longTextInAColumnUnsizedByItsJdbcType_isAccepted() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("title", "jdbctype-" + UUID.randomUUID());
+        body.put("owner", "jdbctype-owner");
+        body.put("summary", "A".repeat(2000));
+
+        mvc.perform(MockMvcRequestBuilders.post(
+                        SpeedyConstants.URI + "/Document/" + SpeedyEndpoint.CREATE.suffix())
+                        .content("[" + body + "]")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(status().isOk());
+    }
+
+    /// `columnDefinition` replaces the generated DDL, so JPA never renders `length()` and the 255 it
+    /// reports describes no column that exists. The width here is 2000; enforcing 255 would reject a
+    /// value the schema accepts. Core has no width it can trust, so it checks none and the database
+    /// answers for its own column.
+    @Test
+    void create_textWithinAColumnDefinitionWidth_isAccepted() throws Exception {
+        ObjectNode body = CommonUtil.json().createObjectNode();
+        body.put("title", "coldef-" + UUID.randomUUID());
+        body.put("owner", "coldef-owner");
+        body.put("abstractText", "A".repeat(300));
+
+        mvc.perform(MockMvcRequestBuilders.post(
+                        SpeedyConstants.URI + "/Document/" + SpeedyEndpoint.CREATE.suffix())
+                        .content("[" + body + "]")
+                        .contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+                .andExpect(status().isOk());
+    }
+
     /// `@Column(precision, scale)` is the schema's own statement of how many digits fit. It is not
     /// the same thing as `@Digits`, which is a business rule an application can replace — a value
     /// that does not fit the column is a storage fact, and SQLite stores it happily either way.
