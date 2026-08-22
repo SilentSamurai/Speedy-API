@@ -284,6 +284,7 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
         // Apply consolidated validation annotations
         applyValidationAnnotations(field, fieldMetadata);
         applyDeclaredColumnLength(field, fieldMetadata, columnType);
+        applyDeclaredNumericPrecision(field, fieldMetadata, columnType);
 
 
         JsonIgnore jsonIgnore = AnnotationUtils.getAnnotation(field, JsonIgnore.class);
@@ -386,11 +387,20 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
     /// rule set, and a value that does not fit its column is not something an application should be
     /// able to opt out of.
     ///
-    /// Only sized text columns carry a meaningful width; {@code @Lob}-style TEXT/CLOB columns and
-    /// non-text types are left alone. `@Column.length()` is 255 when unspecified, which is exactly
-    /// the width the generated DDL uses, so the rule matches the schema either way.
+    /// Only sized text columns carry a meaningful width. `@Column.length()` is 255 when unspecified,
+    /// which is exactly the width the generated DDL uses, so the rule matches the schema whether or
+    /// not the width is stated.
+    ///
+    /// `@Lob` is the exception, and it has to be read from the annotation rather than inferred from
+    /// {@code columnType}: every Java String maps to {@link ColumnType#VARCHAR}, so a TEXT/CLOB
+    /// column is indistinguishable from a sized one here. Its `@Column.length()` still answers 255 —
+    /// the default for an unstated width — and enforcing that number rejects precisely the values the
+    /// column exists to hold.
     private void applyDeclaredColumnLength(Field field, FieldBuilder fieldMetadata, ColumnType columnType) {
         if (columnType != ColumnType.VARCHAR && columnType != ColumnType.CHAR) {
+            return;
+        }
+        if (AnnotationUtils.getAnnotation(field, Lob.class) != null) {
             return;
         }
         Column column = AnnotationUtils.getAnnotation(field, Column.class);
@@ -398,6 +408,24 @@ public class JpaMetaModelProcessorV2 implements MetaModelProcessor {
             return;
         }
         fieldMetadata.maxLength(column.length());
+    }
+
+    /// The digit counts a decimal column is declared with. `@Column.precision()` is 0 when
+    /// unspecified — unlike `length()`, JPA states no default width for a decimal — so an undeclared
+    /// column simply carries no bound and nothing is checked.
+    ///
+    /// Only exact-decimal types have digit counts worth enforcing: a float or double is approximate,
+    /// and the declaration would not describe what the database actually stores.
+    private void applyDeclaredNumericPrecision(Field field, FieldBuilder fieldMetadata, ColumnType columnType) {
+        if (columnType != ColumnType.DECIMAL && columnType != ColumnType.NUMERIC) {
+            return;
+        }
+        Column column = AnnotationUtils.getAnnotation(field, Column.class);
+        if (column == null) {
+            return;
+        }
+        fieldMetadata.precision(column.precision());
+        fieldMetadata.scale(column.scale());
     }
 
     private void applyValidationAnnotations(Field field, FieldBuilder fieldMetadata) {

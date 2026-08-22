@@ -34,6 +34,11 @@ public class JsonField {
     /// answer does not depend on whether the database enforces the width itself.
     public int maxLength = 0;
 
+    /// Declared digit counts for a decimal column, 0 for none — the equivalent of
+    /// `@Column(precision = ..., scale = ...)` on the JPA side.
+    public int precision = 0;
+    public int scale = 0;
+
     /// Single-column foreign key: the target entity's key field this association binds to (the
     /// local column is the field's own {@code dbColumn}). Mutually exclusive with
     /// {@link #associatedColumns}.

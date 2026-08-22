@@ -10,6 +10,7 @@ import com.github.silent.samurai.speedy.models.SpeedyEntityKey;
 import com.github.silent.samurai.speedy.models.SpeedyNull;
 import com.github.silent.samurai.speedy.validation.rules.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,6 +73,7 @@ public class DefaultFieldValidator {
                 continue;
             }
             checkMaxLength(fieldMetadata, entity.get(fieldMetadata), errors);
+            checkNumericPrecision(fieldMetadata, entity.get(fieldMetadata), errors);
         }
         throwIfErrors(errors);
     }
@@ -85,6 +87,26 @@ public class DefaultFieldValidator {
         if (length > maxLength) {
             errors.add(fieldMetadata.getOutputPropertyName()
                     + " must be at most " + maxLength + " characters, got " + length);
+        }
+    }
+
+    /// The digit counts the column is declared with. The arithmetic matches {@code DigitsRule}'s,
+    /// but the bound comes from the schema rather than from a `@Digits` rule, so it holds even for an
+    /// entity whose custom validator replaces the default rules.
+    private static void checkNumericPrecision(FieldMetadata fieldMetadata, SpeedyValue value, List<String> errors) {
+        int precision = fieldMetadata.getPrecision();
+        int scale = fieldMetadata.getScale();
+        if (precision <= 0 || value == null || value instanceof SpeedyNull || !value.isNumber()) {
+            return;
+        }
+        BigDecimal number = (value.isDouble()
+                ? BigDecimal.valueOf(value.asDouble())
+                : BigDecimal.valueOf(value.asInt())).stripTrailingZeros();
+        int integerDigits = number.precision() - number.scale();
+        int fractionDigits = Math.max(number.scale(), 0);
+        if (integerDigits > precision - scale || fractionDigits > scale) {
+            errors.add(String.format("%s must fit numeric(%d,%d), got %d integer and %d fraction digits",
+                    fieldMetadata.getOutputPropertyName(), precision, scale, integerDigits, fractionDigits));
         }
     }
 

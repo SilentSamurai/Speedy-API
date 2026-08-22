@@ -2,6 +2,7 @@ package com.github.silent.samurai.speedy.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,5 +20,11 @@ public class Document extends AbstractBaseEntity {
 
     @Column(name = "owner", nullable = false, length = 250)
     private String owner;
+
+    /// Unsized text. `@Column.length()` reports 255 whether or not it is stated, so a `@Lob` column
+    /// is the case where that number means nothing and must not be enforced as a width.
+    @Lob
+    @Column(name = "content")
+    private String content;
 
 }

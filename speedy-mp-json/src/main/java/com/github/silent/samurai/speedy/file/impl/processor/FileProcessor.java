@@ -64,6 +64,8 @@ public class FileProcessor {
         fb.deserializable(jsonField.isDeserializable);
         fb.sensitive(jsonField.sensitive != null ? jsonField.sensitive : eb.isSensitive());
         fb.maxLength(jsonField.maxLength);
+        fb.precision(jsonField.precision);
+        fb.scale(jsonField.scale);
 
         if (jsonField.isAssociation) {
             fb.associateWith(jsonField.fieldType, associationColumns(jsonField));

@@ -12,7 +12,9 @@ import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
+import com.github.silent.samurai.speedy.jooq.impl.Dialects;
 import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
+import com.github.silent.samurai.speedy.jooq.impl.dialect.DefaultDialect;
 
 import org.jooq.*;
 import org.jooq.Record;
@@ -399,6 +401,14 @@ public class JooqQueryBuilder {
         return String.format("%s_%s", fkEntityMetadata.getName(), joinAlias.size() + 1);
     }
 
+    /// The column in the form a comparison and an ORDER BY can rely on. Only the dialect knows
+    /// whether the stored form is guaranteed — see {@link DefaultDialect#comparisonField}. The
+    /// selected columns are built separately and stay untouched, so what a query returns is still the
+    /// raw stored value.
+    private Field<Object> comparable(Field<Object> column, FieldMetadata fieldMetadata) {
+        return Dialects.forJooq(dialect).comparisonField(column, fieldMetadata.getColumnType());
+    }
+
     Field<Object> getPath(QueryField queryField) {
         return getPaths(queryField).get(0);
     }
@@ -415,10 +425,12 @@ public class JooqQueryBuilder {
                 joinAlias.put(key, alias);
             }
             String alias = joinAlias.get(key);
-            return List.of(JooqUtil.getColumnWithTableAlias(alias, fkMetadata, dialect));
+            return List.of(comparable(JooqUtil.getColumnWithTableAlias(alias, fkMetadata, dialect), fkMetadata));
         } else {
             FieldMetadata fieldMetadata = queryField.getFieldMetadata();
-            return JooqUtil.getColumns(fieldMetadata, dialect);
+            return JooqUtil.getColumns(fieldMetadata, dialect).stream()
+                    .map(column -> comparable(column, fieldMetadata))
+                    .toList();
         }
     }
 

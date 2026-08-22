@@ -2,6 +2,8 @@ package com.github.silent.samurai.speedy.jooq.impl.dialect;
 
 import com.github.silent.samurai.speedy.enums.ColumnType;
 import com.github.silent.samurai.speedy.utils.Speedy;
+import org.jooq.Field;
+import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 import java.time.LocalDate;
@@ -10,6 +12,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Set;
 
 /// SQLite dialect strategy. SQLite has five storage classes — NULL, INTEGER, REAL, TEXT and BLOB —
 /// and no temporal, UUID or fixed-width float type at all, so every column type that has no storage
@@ -96,6 +99,11 @@ public final class SqliteDialect extends DefaultDialect {
     /// 1299, SQLITE_CONSTRAINT_UNIQUE 2067 — so the family is matched by masking.
     private static final int SQLITE_CONSTRAINT = 19;
 
+    /// The column types stored as text above — the ones whose comparison form is not the database's
+    /// to guarantee.
+    private static final Set<ColumnType> TEXT_TEMPORALS = Set.of(
+            ColumnType.DATE, ColumnType.TIME, ColumnType.TIMESTAMP, ColumnType.TIMESTAMP_WITH_ZONE);
+
     public SqliteDialect() {
         super(Map.of(
                 ColumnType.DATE, DATE_AS_TEXT,
@@ -105,6 +113,23 @@ public final class SqliteDialect extends DefaultDialect {
                 ColumnType.UUID, UUID_AS_BLOB,
                 ColumnType.FLOAT, FLOAT_AS_DOUBLE
         ));
+    }
+
+    /// Temporal columns are text here, so a comparison is a text comparison — and it only holds if
+    /// every value in the column has the same width. Speedy writes `yyyy-MM-dd HH:mm:ss.SSS`, but a
+    /// column carrying `DEFAULT CURRENT_TIMESTAMP` is written by SQLite itself, which produces whole
+    /// seconds. The shorter form is a prefix of the longer one and sorts before it, so `$eq` matched
+    /// nothing and a range filter dropped the row.
+    ///
+    /// `strftime` reads any width SQLite accepts as a time string and renders the one Speedy writes,
+    /// so both sides of the comparison are in the same form. It costs an index scan on the column,
+    /// which is the price of a storage class SQLite does not have.
+    @Override
+    public Field<Object> comparisonField(Field<Object> column, ColumnType columnType) {
+        if (!TEXT_TEMPORALS.contains(columnType)) {
+            return column;
+        }
+        return DSL.field("strftime('%Y-%m-%d %H:%M:%f', {0})", Object.class, column);
     }
 
     /// The driver reports no standard SQLSTATE, so a constraint violation is recognisable only by its

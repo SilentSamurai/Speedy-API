@@ -44,6 +44,10 @@ public class FieldBuilder {
     List<FieldRule> validations = new java.util.ArrayList<>();
     /// The declared column width, 0 for none. See {@link FieldMetadata#getMaxLength()}.
     int maxLength = 0;
+
+    /// The declared digit counts, 0 for none. See {@link FieldMetadata#getPrecision()}.
+    int precision = 0;
+    int scale = 0;
     EtagStrategy etagStrategy;
 
     public FieldBuilder(EntityBuilder entityBuilder, String name) {
@@ -143,6 +147,16 @@ public class FieldBuilder {
         return this;
     }
 
+    public FieldBuilder precision(int precision) {
+        this.precision = precision;
+        return this;
+    }
+
+    public FieldBuilder scale(int scale) {
+        this.scale = scale;
+        return this;
+    }
+
     public FieldBuilder maxLength(int maxLength) {
         this.maxLength = maxLength;
         return this;
@@ -200,6 +214,8 @@ public class FieldBuilder {
                 ofNullable(etagStrategy)
         );
         fmi.setMaxLength(maxLength);
+        fmi.setPrecision(precision);
+        fmi.setScale(scale);
         return fmi;
     }
 

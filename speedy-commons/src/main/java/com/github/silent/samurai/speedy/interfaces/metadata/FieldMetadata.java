@@ -124,6 +124,21 @@ public interface FieldMetadata {
         return 0;
     }
 
+    /// The total number of digits the column is declared to hold, or 0 when the field has none.
+    /// Together with [[#getScale()]] this is the numeric counterpart of [[#getMaxLength()]], and a
+    /// property of the schema for the same reason: a value with more digits than the column holds
+    /// cannot be stored faithfully. Distinct from a `@Digits` rule, which states a business bound and
+    /// which an application may replace.
+    default int getPrecision() {
+        return 0;
+    }
+
+    /// How many of [[#getPrecision()]]'s digits are fraction digits. The remainder are the integer
+    /// digits the column can hold.
+    default int getScale() {
+        return 0;
+    }
+
     default Optional<EtagStrategy> getEtagStrategy() {
         return Optional.empty();
     }
