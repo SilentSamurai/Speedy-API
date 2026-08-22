@@ -251,7 +251,9 @@ public class JooqBackend implements SpeedyBackend {
         }
         for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
             Object value = converter.toColumnType(pk.get(keyFieldMetadata), keyFieldMetadata);
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dialect);
+            // Comparable form, as every other key lookup uses — an UPDATE that addressed the raw
+            // column would miss exactly the rows a SELECT by the same key finds.
+            Field<Object> field = JooqUtil.getComparableColumn(keyFieldMetadata, dialect);
             step.where(field.equal(value));
         }
         step.execute();

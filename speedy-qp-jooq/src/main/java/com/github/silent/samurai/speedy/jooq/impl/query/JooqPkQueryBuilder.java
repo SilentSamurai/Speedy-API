@@ -16,6 +16,10 @@ import java.util.List;
 
 /// Builds and executes jOOQ queries for primary-key lookups.
 /// Supports single-key IN optimised and composite-key OR fallback.
+///
+/// Key columns are compared through {@link JooqUtil#getComparableColumn}, not raw: a key is a column
+/// like any other, and a row Speedy did not write may hold a stored form only the dialect can
+/// reconcile.
 public class JooqPkQueryBuilder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JooqPkQueryBuilder.class);
@@ -65,7 +69,7 @@ public class JooqPkQueryBuilder {
         Condition condition = null;
         for (KeyFieldMetadata keyField : pk.getMetadata().getKeyFields()) {
             Object value = converter.toColumnType(pk.get(keyField), keyField);
-            Field<Object> field = JooqUtil.getColumn(keyField, dialect);
+            Field<Object> field = JooqUtil.getComparableColumn(keyField, dialect);
             Condition eq = field.eq(value);
             condition = (condition == null) ? eq : condition.and(eq);
         }
@@ -84,7 +88,7 @@ public class JooqPkQueryBuilder {
             for (SpeedyEntityKey pk : pks) {
                 values.add(converter.toColumnType(pk.get(keyField), keyField));
             }
-            Field<Object> field = JooqUtil.getColumn(keyField, dialect);
+            Field<Object> field = JooqUtil.getComparableColumn(keyField, dialect);
             return field.in(values);
         }
 

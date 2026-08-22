@@ -401,12 +401,11 @@ public class JooqQueryBuilder {
         return String.format("%s_%s", fkEntityMetadata.getName(), joinAlias.size() + 1);
     }
 
-    /// The column in the form a comparison and an ORDER BY can rely on. Only the dialect knows
-    /// whether the stored form is guaranteed — see {@link DefaultDialect#comparisonField}. The
-    /// selected columns are built separately and stay untouched, so what a query returns is still the
-    /// raw stored value.
+    /// The column in the form a comparison and an ORDER BY can rely on — see
+    /// {@link JooqUtil#comparable}, which the key paths use too. The selected columns are built
+    /// separately and stay untouched, so what a query returns is still the raw stored value.
     private Field<Object> comparable(Field<Object> column, FieldMetadata fieldMetadata) {
-        return Dialects.forJooq(dialect).comparisonField(column, fieldMetadata.getColumnType());
+        return JooqUtil.comparable(column, fieldMetadata, dialect);
     }
 
     Field<Object> getPath(QueryField queryField) {
