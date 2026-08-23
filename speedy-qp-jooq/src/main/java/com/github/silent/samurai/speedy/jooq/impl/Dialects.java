@@ -3,6 +3,7 @@ package com.github.silent.samurai.speedy.jooq.impl;
 import com.github.silent.samurai.speedy.jooq.impl.dialect.DefaultDialect;
 import com.github.silent.samurai.speedy.jooq.impl.dialect.HsqldbDialect;
 import com.github.silent.samurai.speedy.jooq.impl.dialect.MySqlDialect;
+import com.github.silent.samurai.speedy.jooq.impl.dialect.SqliteDialect;
 import com.github.silent.samurai.speedy.jooq.impl.dialect.UpperCaseIdentifierDialect;
 import org.jooq.SQLDialect;
 
@@ -14,6 +15,7 @@ public final class Dialects {
     private static final DefaultDialect MYSQL = new MySqlDialect();
     private static final DefaultDialect UPPER_CASE_IDENTIFIERS = new UpperCaseIdentifierDialect();
     private static final DefaultDialect HSQLDB = new HsqldbDialect();
+    private static final DefaultDialect SQLITE = new SqliteDialect();
     private static final DefaultDialect DEFAULT = new DefaultDialect();
 
     private Dialects() {
@@ -23,12 +25,13 @@ public final class Dialects {
         return switch (dialect) {
             case MYSQL, MARIADB -> MYSQL;
             case HSQLDB -> HSQLDB;
+            case SQLITE -> SQLITE;
             // Dialects that fold unquoted identifiers to upper case. Every name is rendered quoted, so
             // one of these mapped to the snake_case default resolves against nothing at all.
             case H2, DERBY, FIREBIRD -> UPPER_CASE_IDENTIFIERS;
-            // Postgres and SQLite are correct here — Postgres folds unquoted DDL to lower case, and
-            // SQLite matches identifiers case-insensitively. Any *other* dialect reaching this arm gets
-            // snake_case by assumption, not by verification: check its folding rules before using it.
+            // Postgres is correct here: it folds unquoted DDL to lower case. Any *other* dialect
+            // reaching this arm gets snake_case by assumption, not by verification — check its folding
+            // rules before using it.
             default -> DEFAULT;
         };
     }

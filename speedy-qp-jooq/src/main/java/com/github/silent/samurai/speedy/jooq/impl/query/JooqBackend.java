@@ -46,10 +46,6 @@ import java.util.Optional;
 /// {@code DefaultQueryProcessor} drives — the persistence analogue of {@code JsonResponseWriter}.
 public class JooqBackend implements SpeedyBackend {
 
-    // MySQL/MariaDB error codes surfaced under the generic HY000 SQLState (H2/Postgres use 22/23).
-    private static final int ER_NO_DEFAULT_FOR_FIELD = 1364;
-    private static final int ER_TRUNCATED_WRONG_VALUE_FOR_FIELD = 1366;
-
     private final SQLDialect dialect;
     private final Settings settings = new Settings()
             .withRenderQuotedNames(RenderQuotedNames.ALWAYS)
@@ -255,7 +251,9 @@ public class JooqBackend implements SpeedyBackend {
         }
         for (KeyFieldMetadata keyFieldMetadata : pk.getMetadata().getKeyFields()) {
             Object value = converter.toColumnType(pk.get(keyFieldMetadata), keyFieldMetadata);
-            Field<Object> field = JooqUtil.getColumn(keyFieldMetadata, dialect);
+            // Comparable form, as every other key lookup uses — an UPDATE that addressed the raw
+            // column would miss exactly the rows a SELECT by the same key finds.
+            Field<Object> field = JooqUtil.getComparableColumn(keyFieldMetadata, dialect);
             step.where(field.equal(value));
         }
         step.execute();
@@ -292,21 +290,24 @@ public class JooqBackend implements SpeedyBackend {
 
     @Override
     public Optional<SpeedyHttpException> classify(Exception cause) {
-        if (cause instanceof DataAccessException dae) {
-            Throwable sqlCause = dae.getCause();
-            if (sqlCause instanceof SQLException sqle) {
-                String state = sqle.getSQLState();
-                // 23xxx = integrity-constraint violation, 22xxx = data exception (bad client input).
-                if (state != null && (state.startsWith("23") || state.startsWith("22"))) {
-                    return Optional.of(new BadRequestException("Invalid Request", dae));
-                }
-                // MySQL/MariaDB report a missing required column (no default) or a wrong-typed value
-                // under the generic HY000 state, where H2/Postgres use 22/23. These are still bad
-                // client input, so normalise them to 400 too.
-                int errorCode = sqle.getErrorCode();
-                if (errorCode == ER_NO_DEFAULT_FOR_FIELD || errorCode == ER_TRUNCATED_WRONG_VALUE_FOR_FIELD) {
-                    return Optional.of(new BadRequestException("Invalid Request", dae));
-                }
+        if (!(cause instanceof DataAccessException dae)) {
+            return Optional.empty();
+        }
+        // The whole chain, not just the first link: a batched write wraps the driver's exception in a
+        // BatchUpdateException, and it is the inner one that carries the code.
+        for (Throwable t = dae.getCause(); t != null; t = t.getCause()) {
+            if (!(t instanceof SQLException sqle)) {
+                continue;
+            }
+            String state = sqle.getSQLState();
+            // 23xxx = integrity-constraint violation, 22xxx = data exception (bad client input).
+            if (state != null && (state.startsWith("23") || state.startsWith("22"))) {
+                return Optional.of(new BadRequestException("Invalid Request", dae));
+            }
+            // Drivers that report those same conditions under a non-standard state are recognised by
+            // their own numeric codes, which each dialect owns.
+            if (Dialects.forJooq(dialect).isClientErrorCode(sqle.getErrorCode())) {
+                return Optional.of(new BadRequestException("Invalid Request", dae));
             }
         }
         return Optional.empty();

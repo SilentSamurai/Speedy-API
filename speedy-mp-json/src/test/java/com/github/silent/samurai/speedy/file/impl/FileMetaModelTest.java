@@ -147,6 +147,43 @@ class FileMetaModelTest {
         }
     }
 
+    /// The column-width check in core reads {@link FieldMetadata#getMaxLength()}, which the JPA
+    /// processor fills from `@Column(length = ...)`. A JSON metamodel has to be able to declare the
+    /// same width, or the check is silently off for every application that uses one — on SQLite,
+    /// which enforces no VARCHAR length itself, that leaves the value unchecked by anyone.
+    @Test
+    void mapsDeclaredMaxLength() throws Exception {
+        JsonField name = new JsonField();
+        name.name = "name";
+        name.outputProperty = "name";
+        name.dbColumn = "name";
+        name.fieldType = "VARCHAR";
+        name.maxLength = 10;
+
+        MetaModel metaModel = process(entityWith("JsonSizedText", name));
+
+        assertEquals(10, metaModel.findFieldMetadata("JsonSizedText", "name").getMaxLength());
+    }
+
+    /// The numeric counterpart of {@link #mapsDeclaredMaxLength()}: a JSON metamodel has to be able
+    /// to state a decimal column's digit counts, or the schema check has nothing to check.
+    @Test
+    void mapsDeclaredNumericPrecision() throws Exception {
+        JsonField amount = new JsonField();
+        amount.name = "amount";
+        amount.outputProperty = "amount";
+        amount.dbColumn = "amount";
+        amount.fieldType = "DECIMAL";
+        amount.precision = 6;
+        amount.scale = 2;
+
+        MetaModel metaModel = process(entityWith("JsonDecimal", amount));
+        FieldMetadata field = metaModel.findFieldMetadata("JsonDecimal", "amount");
+
+        assertEquals(6, field.getPrecision());
+        assertEquals(2, field.getScale());
+    }
+
     private MetaModel process(JsonEntity jsonEntity) throws Exception {
         return process(List.of(jsonEntity));
     }

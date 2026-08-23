@@ -55,6 +55,51 @@ public class JooqUtil {
         return getColumns(fieldMetadata, JooqUtil.getTable(fieldMetadata.getEntityMetadata(), dialect), dialect);
     }
 
+    /// Every stored column of an entity, typed by the dialect — the explicit form of `SELECT *`.
+    ///
+    /// A bare `SELECT *` looks equivalent but is not: jOOQ then types each column from the JDBC
+    /// driver's `ResultSetMetaData` instead of from the metamodel, so the dialect's storage overrides
+    /// never apply. On SQLite that silently changes results — a TIME column comes back through jOOQ's
+    /// own `java.sql.Time` binding and throws, a DATE loses its time part, and a `float`-declared
+    /// column is read as a 4-byte float. Selecting typed fields keeps one source of truth for column
+    /// types: {@link Dialects}.
+    ///
+    /// Collection associations have no column on this table and are skipped; a multi-column foreign
+    /// key contributes all of its columns.
+    public static List<Field<Object>> getAllColumns(EntityMetadata entityMetadata, SQLDialect dialect) {
+        List<Field<Object>> fields = new ArrayList<>();
+        for (FieldMetadata fieldMetadata : entityMetadata.getAllFields()) {
+            if (fieldMetadata.getDbColumnName() == null) {
+                continue;
+            }
+            if (fieldMetadata.isAssociation() && fieldMetadata.isCollection()) {
+                continue;
+            }
+            fields.addAll(getColumns(fieldMetadata, dialect));
+        }
+        return fields;
+    }
+
+    /// A column in the form a comparison can rely on. Only the dialect knows whether the stored form
+    /// is guaranteed — see {@link com.github.silent.samurai.speedy.jooq.impl.dialect.DefaultDialect#comparisonField}.
+    ///
+    /// Every comparison against a column goes through here: a filter, an ORDER BY, and a lookup by
+    /// primary key alike. A key is compared exactly like any other column, and the value in it is not
+    /// always one Speedy wrote — a seed script, a DDL default or another application writes rows too —
+    /// so a dialect that has to canonicalise a column has to canonicalise it there as well.
+    ///
+    /// The type is the field's *stored* one: for an association that is the target key it references,
+    /// which is what {@link #getTypedField} types the column as.
+    public static Field<Object> comparable(Field<Object> column, FieldMetadata fieldMetadata, SQLDialect dialect) {
+        return Dialects.forJooq(dialect).comparisonField(column, conversionField(fieldMetadata).getColumnType());
+    }
+
+    /// The field's own column, in comparable form. The shorthand for the key paths, which compare a
+    /// single column of the field's own table.
+    public static Field<Object> getComparableColumn(FieldMetadata fieldMetadata, SQLDialect dialect) {
+        return comparable(getColumn(fieldMetadata, dialect), fieldMetadata, dialect);
+    }
+
     /// {@link #getColumns(FieldMetadata, SQLDialect)} against an aliased copy of the field's table.
     public static List<Field<Object>> getColumnsWithTableAlias(String tableAlias, FieldMetadata fieldMetadata, SQLDialect dialect) {
         return getColumns(fieldMetadata, DSL.table(DSL.name(tableAlias)), dialect);

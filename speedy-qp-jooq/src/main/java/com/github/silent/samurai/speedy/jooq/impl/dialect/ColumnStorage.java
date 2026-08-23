@@ -41,12 +41,18 @@ public record ColumnStorage(Class<?> carrier, DataType<?> dataType, Consumer<Cod
     /// field on dialects without a native UUID type. Writing the textual form into such a column fails
     /// (HSQLDB: `data exception: invalid character value for cast`), so the value is carried as its
     /// raw bytes and rendered back as the canonical dashed string on read.
-    public static final ColumnStorage UUID_AS_BINARY_16 = new ColumnStorage(
-            byte[].class,
-            SQLDataType.BINARY.length(16),
-            r -> r.register(ColumnType.UUID, byte[].class,
-                    sv -> toBytes(UUID.fromString(((SpeedyText) sv).asText())),
-                    raw -> Speedy.from(toUuid(raw).toString())));
+    public static final ColumnStorage UUID_AS_BINARY_16 = uuidAsBinary(SQLDataType.BINARY.length(16));
+
+    /// The same raw-bytes carrier under a different binary type — SQLite declares the column `blob`
+    /// rather than `binary(16)`, and jOOQ types the two differently even though the bytes are equal.
+    public static ColumnStorage uuidAsBinary(DataType<?> dataType) {
+        return new ColumnStorage(
+                byte[].class,
+                dataType,
+                r -> r.register(ColumnType.UUID, byte[].class,
+                        sv -> toBytes(UUID.fromString(((SpeedyText) sv).asText())),
+                        raw -> Speedy.from(toUuid(raw).toString())));
+    }
 
     private static byte[] toBytes(UUID uuid) {
         return ByteBuffer.allocate(16)

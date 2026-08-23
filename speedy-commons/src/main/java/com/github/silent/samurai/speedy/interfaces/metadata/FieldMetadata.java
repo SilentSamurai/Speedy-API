@@ -112,6 +112,33 @@ public interface FieldMetadata {
      * is false). Returns empty for every field that did not opt in — callers on the
      * conditional-request path must short-circuit on this being empty.
      */
+    /// The width the column is declared with, or 0 when the field has none (an unsized type, or a
+    /// metamodel that does not state one).
+    ///
+    /// This is a property of the schema, not a business rule: a value wider than this cannot be
+    /// stored faithfully. Most databases reject it themselves, which is why Speedy never checked —
+    /// but SQLite ignores VARCHAR length entirely, so the same request that fails on Postgres is
+    /// silently truncated-in-name-only there. Validating it from metadata makes the answer the same
+    /// on every backend. See [[ValidationProcessor]]'s schema-constraint pass.
+    default int getMaxLength() {
+        return 0;
+    }
+
+    /// The total number of digits the column is declared to hold, or 0 when the field has none.
+    /// Together with [[#getScale()]] this is the numeric counterpart of [[#getMaxLength()]], and a
+    /// property of the schema for the same reason: a value with more digits than the column holds
+    /// cannot be stored faithfully. Distinct from a `@Digits` rule, which states a business bound and
+    /// which an application may replace.
+    default int getPrecision() {
+        return 0;
+    }
+
+    /// How many of [[#getPrecision()]]'s digits are fraction digits. The remainder are the integer
+    /// digits the column can hold.
+    default int getScale() {
+        return 0;
+    }
+
     default Optional<EtagStrategy> getEtagStrategy() {
         return Optional.empty();
     }

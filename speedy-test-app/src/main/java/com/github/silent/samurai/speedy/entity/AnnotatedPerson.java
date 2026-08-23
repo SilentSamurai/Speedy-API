@@ -47,7 +47,7 @@ public class AnnotatedPerson extends AbstractBaseEntity {
      */
     @SpeedyPositive
     @Positive
-    @Column(name = "salary", nullable = false)
+    @Column(name = "salary", nullable = false, precision = 10, scale = 2)
     private java.math.BigDecimal salary;
 
     /**

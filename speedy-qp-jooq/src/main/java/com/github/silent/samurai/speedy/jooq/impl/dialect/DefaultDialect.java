@@ -7,6 +7,7 @@ import com.github.silent.samurai.speedy.jooq.impl.conversion.CodecRegistry;
 import com.github.silent.samurai.speedy.models.*;
 import com.github.silent.samurai.speedy.utils.Speedy;
 import org.jooq.DataType;
+import org.jooq.Field;
 import org.jooq.impl.SQLDataType;
 
 import java.math.BigDecimal;
@@ -191,6 +192,28 @@ public class DefaultDialect {
     /// the same round-trip. Default {@code true}; MySQL/MariaDB use {@code LAST_INSERT_ID()} instead.
     public boolean supportsReturning() {
         return true;
+    }
+
+    /// Whether a driver error code reports bad client input — a constraint violation or an
+    /// unusable value — rather than a server fault. Such a failure is a 400, not a 500.
+    ///
+    /// Standard SQLSTATEs (22xxx data exception, 23xxx integrity constraint) are checked before this
+    /// and cover H2 and Postgres; this hook exists for the drivers that report the same conditions
+    /// under a non-standard state, where the numeric code is the only signal. Default: none.
+    public boolean isClientErrorCode(int errorCode) {
+        return false;
+    }
+
+    /// The column as a comparison must see it. Speedy is not the only writer of a column's stored
+    /// form — a DDL default, a trigger or another application writes it too — and a dialect that
+    /// stores a type as something else has no guarantee those writers agree on the exact form. Where
+    /// they can differ, the dialect canonicalises the column here so a comparison is against one
+    /// form, whatever wrote the value.
+    ///
+    /// Default: the column unchanged. A dialect with a real storage class for the type needs nothing,
+    /// because the database compares the value, not its text.
+    public Field<Object> comparisonField(Field<Object> column, ColumnType columnType) {
+        return column;
     }
 
     /// Transforms a Java identifier into the dialect's stored form. Default: camelCase → snake_case.

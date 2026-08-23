@@ -12,7 +12,9 @@ import com.github.silent.samurai.speedy.interfaces.metadata.KeyFieldMetadata;
 import com.github.silent.samurai.speedy.interfaces.SpeedyValue;
 import com.github.silent.samurai.speedy.interfaces.query.*;
 import com.github.silent.samurai.speedy.interfaces.query.Condition;
+import com.github.silent.samurai.speedy.jooq.impl.Dialects;
 import com.github.silent.samurai.speedy.jooq.impl.conversion.TypeConverter;
+import com.github.silent.samurai.speedy.jooq.impl.dialect.DefaultDialect;
 
 import org.jooq.*;
 import org.jooq.Record;
@@ -399,6 +401,13 @@ public class JooqQueryBuilder {
         return String.format("%s_%s", fkEntityMetadata.getName(), joinAlias.size() + 1);
     }
 
+    /// The column in the form a comparison and an ORDER BY can rely on — see
+    /// {@link JooqUtil#comparable}, which the key paths use too. The selected columns are built
+    /// separately and stay untouched, so what a query returns is still the raw stored value.
+    private Field<Object> comparable(Field<Object> column, FieldMetadata fieldMetadata) {
+        return JooqUtil.comparable(column, fieldMetadata, dialect);
+    }
+
     Field<Object> getPath(QueryField queryField) {
         return getPaths(queryField).get(0);
     }
@@ -415,10 +424,12 @@ public class JooqQueryBuilder {
                 joinAlias.put(key, alias);
             }
             String alias = joinAlias.get(key);
-            return List.of(JooqUtil.getColumnWithTableAlias(alias, fkMetadata, dialect));
+            return List.of(comparable(JooqUtil.getColumnWithTableAlias(alias, fkMetadata, dialect), fkMetadata));
         } else {
             FieldMetadata fieldMetadata = queryField.getFieldMetadata();
-            return JooqUtil.getColumns(fieldMetadata, dialect);
+            return JooqUtil.getColumns(fieldMetadata, dialect).stream()
+                    .map(column -> comparable(column, fieldMetadata))
+                    .toList();
         }
     }
 
@@ -461,7 +472,7 @@ public class JooqQueryBuilder {
                 }
             }
             if (!hasValidUserField) {
-                this.query = this.dslContext.select()
+                this.query = this.dslContext.select(JooqUtil.getAllColumns(speedyQuery.getFrom(), dialect))
                         .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
             } else {
                 Set<FieldMetadata> addedFields = new LinkedHashSet<>();
@@ -489,7 +500,9 @@ public class JooqQueryBuilder {
                         .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
             }
         } else {
-            this.query = this.dslContext.select()
+            // No $select: every column, still typed from the metamodel rather than left to jOOQ's
+            // JDBC-metadata guess (see JooqUtil.getAllColumns).
+            this.query = this.dslContext.select(JooqUtil.getAllColumns(speedyQuery.getFrom(), dialect))
                     .from(JooqUtil.getTable(speedyQuery.getFrom(), dialect));
         }
         if (Objects.nonNull(speedyQuery.getWhere())) {

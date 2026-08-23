@@ -89,6 +89,27 @@ retrieve a single resource with primary key
 }
 ```
 
+**A key that matches nothing**
+
+A GET always reads a *collection*, even when the filter is the full primary key. There is no
+single-resource address on this path — the key becomes a filter, and the response is the same paged
+envelope as any other read. So a key that matches no row is an empty payload with `200 OK`, not a
+`404`:
+
+```json
+{
+    "payload": [],
+    "pageSize": 0,
+    "pageIndex": 0,
+    "totalCount": 0,
+    "totalPages": 0
+}
+```
+
+`$update`, `$put` and `$delete` differ, and deliberately: those address one specific row, so a
+well-formed key that matches nothing is `404 Not Found` (and an *incomplete* composite key is
+`400 Bad Request`). See [Update](put-operation.md) and [Delete](delete-operation.md).
+
 <hr>
 
 #### Filter via Non Key Field

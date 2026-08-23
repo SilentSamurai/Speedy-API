@@ -74,7 +74,8 @@ public class SpeedyConfig implements ISpeedyConfiguration {
     private static final Map<String, SpeedyDialect> DIALECT_BY_PROFILE = Map.of(
             "postgres", SpeedyDialect.POSTGRES,
             "mysql", SpeedyDialect.MYSQL,
-            "hsqldb", SpeedyDialect.HSQLDB
+            "hsqldb", SpeedyDialect.HSQLDB,
+            "sqlite", SpeedyDialect.SQLITE
     );
 
     @Override
